@@ -13,12 +13,22 @@ export async function GET(request: NextRequest) {
   const postalCode = params.get("postalCode") || "33326";
   const radius = params.get("radius") || "50";
 
+  // Ticketmaster documents postalCode as a text-based venue filter, not a
+  // true nearby/radius search. For our initial South Florida launch, use the
+  // Greater Miami market (15) so ZIP 33326 doesn't incorrectly return zero.
+  // We'll replace this fallback with coordinate/geoPoint lookup for arbitrary ZIPs.
+  const useSouthFloridaMarket = /^33\d{3}$/.test(postalCode);
+
   const url = new URL("https://app.ticketmaster.com/discovery/v2/events.json");
   url.searchParams.set("apikey", apiKey);
   url.searchParams.set("countryCode", "US");
-  url.searchParams.set("postalCode", postalCode);
-  url.searchParams.set("radius", radius);
-  url.searchParams.set("unit", "miles");
+  if (useSouthFloridaMarket) {
+    url.searchParams.set("marketId", "15");
+  } else {
+    url.searchParams.set("postalCode", postalCode);
+    url.searchParams.set("radius", radius);
+    url.searchParams.set("unit", "miles");
+  }
   url.searchParams.set("size", "40");
   url.searchParams.set("sort", "date,asc");
 
@@ -74,7 +84,12 @@ export async function GET(request: NextRequest) {
       };
     });
 
-    return NextResponse.json({ events, configured: true });
+    return NextResponse.json({
+      events,
+      configured: true,
+      searchMode: useSouthFloridaMarket ? "greater-miami-market" : "postal-code",
+      requestedPostalCode: postalCode
+    });
   } catch (error) {
     return NextResponse.json(
       {
