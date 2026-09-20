@@ -1,49 +1,10 @@
 import { NextRequest, NextResponse } from "next/server";
-
 function dedupeKey(title:string,venue:string,date:string){return [title.toLowerCase().replace(/[^a-z0-9]+/g," ").trim(),venue.toLowerCase().trim(),date].join("|")}
-
-function windowDates(range:string){
- const parts=new Intl.DateTimeFormat("en-US",{timeZone:"America/New_York",year:"numeric",month:"2-digit",day:"2-digit",weekday:"short"}).formatToParts(new Date());
- const get=(t:string)=>parts.find(p=>p.type===t)?.value||"";
- const today=`${get("year")}-${get("month")}-${get("day")}`;
- const base=new Date(today+"T12:00:00Z");
- const ymd=(d:Date)=>d.toISOString().slice(0,10);
- let s=new Date(base),e=new Date(base);
- if(range==="tomorrow"){s.setUTCDate(s.getUTCDate()+1);e=new Date(s)}
- if(range==="weekend"){
-   const day=base.getUTCDay();
-   if(day===0){s=new Date(base);e=new Date(base)}
-   else if(day===6){s=new Date(base);e=new Date(base);e.setUTCDate(e.getUTCDate()+1)}
-   else {const toSat=6-day;s=new Date(base);s.setUTCDate(s.getUTCDate()+toSat);e=new Date(s);e.setUTCDate(e.getUTCDate()+1)}
- }
- return{startDate:ymd(s),endDate:ymd(e)};
-}
-
+function windowDates(range:string){const parts=new Intl.DateTimeFormat("en-US",{timeZone:"America/New_York",year:"numeric",month:"2-digit",day:"2-digit"}).formatToParts(new Date());const get=(t:string)=>parts.find(p=>p.type===t)?.value||"";const today=`${get("year")}-${get("month")}-${get("day")}`,base=new Date(today+"T12:00:00Z"),ymd=(d:Date)=>d.toISOString().slice(0,10);let s=new Date(base),e=new Date(base);if(range==="tomorrow"){s.setUTCDate(s.getUTCDate()+1);e=new Date(s)}if(range==="weekend"){const day=base.getUTCDay();if(day===0){s=new Date(base);e=new Date(base)}else if(day===6){e.setUTCDate(e.getUTCDate()+1)}else{const n=6-day;s.setUTCDate(s.getUTCDate()+n);e=new Date(s);e.setUTCDate(e.getUTCDate()+1)}}return{startDate:ymd(s),endDate:ymd(e)}}
 const localEvents=[
- {id:"ppines-hispanic-heritage-2026",title:"Hispanic Heritage Festival",city:"Pembroke Pines, FL",venue:"Charles F. Dodge City Center",date:"2026-09-26",time:"17:00:00",url:"https://www.ppines.com/1755/Hispanic-Heritage-Festival",category:"Family",genre:"Festival",desc:"Free city festival with live entertainment, food, art and activities for all ages.",tags:["Family","Free","Festival"],emoji:"🎉",source:"Local"},
- {id:"ppines-summer-symphony-2026",title:"Summer Symphony Series",city:"Pembroke Pines, FL",venue:"River of Grass ArtsPark",date:"2026-09-27",time:"16:00:00",url:"https://www.ppines.com/Calendar.aspx",category:"Music",genre:"Live Music",desc:"Final afternoon of the season with live orchestral music.",tags:["Music","Family","Local"],emoji:"🎻",source:"Local"}
+{id:"sunrise-fall-harvest-2026",title:"Fall Harvest Festival",city:"Sunrise, FL",venue:"Sunrise Amphitheater",date:"2026-09-26",time:"10:00:00",url:"https://www.sunrisefl.gov/departments-services/leisure-services/special-events/fall-harvest-festival",category:"Family",genre:"Festival",desc:"Free family festival with petting zoo, train rides, corn maze, DinoDig, bounce houses, crafts, games, food trucks and vendors.",tags:["Kids","Family","Free","Festival"],emoji:"🌽",source:"City of Sunrise"},
+{id:"ppines-hispanic-heritage-2026",title:"Hispanic Heritage Festival",city:"Pembroke Pines, FL",venue:"Charles F. Dodge City Center",date:"2026-09-26",time:"17:00:00",url:"https://www.ppines.com/1755/Hispanic-Heritage-Festival",category:"Family",genre:"Festival",desc:"Free festival for all ages celebrating Hispanic culture with live entertainment, music, food, art and interactive activities.",tags:["Kids","Family","Free","Festival"],emoji:"🎉",source:"City of Pembroke Pines"},
+{id:"sunrise-tom-briscoe-2026",title:"Tom Briscoe Comedy Show",city:"Sunrise, FL",venue:"Sunrise Civic Center Theatre",date:"2026-09-26",time:"19:00:00",url:"https://www.sunrisefl.gov/departments-services/leisure-services/events",category:"Arts & Theatre",genre:"Comedy",desc:"Saturday evening comedy show at the Sunrise Civic Center Theatre.",tags:["Arts & Theatre","Local"],emoji:"🎭",source:"City of Sunrise"},
+{id:"ppines-summer-symphony-2026",title:"Summer Symphony Series",city:"Pembroke Pines, FL",venue:"River of Grass ArtsPark",date:"2026-09-27",time:"16:00:00",url:"https://www.ppines.com/Calendar.aspx?EID=8233&calType=0&day=30&month=9&year=2026",category:"Music",genre:"Live Music",desc:"Free all-ages pops concert by musicians and vocalists of the South Florida Symphony Orchestra. No tickets required.",tags:["Kids","Music","Family","Free"],emoji:"🎻",source:"City of Pembroke Pines"}
 ];
-
-export async function GET(request:NextRequest){
- const p=request.nextUrl.searchParams,postalCode=p.get("postalCode")||"33326",radius=p.get("radius")||"25",range=p.get("range")||"today",lat=p.get("lat"),lng=p.get("lng"),w=windowDates(range);
- const locals=localEvents.filter(e=>e.date>=w.startDate&&e.date<=w.endDate);
- let tm:any[]=[];const configured=Boolean(process.env.TICKETMASTER_API_KEY);
- if(configured){
-  const url=new URL("https://app.ticketmaster.com/discovery/v2/events.json");
-  url.searchParams.set("apikey",process.env.TICKETMASTER_API_KEY!);url.searchParams.set("countryCode","US");
-  url.searchParams.set("localStartEndDateTime",`${w.startDate}T00:00:00,${w.endDate}T23:59:59`);
-  url.searchParams.set("size","100");url.searchParams.set("sort","date,asc");
-  if(lat&&lng){url.searchParams.set("latlong",`${lat},${lng}`);url.searchParams.set("radius",radius);url.searchParams.set("unit","miles")}
-  else if(/^33\d{3}$/.test(postalCode)){url.searchParams.set("marketId","15")}
-  else{url.searchParams.set("postalCode",postalCode);url.searchParams.set("radius",radius);url.searchParams.set("unit","miles")}
-  try{
-   const r=await fetch(url.toString(),{cache:"no-store"});
-   if(r.ok){const d=await r.json();tm=(d?._embedded?.events||[]).map((event:any)=>{const v=event?._embedded?.venues?.[0],c=event.classifications?.[0],price=event.priceRanges?.[0],image=[...(event.images||[])].sort((a:any,b:any)=>(b.width||0)-(a.width||0))[0]?.url;return{id:event.id,title:event.name,city:[v?.city?.name,v?.state?.stateCode].filter(Boolean).join(", "),venue:v?.name||"",date:event.dates?.start?.localDate||"",time:event.dates?.start?.localTime||"",image:image||"",url:event.url||"",category:c?.segment?.name||"Event",genre:c?.genre?.name||"",minPrice:price?.min??null,source:"Ticketmaster"}})}
-  }catch{}
- }
- // Ticketmaster can occasionally return dates outside the requested window; enforce it ourselves.
- tm=tm.filter((e:any)=>e.date>=w.startDate&&e.date<=w.endDate);
- const seen=new Set<string>();
- const events=[...locals,...tm].filter((e:any)=>{const k=dedupeKey(e.title,e.venue,e.date);if(seen.has(k))return false;seen.add(k);return true}).slice(0,40);
- return NextResponse.json({events,configured,range,startDate:w.startDate,endDate:w.endDate,localCount:locals.length,ticketmasterCount:tm.length});
-}
+export async function GET(request:NextRequest){const p=request.nextUrl.searchParams,postalCode=p.get("postalCode")||"33326",radius=p.get("radius")||"25",range=p.get("range")||"today",lat=p.get("lat"),lng=p.get("lng"),w=windowDates(range),locals=localEvents.filter(e=>e.date>=w.startDate&&e.date<=w.endDate);let tm:any[]=[];const configured=Boolean(process.env.TICKETMASTER_API_KEY);if(configured){const url=new URL("https://app.ticketmaster.com/discovery/v2/events.json");url.searchParams.set("apikey",process.env.TICKETMASTER_API_KEY!);url.searchParams.set("countryCode","US");url.searchParams.set("localStartEndDateTime",`${w.startDate}T00:00:00,${w.endDate}T23:59:59`);url.searchParams.set("size","100");url.searchParams.set("sort","date,asc");if(lat&&lng){url.searchParams.set("latlong",`${lat},${lng}`);url.searchParams.set("radius",radius);url.searchParams.set("unit","miles")}else if(/^33\d{3}$/.test(postalCode)){url.searchParams.set("marketId","15")}else{url.searchParams.set("postalCode",postalCode);url.searchParams.set("radius",radius);url.searchParams.set("unit","miles")}try{const r=await fetch(url.toString(),{cache:"no-store"});if(r.ok){const d=await r.json();tm=(d?._embedded?.events||[]).map((event:any)=>{const v=event?._embedded?.venues?.[0],c=event.classifications?.[0],price=event.priceRanges?.[0],image=[...(event.images||[])].sort((a:any,b:any)=>(b.width||0)-(a.width||0))[0]?.url;return{id:event.id,title:event.name,city:[v?.city?.name,v?.state?.stateCode].filter(Boolean).join(", "),venue:v?.name||"",date:event.dates?.start?.localDate||"",time:event.dates?.start?.localTime||"",image:image||"",url:event.url||"",category:c?.segment?.name||"Event",genre:c?.genre?.name||"",minPrice:price?.min??null,tags:[],source:"Ticketmaster"}})}}catch{}}tm=tm.filter((e:any)=>e.date>=w.startDate&&e.date<=w.endDate);const seen=new Set<string>();const events=[...locals,...tm].filter((e:any)=>{const k=dedupeKey(e.title,e.venue,e.date);if(seen.has(k))return false;seen.add(k);return true}).slice(0,40);return NextResponse.json({events,configured,range,startDate:w.startDate,endDate:w.endDate,localCount:locals.length,ticketmasterCount:tm.length})}
