@@ -23,9 +23,31 @@ export async function GET(request: NextRequest) {
   url.searchParams.set("sort", "date,asc");
 
   try {
-    const response = await fetch(url.toString(), { next: { revalidate: 900 } });
-    if (!response.ok) throw new Error("Ticketmaster request failed");
-    const data = await response.json();
+    const response = await fetch(url.toString(), { cache: "no-store" });
+    const responseText = await response.text();
+
+    if (!response.ok) {
+      let ticketmasterError: unknown = responseText;
+      try {
+        ticketmasterError = JSON.parse(responseText);
+      } catch {
+        // Keep Ticketmaster's plain-text response if it is not JSON.
+      }
+
+      return NextResponse.json(
+        {
+          events: [],
+          configured: true,
+          message: "Ticketmaster API request failed.",
+          ticketmasterStatus: response.status,
+          ticketmasterStatusText: response.statusText,
+          ticketmasterError
+        },
+        { status: 502 }
+      );
+    }
+
+    const data = JSON.parse(responseText);
     const raw = data?._embedded?.events || [];
 
     const events = raw.map((event: any) => {
@@ -53,7 +75,15 @@ export async function GET(request: NextRequest) {
     });
 
     return NextResponse.json({ events, configured: true });
-  } catch {
-    return NextResponse.json({ events: [], configured: true, message: "Could not load live events right now." }, { status: 502 });
+  } catch (error) {
+    return NextResponse.json(
+      {
+        events: [],
+        configured: true,
+        message: "GoToday could not complete the Ticketmaster request.",
+        error: error instanceof Error ? error.message : String(error)
+      },
+      { status: 502 }
+    );
   }
 }
