@@ -2,7 +2,7 @@ import type { EventRecord } from "../ingestion/types";
 import {slug,stripHtml} from "../ingestion/utils";
 const URL="https://www.broward.org/parks/Events";
 const MONTHS=["january","february","march","april","may","june","july","august","september","october","november","december"];
-const BAD=/\b(meeting|hoa|advisory board|commission|adult soccer)\b/i;
+const BAD=/\b(meeting|hoa|advisory board|commission|adult soccer|after[- ]school|out[- ]of[- ]school|soccer academy|soccer skills|soccer clinics?|sport and social|walking club|league|weekly class)\b/i;
 function dateOf(text:string,year:number){const m=text.match(/\b(Jan(?:uary)?|Feb(?:ruary)?|Mar(?:ch)?|Apr(?:il)?|May|Jun(?:e)?|Jul(?:y)?|Aug(?:ust)?|Sep(?:tember)?|Oct(?:ober)?|Nov(?:ember)?|Dec(?:ember)?)\s+(\d{1,2})\b/i);if(!m)return"";const i=MONTHS.findIndex(x=>x.startsWith(m[1].toLowerCase().slice(0,3)));return year+"-"+String(i+1).padStart(2,"0")+"-"+m[2].padStart(2,"0")}
 function timeOf(text:string){const m=text.match(/\bTime\s+(\d{1,2})(?::(\d{2}))?\s*(AM|PM)\b/i)||text.match(/\b(\d{1,2})(?::(\d{2}))?\s*(AM|PM)\b/i);if(!m)return"";let h=+m[1];if(m[3].toUpperCase()==="PM"&&h<12)h+=12;if(m[3].toUpperCase()==="AM"&&h===12)h=0;return String(h).padStart(2,"0")+":"+(m[2]||"00")+":00"}
 function clean(s:string){return stripHtml(s).replace(/(?:flex-wrap|sm:|px-|py-|gap-|border-|bg-|aria-label|href=)[\s\S]*$/i,"").replace(/\s+/g," ").trim()}
