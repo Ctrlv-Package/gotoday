@@ -1,4 +1,4 @@
-import type { LocalEvent } from "./sunrise";
+import type { EventRecord as LocalEvent } from "../ingestion/types";
 const BLOCK=/board|commission|committee|hearing|advisory|meeting|budget|magistrate|planning and zoning/i;
 function decode(s:string){return s.replace(/&amp;/g,"&").replace(/&#39;|&apos;/g,"'").replace(/&quot;/g,'"').replace(/&nbsp;|&#160;/g," ").replace(/<[^>]+>/g," ").replace(/\s+/g," ").trim()}
 function toDate(s:string){const m=s.match(/(January|February|March|April|May|June|July|August|September|October|November|December)\s+(\d{1,2}),\s+(\d{4})/i);if(!m)return"";const months=["january","february","march","april","may","june","july","august","september","october","november","december"];return m[3]+"-"+String(months.indexOf(m[1].toLowerCase())+1).padStart(2,"0")+"-"+m[2].padStart(2,"0")}
