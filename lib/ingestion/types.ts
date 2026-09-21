@@ -1,0 +1,2 @@
+export type EventRecord={id:string;title:string;city:string;venue:string;date:string;time:string;endTime?:string;url:string;sourceUrl?:string;image?:string;category:string;genre:string;desc:string;tags:string[];emoji:string;source:string;priceText?:string;isFree?:boolean;lastVerified?:string};
+export type EventSource={name:string;type:string;url:string;priority:number;fetch:(startDate:string,endDate:string)=>Promise<EventRecord[]>};
