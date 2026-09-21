@@ -1,6 +1,7 @@
 import type { EventRecord } from "../ingestion/types";import {slug,stripHtml} from "../ingestion/utils";
 const BASE="https://www.goriverwalk.com";const CAL=BASE+"/events/greater-fort-lauderdale-event-calendar";
 const BLOCK=/\b(networking|board meeting|committee meeting|commission meeting|hearing)\b/i;
+const BAD_TITLE=/^(more(?:\.{3})?|artist|community|event link|add to calendar|ical|google|presented by|free|ongoing event|sep|oct|nov|dec)$/i;
 function ymd(s:string){const m=s.match(/(January|February|March|April|May|June|July|August|September|October|November|December)\s+(\d{1,2}),\s*(\d{4})/i);if(!m)return"";const ms=["january","february","march","april","may","june","july","august","september","october","november","december"];return m[3]+"-"+String(ms.indexOf(m[1].toLowerCase())+1).padStart(2,"0")+"-"+m[2].padStart(2,"0")}
 function time24(s:string){const m=s.match(/(\d{1,2}):(\d{2})\s*(am|pm)/i);if(!m)return"12:00:00";let h=+m[1];if(m[3].toLowerCase()==="pm"&&h<12)h+=12;if(m[3].toLowerCase()==="am"&&h===12)h=0;return String(h).padStart(2,"0")+":"+m[2]+":00"}
 function abs(u:string){try{return new URL(u,BASE).toString()}catch{return CAL}}
