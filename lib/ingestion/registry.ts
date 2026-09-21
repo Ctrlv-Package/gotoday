@@ -1,0 +1,10 @@
+import type { EventSource } from "./types";
+import { fetchSunriseEvents } from "../sources/sunrise";
+import { fetchPembrokePinesEvents } from "../sources/pembroke-pines";
+import { fetchRiverwalkEvents } from "../sources/riverwalk";
+export const sources:EventSource[]=[
+{name:"City of Sunrise",type:"official-city",url:"https://www.sunrisefl.gov/our-city/calendar-of-events",priority:100,fetch:fetchSunriseEvents},
+{name:"City of Pembroke Pines",type:"official-city",url:"https://www.ppines.com/Calendar.aspx",priority:100,fetch:fetchPembrokePinesEvents},
+{name:"Riverwalk Fort Lauderdale",type:"local-aggregator",url:"https://www.goriverwalk.com/events/greater-fort-lauderdale-event-calendar",priority:85,fetch:fetchRiverwalkEvents}
+];
+export const sourcePriority=(name:string)=>sources.find(s=>s.name===name)?.priority??40;
