@@ -1,4 +1,5 @@
-import type { EventRecord } from "../ingestion/types";\nexport type LocalEvent=EventRecord;
+import type { EventRecord } from "../ingestion/types";
+export type LocalEvent=EventRecord;
 const SOURCE="https://www.sunrisefl.gov/our-city/calendar-of-events";
 const BLOCK=/board|commission|committee|hearing|workshop|advisory|meeting|budget|development review|planning and zoning/i;
 function classify(title:string){const t=title.toLowerCase();if(/storytime|kids|family|festival|fishing/.test(t))return{category:"Family",tags:["Kids","Family","Local"],emoji:"🎉"};if(/basketball|fitness|soca|tournament/.test(t))return{category:"Sports",tags:["Sports","Local"],emoji:"🏀"};if(/comedy|theatre|gallery|exhibition|open mic/.test(t))return{category:"Arts & Theatre",tags:["Arts & Theatre","Local"],emoji:"🎭"};if(/market|food truck/.test(t))return{category:"Family",tags:["Family","Local"],emoji:"🍴"};return{category:"Local",tags:["Local"],emoji:"📍"}}
