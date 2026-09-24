@@ -1,5 +1,6 @@
 import Link from "next/link";
 import {db} from "../../../lib/db";
+import BackLink from "./BackLink";
 
 function decodeHtml(s:string){return s.replace(/&#(\d+);/g,(_,n)=>String.fromCharCode(Number(n))).replace(/&#x([0-9a-f]+);/gi,(_,n)=>String.fromCharCode(parseInt(n,16))).replace(/&amp;/g,"&").replace(/&quot;/g,'"').replace(/&apos;|&#39;/g,"'")}
 function parts(d:Date){const x=new Intl.DateTimeFormat("en-US",{timeZone:"America/New_York",weekday:"long",month:"long",day:"numeric",year:"numeric",hour:"numeric",minute:"2-digit"}).formatToParts(d);const v=(t:string)=>x.find(p=>p.type===t)?.value||"";return{day:v("weekday"),date:v("month")+" "+v("day")+", "+v("year"),time:v("hour")+":"+v("minute")+" "+v("dayPeriod")}}
@@ -15,7 +16,7 @@ export default async function EventPage({params}:{params:Promise<{id:string}>}){
  return <main style={{minHeight:"100vh",background:"linear-gradient(180deg,#f7f9ff 0%,#fff 55%)",color:"#111a35",fontFamily:"Arial,sans-serif"}}>
   <header style={{borderBottom:"1px solid #e7eaf2",background:"#fff"}}><div style={{...shell,height:72,display:"flex",alignItems:"center",justifyContent:"space-between"}}><Link href="/" style={{fontSize:24,fontWeight:800,textDecoration:"none",color:"#111a35"}}>Go<span style={{color:"#20a66a"}}>Today</span></Link><Link href="/" style={{color:"#526079",textDecoration:"none"}}>Explore events</Link></div></header>
   <div style={{...shell,paddingTop:36,paddingBottom:70}}>
-   <Link href="/" style={{color:"#526079",textDecoration:"none",fontWeight:600}}>← Back to events</Link>
+   <BackLink/>
    <section style={{marginTop:24,background:"#fff",border:"1px solid #e8ebf2",borderRadius:28,overflow:"hidden",boxShadow:"0 20px 60px rgba(18,30,62,.09)"}}>
     {e.image_url?<img src={e.image_url} alt="" style={{width:"100%",height:360,objectFit:"cover",display:"block"}}/>:<div style={{height:180,display:"flex",alignItems:"center",justifyContent:"center",fontSize:64,background:"linear-gradient(135deg,#14213d,#263a68)"}}>🎟️</div>}
     <div style={{padding:"34px 38px 40px"}}>
