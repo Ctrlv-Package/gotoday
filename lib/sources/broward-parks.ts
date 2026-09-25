@@ -1,10 +1,23 @@
-import type { EventRecord } from "../ingestion/types";
+import type {EventRecord} from "../ingestion/types";
 import {slug,stripHtml} from "../ingestion/utils";
-const SOURCE_URL="https://www.broward.org/parks/Events";
-const MONTHS=["january","february","march","april","may","june","july","august","september","october","november","december"];
-const BAD=/\b(meeting|hoa|advisory board|commission|adult soccer|after[- ]school|out[- ]of[- ]school|soccer academy|soccer skills|soccer clinics?|sport and social|walking club|league|weekly class)\b/i;
-function dateOf(text:string,year:number){const m=text.match(/\b(Jan(?:uary)?|Feb(?:ruary)?|Mar(?:ch)?|Apr(?:il)?|May|Jun(?:e)?|Jul(?:y)?|Aug(?:ust)?|Sep(?:tember)?|Oct(?:ober)?|Nov(?:ember)?|Dec(?:ember)?)\s+(\d{1,2})\b/i);if(!m)return"";const i=MONTHS.findIndex(x=>x.startsWith(m[1].toLowerCase().slice(0,3)));return year+"-"+String(i+1).padStart(2,"0")+"-"+m[2].padStart(2,"0")}
-function timeOf(text:string){const m=text.match(/\bTime\s+(\d{1,2})(?::(\d{2}))?\s*(AM|PM)\b/i)||text.match(/\b(\d{1,2})(?::(\d{2}))?\s*(AM|PM)\b/i);if(!m)return"";let h=+m[1];if(m[3].toUpperCase()==="PM"&&h<12)h+=12;if(m[3].toUpperCase()==="AM"&&h===12)h=0;return String(h).padStart(2,"0")+":"+(m[2]||"00")+":00"}
-function clean(s:string){return stripHtml(s).replace(/(?:flex-wrap|sm:|px-|py-|gap-|border-|bg-|aria-label|href=)[\s\S]*$/i,"").replace(/\s+/g," ").trim()}
-function classify(title:string,desc:string,price:string){const s=(title+" "+desc).toLowerCase(),tags:string[]=[];const kid=/\b(kids?|children|child|tots?|youth|family|pony|storytime|story|craft|after school|out-of-school)\b/.test(s);if(kid)tags.push("Kids","Family");if(/\bfree\b/i.test(price+" "+desc))tags.push("Free");if(/\b(art|craft|paint)\b/.test(s))tags.push("Arts & Theatre");if(/\b(soccer|basketball|bike|disc golf|sports?)\b/.test(s))tags.push("Sports");return tags}
-export async function fetchBrowardParkEvents(startDate:string,endDate:string):Promise<EventRecord[]>{try{const year=+startDate.slice(0,4),r=await fetch(SOURCE_URL,{next:{revalidate:1800}});if(!r.ok)return[];const html=await r.text(),out:EventRecord[]=[];const re=/<h3[^>]*>([\s\S]*?)<\/h3>([\s\S]*?)(?=<h3|$)/gi;for(const m of html.matchAll(re)){const title=clean(m[1]);if(!title||title.length<4||BAD.test(title))continue;const raw=m[2].slice(0,6000),text=stripHtml(raw),date=dateOf(text,year);if(!date||date<startDate||date>endDate)continue;const href=raw.match(/href=["']([^"']*[?]event=[^"']+)["']/i)?.[1];if(!href)continue;const url=new globalThis.URL(href,SOURCE_URL).toString();const location=clean((text.match(/Location\s*:?\s*([\s\S]*?)(?=View Details|$)/i)?.[1]||"").slice(0,140));const price=clean(text.match(/Price\s*:?\s*([^\n]{1,80})/i)?.[1]||"");let desc=clean(text.replace(title,"").replace(/Date\s+\w+\s+\d+/i,"").replace(/Time\s+\d{1,2}(?::\d{2})?\s*(?:AM|PM)(?:\s*-\s*\d{1,2}(?::\d{2})?\s*(?:AM|PM))?/i,"").replace(/Price\s+[^.]{0,60}/i,"").replace(/Location[\s\S]*/i,""));desc=desc.slice(0,360);const tags=classify(title,desc,price);out.push({id:"broward-parks-"+slug(title+"-"+date),title,city:location.match(/([A-Za-z .'-]+),\s*FL\b/)?.[0]||"Broward County, FL",venue:location||"Broward County Park",date,time:timeOf(text),url,sourceUrl:SOURCE_URL,category:tags.includes("Kids")?"Family":"Local",genre:"Parks & Recreation",desc,priceText:price,isFree:tags.includes("Free"),tags,emoji:tags.includes("Kids")?"🌳":"📍",source:"Broward County Parks"});if(out.length>=100)break}return out}catch{return[]}}
+const BASE="https://www.broward.org",SOURCE=BASE+"/parks/Events";
+const BAD=/\b(meeting|advisory|commission|hearing|weekly class|academy|lessons?|training|after[- ]school)\b/i;
+const MONTHS=["jan","feb","mar","apr","may","jun","jul","aug","sep","oct","nov","dec"];
+function dateOf(s:string,year:string){const m=s.match(/\b(Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)[a-z]*\s+(\d{1,2})\b/i);if(!m)return"";return year+"-"+String(MONTHS.indexOf(m[1].toLowerCase().slice(0,3))+1).padStart(2,"0")+"-"+m[2].padStart(2,"0")}
+function timeOf(s:string){const m=s.match(/\b(\d{1,2})(?::(\d{2}))?\s*(AM|PM)\b/i);if(!m)return"12:00:00";let h=+m[1];if(/PM/i.test(m[3])&&h<12)h+=12;if(/AM/i.test(m[3])&&h===12)h=0;return String(h).padStart(2,"0")+":"+(m[2]||"00")+":00"}
+function abs(u:string){try{return new URL(u.replace(/&amp;/g,"&"),BASE).toString()}catch{return""}}
+export async function fetchBrowardParkEvents(startDate:string,endDate:string):Promise<EventRecord[]>{try{
+ const r=await fetch(SOURCE,{next:{revalidate:1800}});if(!r.ok)return[];const h=await r.text(),year=startDate.slice(0,4),out:EventRecord[]=[];
+ const anchors=[...h.matchAll(/<a\b[^>]*href=["']([^"']*[?&]event=[^"']+)["'][^>]*>([\s\S]*?)<\/a>/gi)];
+ const urls=[...new Set(anchors.map(a=>abs(a[1])).filter(Boolean))];
+ for(const url of urls.slice(0,250)){const dr=await fetch(url,{next:{revalidate:1800}});if(!dr.ok)continue;const dh=await dr.text(),text=stripHtml(dh);
+  const title=(stripHtml(dh.match(/<h3[^>]*>([\s\S]*?)<\/h3>/i)?.[1]||"")||new URL(url).searchParams.get("event")?.replace(/-20\d{2}.*$/,"").replace(/-/g," ")||"").trim();if(title.length<4||BAD.test(title))continue;
+  const date=dateOf(text,year);if(!date||date<startDate||date>endDate)continue;
+  const venue=(text.match(/([A-Za-z0-9 .&'’/-]+(?:Park|Nature Center|Stadium|Stables|Center))\s+\d{2,6}\s/i)?.[1]||"Broward County Park").trim();
+  const addr=(text.match(/\d{2,6}\s+[^\n]{3,100}?(?:FL\s*)?\d{5}/i)?.[0]||"").trim();
+  const price=(text.match(/Price\s+(.{1,100}?)(?=\s(?:Join|Ages|View Details|Register|$))/i)?.[1]||"").trim(),free=/\bfree\b/i.test(price);
+  const family=/family|kids?|children|pony|nature|hike|festival|craft/i.test(title+" "+text.slice(0,1000)),sports=/sports?|soccer|tournament|run|5k/i.test(title);
+  out.push({id:"broward-parks-"+slug(title+"-"+date),title,city:"Broward County, FL",venue,address:addr,date,time:timeOf(text),url,sourceUrl:SOURCE,category:family?"Family":sports?"Sports":"Local",genre:"Parks & Recreation",desc:"Broward County Parks event.",priceText:price,isFree:free,tags:[...(family?["Family"]:[]),...(sports?["Sports"]:[]),...(free?["Free"]:[]),"Local"],emoji:family?"🌳":sports?"🏃":"📍",source:"Broward County Parks",eventType:"event"});
+ }
+ return out;
+}catch{return[]}}
