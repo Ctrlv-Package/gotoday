@@ -1,6 +1,6 @@
 import type {EventRecord} from "../ingestion/types";
 import {slug,stripHtml} from "../ingestion/utils";
-const SOURCE="https://www.plantation.org/government/departments/parks-recreation/events/-toggle-next30days";
+const SOURCE="https://www.plantation.org/i-want-to/advanced-components/list-detail-pages/calendar-meeting-list/-selcat-64/-sortn-EDate/-toggle-allupcoming/-sortd-asc";
 const BLOCK=/\b(board|commission|committee|hearing|workshop|advisory|meeting|budget|planning|zoning|orientation|essay contest)\b/i;
 function to24(s:string){const m=s.match(/(\d{1,2}):(\d{2})\s*(AM|PM)/i);if(!m)return"12:00:00";let h=+m[1];if(/PM/i.test(m[3])&&h<12)h+=12;if(/AM/i.test(m[3])&&h===12)h=0;return String(h).padStart(2,"0")+":"+m[2]+":00"}
 export async function fetchPlantationEvents(startDate:string,endDate:string):Promise<EventRecord[]>{try{
