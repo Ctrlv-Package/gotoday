@@ -1,6 +1,6 @@
 import type {EventRecord} from "../ingestion/types";
 import {stripHtml,slug} from "../ingestion/utils";
-const BASE="https://www.plantation.org",SOURCE=BASE+"/i-want-to/advanced-components/basic-pages/calendar-month-view";
+const BASE="https://www.plantation.org",SOURCE=BASE+"/government/departments/parks-recreation/events";
 const BLOCK=/\b(board|committee|hearing|meeting|selection committee|rfsp|itb no|bid|council|advisory|budget|planning|zoning)\b/i;
 function to24(s:string){const m=s.match(/(\d{1,2}):(\d{2})\s*(AM|PM)/i);if(!m)return"12:00:00";let h=+m[1];if(/PM/i.test(m[3])&&h<12)h+=12;if(/AM/i.test(m[3])&&h===12)h=0;return String(h).padStart(2,"0")+":"+m[2]+":00"}
 function abs(u:string){try{return new URL(u.replace(/&amp;/g,"&"),BASE).toString()}catch{return""}}
