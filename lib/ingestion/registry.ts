@@ -1,18 +1,43 @@
 import type { EventSource } from "./types";
+import { fetchCivicPlus } from "../sources/civicplus";
 import { fetchSunriseEvents } from "../sources/sunrise";
-import { fetchPembrokePinesEvents } from "../sources/pembroke-pines";
 import { fetchRiverwalkEvents } from "../sources/riverwalk";
 import { fetchBrowardParkEvents } from "../sources/broward-parks";
 import { fetchBrowardLibraryEvents } from "../sources/broward-library";
+import { fetchMiamiDadeLibraryEvents } from "../sources/miami-dade-library";
+import { fetchPalmBeachLibraryEvents } from "../sources/palm-beach-library";
 import { fetchPlantationEvents } from "../sources/plantation";
 import { fetchFortLauderdaleEvents } from "../sources/fort-lauderdale";
+import { fetchTicketmasterEvents } from "../sources/ticketmaster";
+
+// Preferred source order: JSON API > RSS/ICS feed > HTML scraping (last resort).
+const civic=(name:string,site:string,idPrefix:string,city:string)=>({
+ name,type:"official-city",url:site+"/Calendar.aspx",priority:100,
+ fetch:(s:string,e:string)=>fetchCivicPlus({site,source:name,idPrefix,city,venue:name},s,e)
+});
+
 export const sources:EventSource[]=[
-{name:"City of Sunrise",type:"official-city",url:"https://www.sunrisefl.gov/our-city/calendar-of-events",priority:100,fetch:fetchSunriseEvents},
-{name:"City of Pembroke Pines",type:"official-city",url:"https://www.ppines.com/Calendar.aspx",priority:100,fetch:fetchPembrokePinesEvents},
-{name:"Broward County Library",type:"official-county",url:"https://www.broward.org/library/events",priority:98,fetch:fetchBrowardLibraryEvents},
-{name:"Broward County Parks",type:"official-county",url:"https://www.broward.org/parks/Events",priority:95,fetch:fetchBrowardParkEvents},
-{name:"City of Plantation",type:"official-city",url:"https://www.plantation.org/government/departments/parks-recreation/events",priority:100,fetch:fetchPlantationEvents},
-{name:"City of Fort Lauderdale",type:"official-city",url:"https://www.fortlauderdale.gov/Explore-FTL/Event-Calendar",priority:100,fetch:fetchFortLauderdaleEvents},
-{name:"Riverwalk Fort Lauderdale",type:"local-aggregator",url:"https://www.goriverwalk.com/events/greater-fort-lauderdale-event-calendar",priority:85,fetch:fetchRiverwalkEvents}
+ // Official city calendars via CivicPlus RSS feeds (structured, include addresses)
+ civic("City of Hollywood","https://www.hollywoodfl.org","hollywood","Hollywood, FL"),
+ civic("City of Pembroke Pines","https://www.ppines.com","ppines","Pembroke Pines, FL"),
+ civic("City of Parkland","https://www.cityofparkland.org","parkland","Parkland, FL"),
+ civic("City of Hallandale Beach","https://www.cohb.org","hallandale","Hallandale Beach, FL"),
+ civic("Town of Davie","https://www.davie-fl.gov","davie","Davie, FL"),
+ civic("City of Margate","https://www.margatefl.com","margate","Margate, FL"),
+ civic("City of Deerfield Beach","https://www.deerfield-beach.com","deerfield","Deerfield Beach, FL"),
+ // County-wide and library JSON feeds
+ {name:"Broward County Library",type:"official-county",url:"https://broward.libnet.info/events",priority:98,fetch:fetchBrowardLibraryEvents},
+ {name:"Broward County Parks",type:"official-county",url:"https://www.broward.org/parks/Events",priority:95,fetch:fetchBrowardParkEvents},
+ {name:"Miami-Dade Public Library",type:"official-county",url:"https://mdpls.org/events",priority:90,fetch:fetchMiamiDadeLibraryEvents},
+ {name:"Palm Beach County Library",type:"official-county",url:"https://pbclibrary.bibliocommons.com/v2/events",priority:90,fetch:fetchPalmBeachLibraryEvents},
+ {name:"Riverwalk Fort Lauderdale",type:"local-aggregator",url:"https://www.goriverwalk.com/events/greater-fort-lauderdale-event-calendar",priority:85,fetch:fetchRiverwalkEvents},
+ // Supplemental ticketed inventory
+ {name:"Ticketmaster",type:"ticketing",url:"https://www.ticketmaster.com",priority:60,fetch:fetchTicketmasterEvents},
+ // Paused: these OpenCities sites return HTTP 403 to Vercel's servers (bot protection on cloud IPs).
+ // Re-enable once they run from a non-cloud IP or the city provides a feed.
+ {name:"City of Sunrise",type:"official-city",url:"https://www.sunrisefl.gov/our-city/calendar-of-events",priority:100,fetch:fetchSunriseEvents,enabled:false},
+ {name:"City of Plantation",type:"official-city",url:"https://www.plantation.org/government/departments/parks-recreation/events",priority:100,fetch:fetchPlantationEvents,enabled:false},
+ {name:"City of Fort Lauderdale",type:"official-city",url:"https://www.fortlauderdale.gov/Explore-FTL/Event-Calendar",priority:100,fetch:fetchFortLauderdaleEvents,enabled:false}
 ];
+export const activeSources=()=>sources.filter(s=>s.enabled!==false);
 export const sourcePriority=(name:string)=>sources.find(s=>s.name===name)?.priority??40;
