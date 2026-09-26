@@ -16,7 +16,7 @@ export async function fetchFortLauderdaleEvents(startDate:string,endDate:string)
   const src=SOURCE+`/-npage-${page}-670`;
   const r=await fetch(src,{next:{revalidate:1800}});if(!r.ok)continue;
   const h=await r.text();
-  const rows=[...h.matchAll(/<tr[^>]*>([\s\S]*?)<\/tr>/gi)];
+  const rows=[...h.matchAll(/<(?:tr|li|article)\\b[^>]*>([\\s\\S]*?)<\\/(?:tr|li|article)>/gi)];
   for(const row of rows){
    const rh=row[1],text=stripHtml(rh).replace(/\s+/g," ").trim();
    const date=dateOf(text);if(!date||date<startDate||date>endDate)continue;
@@ -28,5 +28,5 @@ export async function fetchFortLauderdaleEvents(startDate:string,endDate:string)
    out.push({id:"ftl-"+slug(title+"-"+date+"-"+timeOf(text)),title,city:"Fort Lauderdale, FL",venue:"Fort Lauderdale",date,time:timeOf(text),url,sourceUrl:src,category:family?"Family":arts?"Arts & Theatre":"Local",genre:"Local Event",desc:text.slice(0,500),tags:[...(family?["Family"]:[]),...(arts?["Arts & Theatre"]:[]),...(free?["Free"]:[]),"Local"],emoji:family?"🎉":arts?"🎵":"📍",source:"City of Fort Lauderdale",isFree:free,eventType:"event"});
   }
  }
- const seen=new Set<string>();return out.filter(e=>{const k=e.title+"|"+e.date+"|"+e.time;if(seen.has(k))return false;seen.add(k);return true});
-}catch{return[]}}
+ if(out.length===0)throw new Error("Fort Lauderdale calendar returned no extractable event records");\n const seen=new Set<string>();return out.filter(e=>{const k=e.title+"|"+e.date+"|"+e.time;if(seen.has(k))return false;seen.add(k);return true});
+}catch(e){throw e}}
