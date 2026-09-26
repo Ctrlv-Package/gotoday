@@ -9,6 +9,8 @@ import { fetchPalmBeachLibraryEvents } from "../sources/palm-beach-library";
 import { fetchPlantationEvents } from "../sources/plantation";
 import { fetchFortLauderdaleEvents } from "../sources/fort-lauderdale";
 import { fetchTicketmasterEvents } from "../sources/ticketmaster";
+import { fetchGovAccess } from "../sources/govaccess";
+import { fetchThrillshare } from "../sources/thrillshare";
 
 // Preferred source order: JSON API > RSS/ICS feed > HTML scraping (last resort).
 const civic=(name:string,site:string,idPrefix:string,city:string)=>({
@@ -25,9 +27,16 @@ export const sources:EventSource[]=[
  civic("Town of Davie","https://www.davie-fl.gov","davie","Davie, FL"),
  civic("City of Margate","https://www.margatefl.com","margate","Margate, FL"),
  civic("City of Deerfield Beach","https://www.deerfield-beach.com","deerfield","Deerfield Beach, FL"),
+ // Weston (Granicus govAccess: Special Events tiles + main calendar grid)
+ {name:"City of Weston",type:"official-city",url:"https://www.westonfl.org/about/events-calendar",priority:100,
+  fetch:(s,e)=>fetchGovAccess({site:"https://www.westonfl.org",source:"City of Weston",idPrefix:"weston",city:"Weston, FL",venue:"City of Weston",
+   tilePages:["/government/parks-and-recreation/special-events","/government/parks-and-recreation/special-events/-toggle-next30days"],calendarPaths:["/about/events-calendar"]},s,e)},
+ // Cooper City (Apptegy Thrillshare JSON API)
+ {name:"City of Cooper City",type:"official-city",url:"https://www.coopercity.gov/events",priority:100,
+  fetch:(s,e)=>fetchThrillshare({orgId:30103,source:"City of Cooper City",idPrefix:"coopercity",city:"Cooper City, FL",site:"https://www.coopercity.gov"},s,e)},
  // County-wide and library JSON feeds
  {name:"Broward County Library",type:"official-county",url:"https://broward.libnet.info/events",priority:98,fetch:fetchBrowardLibraryEvents},
- {name:"Broward County Parks",type:"official-county",url:"https://www.broward.org/parks/Events",priority:95,fetch:fetchBrowardParkEvents},
+ {name:"Broward County Parks",type:"official-county",url:"https://www.broward.org/parks/Events",priority:98,fetch:fetchBrowardParkEvents},
  {name:"Miami-Dade Public Library",type:"official-county",url:"https://mdpls.org/events",priority:90,fetch:fetchMiamiDadeLibraryEvents},
  {name:"Palm Beach County Library",type:"official-county",url:"https://pbclibrary.bibliocommons.com/v2/events",priority:90,fetch:fetchPalmBeachLibraryEvents},
  {name:"Riverwalk Fort Lauderdale",type:"local-aggregator",url:"https://www.goriverwalk.com/events/greater-fort-lauderdale-event-calendar",priority:85,fetch:fetchRiverwalkEvents},

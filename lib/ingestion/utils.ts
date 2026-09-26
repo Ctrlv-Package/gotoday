@@ -42,17 +42,19 @@ export const isAllAges=(e:EventRecord)=>(e.tags||[]).some(t=>/\b(everyone|all ag
 // "Is this something a normal person might decide to go do?" Rules look at the TITLE and TAGS,
 // not boilerplate descriptions ("registration required", "ages 3-5" are not reasons to reject).
 const EVENT_TITLE=/\b(festival|fest|fair|concert|show|performance|celebration|celebrate|heritage|holiday|halloween|trunk[- ]or[- ]treat|parade|carnival|market|movie|film|screening|exhibit(ion)?|author|story ?time|storytelling|open house|block party|fireworks|jazz|symphony|orchestra|comedy|theat(re|er)|puppet|magic|dance party|tournament|game night)\b/i;
+const ANNOUNCEMENT=/^(labor day|patriot day|memorial day|veterans'? day|thanksgiving( day)?|christmas( day| eve)?|new year'?s( day| eve)?|independence day|martin luther king.*day|presidents'? day|juneteenth|columbus day|indigenous peoples'? day|good friday|election day|rosh hashanah|yom kippur)$|\b(closed|closure|office hours|registration (opens|closes|deadline)|deadline|applications? (due|open)|no school|early release|contest registration)\b/i;
 const MEETING=/\b(board|commission|committee|council|hearing|advisory|magistrate|zoning|budget|bargaining|public meeting|town hall|pre-?bid|special meeting|workshop session)\b/i;
 const PASSIVE=/\b(grab (?:and|&) go|information table|take (?:it )?(?:and|&) make|take[- ]home craft|photo op|word search|display case|coloring station|self[- ]guided|seed library)\b/i;
 const SERVICE=/\b(esl|english (?:cafe|café|conversation|class(?:es)?|lessons?|practice)|as a second language|conversation (?:group|club|practice)|citizenship|naturalization|vita\b|tax (?:help|assistance|prep)|ged\b|test prep|sat\/act|tutor(?:ing)?|homework help|resume|job (?:search|help|seekers?)|career (?:coach|help|counsel)|computer (?:class|basics|help|lab)|tech help|one[- ]on[- ]one|support group|nami\b|al-?anon|alcoholics|narcotics|grief|caregiver|blood pressure|health screening|medicare|legal (?:aid|help|clinic)|notary|passport|proctor|meeting room|study room|early voting|voting site|election site|polling|career\/business|mental health)\b/i;
 const FITNESS=/\b(zumba|yoga|tai chi|pilates|hiit|insanity|fitness|aerobics|cardio|chair exercise|strength training|boot ?camp|meditation|stretch(ing)?|line dancing class|pickleball lessons?)\b/i;
-const INSTRUCTION=/\b(class(es)?|course|lessons?|clinic|academy|practice|league|open gym|after[- ]school|registration|enrollment|orientation|certification|training|intermediate|beginners?)\b/i;
+const INSTRUCTION=/\b(class(es)?|course|lessons?|instructional|clinic|academy|practice|league|open gym|after[- ]school|registration|enrollment|orientation|certification|training|intermediate|beginners?)\b/i;
 
-export type DiscoveryReason="meeting"|"passive-display"|"service-or-support"|"fitness-class"|"recurring-instruction"|"marked-ineligible";
+export type DiscoveryReason="announcement"|"meeting"|"passive-display"|"service-or-support"|"fitness-class"|"recurring-instruction"|"marked-ineligible";
 export function discoveryRejection(e:EventRecord):DiscoveryReason|null{
  if(e.isDiscoveryEligible===false)return"marked-ineligible";
  const title=e.title.replace(/\bboard[- ]?games?\b/gi,"games");
  const tagText=(e.tags||[]).join(" | ");
+ if(ANNOUNCEMENT.test(title.trim()))return"announcement";
  if(MEETING.test(title))return"meeting";
  if(e.isDiscoveryEligible===true)return null; // curated sources (Ticketmaster) skip the rest
  if(PASSIVE.test(title)||PASSIVE.test(tagText))return"passive-display";
