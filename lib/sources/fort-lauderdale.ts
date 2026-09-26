@@ -2,7 +2,7 @@ import type {EventRecord} from "../ingestion/types";
 import {slug,stripHtml} from "../ingestion/utils";
 
 const BASE="https://www.fortlauderdale.gov";
-const SOURCE=BASE+"/government/departments-i-z/strategic-communications/event-calendar-list-view/-toggle-allupcoming-670/-sortn-EDate-670/-sortd-asc-670";
+const SOURCE=BASE+"/government/departments-i-z/strategic-communications/event-calendar-list-view/-toggle-allupcoming/-sortn-EDate-670/-sortd-asc-670";
 const BAD=/\b(board|commission|committee|advisory|meeting|hearing|webinar|king tides|waste|drop-off|certificate of use|bargaining session|magistrate|development review|code enforcement)\b/i;
 const MONTHS=["january","february","march","april","may","june","july","august","september","october","november","december"];
 
