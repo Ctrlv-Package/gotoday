@@ -28,5 +28,6 @@ export async function fetchFortLauderdaleEvents(startDate:string,endDate:string)
    out.push({id:"ftl-"+slug(title+"-"+date+"-"+timeOf(text)),title,city:"Fort Lauderdale, FL",venue:"Fort Lauderdale",date,time:timeOf(text),url,sourceUrl:src,category:family?"Family":arts?"Arts & Theatre":"Local",genre:"Local Event",desc:text.slice(0,500),tags:[...(family?["Family"]:[]),...(arts?["Arts & Theatre"]:[]),...(free?["Free"]:[]),"Local"],emoji:family?"🎉":arts?"🎵":"📍",source:"City of Fort Lauderdale",isFree:free,eventType:"event"});
   }
  }
- if(out.length===0)throw new Error("Fort Lauderdale calendar returned no extractable event records");\n const seen=new Set<string>();return out.filter(e=>{const k=e.title+"|"+e.date+"|"+e.time;if(seen.has(k))return false;seen.add(k);return true});
+ if(out.length===0)throw new Error("Fort Lauderdale calendar returned no extractable event records");
+ const seen=new Set<string>();return out.filter(e=>{const k=e.title+"|"+e.date+"|"+e.time;if(seen.has(k))return false;seen.add(k);return true});
 }catch(e){throw e}}
