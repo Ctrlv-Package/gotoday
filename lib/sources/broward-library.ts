@@ -8,7 +8,7 @@ function datePart(v:unknown){const s=String(v||"");const m=s.match(/(20\\d{2})-(
 function timePart(v:unknown){const s=String(v||"");const m=s.match(/(?:T|\\s)(\\d{1,2}):(\\d{2})(?::(\\d{2}))?/);return m?`${m[1].padStart(2,"0")}:${m[2]}:${m[3]||"00"}`:"12:00:00"}
 function arr(v:unknown):string[]{return Array.isArray(v)?v.map(x=>String(x).trim()).filter(Boolean):[]}
 function eventUrl(e:any){const raw=String(e.url||"").trim();if(raw){try{return new URL(raw,SOURCE).toString()}catch{}}return e.id?`https://broward.libnet.info/event/${e.id}`:""}
-function imageUrl(e:any){const raw=String(e.image||"").trim();if(!raw)return undefined;if(/^https?:\\/\\//i.test(raw))return raw;return `https://static.libnet.info/images/events/broward/${raw.replace(/^\\/+/, "")}`}
+function imageUrl(e:any){const raw=String(e.image||"").trim();if(!raw)return undefined;if(/^https?:\/\//i.test(raw))return raw;return `https://static.libnet.info/images/events/broward/${raw.replace(/^\/+/, "")}`}
 
 export async function fetchBrowardLibraryEvents(startDate:string,endDate:string):Promise<EventRecord[]>{
  const days=Math.max(1,Math.min(62,Math.ceil((Date.parse(endDate+"T12:00:00Z")-Date.parse(startDate+"T12:00:00Z"))/86400000)+1));
