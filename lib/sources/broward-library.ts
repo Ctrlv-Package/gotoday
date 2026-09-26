@@ -10,6 +10,23 @@ function arr(v:unknown):string[]{return Array.isArray(v)?v.map(x=>String(x).trim
 function eventUrl(e:any){const raw=String(e.url||"").trim();if(raw){try{return new URL(raw,SOURCE).toString()}catch{}}return e.id?`https://broward.libnet.info/event/${e.id}`:""}
 function imageUrl(e:any){const raw=String(e.image||"").trim();if(!raw)return undefined;if(/^https?:\/\//i.test(raw))return raw;return `https://static.libnet.info/images/events/broward/${raw.replace(/^\/+/, "")}`}
 
+
+// Map branch names to their city so distance filtering works (the feed has no addresses).
+const BRANCH_CITY:[RegExp,string][]=[
+ [/north regional|broward college.*north/i,"Coconut Creek, FL"],[/northwest regional/i,"Coral Springs, FL"],
+ [/southwest regional|south regional|pembroke pines/i,"Pembroke Pines, FL"],[/west regional/i,"Plantation, FL"],
+ [/main library|african american research|riverland|fort lauderdale|galt ocean|imperial point/i,"Fort Lauderdale, FL"],
+ [/nova southeastern|alvin sherman|davie/i,"Davie, FL"],[/miramar/i,"Miramar, FL"],[/weston/i,"Weston, FL"],
+ [/sunrise/i,"Sunrise, FL"],[/hollywood/i,"Hollywood, FL"],[/pompano/i,"Pompano Beach, FL"],
+ [/hallandale/i,"Hallandale Beach, FL"],[/lauderdale lakes/i,"Lauderdale Lakes, FL"],[/lauderhill/i,"Lauderhill, FL"],
+ [/dania/i,"Dania Beach, FL"],[/tamarac/i,"Tamarac, FL"],[/margate/i,"Margate, FL"],[/deerfield/i,"Deerfield Beach, FL"],
+ [/coral springs/i,"Coral Springs, FL"],[/coconut creek/i,"Coconut Creek, FL"],[/plantation/i,"Plantation, FL"],
+ [/oakland park/i,"Oakland Park, FL"],[/lighthouse point/i,"Lighthouse Point, FL"],[/cooper city/i,"Cooper City, FL"],
+ [/pembroke park|west park/i,"West Park, FL"],[/hillsboro|century plaza/i,"Deerfield Beach, FL"],[/north lauderdale/i,"North Lauderdale, FL"],
+ [/wilton manors/i,"Wilton Manors, FL"],[/parkland/i,"Parkland, FL"],[/beach branch/i,"Hollywood, FL"]
+];
+function branchCity(venue:string){for(const [rx,city] of BRANCH_CITY)if(rx.test(venue))return city;return "Broward County, FL"}
+
 export async function fetchBrowardLibraryEvents(startDate:string,endDate:string):Promise<EventRecord[]>{
  const days=Math.max(1,Math.min(62,Math.ceil((Date.parse(endDate+"T12:00:00Z")-Date.parse(startDate+"T12:00:00Z"))/86400000)+1));
  const req=JSON.stringify({private:false,date:startDate,days,locations:[],ages:[],types:[]});
@@ -31,7 +48,7 @@ export async function fetchBrowardLibraryEvents(startDate:string,endDate:string)
   const free=String(e.registration_cost??"0")==="0";
   const url=eventUrl(e);if(!url)continue;
   const venue=String(e.library??e.location??e.branch??"Broward County Library").trim()||"Broward County Library";
-  out.push({id:"bcl-"+id,title,city:"Broward County, FL",venue,date,time:timePart(start),endTime:timePart(e.raw_end_time??e.end_time??e.end),url,sourceUrl:src,image:imageUrl(e),category:family?"Family":arts?"Arts & Theatre":"Local",genre:"Library Event",desc:stripHtml(String(e.description??e.desc??"Broward County Library event.")).replace(/\s+/g," ").trim().slice(0,1000),tags:[...all,...(family?["Family"]:[]),...(free?["Free"]:[]),"Library"],emoji:family?"📚":arts?"🎨":"📍",source:"Broward County Library",priceText:free?"Free":String(e.registration_cost||""),isFree:free,eventType:"event"});
+  out.push({id:"bcl-"+id,title,city:branchCity(venue),venue,date,time:timePart(start),endTime:timePart(e.raw_end_time??e.end_time??e.end),url,sourceUrl:src,image:imageUrl(e),category:family?"Family":arts?"Arts & Theatre":"Local",genre:"Library Event",desc:stripHtml(String(e.description??e.desc??"Broward County Library event.")).replace(/\s+/g," ").trim().slice(0,1000),tags:[...all,...(family?["Family"]:[]),...(free?["Free"]:[]),"Library"],emoji:family?"📚":arts?"🎨":"📍",source:"Broward County Library",priceText:free?"Free":String(e.registration_cost||""),isFree:free,eventType:"event"});
  }
  const seen=new Set<string>();return out.filter(e=>{if(seen.has(e.id))return false;seen.add(e.id);return true});
 }
