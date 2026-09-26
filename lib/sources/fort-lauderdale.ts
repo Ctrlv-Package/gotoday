@@ -16,7 +16,7 @@ export async function fetchFortLauderdaleEvents(startDate:string,endDate:string)
   const src=SOURCE+`/-npage-${page}-670`;
   const r=await fetch(src,{next:{revalidate:1800}});if(!r.ok)continue;
   const h=await r.text();
-  const rows=[...h.matchAll(/<(?:tr|li|article)\\b[^>]*>([\\s\\S]*?)<\\/(?:tr|li|article)>/gi)];
+  const rows=[...h.matchAll(/<tr[^>]*>([\\s\\S]*?)<\\/tr>/gi)];
   for(const row of rows){
    const rh=row[1],text=stripHtml(rh).replace(/\s+/g," ").trim();
    const date=dateOf(text);if(!date||date<startDate||date>endDate)continue;
