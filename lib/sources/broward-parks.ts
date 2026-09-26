@@ -11,7 +11,7 @@ export async function fetchBrowardParkEvents(startDate:string,endDate:string):Pr
  const anchors=[...h.matchAll(/<a\b[^>]*href=["']([^"']*[?&]event=[^"']+)["'][^>]*>([\s\S]*?)<\/a>/gi)];
  const urls=[...new Set(anchors.map(a=>abs(a[1])).filter(Boolean))];
  for(const url of urls.slice(0,250)){const dr=await fetch(url,{next:{revalidate:1800}});if(!dr.ok)continue;const dh=await dr.text(),text=stripHtml(dh);
-  const title=(stripHtml(dh.match(/<h3[^>]*>([\s\S]*?)<\/h3>/i)?.[1]||"")||new URL(url).searchParams.get("event")?.replace(/-20\d{2}.*$/,"").replace(/-/g," ")||"").trim();if(title.length<4||BAD.test(title))continue;
+  const slugTitle=(new URL(url).searchParams.get("event")||"").replace(/-20\d{2}.*$/,"").replace(/-/g," ").replace(/\b\w/g,x=>x.toUpperCase());const heading=stripHtml(dh.match(/<h3[^>]*>([\s\S]*?)<\/h3>/i)?.[1]||"").trim();const title=(heading&&!/^About This Event$/i.test(heading)?heading:slugTitle).trim();if(title.length<4||BAD.test(title))continue;
   const date=dateOf(text,year);if(!date||date<startDate||date>endDate)continue;
   const venue=(text.match(/([A-Za-z0-9 .&'’/-]+(?:Park|Nature Center|Stadium|Stables|Center))\s+\d{2,6}\s/i)?.[1]||"Broward County Park").trim();
   const addr=(text.match(/\d{2,6}\s+[^\n]{3,100}?(?:FL\s*)?\d{5}/i)?.[0]||"").trim();
