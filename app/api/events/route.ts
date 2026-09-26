@@ -1,6 +1,8 @@
 import { db } from "../../../lib/db";
+import { ensureSchema } from "../../../lib/schema";
 import { NextRequest, NextResponse } from "next/server";
 function decodeHtml(s:string){return s.replace(/&#(\d+);/g,(_,n)=>String.fromCharCode(Number(n))).replace(/&#x([0-9a-f]+);/gi,(_,n)=>String.fromCharCode(parseInt(n,16))).replace(/&amp;/g,"&").replace(/&quot;/g,'"').replace(/&apos;|&#39;/g,"'")}
+function collapseKey(title:string,date:string){return [title.toLowerCase().replace(/&/g,"and").replace(/[^a-z0-9]+/g," ").trim(),date].join("|")}
 function dedupeKey(title:string,venue:string,date:string){return [title.toLowerCase().replace(/[^a-z0-9]+/g," ").trim(),venue.toLowerCase().trim(),date].join("|")}
 const CITY_COORDS:Record<string,[number,number]>={
 "Sunrise, FL":[26.16697,-80.25659],"Pembroke Pines, FL":[26.00777,-80.29626],"Hollywood, FL":[26.0112,-80.14949],
@@ -28,10 +30,11 @@ function windowDates(range:string){const parts=new Intl.DateTimeFormat("en-US",{
 
 async function zipCoords(zip:string):Promise<[number,number]|null>{if(!/^\d{5}$/.test(zip))return null;try{const r=await fetch(`https://api.zippopotam.us/us/${zip}`,{next:{revalidate:2592000}});if(!r.ok)return null;const d=await r.json(),p=d?.places?.[0],la=Number(p?.latitude),lo=Number(p?.longitude);return Number.isFinite(la)&&Number.isFinite(lo)?[la,lo]:null}catch{return null}}
 async function databaseEvents(startDate:string,endDate:string){
- const {rows}=await db.query("select e.id,e.title,e.description,e.start_at,e.city,e.category,e.genre,e.tags,e.is_free,e.price_text,e.image_url,e.official_url,e.source_url,s.name as source,v.name as venue,v.latitude,v.longitude from events e join sources s on s.id=e.source_id left join venues v on v.id=e.venue_id where e.status='active' and e.start_at::date between $1::date and $2::date order by e.start_at asc",[startDate,endDate]);
+ await ensureSchema();
+ const {rows}=await db.query("select e.id,e.title,e.description,e.start_at,e.city,e.category,e.genre,e.tags,e.is_free,e.price_text,e.image_url,e.official_url,e.source_url,e.age_min,e.age_max,s.name as source,v.name as venue,v.latitude,v.longitude from events e join sources s on s.id=e.source_id left join venues v on v.id=e.venue_id where e.status='active' and e.start_at::date between $1::date and $2::date order by e.start_at asc",[startDate,endDate]);
  const formatter=new Intl.DateTimeFormat("en-CA",{timeZone:"America/New_York",year:"numeric",month:"2-digit",day:"2-digit",hour:"2-digit",minute:"2-digit",second:"2-digit",hour12:false});
  const value=(ps:Intl.DateTimeFormatPart[],t:string)=>ps.find(x=>x.type===t)?.value||"";
- return rows.map((r:any)=>{const ps=formatter.formatToParts(new Date(r.start_at));return{id:"db-"+r.id,title:decodeHtml(r.title||""),city:r.city||"",venue:decodeHtml(r.venue||""),date:value(ps,"year")+"-"+value(ps,"month")+"-"+value(ps,"day"),time:value(ps,"hour")+":"+value(ps,"minute")+":"+value(ps,"second"),image:r.image_url||"",url:r.official_url||"",sourceUrl:r.source_url||"",category:r.category||"Local",genre:r.genre||"",desc:decodeHtml(r.description||""),tags:Array.isArray(r.tags)?r.tags:[],emoji:"🎟️",source:r.source,priceText:r.price_text||undefined,isFree:Boolean(r.is_free),latitude:r.latitude==null?undefined:Number(r.latitude),longitude:r.longitude==null?undefined:Number(r.longitude)}});
+ return rows.map((r:any)=>{const ps=formatter.formatToParts(new Date(r.start_at));return{id:"db-"+r.id,title:decodeHtml(r.title||""),city:r.city||"",venue:decodeHtml(r.venue||""),date:value(ps,"year")+"-"+value(ps,"month")+"-"+value(ps,"day"),time:(()=>{const t=value(ps,"hour").replace(/^24$/,"00")+":"+value(ps,"minute")+":"+value(ps,"second");return t==="00:00:00"?"":t})(),image:r.image_url||"",url:r.official_url||"",sourceUrl:r.source_url||"",category:r.category||"Local",genre:r.genre||"",desc:decodeHtml(r.description||""),tags:Array.isArray(r.tags)?r.tags:[],emoji:"🎟️",source:r.source,priceText:r.price_text||undefined,isFree:Boolean(r.is_free),ageMin:r.age_min==null?undefined:Number(r.age_min),ageMax:r.age_max==null?undefined:Number(r.age_max),latitude:r.latitude==null?undefined:Number(r.latitude),longitude:r.longitude==null?undefined:Number(r.longitude)}});
 }
 export async function GET(request:NextRequest){
  const p=request.nextUrl.searchParams,postalCode=p.get("postalCode")||"33326",radius=p.get("radius")||"25",range=p.get("range")||"today",w=windowDates(range);
@@ -40,8 +43,9 @@ export async function GET(request:NextRequest){
  if(!lat||!lng){const c=await zipCoords(postalCode);[lat,lng]=(c||[26.12,-80.25]).map(String) as [string,string]}
  let events:any[]=(await databaseEvents(w.startDate,w.endDate)).filter((e:any)=>localWithinRadius(e,lat,lng,radius));
  if(range==="today"){const np=new Intl.DateTimeFormat("en-US",{timeZone:"America/New_York",hour:"2-digit",minute:"2-digit",hour12:false}).formatToParts(new Date());const nowTime=(np.find(x=>x.type==="hour")?.value||"00").replace(/^24$/,"00")+":"+(np.find(x=>x.type==="minute")?.value||"00")+":00";events=events.filter((e:any)=>!e.time||e.time==="00:00:00"||e.time>=nowTime)}
- const seen=new Set<string>();
- events=events.filter((e:any)=>{const k=dedupeKey(e.title,e.venue,e.date);if(seen.has(k))return false;seen.add(k);return true})
+ const groups=new Map<string,any[]>();
+ for(const e of events){const k=collapseKey(e.title,e.date);const g=groups.get(k);g?g.push(e):groups.set(k,[e])}
+ events=[...groups.values()].map(g=>{g.sort((a:any,b:any)=>(a.distanceMiles??999)-(b.distanceMiles??999)||((a.source==="Ticketmaster"?1:0)-(b.source==="Ticketmaster"?1:0)));const venues=new Set(g.map((x:any)=>x.venue));return{...g[0],moreLocations:venues.size-1,otherVenues:[...venues].slice(1,6)}})
   // Local inventory first, Ticketmaster supplemental; then soonest.
   .sort((a:any,b:any)=>(a.date+(a.time||"")).localeCompare(b.date+(b.time||""))||((a.source==="Ticketmaster"?1:0)-(b.source==="Ticketmaster"?1:0)));
  const localCount=events.filter((e:any)=>e.source!=="Ticketmaster").length;
