@@ -1,6 +1,6 @@
 import type {EventRecord} from "./types";
 const BAD_TEXT=/\b(map agenda|submit event|print email|event subscription|rss feeds|select on calendar|javascript|calendarEvent|moduleContent|view all calendars|notify me)\b/i;
-const BAD_TITLE=/^(more details?|event details?|details?|read more|view details?|learn more|click here|cultural|community|artist|free|ongoing event)$/i;
+const BAD_TITLE=/^(more details?|event details?|details?|read more|view details?|learn more|click here|cultural|community|artist|free|ongoing event|the city of .+ official site|city of .+ official site|calendar of events|calendar month view|about this event)$/i;
 function http(u?:string){if(!u)return false;try{const x=new URL(u);return x.protocol==="https:"||x.protocol==="http:"}catch{return false}}
 export function validationErrors(e:EventRecord){const errors:string[]=[];if(!e.title||e.title.trim().length<4||e.title.length>140||BAD_TEXT.test(e.title)||BAD_TITLE.test(e.title.trim()))errors.push("title");if(!/^\d{4}-\d{2}-\d{2}$/.test(e.date||""))errors.push("date");if(e.time&&!/^\d{2}:\d{2}(:\d{2})?$/.test(e.time))errors.push("time");if(!e.venue||e.venue.length>120||BAD_TEXT.test(e.venue))errors.push("venue");if(!http(e.url))errors.push("url");if(e.desc&&BAD_TEXT.test(e.desc))errors.push("description");return errors}
 export function isValidEvent(e:EventRecord){return validationErrors(e).length===0}
