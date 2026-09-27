@@ -38,7 +38,9 @@ async function probe(c:Cand):Promise<Found[]>{
 
  // LibCal (Springshare) — detected, adapter not built yet
  const libcal=html.match(/https?:\/\/([a-z0-9-]+)\.libcal\.com/i)?.[1];
- if(libcal)out.push({input:arg,platform:"libcal",confidence:"likely",note:`LibCal site ${libcal}.libcal.com (adapter not built yet; has iCal feeds)`});
+ if(libcal){const t=await get(`https://${libcal}.libcal.com/ajax/calendar/list?c=-1&date=0000-00-00&perpage=1&page=1&audience=&cats=&camps=&inc=0`);
+  const n=(()=>{try{return Number(JSON.parse(t.text)?.total_results)||0}catch{return 0}})();
+  out.push({input:arg,platform:"libcal",confidence:n?"confirmed":"likely",note:`${n} upcoming events`,config:{name,platform:"libcal",params:{site:libcal,defaultVenue:name,defaultCity:city||undefined},source_type:"official-city",url:`https://${libcal}.libcal.com/calendar`}})}
 
  // CivicPlus / CivicEngage: calendar RSS feed
  {const t=await get(`${origin}/RSSFeed.aspx?ModID=58&CID=All-calendar.xml`),items=(t.text.match(/<item\b/gi)||[]).length;
@@ -52,9 +54,9 @@ async function probe(c:Cand):Promise<Found[]>{
 
  // Granicus OpenCities
  if(/OpenCities/i.test(html)){
-  const list=[...new Set([...html.matchAll(/href="([^"]*Event[s]?-?Calendar[^"]*)"/gi)].map(x=>x[1]))][0];
-  out.push({input:arg,platform:"opencities",confidence:"likely",note:`event list ${list||"(find the Events page)"}; check how its pager builds page 2 (pageUrlTemplate)`,
-   config:{name,platform:"opencities",params:{listUrl:list?new URL(list,origin).toString():"",eventPath:list?new URL(list,origin).pathname:"",city},url:list?new URL(list,origin).toString():origin}})}
+  const list=[...new Set([...html.matchAll(/href="([^"]*(?:Event[s]?-?Calendar|Events-directory|\/Events)(?:["?\/])?[^"]*)"/gi)].map(x=>x[1]).filter(h=>!/\/-|\.(pdf|jpg|png)$/i.test(h)))][0];
+  out.push({input:arg,platform:"opencities",confidence:"likely",note:`event list ${list||"(find the Events page)"}; OpenCities sites usually block cloud servers, so save with remote:true`,
+   config:{name,platform:"opencities",remote:true,params:{listUrl:list?new URL(list,origin).toString():"",city},url:list?new URL(list,origin).toString():origin}})}
 
  // Apptegy Thrillshare
  const org=html.match(/thrillshare[^"']*\/o\/(\d+)|"organization_id"\s*:\s*(\d+)|secondary_org=(\d+)/i);
@@ -86,6 +88,8 @@ async function main(){
  const all:(Found&{saved?:string})[]=[];
  for(const c of cands){
   const f:Found[]=await probe(c).catch(e=>[{input:c.name||c.url,platform:"error",confidence:"likely",note:String(e?.message||e)}]);
+  // One site can run several products (a city calendar plus its library's); keep their saved names distinct.
+  if(f.filter(x=>x.config).length>1)for(const x of f)if(x.config&&/^(communico|bibliocommons|libcal)$/.test(x.platform)&&!/librar/i.test(x.config.name))x.config.name=`${x.config.name.replace(/^(City|Town|Village) of /i,"")} Public Library`;
   for(const x of f){
    let saved:string|undefined;
    if(doSave&&x.config&&x.confidence==="confirmed")saved=await save(x,c).catch(e=>`not saved: ${e?.message||e}`);

@@ -6,6 +6,7 @@ import {fetchBiblioCommons} from "../sources/bibliocommons";
 import {fetchCivicPlus} from "../sources/civicplus";
 import {fetchGovAccess} from "../sources/govaccess";
 import {fetchOpenCities} from "../sources/opencities";
+import {fetchLibCal} from "../sources/libcal";
 import {fetchThrillshare} from "../sources/thrillshare";
 import {fetchTicketmasterEvents} from "../sources/ticketmaster";
 import {fetchBrowardParkEvents} from "../sources/broward-parks";
@@ -19,23 +20,30 @@ type Params=Record<string,any>;
 type Meta={name:string};
 
 const CITY_MAPS:Record<string,(venue:string)=>string>={broward:browardBranchCity,"miami-dade":miamiDadeBranchCity};
+/** Branch -> city lookup from params: cityMap (built-in) or branchCities [[regex,city],...], else defaultCity. */
+function cityLookup(p:Params){
+ if(CITY_MAPS[p.cityMap])return CITY_MAPS[p.cityMap];
+ const pairs:[RegExp,string][]=(p.branchCities||[]).map(([r,c]:[string,string])=>[new RegExp(r,"i"),c]);
+ return(v:string)=>{for(const [r,c] of pairs)if(r.test(v))return c;return p.defaultCity||""};
+}
 const need=(p:Params,...keys:string[])=>{for(const k of keys)if(p[k]==null||p[k]==="")throw new Error(`Missing param "${k}"`)};
 const rx=(s?:string)=>s?new RegExp(s,"i"):undefined;
 
 export const PLATFORMS:Record<string,{describe:string;params:string;build:(p:Params,m:Meta)=>Fetcher}>={
- communico:{describe:"Communico library calendars (*.libnet.info)",params:"client, defaultVenue, defaultCity | cityMap (broward|miami-dade) | branchCities [[regex,city]], siteUrl?",
+ communico:{describe:"Communico library calendars (*.libnet.info)",params:"client, defaultVenue, defaultCity | cityMap (broward|miami-dade) | branchCities [[regex,city]], siteUrl?, baseUrl? (custom domain)",
   build:(p,m)=>{need(p,"client");
-   const pairs:[RegExp,string][]=(p.branchCities||[]).map(([r,c]:[string,string])=>[new RegExp(r,"i"),c]);
-   const cityFor=CITY_MAPS[p.cityMap]||((v:string)=>{for(const [r,c] of pairs)if(r.test(v))return c;return p.defaultCity||""});
-   return(s,e)=>fetchCommunico({client:p.client,source:m.name,idPrefix:p.idPrefix||p.client,defaultVenue:p.defaultVenue||m.name,cityFor,siteUrl:p.siteUrl},s,e)}},
+   return(s,e)=>fetchCommunico({client:p.client,source:m.name,idPrefix:p.idPrefix||p.client,defaultVenue:p.defaultVenue||m.name,cityFor:cityLookup(p),siteUrl:p.siteUrl,baseUrl:p.baseUrl},s,e)}},
+ libcal:{describe:"Springshare LibCal library calendars (*.libcal.com)",params:"site, defaultVenue, defaultCity | branchCities [[regex,city]], calendarId?",
+  build:(p,m)=>{need(p,"site");
+   return(s,e)=>fetchLibCal({site:p.site,source:m.name,idPrefix:p.idPrefix||p.site,defaultVenue:p.defaultVenue||m.name,cityFor:cityLookup(p),calendarId:p.calendarId},s,e)}},
  bibliocommons:{describe:"BiblioCommons library events (gateway.bibliocommons.com)",params:"library, defaultCity, state?",
   build:(p,m)=>{need(p,"library","defaultCity");return(s,e)=>fetchBiblioCommons({library:p.library,source:m.name,idPrefix:p.idPrefix||p.library,defaultCity:p.defaultCity,defaultVenue:p.defaultVenue,state:p.state},s,e)}},
  civicplus:{describe:"CivicPlus/CivicEngage city calendar RSS (RSSFeed.aspx?ModID=58)",params:"site, city, cid?",
   build:(p,m)=>{need(p,"site","city");return(s,e)=>fetchCivicPlus({site:p.site,source:m.name,idPrefix:p.idPrefix||m.name.toLowerCase().replace(/[^a-z]+/g,""),city:p.city,venue:p.venue||m.name,cid:p.cid},s,e)}},
  govaccess:{describe:"Granicus govAccess sites (/Home/Components/Calendar)",params:"site, city, tilePages[], calendarPaths[]",
   build:(p,m)=>{need(p,"site","city");return(s,e)=>fetchGovAccess({site:p.site,source:m.name,idPrefix:p.idPrefix||m.name.toLowerCase().replace(/[^a-z]+/g,""),city:p.city,venue:p.venue||m.name,tilePages:p.tilePages,calendarPaths:p.calendarPaths},s,e)}},
- opencities:{describe:"Granicus OpenCities event lists",params:"listUrl, eventPath, city, pageUrlTemplate? ({n}), block?",
-  build:(p,m)=>{need(p,"listUrl","eventPath","city");return(s,e)=>fetchOpenCities({listUrl:p.listUrl,eventPath:p.eventPath,source:m.name,idPrefix:p.idPrefix||m.name.toLowerCase().replace(/[^a-z]+/g,""),city:p.city,venue:p.venue||m.name,block:rx(p.block),maxPages:p.maxPages||8,
+ opencities:{describe:"Granicus OpenCities event lists",params:"listUrl, city, eventPath?, pageUrlTemplate? ({n}), block?",
+  build:(p,m)=>{need(p,"listUrl","city");return(s,e)=>fetchOpenCities({listUrl:p.listUrl,eventPath:p.eventPath,source:m.name,idPrefix:p.idPrefix||m.name.toLowerCase().replace(/[^a-z]+/g,""),city:p.city,venue:p.venue||m.name,block:rx(p.block),maxPages:p.maxPages||8,
    pageUrl:p.pageUrlTemplate?(n:number)=>String(p.pageUrlTemplate).replace("{n}",String(n)):undefined},s,e)}},
  thrillshare:{describe:"Apptegy Thrillshare CMS calendars",params:"orgId, city, site",
   build:(p,m)=>{need(p,"orgId","city","site");return(s,e)=>fetchThrillshare({orgId:Number(p.orgId),source:m.name,idPrefix:p.idPrefix||`ts${p.orgId}`,city:p.city,site:p.site},s,e)}},

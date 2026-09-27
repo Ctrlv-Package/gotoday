@@ -11,6 +11,7 @@ export type CommunicoConfig={
  defaultVenue:string;
  cityFor:(venue:string)=>string;      // feed has no addresses, so map branch -> city
  siteUrl?:string;                     // base for relative event URLs
+ baseUrl?:string;                     // custom domain serving the feed (e.g. https://attend.ocls.org)
 };
 
 function datePart(v:unknown){const m=String(v||"").match(/(20\d{2})-(\d{2})-(\d{2})/);return m?`${m[1]}-${m[2]}-${m[3]}`:""}
@@ -30,15 +31,15 @@ function registration(e:any){
 }
 
 export async function fetchCommunico(cfg:CommunicoConfig,startDate:string,endDate:string):Promise<EventRecord[]>{
- const base=`https://${cfg.client}.libnet.info`;
+ const base=(cfg.baseUrl||`https://${cfg.client}.libnet.info`).replace(/\/$/,"");
  const days=Math.max(1,Math.min(62,Math.round((Date.parse(endDate+"T12:00:00Z")-Date.parse(startDate+"T12:00:00Z"))/86400000)+1));
  const req=JSON.stringify({private:false,date:startDate,days,locations:[],ages:[],types:[]});
  const src=`${base}/eeventcaldata?event_type=0&req=${encodeURIComponent(req)}`;
  const r=await fetch(src,{headers:{"User-Agent":"Mozilla/5.0 (compatible; GoToday/1.0; +https://mygotoday.com)","Accept":"application/json","Referer":`${base}/events`},cache:"no-store"});
- if(!r.ok)throw new Error(`HTTP ${r.status} from ${cfg.client}.libnet.info`);
+ if(!r.ok)throw new Error(`HTTP ${r.status} from ${new URL(base).host}`);
  const payload:any=await r.json();
  const rows:any[]=Array.isArray(payload)?payload:Array.isArray(payload?.events)?payload.events:[];
- if(rows.length===0)throw new Error(`${cfg.client}.libnet.info returned zero records`);
+ if(rows.length===0)throw new Error(`${new URL(base).host} returned zero records`);
  const out:EventRecord[]=[],seen=new Set<string>();
  for(const e of rows){
   const id=String(e.id??"").trim(),title=stripHtml(String(e.title||"")).replace(/\s+/g," ").trim();
@@ -55,6 +56,7 @@ export async function fetchCommunico(cfg:CommunicoConfig,startDate:string,endDat
   const free=String(e.registration_cost??"0")==="0";
   let url=String(e.url||"").trim();try{url=url?new URL(url,cfg.siteUrl||base).toString():`${base}/event/${id}`}catch{url=`${base}/event/${id}`}
   const venue=String(e.library||e.location||cfg.defaultVenue).trim()||cfg.defaultVenue;
+  if(/^(online|virtual)\b|\b(online|virtual) (event|program)s?\b/i.test(venue))continue; // not "near you"
   const image=e.image?(/^https?:/i.test(e.image)?e.image:`https://static.libnet.info/images/events/${cfg.client}/${String(e.image).replace(/^\/+/,"")}`):undefined;
   out.push({id:`${cfg.idPrefix}-${id}`,title,city:cfg.cityFor(venue),venue,date,
    time:allDay?"":timePart(e.raw_start_time),endTime:allDay?undefined:(timePart(e.raw_end_time)||undefined),

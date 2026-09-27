@@ -35,67 +35,116 @@ export function parseTime(s:string){
 
 export type OpenCitiesConfig={
  listUrl:string;        // calendar list page
- eventPath:string;      // path that event detail links start with, e.g. "/Explore-FTL/Event-Calendar"
+ eventPath?:string;     // fallback only: path event links start with, for templates without <article> cards
  source:string;         // must match the registry name
  idPrefix:string;
  city:string;
  venue:string;
  block?:RegExp;         // titles to skip (meetings etc.)
  maxPages?:number;
- pageUrl?:(page:number)=>string; // URL of page N (default: "<listUrl>/-npage-N")
+ pageUrl?:(page:number)=>string; // URL of page N (default: OpenCities "dlv" pager on listUrl)
 };
+
+// Government business that shows up on city event lists; discovery rules catch most, this catches the rest.
+const DEFAULT_BLOCK=/\b(board|commission|committee|advisory|council meeting|meetings?|hearings?|office hours|city commission|workshop agenda|webinar|budget|magistrate|code enforcement|development review|bargaining|election|canvassing)\b/i;
+const DATE_ANY=new RegExp(`\\b\\d{1,2}\\s+${MONTH_RX}\\s+20\\d{2}|\\b${MONTH_RX}\\s+\\d{1,2},?\\s+20\\d{2}`,"i");
+
+type Item={href:string;title:string;html:string;desc?:string;address?:string;tags?:string[]};
+
+/** OpenCities list pages render each event as <article> with a link, an <h2 class="list-item-title"> and a date. */
+function articleItems(html:string,origin:string):Item[]{
+ const out:Item[]=[];
+ for(const m of html.matchAll(/<article\b[^>]*>([\s\S]*?)<\/article>/gi)){
+  const body=m[1];
+  const a=body.match(/<a\b[^>]*href=["']([^"'#]+)["']/i);if(!a)continue;
+  let href="";try{href=new URL(a[1].replace(/&amp;/g,"&"),origin).toString()}catch{continue}
+  const h=body.match(/<(h[1-6])[^>]*class=["'][^"']*list-item-title[^"']*["'][^>]*>([\s\S]*?)<\/\1>/i)||body.match(/<h[1-6][^>]*>([\s\S]*?)<\/h[1-6]>/i);
+  let title=stripHtml(h?(h[2]??h[1]):"");
+  if(!title){title=stripHtml(body);const cut=title.search(DATE_ANY);if(cut>3)title=title.slice(0,cut)}
+  const cls=(c:string)=>body.match(new RegExp(`<(p|span|div)[^>]*class=["'][^"']*\\b${c}\\b[^"']*["'][^>]*>([\\s\\S]*?)<\\/\\1>`,"i"))?.[2];
+  const desc=cls("list-item-block-desc"),address=cls("list-item-address");
+  const tagsHtml=body.match(/class=["']tagged-as-list["'][\s\S]*?<span class=["']text["']>([\s\S]*?)<\/span><\/p>/i)?.[1];
+  const tags=tagsHtml?stripHtml(tagsHtml.replace(/<span class=["']separator["']>[\s\S]*?<\/span>/gi,"|")).split("|").map(t=>t.trim()).filter(Boolean):undefined;
+  out.push({href,title:title.replace(/\s+/g," ").trim(),html:body,desc:desc?stripHtml(desc):undefined,address:address?stripHtml(address).split(",").map(x=>x.trim()).filter(Boolean).join(", "):undefined,tags});
+ }
+ return out;
+}
+
+/** Older templates: anchors pointing under eventPath (image link + title link collapsed into one item). */
+function anchorItems(html:string,origin:string,eventPath:string):Item[]{
+ const path=eventPath.replace(/\/$/,"").toLowerCase();
+ const anchors=[...html.matchAll(/<a\b[^>]*href=["']([^"'#]+)["'][^>]*>([\s\S]*?)<\/a>/gi)]
+  .map(a=>{let href="";try{href=new URL(a[1].replace(/&amp;/g,"&"),origin).toString()}catch{}return{href,inner:a[2],at:a.index??0}})
+  .filter(a=>{if(!a.href)return false;const p=new URL(a.href).pathname.toLowerCase();return p.startsWith(path+"/")&&!p.slice(path.length).includes("/-")});
+ const groups:{href:string;inner:string;at:number}[]=[];
+ for(const a of anchors){const last=groups[groups.length-1];if(last&&last.href===a.href){last.inner+=" "+a.inner;continue}groups.push({...a})}
+ return groups.map((g,i)=>{
+  const chunk=html.slice(g.at,groups[i+1]?.at??g.at+5000);
+  const heading=chunk.match(/<h[1-6][^>]*>([\s\S]*?)<\/h[1-6]>/i);
+  let title=stripHtml(heading?.[1]||g.inner);const cut=title.search(DATE_ANY);if(cut>3)title=title.slice(0,cut);
+  return{href:g.href,title:title.replace(/\s+/g," ").trim(),html:chunk};
+ });
+}
+
+/** "Venue, 123 Main St, Coral Springs 33065" -> "123 Main St, Coral Springs, FL 33065" (street address for geocoding). */
+function streetAddress(addr:string|undefined,city:string){
+ if(!addr||!/\d/.test(addr))return undefined;
+ const parts=addr.split(",").map(x=>x.trim()).filter(Boolean);
+ if(parts.length>1&&!/^\d/.test(parts[0]))parts.shift();              // drop the venue name
+ const zip=parts.join(" ").match(/\b(\d{5})\s*$/)?.[1];
+ if(zip)parts[parts.length-1]=parts[parts.length-1].replace(/\s*\d{5}\s*$/,"").trim();
+ const cityName=city.split(",")[0],state=city.split(",")[1]?.trim()||"FL";
+ const rest=parts.filter(Boolean).filter(x=>x.toLowerCase()!==cityName.toLowerCase());
+ if(!rest.length||!/^\d/.test(rest[0]))return undefined;
+ return `${rest.join(", ")}, ${cityName}, ${state}${zip?" "+zip:""}`;
+}
 
 export async function fetchOpenCities(cfg:OpenCitiesConfig,startDate:string,endDate:string):Promise<EventRecord[]>{
  const origin=new URL(cfg.listUrl).origin;
- const path=cfg.eventPath.replace(/\/$/,"").toLowerCase();
+ const listBase=cfg.listUrl.split("?")[0].replace(/\/$/,"");
+ const pageUrl=cfg.pageUrl||((n:number)=>`${listBase}?dlv_OC%20CL%20Public%20Events%20Listing=(pageindex=${n})`);
+ const block=cfg.block||DEFAULT_BLOCK;
+ const listPath=new URL(listBase).pathname; // only the part of an event URL after the list path says its category
  const out:EventRecord[]=[],seenHref=new Set<string>();
  let linksSeen=0;
  for(let page=1;page<=(cfg.maxPages??8);page++){
-  const url=page===1?cfg.listUrl:(cfg.pageUrl?cfg.pageUrl(page):`${cfg.listUrl.replace(/\/$/,"")}/-npage-${page}`);
+  const url=page===1?cfg.listUrl:pageUrl(page);
   const r=await fetchRetry(url,{headers:BROWSER_HEADERS,cache:"no-store"});
   if(!r.ok){if(page===1)throw new Error(`HTTP ${r.status} from ${url}`);break}
   const html=await r.text();
-
-  // Every anchor pointing at an event detail page (skip OpenCities filter/paging URLs, which contain "/-").
-  const anchors=[...html.matchAll(/<a\b[^>]*href=["']([^"'#]+)["'][^>]*>([\s\S]*?)<\/a>/gi)]
-   .map(a=>{let href="";try{href=new URL(a[1].replace(/&amp;/g,"&"),origin).toString()}catch{}return{href,inner:a[2],at:a.index??0}})
-   .filter(a=>{if(!a.href)return false;const p=new URL(a.href).pathname.toLowerCase();return p.startsWith(path+"/")&&!p.slice(path.length).includes("/-")});
-
-  // Collapse consecutive anchors to the same event (image link + title link) into one item.
-  const items:{href:string;inner:string;at:number}[]=[];
-  for(const a of anchors){const last=items[items.length-1];if(last&&last.href===a.href){last.inner+=" "+a.inner;continue}items.push({...a})}
+  let items=articleItems(html,origin);
+  if(!items.length&&cfg.eventPath)items=anchorItems(html,origin,cfg.eventPath);
   linksSeen+=items.length;
 
   let newOnPage=0,allPastEnd=items.length>0;
-  items.forEach((it,i)=>{
-   if(seenHref.has(it.href))return;
-   seenHref.add(it.href);newOnPage++;
-   const chunkHtml=html.slice(it.at,items[i+1]?.at??it.at+5000);
-   const text=stripHtml(chunkHtml);
+  for(const it of items){
+   const text=stripHtml(it.html);
    const date=parseDate(text);
+   const key=it.href+"|"+date;
+   if(seenHref.has(key))continue;
+   seenHref.add(key);newOnPage++;
    if(date&&date<=endDate)allPastEnd=false;
-   if(!date||date<startDate||date>endDate)return;
-   const heading=chunkHtml.match(/<h[1-6][^>]*>([\s\S]*?)<\/h[1-6]>/i);
-   let title=stripHtml(heading?.[1]||it.inner);
-   // If the anchor wraps the whole card, cut the title at the date.
-   const cut=title.search(new RegExp(`\\b\\d{1,2}\\s+${MONTH_RX}\\s+20\\d{2}|\\b${MONTH_RX}\\s+\\d{1,2},?\\s+20\\d{2}`,"i"));
-   if(cut>3)title=title.slice(0,cut);
-   title=title.replace(/\s+/g," ").trim();
-   if(title.length<4||title.length>140||cfg.block?.test(title))return;
-   const afterDate=text.slice(text.indexOf(title)+title.length).replace(/\s+/g," ").trim();
-   const desc=afterDate.replace(new RegExp(`^.*?\\b(20\\d{2})\\b`),"").trim().slice(0,500)||`Official ${cfg.source} event.`;
-   const blob=(title+" "+desc).toLowerCase();
-   const family=/kids?|family|festival|parade|block party|children|story|pumpkin|halloween|trunk/.test(blob);
+   if(!date||date<startDate||date>endDate)continue;
+   const title=it.title;
+   if(title.length<4||title.length>140||block.test(title)||(it.tags||[]).some(t=>block.test(t))||block.test(new URL(it.href).pathname.replace(listPath,"").replace(/[-\/]/g," ")))continue;
+   const afterTitle=text.includes(title)?text.slice(text.indexOf(title)+title.length):text;
+   const desc=it.desc||afterTitle.replace(/\s+/g," ").replace(new RegExp(`^.*?\\b(20\\d{2})\\b`),"").replace(/^[\s\-–|,:]+/,"").replace(/\b\d{1,2}(:\d{2})?\s*[ap]\.?m\.?\s*(-|–|to)?\s*(\d{1,2}(:\d{2})?\s*[ap]\.?m\.?)?/i,"").trim().slice(0,500)||`Official ${cfg.source} event.`;
+   const img=it.html.match(/<img\b[^>]*src=["']([^"']+)["']/i)?.[1];
+   const blob=(title+" "+desc+" "+(it.tags||[]).join(" ")).toLowerCase();
+   const family=/kids?|family|festival|parade|block party|children|story|pumpkin|halloween|trunk|egg hunt|holiday/.test(blob);
    const arts=/music|concert|arts?\b|theatre|theater|musical|comedy|film|movie/.test(blob);
    const free=/\bfree\b/.test(blob);
-   out.push({id:`${cfg.idPrefix}-${slug(title+"-"+date)}`,title,city:cfg.city,venue:cfg.venue,date,time:parseTime(text)||"12:00:00",url:it.href,sourceUrl:url,
+   const times=[...text.matchAll(/\b\d{1,2}(?::\d{2})?\s*[AP]\.?M\.?/gi)].map(x=>parseTime(x[0])).filter(Boolean);
+   let image:string|undefined;try{image=img?new URL(img.replace(/&amp;/g,"&"),origin).toString():undefined}catch{}
+   out.push({id:`${cfg.idPrefix}-${slug(title+"-"+date)}`,title,city:cfg.city,venue:it.address?.split(",")[0].trim()||cfg.venue,address:streetAddress(it.address,cfg.city),date,time:times[0]||"",endTime:times[1]&&times[1]>times[0]?times[1]:undefined,
+    url:it.href,sourceUrl:cfg.listUrl,image,
     category:family?"Family":arts?"Arts & Theatre":"Local",genre:"Local Event",desc,
-    tags:[...(family?["Family"]:[]),...(arts?["Arts & Theatre"]:[]),...(free?["Free"]:[]),"Local"],
+    tags:[...(it.tags||[]),...(family?["Family"]:[]),...(arts?["Arts & Theatre"]:[]),...(free?["Free"]:[]),"Local"],
     emoji:family?"🎉":arts?"🎵":"📍",source:cfg.source,isFree:free,eventType:"event"});
-  });
+  }
   // Stop when a page adds nothing new or the list has moved past the window.
   if(newOnPage===0||allPastEnd)break;
  }
- if(out.length===0)throw new Error(`No events in ${startDate}..${endDate} (found ${linksSeen} event links under ${cfg.eventPath})`);
+ if(out.length===0)throw new Error(`No events in ${startDate}..${endDate} (found ${linksSeen} event cards on ${cfg.listUrl})`);
  return out;
 }

@@ -17,6 +17,11 @@ const STATEMENTS=[
  `create table if not exists source_configs(name text primary key,platform text not null,params jsonb not null default '{}',
    source_type text not null default 'official-city',url text,priority int not null default 90,region text,timezone text not null default 'America/New_York',
    enabled boolean not null default true,remote boolean not null default false,created_at timestamptz default now(),updated_at timestamptz default now())`,
+ // Discovery once saved North Miami Beach's library over the city calendar (same name). The library now has
+ // its own row, so point the city row back at the city's CivicPlus calendar.
+ `update source_configs set platform='civicplus',params='{"site":"https://www.citynmb.com","city":"North Miami Beach, FL","idPrefix":"nmb"}'::jsonb,
+   source_type='official-city',url='https://www.citynmb.com/Calendar.aspx',remote=false,updated_at=now()
+   where name='City of North Miami Beach' and platform<>'civicplus'`,
 ];
 export function ensureSchema(){
  if(!ready)ready=(async()=>{for(const s of STATEMENTS)await db.query(s)})().catch(e=>{ready=null;throw e});
