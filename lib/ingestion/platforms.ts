@@ -7,6 +7,7 @@ import {fetchCivicPlus} from "../sources/civicplus";
 import {fetchGovAccess} from "../sources/govaccess";
 import {fetchOpenCities} from "../sources/opencities";
 import {fetchLibCal} from "../sources/libcal";
+import {fetchInstagram} from "../sources/instagram";
 import {fetchThrillshare} from "../sources/thrillshare";
 import {fetchTicketmasterEvents} from "../sources/ticketmaster";
 import {fetchBrowardParkEvents} from "../sources/broward-parks";
@@ -47,6 +48,8 @@ export const PLATFORMS:Record<string,{describe:string;params:string;build:(p:Par
    pageUrl:p.pageUrlTemplate?(n:number)=>String(p.pageUrlTemplate).replace("{n}",String(n)):undefined},s,e)}},
  thrillshare:{describe:"Apptegy Thrillshare CMS calendars",params:"orgId, city, site",
   build:(p,m)=>{need(p,"orgId","city","site");return(s,e)=>fetchThrillshare({orgId:Number(p.orgId),source:m.name,idPrefix:p.idPrefix||`ts${p.orgId}`,city:p.city,site:p.site},s,e)}},
+ instagram:{describe:"Venue Instagram accounts via the official Business Discovery API (needs IG_USER_ID, IG_ACCESS_TOKEN; ANTHROPIC_API_KEY reads flyers)",params:"username, city, venue, address?",
+  build:(p,m)=>{need(p,"username","city","venue");return(s,e)=>fetchInstagram({username:String(p.username).replace(/^@/,""),source:m.name,idPrefix:p.idPrefix||`ig-${String(p.username).replace(/[^a-z0-9]/gi,"").toLowerCase()}`,city:p.city,venue:p.venue,address:p.address,maxAgeDays:p.maxAgeDays},s,e)}},
  ticketmaster:{describe:"Ticketmaster Discovery API",params:"marketId | latlong + radius",
   build:(p)=>(s,e)=>fetchTicketmasterEvents(s,e,{marketId:p.marketId,latlong:p.latlong,radius:p.radius,label:p.label})},
  "broward-parks":{describe:"Broward County Parks event-calendar API",params:"(none)",build:()=>fetchBrowardParkEvents},
