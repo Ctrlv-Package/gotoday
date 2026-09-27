@@ -15,16 +15,41 @@ export type InstagramConfig={username:string;source:string;idPrefix:string;city:
 type Extracted={title:string;date:string;start?:string;end?:string;summary?:string;free?:boolean;kids?:boolean;cancelled?:boolean};
 type Post={id:string;caption?:string;media_type:string;media_url?:string;thumbnail_url?:string;permalink:string;timestamp:string;children?:{data:{media_url?:string;media_type:string}[]}};
 
-const GRAPH="https://graph.facebook.com/v25.0";
+const GRAPH="https://graph.facebook.com/v26.0";
 const MODEL=process.env.EVENT_EXTRACT_MODEL||"claude-haiku-4-5-20251001";
 
+/** Long-lived Meta user tokens last 60 days. Keep the newest one in the database and swap it for a fresh one
+ *  when fewer than 20 days remain (needs FB_APP_ID + FB_APP_SECRET); IG_ACCESS_TOKEN in Vercel is the starting token. */
+let tokenCache:{token:string;checked:number}|null=null;
+async function accessToken():Promise<string|undefined>{
+ const envToken=process.env.IG_ACCESS_TOKEN;if(!envToken)return undefined;
+ if(tokenCache&&Date.now()-tokenCache.checked<6*3600e3)return tokenCache.token;
+ await ensureSchema();
+ const {rows}=await db.query("select value,expires_at,seed from app_tokens where name='instagram'");
+ let token=envToken,expires:number|undefined;
+ // A new IG_ACCESS_TOKEN pasted into Vercel replaces the stored one.
+ if(rows[0]&&rows[0].seed===envToken.slice(-16)){token=rows[0].value;expires=rows[0].expires_at?new Date(rows[0].expires_at).getTime():undefined}
+ const id=process.env.FB_APP_ID,secret=process.env.FB_APP_SECRET;
+ if(id&&secret&&(!expires||expires-Date.now()<20*86400e3)){
+  try{
+   const r=await fetchRetry(`${GRAPH}/oauth/access_token?grant_type=fb_exchange_token&client_id=${id}&client_secret=${encodeURIComponent(secret)}&fb_exchange_token=${encodeURIComponent(token)}`,{cache:"no-store"});
+   const d:any=await r.json().catch(()=>({}));
+   if(r.ok&&d.access_token){token=d.access_token;expires=Date.now()+(Number(d.expires_in)||60*86400)*1000;
+    await db.query(`insert into app_tokens(name,value,expires_at,seed,updated_at) values('instagram',$1,$2,$3,now()) on conflict(name) do update set value=excluded.value,expires_at=excluded.expires_at,seed=excluded.seed,updated_at=now()`,[token,new Date(expires),envToken.slice(-16)])}
+   else console.log(`instagram token refresh failed: ${d?.error?.message||r.status}`);
+  }catch(e:any){console.log(`instagram token refresh failed: ${e?.message||e}`)}
+ }
+ tokenCache={token,checked:Date.now()};
+ return token;
+}
+
 async function loadPosts(username:string):Promise<Post[]>{
- const token=process.env.IG_ACCESS_TOKEN,me=process.env.IG_USER_ID;
+ const token=await accessToken(),me=process.env.IG_USER_ID;
  if(!token||!me)throw new Error("Instagram not connected yet (set IG_USER_ID and IG_ACCESS_TOKEN in Vercel)");
  const fields=`business_discovery.username(${username}){media.limit(25){id,caption,media_type,media_url,thumbnail_url,permalink,timestamp,children{media_url,media_type}}}`;
  const r=await fetchRetry(`${GRAPH}/${me}?fields=${encodeURIComponent(fields)}&access_token=${encodeURIComponent(token)}`,{cache:"no-store"});
  const d:any=await r.json().catch(()=>({}));
- if(!r.ok)throw new Error(`Instagram API: ${d?.error?.message||`HTTP ${r.status}`}`);
+ if(!r.ok){if(d?.error?.code===190)tokenCache=null;throw new Error(`Instagram API: ${d?.error?.message||`HTTP ${r.status}`}${d?.error?.code===190?" — the Instagram key expired; generate a new one and update IG_ACCESS_TOKEN in Vercel":""}`)}
  return d?.business_discovery?.media?.data||[];
 }
 
