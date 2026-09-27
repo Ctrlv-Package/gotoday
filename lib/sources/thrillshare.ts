@@ -8,7 +8,7 @@ export type ThrillshareConfig={orgId:number;source:string;idPrefix:string;city:s
 
 export async function fetchThrillshare(cfg:ThrillshareConfig,startDate:string,endDate:string):Promise<EventRecord[]>{
  const u=`https://thrillshare-cmsv2.services.thrillshare.com/api/v4/o/${cfg.orgId}/cms/events?start_date=${startDate}&end_date=${endDate}&view=list-month&paginate=false&locale=en`;
- const r=await fetch(u,{headers:{"Accept":"application/json","User-Agent":"Mozilla/5.0 (compatible; GoToday/1.0; +https://gotoday-six.vercel.app)"},cache:"no-store"});
+ const r=await fetch(u,{headers:{"Accept":"application/json","User-Agent":"Mozilla/5.0 (compatible; GoToday/1.0; +https://mygotoday.com)"},cache:"no-store"});
  if(!r.ok)throw new Error(`HTTP ${r.status} from Thrillshare events API (org ${cfg.orgId})`);
  const d:any=await r.json();
  const rows:any[]=Array.isArray(d?.events)?d.events:[];

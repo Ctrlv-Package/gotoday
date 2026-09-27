@@ -15,7 +15,7 @@ export async function fetchBiblioCommons(cfg:BiblioConfig,startDate:string,endDa
  const out:EventRecord[]=[],seen=new Set<string>();let total=0;
  for(let page=1;page<=40;page++){
   const url=`${API}?limit=100&page=${page}`;
-  const r=await fetch(url,{headers:{"Accept":"application/json","User-Agent":"Mozilla/5.0 (compatible; GoToday/1.0; +https://gotoday-six.vercel.app)"},cache:"no-store"});
+  const r=await fetch(url,{headers:{"Accept":"application/json","User-Agent":"Mozilla/5.0 (compatible; GoToday/1.0; +https://mygotoday.com)"},cache:"no-store"});
   if(!r.ok){if(page===1)throw new Error(`HTTP ${r.status} from BiblioCommons events API`);break}
   const d:any=await r.json();
   const ids:string[]=d?.events?.items||[],ents=d?.entities||{};

@@ -2,7 +2,7 @@
 // from wherever this script runs (a scheduled GitHub Action), then pushes the records to
 // GoToday's /api/ingest/push endpoint, which validates and stores them like any other source.
 //
-//   GOTODAY_URL=https://gotoday-six.vercel.app INGESTION_SECRET=... npx tsx scripts/remote-ingest.ts
+//   GOTODAY_URL=https://mygotoday.com INGESTION_SECRET=... npx tsx scripts/remote-ingest.ts
 import {sourceFromConfig,type SourceConfig} from "../lib/ingestion/registry";
 import {appendFileSync} from "node:fs";
 import {installBrowserFetch,closeBrowserFetch} from "./browser-fetch";

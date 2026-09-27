@@ -74,7 +74,7 @@ export function parseAgesField(s:string):[number,number]|null{
 export async function fetchBrowardParkEvents(startDate:string,endDate:string):Promise<EventRecord[]>{
  const rows:any[]=[];let after:string|null=null;
  for(let i=0;i<20;i++){
-  const r=await fetch(API,{method:"POST",headers:{"Accept":"application/json","Content-Type":"application/json","User-Agent":"Mozilla/5.0 (compatible; GoToday/1.0; +https://gotoday-six.vercel.app)","Referer":PAGE},
+  const r=await fetch(API,{method:"POST",headers:{"Accept":"application/json","Content-Type":"application/json","User-Agent":"Mozilla/5.0 (compatible; GoToday/1.0; +https://mygotoday.com)","Referer":PAGE},
    body:JSON.stringify({datasource:DATASOURCE,language:"en",first:48,after}),cache:"no-store"});
   if(!r.ok)throw new Error(`HTTP ${r.status} from broward.org event-calendar API`);
   const d:any=await r.json();

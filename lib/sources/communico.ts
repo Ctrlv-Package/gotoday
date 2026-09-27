@@ -34,7 +34,7 @@ export async function fetchCommunico(cfg:CommunicoConfig,startDate:string,endDat
  const days=Math.max(1,Math.min(62,Math.round((Date.parse(endDate+"T12:00:00Z")-Date.parse(startDate+"T12:00:00Z"))/86400000)+1));
  const req=JSON.stringify({private:false,date:startDate,days,locations:[],ages:[],types:[]});
  const src=`${base}/eeventcaldata?event_type=0&req=${encodeURIComponent(req)}`;
- const r=await fetch(src,{headers:{"User-Agent":"Mozilla/5.0 (compatible; GoToday/1.0; +https://gotoday-six.vercel.app)","Accept":"application/json","Referer":`${base}/events`},cache:"no-store"});
+ const r=await fetch(src,{headers:{"User-Agent":"Mozilla/5.0 (compatible; GoToday/1.0; +https://mygotoday.com)","Accept":"application/json","Referer":`${base}/events`},cache:"no-store"});
  if(!r.ok)throw new Error(`HTTP ${r.status} from ${cfg.client}.libnet.info`);
  const payload:any=await r.json();
  const rows:any[]=Array.isArray(payload)?payload:Array.isArray(payload?.events)?payload.events:[];
