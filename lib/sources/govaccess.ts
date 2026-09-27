@@ -1,4 +1,5 @@
 import type {EventRecord} from "../ingestion/types";
+import {fetchRetry} from "../http";
 import {slug,stripHtml} from "../ingestion/utils";
 import {parseTime} from "./opencities";
 
@@ -59,7 +60,7 @@ export async function fetchGovAccess(cfg:GovAccessConfig,startDate:string,endDat
  const origin=new URL(cfg.site).origin;
  const items=new Map<string,{href:string;title:string;date:string;time:string;endTime?:string;desc?:string;image?:string;from:string}>();
  let pagesOk=0;const errors:string[]=[];
- const get=async(url:string)=>{const r=await fetch(url,{headers:HEADERS,cache:"no-store"});if(!r.ok){errors.push(`HTTP ${r.status} ${url}`);return null}pagesOk++;return r.text()};
+ const get=async(url:string)=>{const r=await fetchRetry(url,{headers:HEADERS,cache:"no-store"});if(!r.ok){errors.push(`HTTP ${r.status} ${url}`);return null}pagesOk++;return r.text()};
  // Rich tiles first (they carry descriptions and images).
  for(const p of cfg.tilePages||[]){
   const url=origin+p,html=await get(url);if(!html)continue;

@@ -5,7 +5,8 @@
   "scripts": {
     "dev": "next dev",
     "build": "next build",
-    "start": "next start"
+    "start": "next start",
+    "remote-ingest": "tsx scripts/remote-ingest.ts"
   },
   "dependencies": {
     "@types/node": "latest",
@@ -17,5 +18,8 @@
     "typescript": "latest",
     "pg": "^8.13.1",
     "@types/pg": "^8.11.10"
+  },
+  "devDependencies": {
+    "tsx": "^4.19.2"
   }
 }

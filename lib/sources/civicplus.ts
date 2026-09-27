@@ -1,4 +1,5 @@
 import type {EventRecord} from "../ingestion/types";
+import {fetchRetry} from "../http";
 import {slug,stripHtml} from "../ingestion/utils";
 import {parseDate,parseTime} from "./opencities";
 
@@ -52,7 +53,7 @@ export function parseCivicPlusRss(xml:string,cfg:CivicPlusConfig,startDate:strin
 
 export async function fetchCivicPlus(cfg:CivicPlusConfig,startDate:string,endDate:string):Promise<EventRecord[]>{
  const feed=`${cfg.site.replace(/\/$/,"")}/RSSFeed.aspx?ModID=58&CID=${cfg.cid||"All-calendar.xml"}`;
- const r=await fetch(feed,{headers:{"User-Agent":"Mozilla/5.0 (compatible; GoToday/1.0; +https://gotoday-six.vercel.app)","Accept":"application/rss+xml,application/xml,text/xml"},cache:"no-store"});
+ const r=await fetchRetry(feed,{headers:{"User-Agent":"Mozilla/5.0 (compatible; GoToday/1.0; +https://gotoday-six.vercel.app)","Accept":"application/rss+xml,application/xml,text/xml"},cache:"no-store"});
  if(!r.ok)throw new Error(`HTTP ${r.status} from ${feed}`);
  const {items,events}=parseCivicPlusRss(await r.text(),cfg,startDate,endDate,feed);
  if(items===0)throw new Error(`Calendar RSS feed has no items: ${feed}`);

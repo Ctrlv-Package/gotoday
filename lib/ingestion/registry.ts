@@ -28,7 +28,7 @@ export const sources:EventSource[]=[
  civic("City of Margate","https://www.margatefl.com","margate","Margate, FL"),
  civic("City of Deerfield Beach","https://www.deerfield-beach.com","deerfield","Deerfield Beach, FL"),
  // Weston (Granicus govAccess: Special Events tiles + main calendar grid)
- {name:"City of Weston",type:"official-city",url:"https://www.westonfl.org/about/events-calendar",priority:100,
+ {name:"City of Weston",type:"official-city",url:"https://www.westonfl.org/about/events-calendar",priority:100,remote:true,
   fetch:(s,e)=>fetchGovAccess({site:"https://www.westonfl.org",source:"City of Weston",idPrefix:"weston",city:"Weston, FL",venue:"City of Weston",
    tilePages:["/government/parks-and-recreation/special-events","/government/parks-and-recreation/special-events/-toggle-next30days"],calendarPaths:["/about/events-calendar"]},s,e)},
  // Cooper City (Apptegy Thrillshare JSON API)
@@ -42,11 +42,12 @@ export const sources:EventSource[]=[
  {name:"Riverwalk Fort Lauderdale",type:"local-aggregator",url:"https://www.goriverwalk.com/events/greater-fort-lauderdale-event-calendar",priority:85,fetch:fetchRiverwalkEvents},
  // Supplemental ticketed inventory
  {name:"Ticketmaster",type:"ticketing",url:"https://www.ticketmaster.com",priority:60,fetch:fetchTicketmasterEvents},
- // Paused: these OpenCities sites return HTTP 403 to Vercel's servers (bot protection on cloud IPs).
- // Re-enable once they run from a non-cloud IP or the city provides a feed.
- {name:"City of Sunrise",type:"official-city",url:"https://www.sunrisefl.gov/our-city/calendar-of-events",priority:100,fetch:fetchSunriseEvents,enabled:false},
- {name:"City of Plantation",type:"official-city",url:"https://www.plantation.org/government/departments/parks-recreation/events",priority:100,fetch:fetchPlantationEvents,enabled:false},
- {name:"City of Fort Lauderdale",type:"official-city",url:"https://www.fortlauderdale.gov/Explore-FTL/Event-Calendar",priority:100,fetch:fetchFortLauderdaleEvents,enabled:false}
+ // Remote-only: these city sites return HTTP 403 to Vercel's servers, so they are fetched by the
+ // scheduled GitHub Action (scripts/remote-ingest.ts) and pushed to /api/ingest/push.
+ {name:"City of Sunrise",type:"official-city",url:"https://www.sunrisefl.gov/our-city/calendar-of-events",priority:100,fetch:fetchSunriseEvents,remote:true},
+ {name:"City of Plantation",type:"official-city",url:"https://www.plantation.org/government/departments/parks-recreation/events",priority:100,fetch:fetchPlantationEvents,remote:true},
+ {name:"City of Fort Lauderdale",type:"official-city",url:"https://www.fortlauderdale.gov/Explore-FTL/Event-Calendar",priority:100,fetch:fetchFortLauderdaleEvents,remote:true}
 ];
-export const activeSources=()=>sources.filter(s=>s.enabled!==false);
+export const activeSources=()=>sources.filter(s=>s.enabled!==false&&!s.remote);
+export const remoteSources=()=>sources.filter(s=>s.enabled!==false&&s.remote);
 export const sourcePriority=(name:string)=>sources.find(s=>s.name===name)?.priority??40;

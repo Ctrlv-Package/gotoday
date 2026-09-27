@@ -1,4 +1,5 @@
 import type {EventRecord} from "../ingestion/types";
+import {fetchRetry} from "../http";
 import {slug,stripHtml} from "../ingestion/utils";
 
 // Shared parser for Granicus OpenCities event calendars (Fort Lauderdale, Sunrise, Plantation).
@@ -50,7 +51,7 @@ export async function fetchOpenCities(cfg:OpenCitiesConfig,startDate:string,endD
  let linksSeen=0;
  for(let page=1;page<=(cfg.maxPages??8);page++){
   const url=page===1?cfg.listUrl:`${cfg.listUrl.replace(/\/$/,"")}/-npage-${page}`;
-  const r=await fetch(url,{headers:BROWSER_HEADERS,cache:"no-store"});
+  const r=await fetchRetry(url,{headers:BROWSER_HEADERS,cache:"no-store"});
   if(!r.ok){if(page===1)throw new Error(`HTTP ${r.status} from ${url}`);break}
   const html=await r.text();
 

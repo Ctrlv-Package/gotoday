@@ -1,0 +1,21 @@
+name: Remote ingest (city sites that block Vercel)
+
+on:
+  schedule:
+    - cron: "20 10,22 * * *"   # twice a day (UTC)
+  workflow_dispatch: {}         # "Run workflow" button in the Actions tab
+
+jobs:
+  ingest:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - run: npm install --no-audit --no-fund
+      - run: npx tsx scripts/remote-ingest.ts
+        env:
+          GOTODAY_URL: ${{ secrets.GOTODAY_URL }}
+          INGESTION_SECRET: ${{ secrets.INGESTION_SECRET }}
