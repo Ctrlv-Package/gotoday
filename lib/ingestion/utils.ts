@@ -44,10 +44,16 @@ export const isAllAges=(e:EventRecord)=>(e.tags||[]).some(t=>/\b(everyone|all ag
 const EVENT_TITLE=/\b(festival|fest|fair|concert|show|performance|celebration|celebrate|heritage|holiday|halloween|trunk[- ]or[- ]treat|parade|carnival|market|movie|film|screening|exhibit(ion)?|author|story ?time|storytelling|open house|block party|fireworks|jazz|symphony|orchestra|comedy|theat(re|er)|puppet|magic|dance party|tournament|game night)\b/i;
 const ANNOUNCEMENT=/^(labor day|patriot day|memorial day|veterans'? day|thanksgiving( day)?|christmas( day| eve)?|new year'?s( day| eve)?|independence day|martin luther king.*day|presidents'? day|juneteenth|columbus day|indigenous peoples'? day|good friday|election day|rosh hashanah|yom kippur)$|\b(closed|closure|office hours|registration (opens|closes|deadline)|deadline|applications? (due|open)|no school|early release|contest registration)\b/i;
 const MEETING=/\b(board|commission|committee|council|hearing|advisory|magistrate|zoning|budget|bargaining|public meeting|town hall|pre-?bid|special meeting|workshop session)\b/i;
-const PASSIVE=/\b(grab (?:and|&) go|information table|take (?:it )?(?:and|&) make|take[- ]home craft|photo op|word search|display case|coloring station|self[- ]guided|seed library)\b/i;
-const SERVICE=/\b(esl|english (?:cafe|café|conversation|class(?:es)?|lessons?|practice)|as a second language|conversation (?:group|club|practice)|citizenship|naturalization|vita\b|tax (?:help|assistance|prep)|ged\b|test prep|sat\/act|tutor(?:ing)?|homework help|resume|job (?:search|help|seekers?)|career (?:coach|help|counsel)|computer (?:class|basics|help|lab)|tech help|one[- ]on[- ]one|support group|nami\b|al-?anon|alcoholics|narcotics|grief|caregiver|blood pressure|health screening|medicare|legal (?:aid|help|clinic)|notary|passport|proctor|meeting room|study room|early voting|voting site|election site|polling|career\/business|mental health)\b/i;
-const FITNESS=/\b(zumba|yoga|tai chi|pilates|hiit|insanity|fitness|aerobics|cardio|chair exercise|strength training|boot ?camp|meditation|stretch(ing)?|line dancing class|pickleball lessons?)\b/i;
-const INSTRUCTION=/\b(class(es)?|course|lessons?|instructional|clinic|academy|practice|league|open gym|after[- ]school|registration|enrollment|orientation|certification|training|intermediate|beginners?)\b/i;
+const PASSIVE=/\b(grab[- ](?:and|&|n)[- ]go|information table|take (?:it )?(?:and|&) make|take[- ]home craft|photo op|word search|display (?:case|table)|coloring station|self[- ]guided|seed library|month$)\b/i;
+// Tags that mark a real happening even when a Grab & Go / Class tag is also present.
+const STRONG_TAG=/\b(fair\/festival|performances|exhibit|speaker|author events|movie|story time)\b/i;
+const SERVICE=/\b(esl|english (?:cafe|café|conversation|class(?:es)?|lessons?|practice)|(?:beginners?|intermediate|advanced|spanish|french)\s+(?:english\s+)?caf[eé]|caf[eé]\s*[-–]?\s*(?:beginner|intermediate|advanced)|as a second language|conversation (?:group|club|practice)|citizenship|naturalization|vita\b|tax (?:help|assistance|prep)|ged\b|test prep|sat\/act|tutor(?:ing)?|homework help|reading practice|resume|job (?:prep|search|help|seekers?)|career (?:coach|help|counsel|assistance)|tech help|device help|mobile device|ask us anything|one[- ]on[- ]one|1 on 1|support (?:group|meeting)|nami\b|al-?anon|alcoholics|narcotics|grief|caregiver|blood pressure|health screening|medicare|legal (?:aid|help|clinic)|notary|passport|dmv\b|exemption|proctor|meeting room|study room|early voting|voting site|election site|polling|volunteer orientation|mentoring program)\b/i;
+const FITNESS=/\b(zumba|yoga|tai chi|pilates|hiit|insanity|fitness|aerobics|cardio|chair exercise|strength (?:and|&) balance|strength training|boot ?camp|meditation|mindfulness|stretch(ing)?|ageless grace|pickleball lessons?)\b/i;
+// Skill-building courses (languages, computers, office software, finance, test prep) and
+// multi-session courses. One-off arts/crafts/kids classes are NOT rejected.
+const SKILL_COURSE=/\b(english|spanish|french|italian|german|portuguese|mandarin|grammar|conversational|computer|microsoft|excel|powerpoint|word processing|android|iphone|ipad|internet|browser|windows \d|cyber ?security|coding|artificial intelligence|\bai\b|digital (?:literacy|journey)|budget(ing)?|financial|parliamentar\w*|college prep|brainfuse)\b/i;
+const MULTI_SESSION=/\b(\d+[- ](?:week|part|session)s?|sessions|course)\b/i;
+const INSTRUCTION=/\b(academy|league|practice|open gym|after[- ]school|orientation|certification|training|clinic|lessons?|instructional|registration|enrollment)\b/i;
 
 export type DiscoveryReason="announcement"|"meeting"|"passive-display"|"service-or-support"|"fitness-class"|"recurring-instruction"|"marked-ineligible";
 export function discoveryRejection(e:EventRecord):DiscoveryReason|null{
@@ -57,11 +63,14 @@ export function discoveryRejection(e:EventRecord):DiscoveryReason|null{
  if(ANNOUNCEMENT.test(title.trim()))return"announcement";
  if(MEETING.test(title))return"meeting";
  if(e.isDiscoveryEligible===true)return null; // curated sources (Ticketmaster) skip the rest
- if(PASSIVE.test(title)||PASSIVE.test(tagText))return"passive-display";
- if(SERVICE.test(title)||/career\/business/i.test(tagText))return"service-or-support";
+ const strong=STRONG_TAG.test(tagText);
+ const classTag=/(^|\|)\s*(class|workshop|technology)\s*(\||$)/i.test(tagText);
+ if(PASSIVE.test(title)||(!strong&&/grab (?:and|&) go|information table/i.test(tagText)))return"passive-display";
+ if(SERVICE.test(title)||(!strong&&/career\/business/i.test(tagText)))return"service-or-support";
  if(EVENT_TITLE.test(title))return null;
  if(FITNESS.test(title))return"fitness-class";
- if(INSTRUCTION.test(title)||/(^|\|)\s*class\s*(\||$)/i.test(tagText))return"recurring-instruction";
+ if(SKILL_COURSE.test(title)&&(classTag||/\b(class|course|caf[eé]|workshop|essentials|basics|literacy|training|level)\b/i.test(title)))return"recurring-instruction";
+ if(MULTI_SESSION.test(title)||INSTRUCTION.test(title))return"recurring-instruction";
  return null;
 }
 export function isDiscoveryEvent(e:EventRecord){return discoveryRejection(e)===null}

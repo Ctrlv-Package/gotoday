@@ -11,7 +11,9 @@ import {parseTime} from "./opencities";
 
 export type GovAccessConfig={site:string;source:string;idPrefix:string;city:string;venue:string;tilePages?:string[];calendarPaths?:string[]};
 
-const HEADERS={"User-Agent":"Mozilla/5.0 (compatible; GoToday/1.0; +https://gotoday-six.vercel.app)","Accept":"text/html,application/xhtml+xml"};
+import {BROWSER_HEADERS} from "./opencities";
+// Some govAccess sites (Weston) return 403 to crawler user agents; send ordinary browser headers.
+const HEADERS={...BROWSER_HEADERS,"Cache-Control":"no-cache"};
 const MONTHS=["january","february","march","april","may","june","july","august","september","october","november","december"];
 const decode=(s:string)=>s.replace(/&amp;/g,"&").replace(/&#39;|&#x27;|&apos;/g,"'").replace(/&quot;/g,'"').replace(/&rsquo;/g,"’").replace(/&nbsp;/g," ");
 
