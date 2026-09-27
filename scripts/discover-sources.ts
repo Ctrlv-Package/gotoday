@@ -67,8 +67,11 @@ async function probe(c:Cand):Promise<Found[]>{
  return out;
 }
 
+// Resolve redirects once (apex -> www): the password header is dropped on a redirect to another host.
+let resolved:string|undefined;
+async function siteBase(){if(resolved)return resolved;const u=(process.env.GOTODAY_URL||"").replace(/\/$/,"");try{resolved=new URL((await fetch(u)).url).origin}catch{resolved=u}return resolved}
 async function save(f:Found,c:Cand){
- const base=(process.env.GOTODAY_URL||"").replace(/\/$/,""),secret=process.env.INGESTION_SECRET||"";
+ const base=await siteBase(),secret=process.env.INGESTION_SECRET||"";
  const body={...f.config,region:c.region,timezone:"America/New_York"};
  const post=async(extra:any)=>{const r=await fetch(`${base}/api/admin/sources`,{method:"POST",headers:{"content-type":"application/json",authorization:`Bearer ${secret}`},body:JSON.stringify({...body,...extra})});return{status:r.status,json:await r.json().catch(()=>({}))}};
  let r=await post({test:true});
@@ -83,6 +86,7 @@ async function main(){
  const text=process.argv.slice(2).join("\n")+"\n"+(process.env.DISCOVER_URLS||"");
  for(const m of text.matchAll(/(?:([A-Z][A-Za-z .'-]*?,\s*[A-Z]{2})\s*=\s*)?(https?:\/\/[^\s,]+)/g))cands.push({city:m[1]||"",url:m[2]});
  if(!cands.length){console.error('Usage: discover-sources.ts "City, ST=https://site" ... or DISCOVER_FILE=discovery/candidates.txt');process.exit(1)}
+ if(process.env.GOTODAY_URL)await siteBase(); // before Chrome takes over GET requests
  if(process.env.USE_BROWSER==="1")await installBrowserFetch();
  const doSave=process.env.SAVE==="1"&&process.env.GOTODAY_URL&&process.env.INGESTION_SECRET;
  const all:(Found&{saved?:string})[]=[];

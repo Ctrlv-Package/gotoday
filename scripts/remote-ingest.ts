@@ -7,17 +7,26 @@ import {sourceFromConfig,type SourceConfig} from "../lib/ingestion/registry";
 import {appendFileSync} from "node:fs";
 import {installBrowserFetch,closeBrowserFetch} from "./browser-fetch";
 
-const base=(process.env.GOTODAY_URL||"").replace(/\/$/,""),secret=process.env.INGESTION_SECRET||"";
+let base=(process.env.GOTODAY_URL||"").replace(/\/$/,"");const secret=process.env.INGESTION_SECRET||"";
 if(!base||!secret){console.error("Set GOTODAY_URL and INGESTION_SECRET");process.exit(1)}
 const ymd=(d:Date)=>d.toISOString().slice(0,10);
 const now=new Date(),end=new Date(now);end.setUTCDate(end.getUTCDate()+30);
 
+/** Follow redirects (mygotoday.com -> www.mygotoday.com) up front: the password header is dropped when a
+ *  request is redirected to another host, so every call must go straight to the final address. */
+async function resolveBase(u:string){try{const r=await fetch(u,{method:"GET",redirect:"follow"});return new URL(r.url).origin}catch{return u}}
+
 async function main(){
+base=await resolveBase(base);console.log(`GoToday site: ${base}`);
 if(process.env.USE_BROWSER!=="0"){await installBrowserFetch();console.log("Fetching city pages with headless Chrome")}
 let failures=0;const rows:string[]=[];
 // The source list lives in GoToday's database; ask the site which sources to fetch from here.
 const cfgRes=await fetch(`${base}/api/admin/sources?remote=1`,{headers:{authorization:`Bearer ${secret}`}});
-if(!cfgRes.ok)throw new Error(`Could not load remote sources: HTTP ${cfgRes.status}`);
+if(!cfgRes.ok){
+ const msg=cfgRes.status===401?"HTTP 401 — the INGESTION_SECRET GitHub secret doesn't match the site's INGESTION_SECRET in Vercel":`HTTP ${cfgRes.status}`;
+ if(process.env.GITHUB_STEP_SUMMARY)appendFileSync(process.env.GITHUB_STEP_SUMMARY,`### Remote ingest could not start\n\nCould not load the source list from ${base}: ${msg}\n`);
+ throw new Error(`Could not load remote sources from ${base}: ${msg}`);
+}
 const configs:SourceConfig[]=(await cfgRes.json()).sources||[];
 console.log(`Remote sources: ${configs.map(c=>c.name).join(", ")||"(none)"}`);
 for(const s of configs.map(sourceFromConfig)){
