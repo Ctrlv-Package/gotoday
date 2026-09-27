@@ -24,7 +24,8 @@ export default async function EventPage({params}:{params:Promise<{id:string}>}){
  if(!e)return <main className="detail"><div className="detailWrap"><Link href="/" className="detailLogo">Go<span>Today</span></Link><h1>Event unavailable</h1><p>This event may have ended or been removed.</p><Link href="/">Find something else to do →</Link></div></main>;
  const h=await headers(),origin=`${h.get("x-forwarded-proto")||"https"}://${h.get("host")}`,pageUrl=`${origin}/events/${encodeURIComponent(id)}`;
  const {otherDates,atVenue}=await loadRelated(e);
- const ended=(e.end||e.start).getTime()<Date.now()-3*3600e3;
+ // All-day events run until the end of their day; timed events count as over 3 hours after they end/start.
+ const ended=isAllDay(e.start)?e.start.getTime()+24*3600e3<Date.now():((e.end&&e.end>e.start?e.end:e.start).getTime()<Date.now()-3*3600e3);
  const ages=agesText(e),cost=costText(e),map=mapEmbedUrl(e),where=whereText(e);
  const regFull=/full/i.test(e.registrationText||"");
  const paras=e.description.split(/\n+/).map(x=>x.trim()).filter(Boolean);
