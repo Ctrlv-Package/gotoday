@@ -68,19 +68,33 @@ Rules:
 - Use a short, stable title (e.g. "Artisan Market", not "Fall Artisan Market is back!").
 Reply with JSON only: {"events":[{"title":"","date":"YYYY-MM-DD","start":"HH:MM","end":"HH:MM","summary":"one or two sentences","free":true|false|null,"kids":true|false|null,"cancelled":false}]} — omit start/end when not stated.`;
 
-async function extractWithClaude(p:Post,venue:string):Promise<Extracted[]>{
- const key=process.env.ANTHROPIC_API_KEY;if(!key)return captionOnly(p);
- const img=imageOf(p);
- const content:any[]=[];
- if(img)content.push({type:"image",source:{type:"url",url:img}});
- content.push({type:"text",text:PROMPT(p,venue)});
- const r=await fetchRetry("https://api.anthropic.com/v1/messages",{method:"POST",headers:{"content-type":"application/json","x-api-key":key,"anthropic-version":"2023-06-01"},
-  body:JSON.stringify({model:MODEL,max_tokens:1200,messages:[{role:"user",content}]})});
+/** Instagram's image links are signed CDN URLs that outside services may not be allowed to open, so download
+ *  the flyer here and send the bytes. */
+async function imageBlock(url?:string){
+ if(!url)return null;
+ try{const r=await fetchRetry(url,{headers:{"User-Agent":"Mozilla/5.0"},cache:"no-store"});if(!r.ok)return null;
+  const type=(r.headers.get("content-type")||"image/jpeg").split(";")[0];if(!/^image\/(jpeg|png|gif|webp)$/.test(type))return null;
+  const buf=Buffer.from(await r.arrayBuffer());if(buf.length>4.5e6)return null;
+  return{type:"image",source:{type:"base64",media_type:type,data:buf.toString("base64")}}}catch{return null}
+}
+
+async function askClaude(content:any[]):Promise<Extracted[]>{
+ const r=await fetchRetry("https://api.anthropic.com/v1/messages",{method:"POST",headers:{"content-type":"application/json","x-api-key":process.env.ANTHROPIC_API_KEY!,"anthropic-version":"2023-06-01"},
+  body:JSON.stringify({model:MODEL,max_tokens:1500,messages:[{role:"user",content}]})});
  const d:any=await r.json().catch(()=>({}));
  if(!r.ok)throw new Error(`Claude API: ${d?.error?.message||`HTTP ${r.status}`}`);
  const text=(d.content||[]).map((c:any)=>c.text||"").join("");
  const json=text.match(/\{[\s\S]*\}/)?.[0];
- try{return(JSON.parse(json||"{}").events||[]).filter((e:any)=>/^\d{4}-\d{2}-\d{2}$/.test(e?.date)&&String(e?.title||"").trim())}catch{return[]}
+ if(!json)throw new Error("Claude API: reply had no JSON");
+ return(JSON.parse(json).events||[]).filter((e:any)=>/^\d{4}-\d{2}-\d{2}$/.test(e?.date)&&String(e?.title||"").trim());
+}
+
+async function extractWithClaude(p:Post,venue:string):Promise<Extracted[]>{
+ if(!process.env.ANTHROPIC_API_KEY)return captionOnly(p);
+ const img=await imageBlock(imageOf(p));
+ const text={type:"text",text:PROMPT(p,venue)};
+ try{return await askClaude(img?[img,text]:[text])}
+ catch(e){if(!img)throw e;return askClaude([text])}   // image rejected: read the caption alone
 }
 
 /** Fallback without an AI key: a caption that names a month + day ("Sunday, Sept 27 · 4-8pm"). */
@@ -97,10 +111,11 @@ export function captionOnly(p:Post):Extracted[]{
 
 async function cached(p:Post,venue:string):Promise<Extracted[]>{
  if(!process.env.ANTHROPIC_API_KEY)return captionOnly(p);   // don't cache the weaker caption-only reading
- const {rows}=await db.query("select extracted from social_posts where id=$1",[p.id]);
+ const id=`${p.id}:v2`;   // bump when the reading logic changes, so posts are read again
+ const {rows}=await db.query("select extracted from social_posts where id=$1",[id]);
  if(rows[0])return rows[0].extracted||[];
  const ev=await extractWithClaude(p,venue);
- await db.query("insert into social_posts(id,permalink,posted_at,extracted) values($1,$2,$3,$4) on conflict(id) do update set extracted=excluded.extracted",[p.id,p.permalink,p.timestamp,JSON.stringify(ev)]);
+ await db.query("insert into social_posts(id,permalink,posted_at,extracted) values($1,$2,$3,$4) on conflict(id) do update set extracted=excluded.extracted",[id,p.permalink,p.timestamp,JSON.stringify(ev)]);
  return ev;
 }
 
@@ -108,10 +123,10 @@ export async function fetchInstagram(cfg:InstagramConfig,startDate:string,endDat
  await ensureSchema();
  const posts=await loadPosts(cfg.username);
  const cutoff=new Date(Date.now()-(cfg.maxAgeDays??60)*86400e3).toISOString();
- const found:(Extracted&{post:Post})[]=[];
+ const found:(Extracted&{post:Post})[]=[];let errors=0,firstError="";
  // Newest first, so a later "moved to Sunday" post wins over the original announcement.
  for(const p of posts.filter(p=>p.timestamp>=cutoff).sort((a,b)=>b.timestamp.localeCompare(a.timestamp))){
-  try{for(const e of await cached(p,cfg.venue))found.push({...e,post:p})}catch(e:any){console.log(`instagram ${cfg.username} post ${p.id}: ${e?.message||e}`)}
+  try{for(const e of await cached(p,cfg.venue))found.push({...e,post:p})}catch(e:any){errors++;firstError||=String(e?.message||e);console.log(`instagram ${cfg.username} post ${p.id}: ${e?.message||e}`)}
  }
  const key=(e:Extracted)=>`${e.date}|${slug(e.title).split("-").filter(w=>w.length>2).slice(0,2).join("-")}`;
  const cancelled=new Set(found.filter(e=>e.cancelled).map(key)),seen=new Set<string>(),out:EventRecord[]=[];
@@ -128,5 +143,6 @@ export async function fetchInstagram(cfg:InstagramConfig,startDate:string,endDat
    tags:[...(family?["Family"]:[]),...(e.kids?["Kids"]:[]),...(arts?["Arts & Theatre"]:[]),...(e.free?["Free"]:[]),"Local"],
    emoji:family?"🎉":arts?"🎨":"📍",source:cfg.source,isFree:e.free===true||undefined,eventType:"event"});
  }
+ if(!out.length)throw new Error(`@${cfg.username}: ${posts.length} posts read, ${found.length} dated events found, none in ${startDate}..${endDate}${errors?`; ${errors} posts failed (${firstError.slice(0,200)})`:""}${process.env.ANTHROPIC_API_KEY?"":"; ANTHROPIC_API_KEY not set (captions only)"}`);
  return out;
 }
