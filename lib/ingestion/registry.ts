@@ -32,6 +32,8 @@ export const SEED_SOURCES:SourceConfig[]=[
  {name:"Palm Beach County Library",platform:"bibliocommons",params:{library:"pbclibrary",idPrefix:"pbcl",defaultCity:"Palm Beach County, FL",defaultVenue:"Palm Beach County Library"},source_type:"official-county",url:"https://pbclibrary.bibliocommons.com/v2/events",priority:90,region:"palm-beach"},
  // ---- Ticketed (supplemental) ----
  {name:"Ticketmaster",platform:"ticketmaster",params:{marketId:"15",label:"South Florida"},source_type:"ticketing",url:"https://www.ticketmaster.com",priority:60,region:"south-florida"},
+ {name:"Ticketmaster Orlando",platform:"ticketmaster",params:{latlong:"28.5383,-81.3792",radius:35,label:"Orlando"},source_type:"ticketing",url:"https://www.ticketmaster.com",priority:60,region:"orlando"},
+ {name:"Ticketmaster Tampa Bay",platform:"ticketmaster",params:{latlong:"27.9506,-82.4572",radius:35,label:"Tampa Bay"},source_type:"ticketing",url:"https://www.ticketmaster.com",priority:60,region:"tampa"},
 ];
 
 function toSource(c:SourceConfig):EventSource{

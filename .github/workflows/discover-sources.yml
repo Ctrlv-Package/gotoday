@@ -3,17 +3,24 @@ name: Discover event sources
 # Paste city / county / library website URLs; the job detects which calendar product each uses
 # and prints ready-to-save GoToday source configs on the run page.
 on:
+  push:
+    branches: [main]
+    paths: ["discovery/candidates.txt"]   # editing the candidates list runs discovery and saves confirmed sources
   workflow_dispatch:
     inputs:
       urls:
-        description: 'One per line or space-separated. Optional city prefix: "Coral Springs, FL=https://www.coralsprings.gov"'
-        required: true
+        description: 'Optional extra sites, one per line. Optional city prefix: "Coral Springs, FL=https://www.coralsprings.gov"'
+        required: false
         type: string
+      save:
+        description: "Save confirmed sources to GoToday"
+        type: boolean
+        default: true
 
 jobs:
   discover:
     runs-on: ubuntu-24.04
-    timeout-minutes: 15
+    timeout-minutes: 45
     steps:
       - uses: actions/checkout@v5
       - uses: actions/setup-node@v5
@@ -24,4 +31,8 @@ jobs:
       - run: npx tsx scripts/discover-sources.ts
         env:
           DISCOVER_URLS: ${{ inputs.urls }}
+          DISCOVER_FILE: ${{ inputs.urls == '' && 'discovery/candidates.txt' || '' }}
           USE_BROWSER: "1"
+          SAVE: ${{ (github.event_name == 'push' || inputs.save) && '1' || '0' }}
+          GOTODAY_URL: ${{ secrets.GOTODAY_URL }}
+          INGESTION_SECRET: ${{ secrets.INGESTION_SECRET }}

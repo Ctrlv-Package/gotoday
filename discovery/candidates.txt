@@ -1,0 +1,90 @@
+# Event-source candidates. Format: Name | City, ST | Website | region
+# Pushing changes to this file runs the "Discover event sources" workflow: it detects each site's
+# calendar product and saves every confirmed source to GoToday automatically.
+
+# ---- Broward (not yet covered) ----
+City of Coral Springs | Coral Springs, FL | https://www.coralsprings.gov | broward
+City of Miramar | Miramar, FL | https://www.miramarfl.gov | broward
+City of Coconut Creek | Coconut Creek, FL | https://www.coconutcreek.net | broward
+City of Tamarac | Tamarac, FL | https://www.tamarac.gov | broward
+City of Lauderhill | Lauderhill, FL | https://www.lauderhill-fl.gov | broward
+City of Pompano Beach | Pompano Beach, FL | https://www.pompanobeachfl.gov | broward
+City of Lauderdale Lakes | Lauderdale Lakes, FL | https://www.lauderdalelakes.org | broward
+City of North Lauderdale | North Lauderdale, FL | https://www.nlauderdale.org | broward
+City of Wilton Manors | Wilton Manors, FL | https://www.wiltonmanors.com | broward
+City of Oakland Park | Oakland Park, FL | https://www.oaklandparkfl.gov | broward
+City of Lighthouse Point | Lighthouse Point, FL | https://www.lighthousepoint.com | broward
+City of Dania Beach | Dania Beach, FL | https://www.daniabeachfl.gov | broward
+Town of Southwest Ranches | Southwest Ranches, FL | https://www.southwestranches.org | broward
+Town of Lauderdale-By-The-Sea | Lauderdale-By-The-Sea, FL | https://www.lbts-fl.gov | broward
+City of West Park | West Park, FL | https://www.cityofwestpark.org | broward
+
+# ---- Miami-Dade ----
+City of Miami | Miami, FL | https://www.miami.gov | miami-dade
+City of Miami Beach | Miami Beach, FL | https://www.miamibeachfl.gov | miami-dade
+City of Coral Gables | Coral Gables, FL | https://www.coralgables.com | miami-dade
+City of Doral | Doral, FL | https://www.cityofdoral.com | miami-dade
+City of Hialeah | Hialeah, FL | https://www.hialeahfl.gov | miami-dade
+City of Homestead | Homestead, FL | https://www.homesteadfl.gov | miami-dade
+City of Aventura | Aventura, FL | https://www.cityofaventura.com | miami-dade
+City of North Miami | North Miami, FL | https://www.northmiamifl.gov | miami-dade
+City of North Miami Beach | North Miami Beach, FL | https://www.citynmb.com | miami-dade
+City of Miami Gardens | Miami Gardens, FL | https://www.miamigardens-fl.gov | miami-dade
+Village of Pinecrest | Pinecrest, FL | https://www.pinecrest-fl.gov | miami-dade
+Town of Cutler Bay | Cutler Bay, FL | https://www.cutlerbay-fl.gov | miami-dade
+Village of Palmetto Bay | Palmetto Bay, FL | https://www.palmettobay-fl.gov | miami-dade
+Town of Miami Lakes | Miami Lakes, FL | https://www.miamilakes-fl.gov | miami-dade
+City of Sunny Isles Beach | Sunny Isles Beach, FL | https://www.sibfl.net | miami-dade
+Village of Key Biscayne | Key Biscayne, FL | https://www.keybiscayne.fl.gov | miami-dade
+City of Miami Springs | Miami Springs, FL | https://www.miamisprings-fl.gov | miami-dade
+City of South Miami | South Miami, FL | https://www.southmiamifl.gov | miami-dade
+Town of Surfside | Surfside, FL | https://www.townofsurfsidefl.gov | miami-dade
+
+# ---- Palm Beach ----
+City of Boca Raton | Boca Raton, FL | https://www.myboca.us | palm-beach
+City of Delray Beach | Delray Beach, FL | https://www.delraybeachfl.gov | palm-beach
+City of Boynton Beach | Boynton Beach, FL | https://www.boynton-beach.org | palm-beach
+City of West Palm Beach | West Palm Beach, FL | https://www.wpb.org | palm-beach
+Village of Wellington | Wellington, FL | https://www.wellingtonfl.gov | palm-beach
+Town of Jupiter | Jupiter, FL | https://www.jupiter.fl.us | palm-beach
+City of Palm Beach Gardens | Palm Beach Gardens, FL | https://www.pbgfl.com | palm-beach
+Village of Royal Palm Beach | Royal Palm Beach, FL | https://www.royalpalmbeachfl.gov | palm-beach
+City of Lake Worth Beach | Lake Worth Beach, FL | https://lakeworthbeachfl.gov | palm-beach
+City of Greenacres | Greenacres, FL | https://greenacresfl.gov | palm-beach
+Town of Lantana | Lantana, FL | https://www.lantana.org | palm-beach
+Boca Raton Public Library | Boca Raton, FL | https://www.bocalibrary.org | palm-beach
+Delray Beach Public Library | Delray Beach, FL | https://www.delraylibrary.org | palm-beach
+West Palm Beach Library | West Palm Beach, FL | https://www.wpbcitylibrary.org | palm-beach
+
+# ---- Orlando area ----
+City of Orlando | Orlando, FL | https://www.orlando.gov | orlando
+City of Winter Park | Winter Park, FL | https://cityofwinterpark.org | orlando
+City of Kissimmee | Kissimmee, FL | https://www.kissimmee.gov | orlando
+City of Sanford | Sanford, FL | https://www.sanfordfl.gov | orlando
+City of Oviedo | Oviedo, FL | https://www.cityofoviedo.net | orlando
+City of Altamonte Springs | Altamonte Springs, FL | https://www.altamonte.org | orlando
+City of Winter Garden | Winter Garden, FL | https://www.cwgdn.com | orlando
+City of Apopka | Apopka, FL | https://www.apopka.gov | orlando
+City of Ocoee | Ocoee, FL | https://www.ocoee.org | orlando
+City of Lake Mary | Lake Mary, FL | https://www.lakemaryfl.com | orlando
+Orange County Library System | Orlando, FL | https://www.ocls.org | orlando
+Seminole County Public Library | Sanford, FL | https://www.seminolecountyfl.gov | orlando
+Osceola Library System | Kissimmee, FL | https://www.osceolalibrary.org | orlando
+Winter Park Library | Winter Park, FL | https://www.winterparklibrary.org | orlando
+
+# ---- Tampa Bay ----
+City of Tampa | Tampa, FL | https://www.tampa.gov | tampa
+City of St. Petersburg | St. Petersburg, FL | https://www.stpete.org | tampa
+City of Clearwater | Clearwater, FL | https://www.myclearwater.com | tampa
+City of Largo | Largo, FL | https://www.largo.com | tampa
+City of Temple Terrace | Temple Terrace, FL | https://www.templeterrace.gov | tampa
+City of Dunedin | Dunedin, FL | https://www.dunedingov.com | tampa
+City of Plant City | Plant City, FL | https://www.plantcitygov.com | tampa
+City of Pinellas Park | Pinellas Park, FL | https://www.pinellas-park.com | tampa
+City of Oldsmar | Oldsmar, FL | https://www.myoldsmar.com | tampa
+City of Safety Harbor | Safety Harbor, FL | https://www.cityofsafetyharbor.com | tampa
+Tampa-Hillsborough County Public Library | Tampa, FL | https://www.hcplc.org | tampa
+St. Petersburg Public Library | St. Petersburg, FL | https://www.splibraries.org | tampa
+Pasco County Libraries | New Port Richey, FL | https://www.pascolibraries.org | tampa
+Clearwater Public Library | Clearwater, FL | https://www.myclearwaterlibrary.com | tampa
+Largo Public Library | Largo, FL | https://www.largo.com/library | tampa
