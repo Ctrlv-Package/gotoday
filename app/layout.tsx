@@ -2,7 +2,7 @@ import "./globals.css";
 import type { Metadata } from "next";
 
 // Canonical site address: shared links and preview images resolve against it.
-const SITE = process.env.NEXT_PUBLIC_SITE_URL || "https://mygotoday.com";
+const SITE = process.env.NEXT_PUBLIC_SITE_URL || "https://www.mygotoday.com";
 
 export const metadata: Metadata = {
   metadataBase: new URL(SITE),
