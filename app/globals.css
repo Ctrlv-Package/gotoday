@@ -138,3 +138,5 @@ nav{display:flex;justify-content:space-between;align-items:center;max-width:1180
  .facts{grid-template-columns:repeat(auto-fit,minmax(200px,1fr))}
  .mapBox iframe{height:320px}
 }
+
+.chipDates{font-weight:500;opacity:.75}

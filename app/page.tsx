@@ -5,12 +5,19 @@ type EventItem={id?:string;title:string;city:string;venue?:string;date?:string;t
 
 const AGE_BANDS:[string,number,number][]=[["Babies & toddlers",0,2],["Preschool 3–5",3,5],["Ages 6–9",6,9],["Tweens 10–12",10,12],["Teens 13–17",13,17]];
 const CHIPS=["All","Family","Kids","Free","Music","Arts & Theatre","Sports"];
-const RANGES=[["today","Today"],["tomorrow","Tomorrow"],["weekend","This Weekend"]] as const;
+const RANGES=[["today","Today"],["tomorrow","Tomorrow"],["weekend","Next Weekend"]] as const;
 const TIMES=["Any time","Morning","Afternoon","Evening"];
 const DEFAULT_ZIP="33326";
 
 function ageLabel(e:EventItem){if(e.ageMin==null||e.ageMax==null||e.ageMax>18)return"";return e.ageMax<=1?"Babies":`Ages ${e.ageMin}–${e.ageMax}`}
 function fmt(d?:string,t?:string){if(!d)return"Date TBA";const day=new Intl.DateTimeFormat("en-US",{weekday:"short",month:"short",day:"numeric"}).format(new Date(d+"T12:00:00"));if(!t)return day+" · All day";return day+" · "+new Intl.DateTimeFormat("en-US",{hour:"numeric",minute:"2-digit"}).format(new Date(d+"T"+t))}
+function nextWeekendLabel(){
+ const p=new Intl.DateTimeFormat("en-US",{timeZone:"America/New_York",year:"numeric",month:"2-digit",day:"2-digit"}).formatToParts(new Date());
+ const g=(t:string)=>p.find(x=>x.type===t)?.value||"",base=new Date(`${g("year")}-${g("month")}-${g("day")}T12:00:00Z`);
+ const day=base.getUTCDay(),n=day===6?7:(6-day+7)%7||7,sat=new Date(base);sat.setUTCDate(sat.getUTCDate()+n);const sun=new Date(sat);sun.setUTCDate(sun.getUTCDate()+1);
+ const m=(d:Date)=>d.toLocaleDateString("en-US",{month:"short",timeZone:"UTC"});
+ return m(sat)===m(sun)?`${m(sat)} ${sat.getUTCDate()}–${sun.getUTCDate()}`:`${m(sat)} ${sat.getUTCDate()} – ${m(sun)} ${sun.getUTCDate()}`;
+}
 function detailHref(e:EventItem){return e.source==="Ticketmaster"?(e.url||"#"):"/events/"+encodeURIComponent(e.id||"")}
 const store={get:(k:string)=>{try{return localStorage.getItem(k)}catch{return null}},set:(k:string,v:string)=>{try{localStorage.setItem(k,v)}catch{}}};
 
@@ -27,7 +34,7 @@ export default function Home(){
    if(c){q.set("lat",String(c.lat));q.set("lng",String(c.lng))}
    const d=await (await fetch("/api/events?"+q,{cache:"no-store"})).json();
    setEvents(d.events||[]);
-   if(!d.events?.length)setMessage(r==="today"?"Nothing else found for today nearby. Try Tomorrow, This Weekend, or a bigger distance.":"Nothing found for this period yet. Try a bigger distance.");
+   if(!d.events?.length)setMessage(r==="today"?"Nothing else found for today nearby. Try Tomorrow, Next Weekend, or a bigger distance.":"Nothing found for this period yet. Try a bigger distance.");
   }catch{setEvents([]);setMessage("Events are temporarily unavailable.")}
   finally{setLoading(false)}
  }
@@ -88,7 +95,7 @@ export default function Home(){
    </div>
 
    <div className="label">WHEN</div>
-   <div className="chips">{RANGES.map(([k,l])=><button key={k} className={range===k?"active":""} onClick={()=>chooseRange(k)}>{l}</button>)}</div>
+   <div className="chips">{RANGES.map(([k,l])=><button key={k} className={range===k?"active":""} onClick={()=>chooseRange(k)}>{l}{k==="weekend"&&<small className="chipDates"> · {nextWeekendLabel()}</small>}</button>)}</div>
 
    <div className="label">WHAT ARE YOU INTO?</div>
    <div className="chips">{CHIPS.map(c=><button key={c} className={(c==="All"?selected.length===0:selected.includes(c))?"active":""} onClick={()=>toggleChip(c)}>{c}</button>)}</div>
