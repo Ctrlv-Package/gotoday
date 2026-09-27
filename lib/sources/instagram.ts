@@ -15,7 +15,7 @@ export type InstagramConfig={username:string;source:string;idPrefix:string;city:
 type Extracted={title:string;date:string;start?:string;end?:string;summary?:string;free?:boolean;kids?:boolean;cancelled?:boolean};
 type Post={id:string;caption?:string;media_type:string;media_url?:string;thumbnail_url?:string;permalink:string;timestamp:string;children?:{data:{media_url?:string;media_type:string}[]}};
 
-const GRAPH="https://graph.facebook.com/v21.0";
+const GRAPH="https://graph.facebook.com/v25.0";
 const MODEL=process.env.EVENT_EXTRACT_MODEL||"claude-haiku-4-5-20251001";
 
 async function loadPosts(username:string):Promise<Post[]>{
