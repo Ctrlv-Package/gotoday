@@ -44,6 +44,7 @@ export async function GET(request:NextRequest){
  if(!lat||!lng){const c=await zipCoords(postalCode);[lat,lng]=(c||[26.12,-80.25]).map(String) as [string,string]}
  // Re-apply the current discovery rules at read time, so rule changes take effect without waiting for re-ingestion.
  let events:any[]=(await databaseEvents(w.startDate,w.endDate))
+  .filter((e:any)=>!(e.source==="Ticketmaster"&&/^(luxury|premium|club)\s*(&|and)?\s*suites?\b|\bsuites?:|\bparking\b/i.test(e.title)))
   .filter((e:any)=>!discoveryRejection({...e,isDiscoveryEligible:e.source==="Ticketmaster"?true:undefined}))
   .filter((e:any)=>localWithinRadius(e,lat,lng,radius));
  if(range==="today"){const np=new Intl.DateTimeFormat("en-US",{timeZone:"America/New_York",hour:"2-digit",minute:"2-digit",hour12:false}).formatToParts(new Date());const nowTime=(np.find(x=>x.type==="hour")?.value||"00").replace(/^24$/,"00")+":"+(np.find(x=>x.type==="minute")?.value||"00")+":00";events=events.filter((e:any)=>!e.time||e.time==="00:00:00"||e.time>=nowTime)}
