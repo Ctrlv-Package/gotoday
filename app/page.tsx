@@ -1,22 +1,129 @@
 "use client";
 import {useEffect,useMemo,useState} from "react";
-type EventItem={id?:string;title:string;city:string;venue?:string;date?:string;time?:string;image?:string;url?:string;category?:string;genre?:string;minPrice?:number|null;desc?:string;tags?:string[];emoji?:string;source?:string;distanceMiles?:number;distanceAccuracy?:string;ageMin?:number;ageMax?:number;moreLocations?:number;otherVenues?:string[]};
+
+type EventItem={id?:string;title:string;city:string;venue?:string;date?:string;time?:string;image?:string;url?:string;category?:string;genre?:string;minPrice?:number|null;desc?:string;tags?:string[];emoji?:string;source?:string;distanceMiles?:number;distanceAccuracy?:string;ageMin?:number;ageMax?:number;moreLocations?:number;otherVenues?:string[];isFree?:boolean};
+
 const AGE_BANDS:[string,number,number][]=[["Babies & toddlers",0,2],["Preschool 3–5",3,5],["Ages 6–9",6,9],["Tweens 10–12",10,12],["Teens 13–17",13,17]];
+const CHIPS=["All","Family","Kids","Free","Music","Arts & Theatre","Sports"];
+const RANGES=[["today","Today"],["tomorrow","Tomorrow"],["weekend","This Weekend"]] as const;
+const TIMES=["Any time","Morning","Afternoon","Evening"];
+const DEFAULT_ZIP="33326";
+
 function ageLabel(e:EventItem){if(e.ageMin==null||e.ageMax==null||e.ageMax>18)return"";return e.ageMax<=1?"Babies":`Ages ${e.ageMin}–${e.ageMax}`}
-const chips=["All","Family","Music","Sports","Arts & Theatre","Free","Kids"],ranges=[["today","Today"],["tomorrow","Tomorrow"],["weekend","This Weekend"]] as const;
-function fmt(d?:string,t?:string){if(!d)return"Date TBA";return new Intl.DateTimeFormat("en-US",{weekday:"short",month:"short",day:"numeric",hour:t?"numeric":undefined,minute:t?"2-digit":undefined}).format(new Date(d+"T"+(t||"12:00:00")))}
+function fmt(d?:string,t?:string){if(!d)return"Date TBA";const day=new Intl.DateTimeFormat("en-US",{weekday:"short",month:"short",day:"numeric"}).format(new Date(d+"T12:00:00"));if(!t)return day+" · All day";return day+" · "+new Intl.DateTimeFormat("en-US",{hour:"numeric",minute:"2-digit"}).format(new Date(d+"T"+t))}
+function detailHref(e:EventItem){return e.source==="Ticketmaster"?(e.url||"#"):"/events/"+encodeURIComponent(e.id||"")}
+const store={get:(k:string)=>{try{return localStorage.getItem(k)}catch{return null}},set:(k:string,v:string)=>{try{localStorage.setItem(k,v)}catch{}}};
+
 export default function Home(){
- const[zip,setZip]=useState("33326"),[searchedZip,setSearchedZip]=useState("33326"),[selected,setSelected]=useState<string[]>([]),[timeFilter,setTimeFilter]=useState("Any time"),[sort,setSort]=useState("Soonest"),[query,setQuery]=useState(""),[events,setEvents]=useState<EventItem[]>([]),[loading,setLoading]=useState(false),[message,setMessage]=useState(""),[range,setRange]=useState("today"),[coords,setCoords]=useState<{lat:number;lng:number}|null>(null),[radius,setRadius]=useState("25"),[ageBands,setAgeBands]=useState<string[]>([]);
- async function load(z=searchedZip,r=range,c=coords){setLoading(true);setMessage("");try{const q=new URLSearchParams({postalCode:z||"33326",radius,range:r,_:String(Date.now())});if(c){q.set("lat",String(c.lat));q.set("lng",String(c.lng))}const res=await fetch("/api/events?"+q,{cache:"no-store"}),d=await res.json();setEvents(d.events||[]);if(!d.events?.length)setMessage(r==="today"?"Nothing special found for today yet. Try Tomorrow or This Weekend.":"Nothing found for this period yet.")}catch{setEvents([]);setMessage("Events are temporarily unavailable.")}finally{setLoading(false)}}
- useEffect(()=>{load("33326","today",null)},[]);
- function submitZip(){const z=zip.trim();if(!/^\d{5}$/.test(z)){setMessage("Enter a valid 5-digit ZIP code.");return}setCoords(null);setSearchedZip(z);setSelected([]);load(z,range,null)}
- function clearLocation(){setZip("");setSearchedZip("");setCoords(null);setMessage("Enter a ZIP code above or use your current location.")}
- function chooseRange(r:string){setRange(r);setSelected([]);load(searchedZip,r,coords)}
- function useLocation(){if(!navigator.geolocation)return setMessage("Location is not supported by this browser.");navigator.geolocation.getCurrentPosition(p=>{const c={lat:p.coords.latitude,lng:p.coords.longitude};setCoords(c);setSearchedZip("");setZip("");setSelected([]);load("",range,c)},()=>setMessage("Location permission was not granted."))}
- const filtered=useMemo(()=>events.filter(e=>{const tags=new Set([e.category,...(e.tags||[])]);const interests=selected.filter(x=>x!=="Free");const cm=(interests.length===0||interests.some(x=>tags.has(x)||(x==="Family"&&tags.has("Kids"))))&&(!selected.includes("Free")||tags.has("Free"));const isKids=tags.has("Kids");const am=!selected.includes("Kids")||ageBands.length===0||!isKids||e.ageMin==null||e.ageMax==null||AGE_BANDS.some(([l,lo,hi])=>ageBands.includes(l)&&e.ageMin!<=hi&&e.ageMax!>=lo);const h=Number((e.time||"12:00").slice(0,2));const tm=timeFilter==="Any time"||(timeFilter==="Morning"&&h<12)||(timeFilter==="Afternoon"&&h>=12&&h<17)||(timeFilter==="Evening"&&h>=17);return cm&&am&&tm&&[e.title,e.city,e.venue,e.desc,e.category,e.genre].filter(Boolean).join(" ").toLowerCase().includes(query.toLowerCase())}).sort((a,b)=>{const ak=(a.date||"")+(a.time||""),bk=(b.date||"")+(b.time||"");return sort==="Latest"?bk.localeCompare(ak):ak.localeCompare(bk)}),[events,selected,timeFilter,sort,query,ageBands]);
- return <main style={{background:"#fafafa",minHeight:"100vh"}}><section className="hero" style={{borderRadius:"0 0 42px 42px",overflow:"hidden",boxShadow:"0 24px 70px rgba(39,39,42,.12)"}}><nav><div className="logo">Go<span>Today</span></div><div className="navlinks">Events · About · Add Event ♡ ☰</div></nav><div className="heroContent" style={{maxWidth:760,paddingTop:48,paddingBottom:46}}><div className="eyebrow">EXPLORE MORE. TODAY.</div><h1 style={{fontSize:"clamp(54px,7vw,88px)",lineHeight:.92,letterSpacing:"-4px",margin:"12px 0 22px"}}>Find your<br/><span style={{color:"#7c3aed"}}>next thing.</span></h1><p>The best things happening around you — from neighborhood finds to big nights out.</p><div className="searchRow"><input value={zip} onChange={e=>setZip(e.target.value)} onKeyDown={e=>e.key==="Enter"&&submitZip()} placeholder="Enter ZIP code"/><button onClick={useLocation}>Use my location</button></div><button className="cta" onClick={submitZip}>{loading?"Finding events…":"Find Things to Do →"}</button></div></section>
- <section className="content" style={{maxWidth:1180,margin:"-18px auto 0",position:"relative",zIndex:2,paddingBottom:80}}><div className="toolbar" style={{background:"#fff",border:"1px solid #e4e4e7",borderRadius:22,padding:20,boxShadow:"0 12px 36px rgba(39,39,42,.08)"}}><div><b>📍 {coords?"Current location":searchedZip||"Choose location"}</b><span className="rangeLabel">within {radius} miles</span>{(coords||searchedZip)&&<button onClick={clearLocation} style={{marginLeft:12,border:0,background:"transparent",cursor:"pointer",textDecoration:"underline"}}>Change</button>}</div><input placeholder="Search events" value={query} onChange={e=>setQuery(e.target.value)}/></div>
- <div style={{fontSize:13,fontWeight:800,letterSpacing:1.2,color:"#71717a",margin:"28px 0 10px"}}>WHEN</div><div className="chips">{ranges.map(([k,l])=><button key={k} className={range===k?"active":""} onClick={()=>chooseRange(k)}>{l}</button>)}</div>
- {message&&<p className="notice">{message}</p>}<div style={{fontSize:13,fontWeight:800,letterSpacing:1.2,color:"#71717a",margin:"24px 0 10px"}}>WHAT ARE YOU INTO?</div><div className="chips">{chips.map(c=><button key={c} className={(c==="All"?selected.length===0:selected.includes(c))?"active":""} onClick={()=>c==="All"?setSelected([]):setSelected(s=>s.includes(c)?s.filter(x=>x!==c):[...s,c])}>{c}</button>)}</div>{selected.includes("Kids")&&<div className="chips"><span style={{alignSelf:"center",fontWeight:700}}>Ages:</span>{AGE_BANDS.map(([l])=><button key={l} className={ageBands.includes(l)?"active":""} onClick={()=>setAgeBands(b=>b.includes(l)?b.filter(x=>x!==l):[...b,l])}>{l}</button>)}</div>}<div className="chips"><span style={{alignSelf:"center",fontWeight:700}}>Distance:</span><select value={radius} onChange={e=>{const v=e.target.value;setRadius(v);setTimeout(()=>load(searchedZip,range,coords),0)}} className="filterSelect"><option value="10">10 miles</option><option value="15">15 miles</option><option value="25">25 miles</option><option value="50">50 miles</option></select><span style={{alignSelf:"center",fontWeight:700}}>Time:</span>{["Any time","Morning","Afternoon","Evening"].map(t=><button key={t} className={timeFilter===t?"active":""} onClick={()=>setTimeFilter(t)}>{t}</button>)}<select value={sort} onChange={e=>setSort(e.target.value)} style={{border:0,borderRadius:24,padding:"10px 16px",fontSize:16}}><option>Soonest</option><option>Latest</option></select></div><div style={{display:"flex",alignItems:"end",justifyContent:"space-between",gap:16,marginTop:34,marginBottom:18}}><div><div style={{fontSize:13,fontWeight:800,letterSpacing:1.4,color:"#7c3aed"}}>CURATED NEAR YOU</div><h2 style={{fontSize:32,margin:"6px 0 0"}}>{loading?"Searching…":filtered.length+" things to do near you"}</h2></div><span style={{color:"#71717a"}}>Local discoveries + major events</span></div>
- <div className="grid">{filtered.map((e,i)=><article className="card" key={e.id||e.title+i} style={{border:"1px solid #e4e4e7",borderRadius:24,overflow:"hidden",boxShadow:"0 14px 42px rgba(39,39,42,.08)",background:"#fff"}}><div className="pic">{e.image?<img src={e.image} alt="" referrerPolicy="no-referrer" onError={(x)=>{x.currentTarget.style.display="none";const n=x.currentTarget.nextElementSibling as HTMLElement|null;if(n)n.style.display="flex"}}/>:null}<span style={e.image?{display:"none"}:undefined}>{e.emoji||"🎟️"}</span></div><div className="cardBody"><div className="topline"><h3>{e.title}</h3><button className="heart">♡</button></div><div className="meta">📍 {e.venue?e.venue+" · ":""}{e.city}{typeof e.distanceMiles==="number"?` · ${e.distanceMiles.toFixed(1)} mi`:""}{e.moreLocations?<span title={(e.otherVenues||[]).join(", ")} style={{fontWeight:700}}>{` · +${e.moreLocations} more location${e.moreLocations>1?"s":""}`}</span>:null}</div><div className="meta">🗓 {fmt(e.date,e.time)}{e.time?"":" · All day"}</div><p>{e.desc||[e.category,e.genre].filter(Boolean).join(" · ")}</p><div className="tags">{e.source!=="Ticketmaster"&&<span>Local</span>}{ageLabel(e)&&<span style={{background:"#ede9fe",color:"#5b21b6",fontWeight:700}}>{ageLabel(e)}</span>}{(e.tags||[e.category,e.genre].filter(Boolean) as string[]).filter(t=>t!=="Local"&&t!=="Library").slice(0,3).map(t=><span key={t}>{t}</span>)}</div>{e.id&&<p><a href={e.source==="Ticketmaster"?(e.url||"#"):"/events/"+encodeURIComponent(e.id)} target={e.source==="Ticketmaster"?"_blank":undefined} rel={e.source==="Ticketmaster"?"noreferrer":undefined}><span style={{display:"inline-flex",alignItems:"center",gap:8,background:"#18181b",color:"#fff",padding:"12px 18px",borderRadius:12,fontWeight:800,textDecoration:"none"}}>{e.source==="Ticketmaster"?"Tickets & details ↗":"View details →"}</span></a></p>}</div></article>)}</div></section></main>
+ const[zip,setZip]=useState(DEFAULT_ZIP),[searchedZip,setSearchedZip]=useState(DEFAULT_ZIP),[coords,setCoords]=useState<{lat:number;lng:number}|null>(null);
+ const[radius,setRadius]=useState("25"),[range,setRange]=useState("today"),[selected,setSelected]=useState<string[]>([]),[ageBands,setAgeBands]=useState<string[]>([]);
+ const[timeFilter,setTimeFilter]=useState("Any time"),[sort,setSort]=useState("Soonest"),[query,setQuery]=useState("");
+ const[events,setEvents]=useState<EventItem[]>([]),[loading,setLoading]=useState(false),[message,setMessage]=useState(""),[toast,setToast]=useState("");
+
+ async function load(z:string,r:string,c:{lat:number;lng:number}|null,rad:string){
+  setLoading(true);setMessage("");
+  try{
+   const q=new URLSearchParams({postalCode:z||DEFAULT_ZIP,radius:rad,range:r});
+   if(c){q.set("lat",String(c.lat));q.set("lng",String(c.lng))}
+   const d=await (await fetch("/api/events?"+q,{cache:"no-store"})).json();
+   setEvents(d.events||[]);
+   if(!d.events?.length)setMessage(r==="today"?"Nothing else found for today nearby. Try Tomorrow, This Weekend, or a bigger distance.":"Nothing found for this period yet. Try a bigger distance.");
+  }catch{setEvents([]);setMessage("Events are temporarily unavailable.")}
+  finally{setLoading(false)}
+ }
+
+ // Start from ?zip= in the link, else the last ZIP used on this device, else the default.
+ useEffect(()=>{
+  const fromUrl=new URLSearchParams(location.search).get("zip"),saved=store.get("gotoday:zip"),savedRadius=store.get("gotoday:radius");
+  const z=[fromUrl,saved].find(x=>x&&/^\d{5}$/.test(x))||DEFAULT_ZIP,rad=savedRadius&&["10","15","25","50"].includes(savedRadius)?savedRadius:"25";
+  setZip(z);setSearchedZip(z);setRadius(rad);load(z,"today",null,rad);
+ },[]);
+
+ function submitZip(){const z=zip.trim();if(!/^\d{5}$/.test(z)){setMessage("Enter a valid 5-digit ZIP code.");return}store.set("gotoday:zip",z);setCoords(null);setSearchedZip(z);load(z,range,null,radius);document.getElementById("results")?.scrollIntoView({behavior:"smooth"})}
+ function useLocation(){if(!navigator.geolocation)return setMessage("Location is not supported by this browser.");setMessage("Finding your location…");navigator.geolocation.getCurrentPosition(p=>{const c={lat:p.coords.latitude,lng:p.coords.longitude};setCoords(c);setSearchedZip("");setZip("");load("",range,c,radius);document.getElementById("results")?.scrollIntoView({behavior:"smooth"})},()=>setMessage("Location permission was not granted. Enter a ZIP code instead."),{timeout:10000,maximumAge:600000})}
+ function chooseRange(r:string){setRange(r);load(searchedZip,r,coords,radius)}
+ function chooseRadius(rad:string){setRadius(rad);store.set("gotoday:radius",rad);load(searchedZip,range,coords,rad)}
+ function toggleChip(c:string){if(c==="All"){setSelected([]);setAgeBands([]);return}setSelected(s=>s.includes(c)?s.filter(x=>x!==c):[...s,c])}
+
+ async function share(e:EventItem){
+  const url=e.source==="Ticketmaster"?(e.url||location.origin):`${location.origin}/events/${encodeURIComponent(e.id||"")}`;
+  const text=`${e.title} — ${fmt(e.date,e.time)} at ${e.venue||e.city}`;
+  try{if(navigator.share){await navigator.share({title:e.title,text,url});return}}catch(err:any){if(err?.name==="AbortError")return}
+  try{await navigator.clipboard.writeText(`${text}\n${url}`);setToast("Link copied")}catch{setToast("Couldn't copy link")}
+  setTimeout(()=>setToast(""),2200);
+ }
+
+ const filtered=useMemo(()=>{
+  const q=query.trim().toLowerCase(),interests=selected.filter(x=>x!=="Free");
+  return events.filter(e=>{
+   const tags=new Set([e.category,...(e.tags||[])]);
+   const cm=(interests.length===0||interests.some(x=>tags.has(x)||(x==="Family"&&tags.has("Kids"))))&&(!selected.includes("Free")||tags.has("Free")||!!e.isFree);
+   const am=!selected.includes("Kids")||ageBands.length===0||!tags.has("Kids")||e.ageMin==null||e.ageMax==null||AGE_BANDS.some(([l,lo,hi])=>ageBands.includes(l)&&e.ageMin!<=hi&&e.ageMax!>=lo);
+   const h=e.time?Number(e.time.slice(0,2)):-1;
+   const tm=timeFilter==="Any time"||h<0||(timeFilter==="Morning"&&h<12)||(timeFilter==="Afternoon"&&h>=12&&h<17)||(timeFilter==="Evening"&&h>=17);
+   return cm&&am&&tm&&(!q||[e.title,e.city,e.venue,e.desc,e.category,e.genre].filter(Boolean).join(" ").toLowerCase().includes(q));
+  }).sort((a,b)=>sort==="Nearest"?(a.distanceMiles??999)-(b.distanceMiles??999):((a.date||"")+(a.time||"")).localeCompare((b.date||"")+(b.time||"")));
+ },[events,selected,timeFilter,sort,query,ageBands]);
+
+ const where=coords?"your location":searchedZip||"your area";
+ return <main className="page">
+  <section className="hero">
+   <nav><div className="logo">Go<span>Today</span></div></nav>
+   <div className="heroContent">
+    <div className="eyebrow">EXPLORE MORE. TODAY.</div>
+    <h1>Find your <span>next thing.</span></h1>
+    <p className="heroLead">Free and local things happening near you — from library storytimes to park concerts.</p>
+    <form className="searchRow" onSubmit={ev=>{ev.preventDefault();submitZip()}}>
+     <input inputMode="numeric" autoComplete="postal-code" maxLength={5} aria-label="ZIP code" value={zip} onChange={e=>setZip(e.target.value.replace(/\D/g,""))} placeholder="ZIP code"/>
+     <button type="submit" className="go">{loading?"…":"Search"}</button>
+    </form>
+    <button type="button" className="locate" onClick={useLocation}>📍 Use my location</button>
+   </div>
+  </section>
+
+  <section className="content" id="results">
+   <div className="toolbar">
+    <div className="where"><b>📍 {where}</b><span className="rangeLabel">within {radius} mi</span></div>
+    <input type="search" placeholder="Search events" value={query} onChange={e=>setQuery(e.target.value)}/>
+   </div>
+
+   <div className="label">WHEN</div>
+   <div className="chips">{RANGES.map(([k,l])=><button key={k} className={range===k?"active":""} onClick={()=>chooseRange(k)}>{l}</button>)}</div>
+
+   <div className="label">WHAT ARE YOU INTO?</div>
+   <div className="chips">{CHIPS.map(c=><button key={c} className={(c==="All"?selected.length===0:selected.includes(c))?"active":""} onClick={()=>toggleChip(c)}>{c}</button>)}</div>
+   {selected.includes("Kids")&&<><div className="label">KIDS' AGES</div><div className="chips">{AGE_BANDS.map(([l])=><button key={l} className={ageBands.includes(l)?"active":""} onClick={()=>setAgeBands(b=>b.includes(l)?b.filter(x=>x!==l):[...b,l])}>{l}</button>)}</div></>}
+
+   <div className="filters">
+    <label>Distance<select value={radius} onChange={e=>chooseRadius(e.target.value)}>{["10","15","25","50"].map(r=><option key={r} value={r}>{r} miles</option>)}</select></label>
+    <label>Time<select value={timeFilter} onChange={e=>setTimeFilter(e.target.value)}>{TIMES.map(t=><option key={t}>{t}</option>)}</select></label>
+    <label>Sort<select value={sort} onChange={e=>setSort(e.target.value)}><option>Soonest</option><option>Nearest</option></select></label>
+   </div>
+
+   {message&&<p className="notice">{message}</p>}
+   <div className="resultsHead"><div className="kicker">NEAR {where.toUpperCase()}</div><h2>{loading?"Searching…":`${filtered.length} thing${filtered.length===1?"":"s"} to do`}</h2></div>
+
+   <div className="grid">{filtered.map((e,i)=><article className="card" key={e.id||e.title+i}>
+    <a className={e.image?"pic":"pic noimg"} href={detailHref(e)} target={e.source==="Ticketmaster"?"_blank":undefined} rel="noreferrer" aria-hidden tabIndex={-1}>
+     {e.image?<img src={e.image} alt="" loading="lazy" referrerPolicy="no-referrer" onError={x=>{x.currentTarget.style.display="none";const n=x.currentTarget.nextElementSibling as HTMLElement|null;if(n)n.style.display="flex"}}/>:null}
+     <span style={e.image?{display:"none"}:undefined}>{e.emoji||"🎟️"}</span>
+     {e.isFree&&<em className="freeBadge">Free</em>}
+    </a>
+    <div className="cardBody">
+     <h3><a href={detailHref(e)} target={e.source==="Ticketmaster"?"_blank":undefined} rel="noreferrer">{e.title}</a></h3>
+     <div className="meta">🗓 {fmt(e.date,e.time)}</div>
+     <div className="meta">📍 {e.venue||e.city}{typeof e.distanceMiles==="number"?` · ${e.distanceMiles.toFixed(1)} mi`:""}{e.moreLocations?<b title={(e.otherVenues||[]).join(", ")}>{` · +${e.moreLocations} more location${e.moreLocations>1?"s":""}`}</b>:null}</div>
+     {e.desc&&<p className="desc">{e.desc}</p>}
+     <div className="tags">{ageLabel(e)&&<span className="age">{ageLabel(e)}</span>}{(e.tags||[]).filter(t=>!["Local","Library","Free","Parks","Tickets"].includes(t)&&!/\(/.test(t)).slice(0,3).map(t=><span key={t}>{t}</span>)}</div>
+     <div className="actions">
+      <a className="primary" href={detailHref(e)} target={e.source==="Ticketmaster"?"_blank":undefined} rel="noreferrer">{e.source==="Ticketmaster"?"Tickets ↗":"View details"}</a>
+      <button type="button" className="share" onClick={()=>share(e)} aria-label={`Share ${e.title}`}>
+       <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden><path d="M4 12v7a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-7"/><polyline points="16 6 12 2 8 6"/><line x1="12" y1="2" x2="12" y2="15"/></svg>Share
+      </button>
+     </div>
+    </div>
+   </article>)}</div>
+  </section>
+  {toast&&<div className="toast" role="status">{toast}</div>}
+ </main>
 }

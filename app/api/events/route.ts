@@ -1,5 +1,6 @@
 import { db } from "../../../lib/db";
 import { ensureSchema } from "../../../lib/schema";
+import { discoveryRejection } from "../../../lib/ingestion/utils";
 import { NextRequest, NextResponse } from "next/server";
 function decodeHtml(s:string){return s.replace(/&#(\d+);/g,(_,n)=>String.fromCharCode(Number(n))).replace(/&#x([0-9a-f]+);/gi,(_,n)=>String.fromCharCode(parseInt(n,16))).replace(/&amp;/g,"&").replace(/&quot;/g,'"').replace(/&apos;|&#39;/g,"'")}
 function collapseKey(title:string,date:string){return [title.toLowerCase().replace(/&/g,"and").replace(/[^a-z0-9]+/g," ").trim(),date].join("|")}
@@ -41,7 +42,10 @@ export async function GET(request:NextRequest){
  let lat=p.get("lat"),lng=p.get("lng");
  // ZIP searches: resolve the ZIP to coordinates so the radius applies (fallback: central Broward).
  if(!lat||!lng){const c=await zipCoords(postalCode);[lat,lng]=(c||[26.12,-80.25]).map(String) as [string,string]}
- let events:any[]=(await databaseEvents(w.startDate,w.endDate)).filter((e:any)=>localWithinRadius(e,lat,lng,radius));
+ // Re-apply the current discovery rules at read time, so rule changes take effect without waiting for re-ingestion.
+ let events:any[]=(await databaseEvents(w.startDate,w.endDate))
+  .filter((e:any)=>!discoveryRejection({...e,isDiscoveryEligible:e.source==="Ticketmaster"?true:undefined}))
+  .filter((e:any)=>localWithinRadius(e,lat,lng,radius));
  if(range==="today"){const np=new Intl.DateTimeFormat("en-US",{timeZone:"America/New_York",hour:"2-digit",minute:"2-digit",hour12:false}).formatToParts(new Date());const nowTime=(np.find(x=>x.type==="hour")?.value||"00").replace(/^24$/,"00")+":"+(np.find(x=>x.type==="minute")?.value||"00")+":00";events=events.filter((e:any)=>!e.time||e.time==="00:00:00"||e.time>=nowTime)}
  const groups=new Map<string,any[]>();
  for(const e of events){const k=collapseKey(e.title,e.date);const g=groups.get(k);g?g.push(e):groups.set(k,[e])}
