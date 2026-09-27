@@ -34,7 +34,7 @@ export async function fetchTicketmasterEvents(startDate:string,endDate:string):P
     desc:String(ev.info||ev.pleaseNote||`${seg} at ${v.name||"a local venue"}.`).slice(0,1000),
     tags:[seg,...(family?["Family"]:[]),"Tickets"],emoji:seg==="Sports"?"🏟️":seg==="Music"?"🎤":"🎟️",source:"Ticketmaster",
     priceText:price?`$${Math.round(price.min)}${price.max&&price.max!==price.min?`–$${Math.round(price.max)}`:""}`:undefined,
-    isFree:false,eventType:"event",isDiscoveryEligible:true});
+    isFree:false,eventType:"event",isDiscoveryEligible:true,registrationUrl:ev.url,registrationText:ev.dates?.status?.code==="offsale"?"Tickets not currently on sale":"Tickets required"});
   }
   const totalPages=Number(d?.page?.totalPages)||0;
   if(page+1>=totalPages||(page+1)*199>=1000)break;

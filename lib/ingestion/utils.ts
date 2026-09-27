@@ -1,6 +1,11 @@
 import type { EventRecord } from "./types";
 export const slug=(s:string)=>s.toLowerCase().replace(/[^a-z0-9]+/g,"-").replace(/^-|-$/g,"");
 export const stripHtml=(s:string)=>s.replace(new RegExp("<script[^>]*>[\\s\\S]*?</script>","gi")," ").replace(new RegExp("<style[^>]*>[\\s\\S]*?</style>","gi")," ").replace(new RegExp("<[^>]+>","g")," ").replace(/&nbsp;|&#160;/g," ").replace(/&amp;/g,"&").replace(/&#39;|&apos;/g,"'").replace(/&quot;/g,'\"').replace(/\s+/g," ").trim();
+/** HTML -> plain text that keeps paragraph breaks (stripHtml collapses all whitespace). */
+export function richText(html:string){
+ const marked=String(html||"").replace(/&lt;/g,"<").replace(/&gt;/g,">").replace(/<\/(p|div|li|h\d)>|<br\s*\/?>/gi," \u00a7\u00a7 ");
+ return stripHtml(marked).split("\u00a7\u00a7").map(x=>x.trim()).filter(Boolean).join("\n");
+}
 export const dedupeKey=(e:EventRecord)=>[slug(e.title),slug(e.venue),e.date].join("|");
 export function dedupe(events:EventRecord[]){const seen=new Set<string>();return events.filter(e=>{const k=dedupeKey(e);if(seen.has(k))return false;seen.add(k);return true})}
 
@@ -47,7 +52,7 @@ const MEETING=/\b(board|commission|committee|council|hearing|advisory|magistrate
 const PASSIVE=/\b(grab[- ](?:and|&|n)[- ]go|information table|take (?:it )?(?:and|&) make|take[- ]home craft|photo op|word search|display (?:case|table)|coloring station|self[- ]guided|seed library|month$)\b/i;
 // Tags that mark a real happening even when a Grab & Go / Class tag is also present.
 const STRONG_TAG=/\b(fair\/festival|performances|exhibit|speaker|author events|movie|story time)\b/i;
-const SERVICE=/\b(esl|english (?:cafe|café|conversation|class(?:es)?|lessons?|practice)|(?:beginners?|intermediate|advanced|spanish|french)\s+(?:english\s+)?caf[eé]|caf[eé]\s*[-–]?\s*(?:beginner|intermediate|advanced)|as a second language|conversation (?:group|club|practice)|citizenship|naturalization|vita\b|tax (?:help|assistance|prep)|ged\b|test prep|sat\/act|tutor(?:ing)?|homework help|reading practice|resume|job (?:prep|search|help|seekers?)|career (?:coach|help|counsel|assistance)|tech help|device help|mobile device|ask us anything|one[- ]on[- ]one|1 on 1|support (?:group|meeting)|nami\b|al-?anon|alcoholics|narcotics|grief|caregiver|blood pressure|health screening|medicare|legal (?:aid|help|clinic)|notary|passport|dmv\b|exemption|proctor|meeting room|study room|early voting|voting site|election site|polling|volunteer orientation|mentoring program)\b/i;
+const SERVICE=/\b(esl|english (?:cafe|café|conversation|class(?:es)?|lessons?|practice)|(?:beginners?|intermediate|advanced|spanish|french)\s+(?:english\s+)?caf[eé]|caf[eé]\s*[-–]?\s*(?:beginner|intermediate|advanced)|as a second language|conversation (?:group|club|practice)|citizenship|naturalization|vita\b|tax (?:help|assistance|prep)|ged\b|test prep|sat\/act|tutor(?:ing)?|homework help|reading practice|resume|job (?:prep|search|help|seekers?)|career (?:coach|help|counsel|assistance)|tech help|device help|mobile device|ask us anything|one[- ]on[- ]one|1 on 1|support (?:group|meeting)|nami\b|al-?anon|alcoholics|narcotics|grief|caregiver|blood pressure|health screening|medicare|legal (?:aid|help|clinic)|notary|passport|dmv\b|exemption|proctor|meeting room|study room|early voting|voting site|election site|polling|volunteer orientation|mentoring program|rentals?|reservations?|permits?|for non-?profit groups|primitive camping|shelter rental)\b/i;
 const FITNESS=/\b(zumba|yoga|tai chi|pilates|hiit|insanity|fitness|aerobics|cardio|chair exercise|strength (?:and|&) balance|strength training|boot ?camp|meditation|mindfulness|stretch(ing)?|ageless grace|pickleball lessons?)\b/i;
 // Skill-building courses (languages, computers, office software, finance, test prep) and
 // multi-session courses. One-off arts/crafts/kids classes are NOT rejected.

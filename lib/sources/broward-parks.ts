@@ -1,5 +1,5 @@
 import type {EventRecord} from "../ingestion/types";
-import {stripHtml} from "../ingestion/utils";
+import {stripHtml,richText} from "../ingestion/utils";
 
 // Broward County Parks: the county's own site (broward.org/parks/Events) loads its calendar from
 //   POST https://www.broward.org/api/event-calendar  {datasource, language, first, after}
@@ -15,6 +15,12 @@ const INELIGIBLE=/^(meetings?|waterparks?|target practice)$/i;
 
 const v=(e:any,k:string)=>e?.[k]?.jsonValue?.value;
 const ymd=(d:Date)=>d.toISOString().slice(0,10);
+/** broward.org builds event links from the title ("55+ Walking Club" -> "55-walking-club"), plus the
+ *  occurrence date for recurring programs: /parks/Events?event=55-walking-club-2026-09-27 */
+export function parksEventUrl(title:string,date:string,recurring:boolean){
+ const s=title.toLowerCase().normalize("NFKD").replace(/[\u0300-\u036f]/g,"").replace(/[^a-z0-9]+/g,"-").replace(/^-+|-+$/g,"");
+ return `${PAGE}?event=${recurring?`${s}-${date}`:s}`;
+}
 
 /** Dates in [from,to] that match the recurrence rules (UTC-safe; dates only). */
 export function expandDates(start:string,end:string,rules:string[],from:string,to:string):string[]{
@@ -96,8 +102,10 @@ export async function fetchBrowardParkEvents(startDate:string,endDate:string):Pr
   const price=String(v(e,"price")||"").trim();
   const free=/^free\b/i.test(price);
   const ages=parseAgesField(String(v(e,"ages")||""))||(cat.toLowerCase()==="kids"?[0,12] as [number,number]:null);
-  const desc=stripHtml(String(v(e,"description")||"").replace(/&lt;/g,"<").replace(/&gt;/g,">")).replace(/\s+/g," ").trim().slice(0,1000);
-  const reg=String(v(e,"register")?.href||"");
+  const desc=richText(String(v(e,"description")||"")).slice(0,3000);
+  const reg=String(v(e,"register")?.href||""),regUrl=/^https?:\/\/[^/]+\.[a-z]{2,}\/./i.test(reg)?reg:undefined;
+  const needsReg=!!regUrl||/pre-?registration|register|registration (is )?required/i.test(desc+" "+String(v(e,"price")||""));
+  const recurrenceText=rules.join(", ").replace(/Everyday/i,"Every day");
   const image=v(e,"featuredImage")?.src||undefined;
   const blob=(title+" "+cat+" "+desc).toLowerCase();
   const kids=cat.toLowerCase()==="kids"||(!!ages&&ages[1]<=18);
@@ -106,7 +114,8 @@ export async function fetchBrowardParkEvents(startDate:string,endDate:string):Pr
   const nature=/\b(nature|hike|trail|bird|garden|wildlife|stables?|pony|farm)\b/.test(blob);
   for(const date of dates){
    out.push({id:`bcparks-${e.id}-${date}`,title,city,venue:park,address,date,time:t1,endTime:t2||undefined,
-    url:`${PAGE}?event=${encodeURIComponent(e.name)}`,sourceUrl:/^https?:\/\/.{8,}/.test(reg)?reg:PAGE,image,
+    url:parksEventUrl(title,date,rules.length>0),sourceUrl:PAGE,image,
+    registrationUrl:regUrl,registrationText:needsReg?"Registration required":undefined,recurrence:recurrenceText||undefined,
     category:kids?"Family":arts?"Arts & Theatre":sports?"Sports":"Local",genre:cat||"Parks & Recreation",
     desc:desc||`${title} at ${park}.`,priceText:price.slice(0,120)||undefined,isFree:free,
     ageMin:ages?.[0],ageMax:ages?.[1],

@@ -1,5 +1,5 @@
 import type {EventRecord} from "../ingestion/types";
-import {stripHtml} from "../ingestion/utils";
+import {stripHtml,richText} from "../ingestion/utils";
 
 // Palm Beach County Library System uses BiblioCommons, which serves its event calendar from a public
 // JSON gateway. Event records are normalized: ids in events.items, data in entities.events,
@@ -41,7 +41,8 @@ export async function fetchPalmBeachLibraryEvents(startDate:string,endDate:strin
    out.push({id:`pbcl-${id}`,title,city,venue:loc?.name||"Palm Beach County Library",address:street?[street,a.city,"FL",a.zip].filter(Boolean).join(", "):undefined,
     date,time:hms(def.start),endTime:hms(def.end)||undefined,url:`${SITE}/${id}`,sourceUrl:`https://${LIB}.bibliocommons.com/v2/events`,
     image:img?.url||img?.src||undefined,category:family?"Family":arts?"Arts & Theatre":"Local",genre:"Library Event",
-    desc:stripHtml(String(def.description||"")).replace(/\s+/g," ").trim().slice(0,1000)||"Palm Beach County Library event.",
+    desc:richText(String(def.description||"")).slice(0,3000)||"Palm Beach County Library event.",
+    registrationText:def.registrationInfo?(ev.isFull||def.isFull?"Registration required · Full":"Registration required"):undefined,
     tags:[...audiences,...types,...(family?["Family"]:[]),...(kids?["Kids"]:[]),"Free","Library"],
     emoji:kids?"📚":arts?"🎨":"📍",source:"Palm Beach County Library",priceText:"Free",isFree:true,eventType:"event"});
   }

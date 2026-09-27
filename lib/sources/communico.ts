@@ -1,5 +1,5 @@
 import type {EventRecord} from "../ingestion/types";
-import {stripHtml} from "../ingestion/utils";
+import {stripHtml,richText} from "../ingestion/utils";
 
 // Communico library calendars (Broward County Library, Miami-Dade Public Library) expose the JSON
 // feed that powers their public calendar page: https://<client>.libnet.info/eeventcaldata
@@ -16,6 +16,18 @@ export type CommunicoConfig={
 function datePart(v:unknown){const m=String(v||"").match(/(20\d{2})-(\d{2})-(\d{2})/);return m?`${m[1]}-${m[2]}-${m[3]}`:""}
 function timePart(v:unknown){const m=String(v||"").match(/(?:T|\s)(\d{1,2}):(\d{2})(?::(\d{2}))?/);return m?`${m[1].padStart(2,"0")}:${m[2]}:${m[3]||"00"}`:""}
 function arr(v:unknown):string[]{if(Array.isArray(v))return v.map(x=>String(x).trim()).filter(Boolean);if(typeof v==="string")return v.split(",").map(x=>x.trim()).filter(Boolean);return[]}
+
+const BOILERPLATE=/a service of the broward county board of county commissioners\.?|this program is a service of[^.]*\.|in the event indoor programs are cancelled[^.]*\.[^.]*\./gi;
+function libText(html:string){return richText(html).split("\n").map(l=>l.replace(BOILERPLATE,"").trim()).filter(Boolean).join("\n")}
+/** "Registration required · 5 of 20 spots left" / "Waitlist only" / "Full". */
+function registration(e:any){
+ if(String(e.allow_reg)!=="1")return{};
+ const third=String(e.third_party_reg)==="1"&&/^https?:/i.test(String(e.reg_url||""));
+ const max=Number(e.max_attendee)||0,taken=Number(e.total_registrants)||0,wait=String(e.allow_waitlist)==="1";
+ let text="Registration required";
+ if(max>0){const left=max-taken;text+=left>0?` · ${left} of ${max} spots left`:wait?" · Full (waitlist open)":" · Full"}
+ return{registrationText:text,registrationUrl:third?String(e.reg_url):undefined};
+}
 
 export async function fetchCommunico(cfg:CommunicoConfig,startDate:string,endDate:string):Promise<EventRecord[]>{
  const base=`https://${cfg.client}.libnet.info`;
@@ -47,7 +59,8 @@ export async function fetchCommunico(cfg:CommunicoConfig,startDate:string,endDat
   out.push({id:`${cfg.idPrefix}-${id}`,title,city:cfg.cityFor(venue),venue,date,
    time:allDay?"":timePart(e.raw_start_time),endTime:allDay?undefined:(timePart(e.raw_end_time)||undefined),
    url,sourceUrl:`${base}/events`,image,category:family?"Family":arts?"Arts & Theatre":"Local",genre:"Library Event",
-   desc:stripHtml(String(e.description||e.long_description||"")).replace(/\s+/g," ").trim().slice(0,1000)||`${cfg.source} event.`,
+   desc:[libText(e.description),libText(e.long_description)].filter(Boolean).filter((x,i,a)=>i===0||!a[0].includes(x)).join("\n\n").slice(0,3000)||`${cfg.source} event.`,
+   ...registration(e),
    tags:[...ages,...tags,...(family?["Family"]:[]),...(kids?["Kids"]:[]),...(free?["Free"]:[]),"Library"],
    emoji:kids?"📚":arts?"🎨":"📍",source:cfg.source,priceText:free?"Free":String(e.registration_cost||""),isFree:free,eventType:"event"});
  }

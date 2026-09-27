@@ -1,54 +1,87 @@
 import Link from "next/link";
-import {db} from "../../../lib/db";
+import type {Metadata} from "next";
+import {headers} from "next/headers";
 import BackLink from "./BackLink";
 import ShareButton from "./ShareButton";
-import type {Metadata} from "next";
+import {loadEvent,loadRelated,fmtDate,fmtTime,timeRange,isAllDay,googleCalendarUrl,directionsUrl,mapEmbedUrl,whereText,type EventDetail} from "../../../lib/event-detail";
 
-function decodeHtml(s:string){return s.replace(/&#(\d+);/g,(_,n)=>String.fromCharCode(Number(n))).replace(/&#x([0-9a-f]+);/gi,(_,n)=>String.fromCharCode(parseInt(n,16))).replace(/&amp;/g,"&").replace(/&quot;/g,'"').replace(/&apos;|&#39;/g,"'")}
-function parts(d:Date){const x=new Intl.DateTimeFormat("en-US",{timeZone:"America/New_York",weekday:"long",month:"long",day:"numeric",year:"numeric",hour:"numeric",minute:"2-digit"}).formatToParts(d);const v=(t:string)=>x.find(p=>p.type===t)?.value||"";return{day:v("weekday"),date:v("month")+" "+v("day")+", "+v("year"),time:v("hour")+":"+v("minute")+" "+v("dayPeriod")}}
-const shell={maxWidth:1120,margin:"0 auto",padding:"0 16px"} as const;
-async function loadEvent(id:string){
- const raw=decodeURIComponent(id);if(!raw.startsWith("db-"))return null;
- const eventId=Number(raw.slice(3));if(!Number.isInteger(eventId))return null;
- const {rows}=await db.query("select e.title,e.description,e.start_at,e.end_at,e.city,e.image_url,e.official_url,e.price_text,e.is_free,e.category,e.age_min,e.age_max,s.name as source,v.name as venue,v.address from events e join sources s on s.id=e.source_id left join venues v on v.id=e.venue_id where e.id=$1 and e.status='active' limit 1",[eventId]);
- return rows[0]||null;
-}
-function allDay(d:Date){const t=new Intl.DateTimeFormat("en-US",{timeZone:"America/New_York",hour:"2-digit",minute:"2-digit",hour12:false}).format(d);return t==="00:00"||t==="24:00"}
+export const dynamic="force-dynamic";
+
+function agesText(e:EventDetail){if(e.ageMin==null||e.ageMax==null)return"";if(e.ageMin===0&&e.ageMax>=99)return"All ages";if(e.ageMax>=99)return`Ages ${e.ageMin}+`;return e.ageMax<=1?"Babies (0–1)":`Ages ${e.ageMin}–${e.ageMax}`}
+function costText(e:EventDetail){if(e.isFree)return"Free";const p=(e.priceText||"").trim();return p&&p.length<=140?p:""}
+function sourceLabel(e:EventDetail){return e.source==="Ticketmaster"?"Ticketmaster":e.source}
+
 export async function generateMetadata({params}:{params:Promise<{id:string}>}):Promise<Metadata>{
  const {id}=await params;const e=await loadEvent(id).catch(()=>null);
  if(!e)return{title:"Event · GoToday"};
- const w=parts(new Date(e.start_at)),title=decodeHtml(e.title||"");
- const description=`${w.day}, ${w.date}${allDay(new Date(e.start_at))?"":" · "+w.time} · ${e.venue||e.city}${e.is_free?" · Free":""}`;
- return{title:`${title} · GoToday`,description,openGraph:{title,description,siteName:"GoToday",type:"website",images:e.image_url?[{url:e.image_url}]:undefined},twitter:{card:e.image_url?"summary_large_image":"summary",title,description}};
+ const description=`${fmtDate(e.start)} · ${timeRange(e)} · ${e.venue||e.city}${e.isFree?" · Free":""}`;
+ return{title:`${e.title} · GoToday`,description,openGraph:{title:e.title,description,siteName:"GoToday",type:"website",images:e.image?[{url:e.image}]:undefined},twitter:{card:e.image?"summary_large_image":"summary",title:e.title,description}};
 }
+
 export default async function EventPage({params}:{params:Promise<{id:string}>}){
  const {id}=await params;
  const e=await loadEvent(id);
- if(!e)return <main style={{...shell,paddingTop:70}}><Link href="/">← GoToday</Link><h1>Event unavailable</h1><p>This event may have ended or been removed.</p></main>;
- const when=parts(new Date(e.start_at)),title=decodeHtml(e.title||""),desc=decodeHtml(e.description||""),isAllDay=allDay(new Date(e.start_at));
- const endTime=e.end_at&&!isAllDay?parts(new Date(e.end_at)).time:"";
- const ages=e.age_min!=null&&e.age_max!=null&&e.age_max<=18?`Ages ${e.age_min}–${e.age_max}`:"";
- return <main style={{minHeight:"100vh",background:"linear-gradient(180deg,#fafafa 0%,#fff 55%)",color:"#18181b",fontFamily:"Arial,sans-serif"}}>
-  <header style={{borderBottom:"1px solid #e4e4e7",background:"#fff"}}><div style={{...shell,height:60,display:"flex",alignItems:"center",justifyContent:"space-between"}}><Link href="/" style={{fontSize:24,fontWeight:800,textDecoration:"none",color:"#18181b"}}>Go<span style={{color:"#7c3aed"}}>Today</span></Link><Link href="/" style={{color:"#52525b",textDecoration:"none"}}>Explore events</Link></div></header>
-  <div style={{...shell,paddingTop:20,paddingBottom:60}}>
-   <BackLink/>
-   <section style={{marginTop:14,background:"#fff",border:"1px solid #e4e4e7",borderRadius:22,overflow:"hidden",boxShadow:"0 20px 60px rgba(39,39,42,.09)"}}>
-    {e.image_url?<img src={e.image_url} alt="" style={{width:"100%",aspectRatio:"16/9",maxHeight:420,objectFit:"cover",display:"block"}}/>:<div style={{height:180,display:"flex",alignItems:"center",justifyContent:"center",fontSize:64,background:"linear-gradient(135deg,#312e81,#7c3aed)"}}>🎟️</div>}
-    <div style={{padding:"clamp(18px,4vw,38px)"}}>
-     <div style={{display:"flex",gap:10,flexWrap:"wrap",marginBottom:18}}><span style={{padding:"7px 12px",borderRadius:999,background:"#f3e8ff",fontSize:13,fontWeight:700}}>{e.category||"Local event"}</span>{e.is_free&&<span style={{padding:"7px 12px",borderRadius:999,background:"#eaf8f0",color:"#137a4b",fontSize:13,fontWeight:700}}>Free</span>}{ages&&<span style={{padding:"7px 12px",borderRadius:999,background:"#ede9fe",color:"#5b21b6",fontSize:13,fontWeight:700}}>{ages}</span>}<span style={{padding:"7px 12px",borderRadius:999,background:"#f4f4f5",fontSize:13}}>Official source</span></div>
-     <h1 style={{fontSize:"clamp(28px,5vw,52px)",lineHeight:1.08,letterSpacing:"-1px",margin:"0 0 20px",maxWidth:850}}>{title}</h1>
-     <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(220px,1fr))",gap:12,marginBottom:24}}>
-      <div style={{padding:20,borderRadius:18,background:"#fafafa"}}><div style={{fontSize:13,color:"#71717a",fontWeight:700,marginBottom:7}}>DATE & TIME</div><div style={{fontSize:18,fontWeight:700}}>🗓️ {when.day}, {when.date}</div><div style={{marginTop:5,color:"#52525b"}}>{isAllDay?"All day":when.time+(endTime?" – "+endTime:"")}</div></div>
-      <div style={{padding:20,borderRadius:18,background:"#fafafa"}}><div style={{fontSize:13,color:"#71717a",fontWeight:700,marginBottom:7}}>LOCATION</div><div style={{fontSize:18,fontWeight:700}}>📍 {e.venue||e.city}</div><div style={{marginTop:5,color:"#52525b"}}>{e.address||e.city}</div></div>
+ if(!e)return <main className="detail"><div className="detailWrap"><Link href="/" className="detailLogo">Go<span>Today</span></Link><h1>Event unavailable</h1><p>This event may have ended or been removed.</p><Link href="/">Find something else to do →</Link></div></main>;
+ const h=await headers(),origin=`${h.get("x-forwarded-proto")||"https"}://${h.get("host")}`,pageUrl=`${origin}/events/${encodeURIComponent(id)}`;
+ const {otherDates,atVenue}=await loadRelated(e);
+ const ended=(e.end||e.start).getTime()<Date.now()-3*3600e3;
+ const ages=agesText(e),cost=costText(e),map=mapEmbedUrl(e),where=whereText(e);
+ const regFull=/full/i.test(e.registrationText||"");
+ const paras=e.description.split(/\n+/).map(x=>x.trim()).filter(Boolean);
+ const tags=e.tags.filter(t=>!["Local","Library","Parks","Free","Tickets","Kids","Family"].includes(t)&&!/\(\d/.test(t)).slice(0,5);
+
+ return <main className="detail">
+  <header className="detailHeader"><div className="detailWrap row"><Link href="/" className="detailLogo">Go<span>Today</span></Link><BackLink/></div></header>
+  <div className="detailWrap">
+   <article className="detailCard">
+    {e.image?<img className="detailHero" src={e.image} alt="" referrerPolicy="no-referrer"/>:null}
+    <div className="detailBody">
+     <div className="badges">
+      {e.isFree&&<span className="b free">Free</span>}
+      {ages&&<span className="b age">{ages}</span>}
+      {e.tags.includes("Kids")&&!ages&&<span className="b age">Kids</span>}
+      {e.category&&e.category!=="Local"&&<span className="b">{e.category}</span>}
+      {ended&&<span className="b past">This date has passed</span>}
      </div>
-     {desc&&<div style={{maxWidth:820,marginBottom:28}}><h2 style={{fontSize:22}}>About this event</h2><p style={{fontSize:16,lineHeight:1.65,color:"#52525b"}}>{desc}</p></div>}
-     <div style={{display:"flex",gap:14,alignItems:"center",flexWrap:"wrap",paddingTop:24,borderTop:"1px solid #e4e4e7"}}>
-      {e.official_url&&<a href={e.official_url} target="_blank" rel="noreferrer" style={{background:"#18181b",color:"#fff",padding:"14px 20px",borderRadius:12,textDecoration:"none",fontWeight:700}}>Official event page ↗</a>}
-      <ShareButton title={title} text={`${title} — ${when.day}, ${when.date} at ${e.venue||e.city}`}/>
-      <span style={{color:"#71717a",fontSize:14,flexBasis:"100%"}}>From <b>{e.source}</b></span>{e.price_text&&<span style={{color:"#71717a",fontSize:14}}>• {decodeHtml(e.price_text)}</span>}
+     <h1>{e.title}</h1>
+
+     <div className="facts">
+      <div className="fact"><div className="k">When</div><div className="v">{fmtDate(e.start)}</div><div className="s">{timeRange(e)}{e.recurrence?` · Repeats ${e.recurrence.toLowerCase()}`:""}</div></div>
+      <div className="fact"><div className="k">Where</div><div className="v">{e.venue||e.city}</div><div className="s">{e.address||e.city}</div><a className="inline" href={directionsUrl(e)} target="_blank" rel="noreferrer">Get directions ↗</a></div>
+      {(cost||ages)&&<div className="fact"><div className="k">Cost{ages?" & ages":""}</div><div className="v">{cost||"See event page"}</div>{ages&&<div className="s">{ages}</div>}</div>}
      </div>
+
+     {e.registrationText&&<div className={`reg${regFull?" full":""}`}>
+      <div><b>{e.registrationText.split(" · ")[0]}</b>{e.registrationText.includes(" · ")&&<span> · {e.registrationText.split(" · ").slice(1).join(" · ")}</span>}</div>
+      <a href={e.registrationUrl||e.officialUrl} target="_blank" rel="noreferrer">{e.source==="Ticketmaster"?"Get tickets ↗":"Register ↗"}</a>
+     </div>}
+
+     <div className="ctaRow">
+      <a className="btn primary" href={e.officialUrl} target="_blank" rel="noreferrer">{e.source==="Ticketmaster"?"Tickets & details ↗":"Official event page ↗"}</a>
+      <ShareButton title={e.title} text={`${e.title} — ${fmtDate(e.start)}${isAllDay(e.start)?"":`, ${fmtTime(e.start)}`} at ${e.venue||e.city}`}/>
+     </div>
+     <div className="calRow">
+      <span>Add to calendar:</span>
+      <a href={googleCalendarUrl(e,pageUrl)} target="_blank" rel="noreferrer">Google</a>
+      <a href={`/events/${encodeURIComponent(id)}/calendar.ics`}>Apple / Outlook (.ics)</a>
+     </div>
+
+     {paras.length>0&&<section className="about"><h2>About this event</h2>{paras.map((p,i)=><p key={i}>{p}</p>)}</section>}
+     {tags.length>0&&<div className="tagRow">{tags.map(t=><span key={t}>{t}</span>)}</div>}
+
+     {map&&<section className="mapBox"><h2>Location</h2><p className="muted">{where}</p><iframe title={`Map of ${e.venue||e.city}`} src={map} loading="lazy" referrerPolicy="no-referrer-when-downgrade"/></section>}
+
+     {otherDates.length>0&&<section className="related"><h2>{otherDates.some(o=>o.venue!==e.venue)?"Other dates & locations":"Other dates"}</h2>
+      <ul>{otherDates.map(o=><li key={o.id}><Link href={`/events/db-${o.id}`}><b>{fmtDate(o.start,{weekday:"short",month:"short",day:"numeric"})}</b><span>{isAllDay(o.start)?"All day":fmtTime(o.start)}</span>{o.venue!==e.venue&&<span className="muted">{o.venue||o.city}</span>}</Link></li>)}</ul>
+     </section>}
+
+     {atVenue.length>0&&<section className="related"><h2>More at {e.venue}</h2>
+      <ul>{atVenue.map(o=><li key={o.id}><Link href={`/events/db-${o.id}`}><b>{o.title}</b><span>{fmtDate(o.start,{weekday:"short",month:"short",day:"numeric"})}{isAllDay(o.start)?"":" · "+fmtTime(o.start)}</span></Link></li>)}</ul>
+     </section>}
+
+     <p className="sourceNote">Listed by <b>{sourceLabel(e)}</b>. Details can change — check the official page before you go.</p>
     </div>
-   </section>
+   </article>
   </div>
- </main>
+ </main>;
 }
