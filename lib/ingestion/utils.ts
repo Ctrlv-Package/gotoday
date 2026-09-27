@@ -98,6 +98,17 @@ export function normalize(e:EventRecord):EventRecord{
   if(kids||ages[0]===0||isAllAges(e))tags.push("Family");
  }
  if(free)tags.push("Free");
+ // Setting: libraries, theaters and museums are indoors; parks, beaches, trails and festivals outdoors.
+ const where=`${e.venue} ${e.title}`,isLib=/library/i.test(e.source)||/\blibrary|branch\b/i.test(e.venue);
+ const OUT=/\b(outdoors?|in the park|parks?\b|beach|trail|hike|hiking|garden|farm|stables|lake|nature (walk|area)|natural area|fireworks|parade|amphithea|pier|kayak|paddle|bike ride|fishing|camping|campground|field day|food trucks?|block party|street fair|moonlight movie|movie in the park|pool)\b/i;
+ const IN=/\b(library|museum|theat(re|er)|gallery|center|centre|arena|hall|auditorium|room|indoors?|studio|mall|civic center)\b/i;
+ if(isLib&&!/\b(outdoors?|garden|nature walk|in the park)\b/i.test(e.title))tags.push("Indoor");
+ else if(OUT.test(where))tags.push("Outdoor");
+ else if(IN.test(where))tags.push("Indoor");
+ // In Spanish (not Spanish-learning classes, which the discovery rules drop).
+ if(/\b(en espa[ñn]ol|espa[ñn]ol|in spanish|bilingual|biling[üu]e)\b/i.test(`${e.title} ${(e.tags||[]).join(" ")}`))tags.push("En Español");
+ // Seniors: audience starts at 50+ or is labeled for older adults.
+ if((ages&&ages[0]>=50)||/\b(seniors?|older adults|55\+|50\+|60\+|active adults?)\b/i.test(`${e.title} ${(e.tags||[]).join(" ")}`))tags.push("Seniors");
  return{...e,title:e.title.trim(),venue:e.venue.trim(),city:e.city.trim(),tags:Array.from(new Set(tags)),isFree:free,
   ageMin:ages?.[0],ageMax:ages?.[1],lastVerified:e.lastVerified||new Date().toISOString()};
 }

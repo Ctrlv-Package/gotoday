@@ -10,7 +10,7 @@ const BRANCH_CITY:[RegExp,string][]=[
  [/cutler bay|south dade/i,"Cutler Bay, FL"],[/miami gardens|california club/i,"Miami Gardens, FL"],[/sweetwater/i,"Sweetwater, FL"],
  [/golden glades/i,"Miami Gardens, FL"],[/west kendall|kendall|westchester|tamiami|fairlawn|west dade|country walk|kendale lakes/i,"Kendall, FL"]
 ];
-function cityFor(venue:string){for(const [rx,c] of BRANCH_CITY)if(rx.test(venue))return c;return "Miami, FL"}
+export function cityFor(venue:string){for(const [rx,c] of BRANCH_CITY)if(rx.test(venue))return c;return "Miami, FL"}
 
 export function fetchMiamiDadeLibraryEvents(startDate:string,endDate:string):Promise<EventRecord[]>{
  return fetchCommunico({client:"mdpls",source:"Miami-Dade Public Library",idPrefix:"mdpl",defaultVenue:"Miami-Dade Public Library",cityFor,siteUrl:"https://mdpls.org"},startDate,endDate);

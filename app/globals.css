@@ -140,3 +140,20 @@ nav{display:flex;justify-content:space-between;align-items:center;max-width:1180
 }
 
 .chipDates{font-weight:500;opacity:.75}
+
+.moreBtn{flex:0 0 auto;border:1px dashed #c4b5fd!important;background:#faf5ff!important;color:#5b21b6!important;padding:9px 14px;border-radius:999px;font-size:14px;font-weight:700;white-space:nowrap}
+.moreBtn.on{border-style:solid!important}
+.morePanel{margin-top:10px;background:#fff;border:1px solid var(--line);border-radius:14px;padding:12px 14px;display:flex;flex-direction:column;gap:10px}
+.moreRow{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.moreRow>span{font-size:11px;font-weight:800;letter-spacing:1px;text-transform:uppercase;color:var(--muted)}
+.seg{display:inline-flex;border:1px solid var(--line);border-radius:10px;overflow:hidden}
+.seg button{border:0;background:#fff;padding:8px 12px;font-size:14px;font-weight:600}
+.seg button+button{border-left:1px solid var(--line)}
+.seg .active{background:var(--ink);color:#fff}
+.toggle{display:flex;align-items:center;gap:8px;font-size:15px;font-weight:600}
+.toggle input{width:18px;height:18px;accent-color:#7c3aed}
+.toggle small{color:var(--muted);font-weight:500}
+.hint{font-size:13px;color:#92400e;background:#fffbeb;border-radius:8px;padding:4px 8px;align-self:flex-start}
+.hint.ok{color:#137a4b;background:#e7f7ee}
+@media(min-width:720px){.morePanel{flex-direction:row;align-items:center;flex-wrap:wrap;gap:18px}}
+.moreBtn{margin-top:10px;display:inline-block}

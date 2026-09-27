@@ -1,0 +1,27 @@
+name: Discover event sources
+
+# Paste city / county / library website URLs; the job detects which calendar product each uses
+# and prints ready-to-save GoToday source configs on the run page.
+on:
+  workflow_dispatch:
+    inputs:
+      urls:
+        description: 'One per line or space-separated. Optional city prefix: "Coral Springs, FL=https://www.coralsprings.gov"'
+        required: true
+        type: string
+
+jobs:
+  discover:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 22
+      - run: npm install --no-audit --no-fund
+      - run: npx playwright install --with-deps chromium
+      - run: npx tsx scripts/discover-sources.ts
+        env:
+          DISCOVER_URLS: ${{ inputs.urls }}
+          USE_BROWSER: "1"

@@ -12,7 +12,7 @@ export async function POST(req:NextRequest){
  const secret=process.env.INGESTION_SECRET;
  if(!secret||req.headers.get("authorization")!==`Bearer ${secret}`)return NextResponse.json({ok:false,error:"Unauthorized"},{status:401});
  let body:any;try{body=await req.json()}catch{return NextResponse.json({ok:false,error:"Invalid JSON"},{status:400})}
- const s=remoteSources().find(x=>x.name===body?.source);
+ const s=(await remoteSources()).find(x=>x.name===body?.source);
  if(!s)return NextResponse.json({ok:false,error:`Not a remote source: ${body?.source}`},{status:400});
  if(!Array.isArray(body.events)&&!body.error)return NextResponse.json({ok:false,error:"events[] or error required"},{status:400});
  const events:EventRecord[]=(body.events||[]).filter((e:any)=>e&&typeof e.title==="string"&&typeof e.date==="string"&&typeof e.url==="string").slice(0,5000)

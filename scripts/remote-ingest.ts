@@ -3,7 +3,7 @@
 // GoToday's /api/ingest/push endpoint, which validates and stores them like any other source.
 //
 //   GOTODAY_URL=https://gotoday-six.vercel.app INGESTION_SECRET=... npx tsx scripts/remote-ingest.ts
-import {remoteSources} from "../lib/ingestion/registry";
+import {sourceFromConfig,type SourceConfig} from "../lib/ingestion/registry";
 import {appendFileSync} from "node:fs";
 import {installBrowserFetch,closeBrowserFetch} from "./browser-fetch";
 
@@ -15,7 +15,12 @@ const now=new Date(),end=new Date(now);end.setUTCDate(end.getUTCDate()+30);
 async function main(){
 if(process.env.USE_BROWSER!=="0"){await installBrowserFetch();console.log("Fetching city pages with headless Chrome")}
 let failures=0;const rows:string[]=[];
-for(const s of remoteSources()){
+// The source list lives in GoToday's database; ask the site which sources to fetch from here.
+const cfgRes=await fetch(`${base}/api/admin/sources?remote=1`,{headers:{authorization:`Bearer ${secret}`}});
+if(!cfgRes.ok)throw new Error(`Could not load remote sources: HTTP ${cfgRes.status}`);
+const configs:SourceConfig[]=(await cfgRes.json()).sources||[];
+console.log(`Remote sources: ${configs.map(c=>c.name).join(", ")||"(none)"}`);
+for(const s of configs.map(sourceFromConfig)){
  await new Promise(r=>setTimeout(r,3000));
  let payload:any;
  try{const events=await s.fetch(ymd(now),ymd(end));payload={source:s.name,events};console.log(`${s.name}: fetched ${events.length}`)}

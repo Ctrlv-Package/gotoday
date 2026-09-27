@@ -14,7 +14,7 @@ function sourceLabel(e:EventDetail){return e.source==="Ticketmaster"?"Ticketmast
 export async function generateMetadata({params}:{params:Promise<{id:string}>}):Promise<Metadata>{
  const {id}=await params;const e=await loadEvent(id).catch(()=>null);
  if(!e)return{title:"Event · GoToday"};
- const description=`${fmtDate(e.start)} · ${timeRange(e)} · ${e.venue||e.city}${e.isFree?" · Free":""}`;
+ const description=`${fmtDate(e.start,undefined,e.tz)} · ${timeRange(e)} · ${e.venue||e.city}${e.isFree?" · Free":""}`;
  return{title:`${e.title} · GoToday`,description,openGraph:{title:e.title,description,siteName:"GoToday",type:"website",images:e.image?[{url:e.image}]:undefined},twitter:{card:e.image?"summary_large_image":"summary",title:e.title,description}};
 }
 
@@ -25,7 +25,7 @@ export default async function EventPage({params}:{params:Promise<{id:string}>}){
  const h=await headers(),origin=`${h.get("x-forwarded-proto")||"https"}://${h.get("host")}`,pageUrl=`${origin}/events/${encodeURIComponent(id)}`;
  const {otherDates,atVenue}=await loadRelated(e);
  // All-day events run until the end of their day; timed events count as over 3 hours after they end/start.
- const ended=isAllDay(e.start)?e.start.getTime()+24*3600e3<Date.now():((e.end&&e.end>e.start?e.end:e.start).getTime()<Date.now()-3*3600e3);
+ const ended=isAllDay(e.start,e.tz)?e.start.getTime()+24*3600e3<Date.now():((e.end&&e.end>e.start?e.end:e.start).getTime()<Date.now()-3*3600e3);
  const ages=agesText(e),cost=costText(e),map=mapEmbedUrl(e),where=whereText(e);
  const regFull=/full/i.test(e.registrationText||"");
  const paras=e.description.split(/\n+/).map(x=>x.trim()).filter(Boolean);
@@ -47,7 +47,7 @@ export default async function EventPage({params}:{params:Promise<{id:string}>}){
      <h1>{e.title}</h1>
 
      <div className="facts">
-      <div className="fact"><div className="k">When</div><div className="v">{fmtDate(e.start)}</div><div className="s">{timeRange(e)}{e.recurrence?` · Repeats ${e.recurrence.toLowerCase()}`:""}</div></div>
+      <div className="fact"><div className="k">When</div><div className="v">{fmtDate(e.start,undefined,e.tz)}</div><div className="s">{timeRange(e)}{e.recurrence?` · Repeats ${e.recurrence.toLowerCase()}`:""}</div></div>
       <div className="fact"><div className="k">Where</div><div className="v">{e.venue||e.city}</div><div className="s">{e.address||e.city}</div><a className="inline" href={directionsUrl(e)} target="_blank" rel="noreferrer">Get directions ↗</a></div>
       {(cost||ages)&&<div className="fact"><div className="k">Cost{ages?" & ages":""}</div><div className="v">{cost||"See event page"}</div>{ages&&<div className="s">{ages}</div>}</div>}
      </div>
@@ -59,7 +59,7 @@ export default async function EventPage({params}:{params:Promise<{id:string}>}){
 
      <div className="ctaRow">
       <a className="btn primary" href={e.officialUrl} target="_blank" rel="noreferrer">{e.source==="Ticketmaster"?"Tickets & details ↗":"Official event page ↗"}</a>
-      <ShareButton title={e.title} text={`${e.title} — ${fmtDate(e.start)}${isAllDay(e.start)?"":`, ${fmtTime(e.start)}`} at ${e.venue||e.city}`}/>
+      <ShareButton title={e.title} text={`${e.title} — ${fmtDate(e.start,undefined,e.tz)}${isAllDay(e.start,e.tz)?"":`, ${fmtTime(e.start,e.tz)}`} at ${e.venue||e.city}`}/>
      </div>
      <div className="calRow">
       <span>Add to calendar:</span>
@@ -73,11 +73,11 @@ export default async function EventPage({params}:{params:Promise<{id:string}>}){
      {map&&<section className="mapBox"><h2>Location</h2><p className="muted">{where}</p><iframe title={`Map of ${e.venue||e.city}`} src={map} loading="lazy" referrerPolicy="no-referrer-when-downgrade"/></section>}
 
      {otherDates.length>0&&<section className="related"><h2>{otherDates.some(o=>o.venue!==e.venue)?"Other dates & locations":"Other dates"}</h2>
-      <ul>{otherDates.map(o=><li key={o.id}><Link href={`/events/db-${o.id}`}><b>{fmtDate(o.start,{weekday:"short",month:"short",day:"numeric"})}</b><span>{isAllDay(o.start)?"All day":fmtTime(o.start)}</span>{o.venue!==e.venue&&<span className="muted">{o.venue||o.city}</span>}</Link></li>)}</ul>
+      <ul>{otherDates.map(o=><li key={o.id}><Link href={`/events/db-${o.id}`}><b>{fmtDate(o.start,{weekday:"short",month:"short",day:"numeric"},e.tz)}</b><span>{isAllDay(o.start,e.tz)?"All day":fmtTime(o.start,e.tz)}</span>{o.venue!==e.venue&&<span className="muted">{o.venue||o.city}</span>}</Link></li>)}</ul>
      </section>}
 
      {atVenue.length>0&&<section className="related"><h2>More at {e.venue}</h2>
-      <ul>{atVenue.map(o=><li key={o.id}><Link href={`/events/db-${o.id}`}><b>{o.title}</b><span>{fmtDate(o.start,{weekday:"short",month:"short",day:"numeric"})}{isAllDay(o.start)?"":" · "+fmtTime(o.start)}</span></Link></li>)}</ul>
+      <ul>{atVenue.map(o=><li key={o.id}><Link href={`/events/db-${o.id}`}><b>{o.title}</b><span>{fmtDate(o.start,{weekday:"short",month:"short",day:"numeric"},e.tz)}{isAllDay(o.start,e.tz)?"":" · "+fmtTime(o.start,e.tz)}</span></Link></li>)}</ul>
      </section>}
 
      <p className="sourceNote">Listed by <b>{sourceLabel(e)}</b>. Details can change — check the official page before you go.</p>

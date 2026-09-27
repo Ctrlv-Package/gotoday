@@ -1,10 +1,12 @@
 "use client";
 import {useEffect,useMemo,useState} from "react";
 
-type EventItem={id?:string;title:string;city:string;venue?:string;date?:string;time?:string;image?:string;url?:string;category?:string;genre?:string;minPrice?:number|null;desc?:string;tags?:string[];emoji?:string;source?:string;distanceMiles?:number;distanceAccuracy?:string;ageMin?:number;ageMax?:number;moreLocations?:number;otherVenues?:string[];isFree?:boolean};
+type EventItem={id?:string;title:string;city:string;venue?:string;date?:string;time?:string;image?:string;url?:string;category?:string;genre?:string;minPrice?:number|null;desc?:string;tags?:string[];emoji?:string;source?:string;distanceMiles?:number;distanceAccuracy?:string;ageMin?:number;ageMax?:number;registration?:string;moreLocations?:number;otherVenues?:string[];isFree?:boolean};
 
 const AGE_BANDS:[string,number,number][]=[["Babies & toddlers",0,2],["Preschool 3–5",3,5],["Ages 6–9",6,9],["Tweens 10–12",10,12],["Teens 13–17",13,17]];
-const CHIPS=["All","Family","Kids","Free","Music","Arts & Theatre","Sports"];
+// Interest chips combine with OR; "Free" and the More-filters options always narrow the results.
+const CHIPS=["All","Family","Kids","Adults","Free","Music","Arts & Theatre","Sports"];
+const SETTINGS=["Any","Indoor","Outdoor"];
 const RANGES=[["today","Today"],["tomorrow","Tomorrow"],["weekend","Next Weekend"]] as const;
 const TIMES=["Any time","Morning","Afternoon","Evening"];
 const DEFAULT_ZIP="33326";
@@ -23,14 +25,15 @@ const store={get:(k:string)=>{try{return localStorage.getItem(k)}catch{return nu
 
 export default function Home(){
  const[zip,setZip]=useState(DEFAULT_ZIP),[searchedZip,setSearchedZip]=useState(DEFAULT_ZIP),[coords,setCoords]=useState<{lat:number;lng:number}|null>(null);
- const[radius,setRadius]=useState("25"),[range,setRange]=useState("today"),[selected,setSelected]=useState<string[]>([]),[ageBands,setAgeBands]=useState<string[]>([]);
+ const[radius,setRadius]=useState("25"),[range,setRange]=useState("today"),[selected,setSelected]=useState<string[]>([]),[ageBands,setAgeBands]=useState<string[]>([]),[moreOpen,setMoreOpen]=useState(false),[setting,setSetting]=useState("Any"),[dropIn,setDropIn]=useState(false),[spanish,setSpanish]=useState(false),[seniors,setSeniors]=useState(false);
  const[timeFilter,setTimeFilter]=useState("Any time"),[sort,setSort]=useState("Soonest"),[query,setQuery]=useState("");
  const[events,setEvents]=useState<EventItem[]>([]),[loading,setLoading]=useState(false),[message,setMessage]=useState(""),[toast,setToast]=useState("");
 
  async function load(z:string,r:string,c:{lat:number;lng:number}|null,rad:string){
   setLoading(true);setMessage("");
   try{
-   const q=new URLSearchParams({postalCode:z||DEFAULT_ZIP,radius:rad,range:r});
+   const now=new Date(),today=`${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,"0")}-${String(now.getDate()).padStart(2,"0")}`;
+   const q=new URLSearchParams({postalCode:z||DEFAULT_ZIP,radius:rad,range:r,today});
    if(c){q.set("lat",String(c.lat));q.set("lng",String(c.lng))}
    const d=await (await fetch("/api/events?"+q,{cache:"no-store"})).json();
    setEvents(d.events||[]);
@@ -50,7 +53,7 @@ export default function Home(){
  function useLocation(){if(!navigator.geolocation)return setMessage("Location is not supported by this browser.");setMessage("Finding your location…");navigator.geolocation.getCurrentPosition(p=>{const c={lat:p.coords.latitude,lng:p.coords.longitude};setCoords(c);setSearchedZip("");setZip("");load("",range,c,radius);document.getElementById("results")?.scrollIntoView({behavior:"smooth"})},()=>setMessage("Location permission was not granted. Enter a ZIP code instead."),{timeout:10000,maximumAge:600000})}
  function chooseRange(r:string){setRange(r);load(searchedZip,r,coords,radius)}
  function chooseRadius(rad:string){setRadius(rad);store.set("gotoday:radius",rad);load(searchedZip,range,coords,rad)}
- function toggleChip(c:string){if(c==="All"){setSelected([]);setAgeBands([]);return}setSelected(s=>s.includes(c)?s.filter(x=>x!==c):[...s,c])}
+ function toggleChip(c:string){if(c==="All"){setSelected([]);setAgeBands([]);setSetting("Any");setDropIn(false);setSpanish(false);setSeniors(false);return}setSelected(s=>s.includes(c)?s.filter(x=>x!==c):[...s,c])}
 
  async function share(e:EventItem){
   const url=e.source==="Ticketmaster"?(e.url||location.origin):`${location.origin}/events/${encodeURIComponent(e.id||"")}`;
@@ -64,14 +67,17 @@ export default function Home(){
   const q=query.trim().toLowerCase(),interests=selected.filter(x=>x!=="Free");
   return events.filter(e=>{
    const tags=new Set([e.category,...(e.tags||[])]);
-   const cm=(interests.length===0||interests.some(x=>tags.has(x)||(x==="Family"&&tags.has("Kids"))))&&(!selected.includes("Free")||tags.has("Free")||!!e.isFree);
+   const adultsOnly=e.ageMin!=null&&e.ageMin>=18;
+   const cm=(interests.length===0||interests.some(x=>x==="Adults"?adultsOnly:tags.has(x)||(x==="Family"&&tags.has("Kids"))))&&(!selected.includes("Free")||tags.has("Free")||!!e.isFree);
+   const more=(setting==="Any"||tags.has(setting))&&(!dropIn||tags.has("Drop-in"))&&(!spanish||tags.has("En Español"))&&(!seniors||tags.has("Seniors")||(e.ageMin!=null&&e.ageMin>=50));
    const am=!selected.includes("Kids")||ageBands.length===0||!tags.has("Kids")||e.ageMin==null||e.ageMax==null||AGE_BANDS.some(([l,lo,hi])=>ageBands.includes(l)&&e.ageMin!<=hi&&e.ageMax!>=lo);
    const h=e.time?Number(e.time.slice(0,2)):-1;
    const tm=timeFilter==="Any time"||h<0||(timeFilter==="Morning"&&h<12)||(timeFilter==="Afternoon"&&h>=12&&h<17)||(timeFilter==="Evening"&&h>=17);
-   return cm&&am&&tm&&(!q||[e.title,e.city,e.venue,e.desc,e.category,e.genre].filter(Boolean).join(" ").toLowerCase().includes(q));
+   return cm&&am&&more&&tm&&(!q||[e.title,e.city,e.venue,e.desc,e.category,e.genre].filter(Boolean).join(" ").toLowerCase().includes(q));
   }).sort((a,b)=>sort==="Nearest"?(a.distanceMiles??999)-(b.distanceMiles??999):((a.date||"")+(a.time||"")).localeCompare((b.date||"")+(b.time||"")));
- },[events,selected,timeFilter,sort,query,ageBands]);
+ },[events,selected,timeFilter,sort,query,ageBands,setting,dropIn,spanish,seniors]);
 
+ const moreCount=(setting!=="Any"?1:0)+(dropIn?1:0)+(spanish?1:0)+(seniors?1:0);
  const where=coords?"your location":searchedZip||"your area";
  return <main className="page">
   <section className="hero">
@@ -98,7 +104,14 @@ export default function Home(){
    <div className="chips">{RANGES.map(([k,l])=><button key={k} className={range===k?"active":""} onClick={()=>chooseRange(k)}>{l}{k==="weekend"&&<small className="chipDates"> · {nextWeekendLabel()}</small>}</button>)}</div>
 
    <div className="label">WHAT ARE YOU INTO?</div>
-   <div className="chips">{CHIPS.map(c=><button key={c} className={(c==="All"?selected.length===0:selected.includes(c))?"active":""} onClick={()=>toggleChip(c)}>{c}</button>)}</div>
+   <div className="chips">{CHIPS.map(c=><button key={c} className={(c==="All"?selected.length===0&&moreCount===0:selected.includes(c))?"active":""} onClick={()=>toggleChip(c)}>{c}</button>)}</div>
+   <button className={`moreBtn${moreOpen||moreCount?" on":""}`} onClick={()=>setMoreOpen(o=>!o)} aria-expanded={moreOpen}>⚙ More filters{moreCount?` (${moreCount})`:""} {moreOpen?"▴":"▾"}</button>
+   {moreOpen&&<div className="morePanel">
+    <div className="moreRow"><span>Setting</span><div className="seg">{SETTINGS.map(x=><button key={x} className={setting===x?"active":""} onClick={()=>setSetting(x)}>{x==="Indoor"?"🏠 Indoor":x==="Outdoor"?"🌳 Outdoor":x}</button>)}</div></div>
+    <label className="toggle"><input type="checkbox" checked={dropIn} onChange={e=>setDropIn(e.target.checked)}/> Drop-in <small>no registration needed</small></label>
+    <label className="toggle"><input type="checkbox" checked={spanish} onChange={e=>setSpanish(e.target.checked)}/> En Español</label>
+    <label className="toggle"><input type="checkbox" checked={seniors} onChange={e=>setSeniors(e.target.checked)}/> Seniors <small>50+ programs</small></label>
+   </div>}
    {selected.includes("Kids")&&<><div className="label">KIDS' AGES</div><div className="chips">{AGE_BANDS.map(([l])=><button key={l} className={ageBands.includes(l)?"active":""} onClick={()=>setAgeBands(b=>b.includes(l)?b.filter(x=>x!==l):[...b,l])}>{l}</button>)}</div></>}
 
    <div className="filters">
@@ -121,7 +134,8 @@ export default function Home(){
      <div className="meta">🗓 {fmt(e.date,e.time)}</div>
      <div className="meta">📍 {e.venue||e.city}{typeof e.distanceMiles==="number"?` · ${e.distanceMiles.toFixed(1)} mi`:""}{e.moreLocations?<b title={(e.otherVenues||[]).join(", ")}>{` · +${e.moreLocations} more location${e.moreLocations>1?"s":""}`}</b>:null}</div>
      {e.desc&&<p className="desc">{e.desc}</p>}
-     <div className="tags">{ageLabel(e)&&<span className="age">{ageLabel(e)}</span>}{(e.tags||[]).filter(t=>!["Local","Library","Free","Parks","Tickets"].includes(t)&&!/\(/.test(t)).slice(0,3).map(t=><span key={t}>{t}</span>)}</div>
+     {(e.tags||[]).includes("Drop-in")?<div className="hint ok">✓ Drop-in, no registration</div>:e.registration&&e.source!=="Ticketmaster"?<div className="hint">{e.registration}</div>:null}
+     <div className="tags">{ageLabel(e)&&<span className="age">{ageLabel(e)}</span>}{(e.tags||[]).filter(t=>!["Local","Library","Free","Parks","Tickets","Drop-in"].includes(t)&&!/\(/.test(t)).slice(0,3).map(t=><span key={t}>{t}</span>)}</div>
      <div className="actions">
       <a className="primary" href={detailHref(e)} target={e.source==="Ticketmaster"?"_blank":undefined} rel="noreferrer">{e.source==="Ticketmaster"?"Tickets ↗":"View details"}</a>
       <button type="button" className="share" onClick={()=>share(e)} aria-label={`Share ${e.title}`}>

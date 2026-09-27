@@ -18,23 +18,25 @@ export async function installBrowserFetch(){
   const page=await ctx!.newPage();
   try{
    let resp=await page.goto(url,{waitUntil:"domcontentloaded",timeout:45000});
-   let status=resp?.status()??0;
+   let status=resp?.status()??0,final=resp;
    // Bot-check interstitials ("Just a moment…") resolve themselves in a real browser; give it time.
    if(status===403||status===429||status===503){
     await page.waitForLoadState("networkidle",{timeout:15000}).catch(()=>{});
     const again=await page.waitForResponse(r=>r.url().split("#")[0]===url.split("#")[0]&&r.status()<400,{timeout:12000}).catch(()=>null);
-    if(again)status=again.status();
+    if(again){status=again.status();final=again}
    }
    // Still refused: pause like a person would, then reload once.
    if(status===403||status===429){
     await page.waitForTimeout(6000+Math.random()*4000);
     resp=await page.reload({waitUntil:"domcontentloaded",timeout:45000}).catch(()=>resp);
-    status=resp?.status()??status;
+    status=resp?.status()??status;final=resp;
    }
-   const body=await page.content();
+   // Raw response body (JSON feeds stay JSON); fall back to the rendered DOM.
+   const body=(final?await final.text().catch(()=>""):"")||await page.content();
+   const type=final?.headers()["content-type"]||"text/html; charset=utf-8";
    const server=resp?.headers()["server"]||"";
    if(status>=400)console.log(`   browser GET ${status} ${url} (server: ${server||"?"}; title: ${(await page.title()).slice(0,80)})`);
-   return new Response(body,{status:status||200,headers:{"content-type":"text/html; charset=utf-8"}});
+   return new Response(body,{status:status||200,headers:{"content-type":type}});
   }finally{await page.close()}
  }) as typeof fetch;
 }

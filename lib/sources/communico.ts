@@ -61,7 +61,7 @@ export async function fetchCommunico(cfg:CommunicoConfig,startDate:string,endDat
    url,sourceUrl:`${base}/events`,image,category:family?"Family":arts?"Arts & Theatre":"Local",genre:"Library Event",
    desc:[libText(e.description),libText(e.long_description)].filter(Boolean).filter((x,i,a)=>i===0||!a[0].includes(x)).join("\n\n").slice(0,3000)||`${cfg.source} event.`,
    ...registration(e),
-   tags:[...ages,...tags,...(family?["Family"]:[]),...(kids?["Kids"]:[]),...(free?["Free"]:[]),"Library"],
+   tags:[...ages,...tags,...(family?["Family"]:[]),...(kids?["Kids"]:[]),...(free?["Free"]:[]),...(String(e.allow_reg)!=="1"?["Drop-in"]:[]),"Library"],
    emoji:kids?"📚":arts?"🎨":"📍",source:cfg.source,priceText:free?"Free":String(e.registration_cost||""),isFree:free,eventType:"event"});
  }
  return out;

@@ -15,7 +15,7 @@ const BRANCH_CITY:[RegExp,string][]=[
  [/pembroke park|west park/i,"West Park, FL"],[/hillsboro|century plaza/i,"Deerfield Beach, FL"],[/north lauderdale/i,"North Lauderdale, FL"],
  [/wilton manors/i,"Wilton Manors, FL"],[/parkland/i,"Parkland, FL"],[/beach branch/i,"Hollywood, FL"]
 ];
-function branchCity(venue:string){for(const [rx,city] of BRANCH_CITY)if(rx.test(venue))return city;return "Broward County, FL"}
+export function branchCity(venue:string){for(const [rx,city] of BRANCH_CITY)if(rx.test(venue))return city;return "Broward County, FL"}
 
 export function fetchBrowardLibraryEvents(startDate:string,endDate:string):Promise<EventRecord[]>{
  return fetchCommunico({client:"broward",source:"Broward County Library",idPrefix:"bcl",defaultVenue:"Broward County Library",cityFor:branchCity},startDate,endDate);

@@ -119,7 +119,7 @@ export async function fetchBrowardParkEvents(startDate:string,endDate:string):Pr
     category:kids?"Family":arts?"Arts & Theatre":sports?"Sports":"Local",genre:cat||"Parks & Recreation",
     desc:desc||`${title} at ${park}.`,priceText:price.slice(0,120)||undefined,isFree:free,
     ageMin:ages?.[0],ageMax:ages?.[1],
-    tags:[...(cat?[cat]:[]),...(kids?["Kids","Family"]:[]),...(arts?["Arts & Theatre"]:[]),...(sports?["Sports"]:[]),...(nature?["Outdoors"]:[]),"Parks"],
+    tags:[...(cat?[cat]:[]),...(kids?["Kids","Family"]:[]),...(arts?["Arts & Theatre"]:[]),...(sports?["Sports"]:[]),...(nature?["Outdoor"]:[]),...(needsReg?[]:["Drop-in"]),"Parks"],
     emoji:kids?"🧒":nature?"🌳":sports?"⚽":arts?"🎨":"📍",source:"Broward County Parks",
     isDiscoveryEligible:INELIGIBLE.test(cat)?false:undefined});
   }

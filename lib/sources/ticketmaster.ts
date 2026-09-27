@@ -5,13 +5,16 @@ import type {EventRecord} from "../ingestion/types";
 // and at most 1,000 results per query (size * page < 1000).
 const JUNK=/(^(luxury|premium|club)\s*(&|and)?\s*suites?\b|\bsuites?:|\bhospitality\b)|\b(parking|upgrade|vip package|ride and dine|big bus tours?|speedboat|gift card|voucher|season tickets?)\b/i;
 
-export async function fetchTicketmasterEvents(startDate:string,endDate:string):Promise<EventRecord[]>{
+/** Either a Ticketmaster market (15 = South Florida) or a center point + radius in miles. */
+export type TicketmasterConfig={marketId?:string;latlong?:string;radius?:number;label?:string};
+export async function fetchTicketmasterEvents(startDate:string,endDate:string,cfg:TicketmasterConfig={marketId:"15"}):Promise<EventRecord[]>{
  const key=process.env.TICKETMASTER_API_KEY;
  if(!key)throw new Error("TICKETMASTER_API_KEY is not set");
  const out:EventRecord[]=[],seen=new Set<string>();
  for(let page=0;page<5;page++){
   const u=new URL("https://app.ticketmaster.com/discovery/v2/events.json");
-  u.searchParams.set("apikey",key);u.searchParams.set("marketId","15");u.searchParams.set("countryCode","US");
+  u.searchParams.set("apikey",key);u.searchParams.set("countryCode","US");
+  if(cfg.latlong){u.searchParams.set("latlong",cfg.latlong);u.searchParams.set("radius",String(cfg.radius||50));u.searchParams.set("unit","miles")}else u.searchParams.set("marketId",cfg.marketId||"15");
   u.searchParams.set("localStartEndDateTime",`${startDate}T00:00:00,${endDate}T23:59:59`);
   u.searchParams.set("sort","date,asc");u.searchParams.set("size","199");u.searchParams.set("page",String(page));
   const r=await fetch(u.toString(),{cache:"no-store"});
@@ -39,6 +42,6 @@ export async function fetchTicketmasterEvents(startDate:string,endDate:string):P
   const totalPages=Number(d?.page?.totalPages)||0;
   if(page+1>=totalPages||(page+1)*199>=1000)break;
  }
- if(out.length===0)throw new Error("Ticketmaster returned no events for South Florida");
+ if(out.length===0)throw new Error(`Ticketmaster returned no events for ${cfg.label||cfg.marketId||cfg.latlong}`);
  return out;
 }

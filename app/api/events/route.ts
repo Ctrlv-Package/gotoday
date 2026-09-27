@@ -1,10 +1,12 @@
 import { db } from "../../../lib/db";
+import { NextRequest, NextResponse } from "next/server";
 import { ensureSchema } from "../../../lib/schema";
 import { discoveryRejection } from "../../../lib/ingestion/utils";
-import { NextRequest, NextResponse } from "next/server";
+import { localParts, todayIn, DEFAULT_TZ } from "../../../lib/time";
+
 function decodeHtml(s:string){return s.replace(/&#(\d+);/g,(_,n)=>String.fromCharCode(Number(n))).replace(/&#x([0-9a-f]+);/gi,(_,n)=>String.fromCharCode(parseInt(n,16))).replace(/&amp;/g,"&").replace(/&quot;/g,'"').replace(/&apos;|&#39;/g,"'")}
 function collapseKey(title:string,date:string){return [title.toLowerCase().replace(/&/g,"and").replace(/[^a-z0-9]+/g," ").trim(),date].join("|")}
-function dedupeKey(title:string,venue:string,date:string){return [title.toLowerCase().replace(/[^a-z0-9]+/g," ").trim(),venue.toLowerCase().trim(),date].join("|")}
+// Fallback centers for events saved before every event carried coordinates.
 const CITY_COORDS:Record<string,[number,number]>={
 "Sunrise, FL":[26.16697,-80.25659],"Pembroke Pines, FL":[26.00777,-80.29626],"Hollywood, FL":[26.0112,-80.14949],
 "Fort Lauderdale, FL":[26.12231,-80.14338],"Davie, FL":[26.06287,-80.2331],"Weston, FL":[26.10037,-80.39977],
@@ -26,33 +28,56 @@ const CITY_COORDS:Record<string,[number,number]>={
 "Lantana, FL":[26.5865,-80.0521],"Tequesta, FL":[26.9709,-80.1284],"Palm Springs, FL":[26.6359,-80.0962],"Loxahatchee, FL":[26.6837,-80.2798]
 };
 function miles(a:number,b:number,c:number,d:number){const R=3958.8,q=(x:number)=>x*Math.PI/180,dp=q(c-a),dl=q(d-b),z=Math.sin(dp/2)**2+Math.cos(q(a))*Math.cos(q(c))*Math.sin(dl/2)**2;return 2*R*Math.asin(Math.sqrt(z))}
-function localWithinRadius(e:any,lat:string|null,lng:string|null,radius:string){if(!lat||!lng)return true;const exact=Number.isFinite(e.latitude)&&Number.isFinite(e.longitude),key=String(e.city||"").replace(/\s+/g," ").trim(),p=exact?[e.latitude,e.longitude]:CITY_COORDS[key];if(!p)return false;const d=miles(+lat,+lng,p[0],p[1]);e.distanceMiles=Math.round(d*10)/10;e.distanceAccuracy=exact?"venue":"city";return d<=+radius}
-function windowDates(range:string){const parts=new Intl.DateTimeFormat("en-US",{timeZone:"America/New_York",year:"numeric",month:"2-digit",day:"2-digit"}).formatToParts(new Date());const get=(t:string)=>parts.find(p=>p.type===t)?.value||"";const today=`${get("year")}-${get("month")}-${get("day")}`,base=new Date(today+"T12:00:00Z"),ymd=(d:Date)=>d.toISOString().slice(0,10);let s=new Date(base),e=new Date(base);if(range==="tomorrow"){s.setUTCDate(s.getUTCDate()+1);e=new Date(s)}if(range==="weekend"){const day=base.getUTCDay(),n=day===6?7:(6-day+7)%7||7;s=new Date(base);s.setUTCDate(s.getUTCDate()+n);e=new Date(s);e.setUTCDate(e.getUTCDate()+1)}return{startDate:ymd(s),endDate:ymd(e)}}
-
 async function zipCoords(zip:string):Promise<[number,number]|null>{if(!/^\d{5}$/.test(zip))return null;try{const r=await fetch(`https://api.zippopotam.us/us/${zip}`,{next:{revalidate:2592000}});if(!r.ok)return null;const d=await r.json(),p=d?.places?.[0],la=Number(p?.latitude),lo=Number(p?.longitude);return Number.isFinite(la)&&Number.isFinite(lo)?[la,lo]:null}catch{return null}}
-async function databaseEvents(startDate:string,endDate:string){
- await ensureSchema();
- const {rows}=await db.query("select e.id,e.title,e.description,e.start_at,e.city,e.category,e.genre,e.tags,e.is_free,e.price_text,e.image_url,e.official_url,e.source_url,e.age_min,e.age_max,s.name as source,v.name as venue,v.latitude,v.longitude from events e join sources s on s.id=e.source_id left join venues v on v.id=e.venue_id where e.status='active' and e.start_at::date between $1::date and $2::date order by e.start_at asc",[startDate,endDate]);
- const formatter=new Intl.DateTimeFormat("en-CA",{timeZone:"America/New_York",year:"numeric",month:"2-digit",day:"2-digit",hour:"2-digit",minute:"2-digit",second:"2-digit",hour12:false});
- const value=(ps:Intl.DateTimeFormatPart[],t:string)=>ps.find(x=>x.type===t)?.value||"";
- return rows.map((r:any)=>{const ps=formatter.formatToParts(new Date(r.start_at));return{id:"db-"+r.id,title:decodeHtml(r.title||""),city:r.city||"",venue:decodeHtml(r.venue||""),date:value(ps,"year")+"-"+value(ps,"month")+"-"+value(ps,"day"),time:(()=>{const t=value(ps,"hour").replace(/^24$/,"00")+":"+value(ps,"minute")+":"+value(ps,"second");return t==="00:00:00"?"":t})(),image:r.image_url||"",url:r.official_url||"",sourceUrl:r.source_url||"",category:r.category||"Local",genre:r.genre||"",desc:decodeHtml(r.description||""),tags:Array.isArray(r.tags)?r.tags:[],emoji:"🎟️",source:r.source,priceText:r.price_text||undefined,isFree:Boolean(r.is_free),ageMin:r.age_min==null?undefined:Number(r.age_min),ageMax:r.age_max==null?undefined:Number(r.age_max),latitude:r.latitude==null?undefined:Number(r.latitude),longitude:r.longitude==null?undefined:Number(r.longitude)}});
+
+/** Date window for a range, from the searcher's own "today" (sent by the browser) or Eastern time. */
+function windowDates(range:string,today:string){
+ const base=new Date(today+"T12:00:00Z"),ymd=(d:Date)=>d.toISOString().slice(0,10);let s=new Date(base),e=new Date(base);
+ if(range==="tomorrow"){s.setUTCDate(s.getUTCDate()+1);e=new Date(s)}
+ if(range==="weekend"){const day=base.getUTCDay(),n=day===6?7:(6-day+7)%7||7;s.setUTCDate(s.getUTCDate()+n);e=new Date(s);e.setUTCDate(e.getUTCDate()+1)}
+ return{startDate:ymd(s),endDate:ymd(e)};
 }
+const TM_JUNK=/^(luxury|premium|club)\s*(&|and)?\s*suites?\b|\bsuites?:|\bparking\b/i;
+
 export async function GET(request:NextRequest){
- const p=request.nextUrl.searchParams,postalCode=p.get("postalCode")||"33326",radius=p.get("radius")||"25",range=p.get("range")||"today",w=windowDates(range);
- let lat=p.get("lat"),lng=p.get("lng");
- // ZIP searches: resolve the ZIP to coordinates so the radius applies (fallback: central Broward).
- if(!lat||!lng){const c=await zipCoords(postalCode);[lat,lng]=(c||[26.12,-80.25]).map(String) as [string,string]}
- // Re-apply the current discovery rules at read time, so rule changes take effect without waiting for re-ingestion.
- let events:any[]=(await databaseEvents(w.startDate,w.endDate))
-  .filter((e:any)=>!(e.source==="Ticketmaster"&&/^(luxury|premium|club)\s*(&|and)?\s*suites?\b|\bsuites?:|\bparking\b/i.test(e.title)))
-  .filter((e:any)=>!discoveryRejection({...e,isDiscoveryEligible:e.source==="Ticketmaster"?true:undefined}))
-  .filter((e:any)=>localWithinRadius(e,lat,lng,radius));
- if(range==="today"){const np=new Intl.DateTimeFormat("en-US",{timeZone:"America/New_York",hour:"2-digit",minute:"2-digit",hour12:false}).formatToParts(new Date());const nowTime=(np.find(x=>x.type==="hour")?.value||"00").replace(/^24$/,"00")+":"+(np.find(x=>x.type==="minute")?.value||"00")+":00";events=events.filter((e:any)=>!e.time||e.time==="00:00:00"||e.time>=nowTime)}
+ const p=request.nextUrl.searchParams,postalCode=p.get("postalCode")||"33326",radius=Math.min(100,Math.max(1,Number(p.get("radius"))||25)),range=p.get("range")||"today";
+ const clientToday=p.get("today"),today=clientToday&&/^\d{4}-\d{2}-\d{2}$/.test(clientToday)?clientToday:todayIn(DEFAULT_TZ);
+ let lat=Number(p.get("lat")),lng=Number(p.get("lng"));
+ if(!Number.isFinite(lat)||!Number.isFinite(lng)){const c=await zipCoords(postalCode);[lat,lng]=c||[26.12,-80.25]}
+ const w=windowDates(range,today);
+ await ensureSchema();
+ // Bounding box first (uses the lat/lng index), exact distance second; rows without coordinates
+ // (saved before coordinates existed) fall back to their city center below.
+ const dLat=radius/69,dLng=radius/(69*Math.cos(lat*Math.PI/180));
+ const {rows}=await db.query(`select e.id,e.title,e.description,e.start_at,e.end_at,e.local_date::text as local_date,e.timezone,e.city,e.category,e.genre,e.tags,e.is_free,e.price_text,e.image_url,
+   e.official_url,e.age_min,e.age_max,e.registration_text,e.latitude,e.longitude,s.name as source,v.name as venue
+  from events e join sources s on s.id=e.source_id left join venues v on v.id=e.venue_id
+  where e.status='active' and e.local_date between $1::date and $2::date
+   and ((e.latitude between $3 and $4 and e.longitude between $5 and $6) or e.latitude is null)
+  order by e.start_at limit 4000`,[w.startDate,w.endDate,lat-dLat,lat+dLat,lng-dLng,lng+dLng]);
+ const now=Date.now();
+ let events:any[]=[];
+ for(const r of rows){
+  const tz=r.timezone||DEFAULT_TZ,start=new Date(r.start_at),lp=localParts(start,tz);
+  let la=r.latitude==null?NaN:Number(r.latitude),lo=r.longitude==null?NaN:Number(r.longitude),acc="venue";
+  if(!Number.isFinite(la)){const c=CITY_COORDS[String(r.city||"").trim()];if(!c)continue;[la,lo]=c;acc="city"}
+  const d=miles(lat,lng,la,lo);if(d>radius)continue;
+  const allDay=lp.time==="00:00:00";
+  const e:any={id:"db-"+r.id,title:decodeHtml(r.title||""),city:r.city||"",venue:decodeHtml(r.venue||""),date:r.local_date||lp.date,time:allDay?"":lp.time,
+   image:r.image_url||"",url:r.official_url||"",category:r.category||"Local",genre:r.genre||"",desc:decodeHtml(r.description||""),tags:Array.isArray(r.tags)?r.tags:[],
+   source:/^Ticketmaster/.test(r.source)?"Ticketmaster":r.source,priceText:r.price_text||undefined,isFree:Boolean(r.is_free),ageMin:r.age_min??undefined,ageMax:r.age_max??undefined,registration:r.registration_text||undefined,
+   distanceMiles:Math.round(d*10)/10,distanceAccuracy:acc};
+  if(e.source==="Ticketmaster"&&TM_JUNK.test(e.title))continue;
+  if(discoveryRejection({...e,isDiscoveryEligible:e.source==="Ticketmaster"?true:undefined}))continue;
+  // "Today": hide timed events that have already ended (or started over 2 hours ago with no end time).
+  if(range==="today"&&!allDay){const end=r.end_at?new Date(r.end_at).getTime():start.getTime()+2*3600e3;if(end<now)continue}
+  events.push(e);
+ }
+ // Same program on the same day at several places (library branches, city + Ticketmaster) -> one card, nearest first.
  const groups=new Map<string,any[]>();
  for(const e of events){const k=collapseKey(e.title,e.date);const g=groups.get(k);g?g.push(e):groups.set(k,[e])}
- events=[...groups.values()].map(g=>{g.sort((a:any,b:any)=>(a.distanceMiles??999)-(b.distanceMiles??999)||((a.source==="Ticketmaster"?1:0)-(b.source==="Ticketmaster"?1:0)));const venues=new Set(g.map((x:any)=>x.venue));return{...g[0],moreLocations:venues.size-1,otherVenues:[...venues].slice(1,6)}})
-  // Local inventory first, Ticketmaster supplemental; then soonest.
+ events=[...groups.values()].map(g=>{g.sort((a:any,b:any)=>a.distanceMiles-b.distanceMiles||((a.source==="Ticketmaster"?1:0)-(b.source==="Ticketmaster"?1:0)));const venues=new Set(g.map((x:any)=>x.venue));return{...g[0],moreLocations:venues.size-1,otherVenues:[...venues].slice(1,6)}})
   .sort((a:any,b:any)=>(a.date+(a.time||"")).localeCompare(b.date+(b.time||""))||((a.source==="Ticketmaster"?1:0)-(b.source==="Ticketmaster"?1:0)));
  const localCount=events.filter((e:any)=>e.source!=="Ticketmaster").length;
- return NextResponse.json({events:events.slice(0,150),configured:Boolean(process.env.TICKETMASTER_API_KEY),range,startDate:w.startDate,endDate:w.endDate,localCount,ticketmasterCount:events.length-localCount,total:events.length});
+ return NextResponse.json({events:events.slice(0,300),range,startDate:w.startDate,endDate:w.endDate,center:[lat,lng],radius,localCount,ticketmasterCount:events.length-localCount,total:events.length});
 }
