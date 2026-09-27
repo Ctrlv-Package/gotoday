@@ -16,6 +16,7 @@ async function main(){
 if(process.env.USE_BROWSER!=="0"){await installBrowserFetch();console.log("Fetching city pages with headless Chrome")}
 let failures=0;const rows:string[]=[];
 for(const s of remoteSources()){
+ await new Promise(r=>setTimeout(r,3000));
  let payload:any;
  try{const events=await s.fetch(ymd(now),ymd(end));payload={source:s.name,events};console.log(`${s.name}: fetched ${events.length}`)}
  catch(e:any){payload={source:s.name,error:e?.message||String(e)};console.log(`${s.name}: fetch failed — ${payload.error}`)}

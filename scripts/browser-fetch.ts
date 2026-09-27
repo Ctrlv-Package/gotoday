@@ -25,6 +25,12 @@ export async function installBrowserFetch(){
     const again=await page.waitForResponse(r=>r.url().split("#")[0]===url.split("#")[0]&&r.status()<400,{timeout:12000}).catch(()=>null);
     if(again)status=again.status();
    }
+   // Still refused: pause like a person would, then reload once.
+   if(status===403||status===429){
+    await page.waitForTimeout(6000+Math.random()*4000);
+    resp=await page.reload({waitUntil:"domcontentloaded",timeout:45000}).catch(()=>resp);
+    status=resp?.status()??status;
+   }
    const body=await page.content();
    const server=resp?.headers()["server"]||"";
    if(status>=400)console.log(`   browser GET ${status} ${url} (server: ${server||"?"}; title: ${(await page.title()).slice(0,80)})`);
