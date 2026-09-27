@@ -42,8 +42,10 @@ const TM_JUNK=/^(luxury|premium|club)\s*(&|and)?\s*suites?\b|\bsuites?:|\bparkin
 export async function GET(request:NextRequest){
  const p=request.nextUrl.searchParams,postalCode=p.get("postalCode")||"33326",radius=Math.min(100,Math.max(1,Number(p.get("radius"))||25)),range=p.get("range")||"today";
  const clientToday=p.get("today"),today=clientToday&&/^\d{4}-\d{2}-\d{2}$/.test(clientToday)?clientToday:todayIn(DEFAULT_TZ);
- let lat=Number(p.get("lat")),lng=Number(p.get("lng"));
- if(!Number.isFinite(lat)||!Number.isFinite(lng)){const c=await zipCoords(postalCode);[lat,lng]=c||[26.12,-80.25]}
+ // Number(null) is 0, so only parse coordinates that were actually sent.
+ const num=(k:string)=>{const v=p.get(k);return v==null||v.trim()===""?NaN:Number(v)};
+ let lat=num("lat"),lng=num("lng");
+ if(!Number.isFinite(lat)||!Number.isFinite(lng)||(lat===0&&lng===0)){const c=await zipCoords(postalCode);[lat,lng]=c||[26.12,-80.25]}
  const w=windowDates(range,today);
  await ensureSchema();
  // Bounding box first (uses the lat/lng index), exact distance second; rows without coordinates
