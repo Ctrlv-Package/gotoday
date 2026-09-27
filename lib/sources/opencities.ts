@@ -42,6 +42,7 @@ export type OpenCitiesConfig={
  venue:string;
  block?:RegExp;         // titles to skip (meetings etc.)
  maxPages?:number;
+ pageUrl?:(page:number)=>string; // URL of page N (default: "<listUrl>/-npage-N")
 };
 
 export async function fetchOpenCities(cfg:OpenCitiesConfig,startDate:string,endDate:string):Promise<EventRecord[]>{
@@ -50,7 +51,7 @@ export async function fetchOpenCities(cfg:OpenCitiesConfig,startDate:string,endD
  const out:EventRecord[]=[],seenHref=new Set<string>();
  let linksSeen=0;
  for(let page=1;page<=(cfg.maxPages??8);page++){
-  const url=page===1?cfg.listUrl:`${cfg.listUrl.replace(/\/$/,"")}/-npage-${page}`;
+  const url=page===1?cfg.listUrl:(cfg.pageUrl?cfg.pageUrl(page):`${cfg.listUrl.replace(/\/$/,"")}/-npage-${page}`);
   const r=await fetchRetry(url,{headers:BROWSER_HEADERS,cache:"no-store"});
   if(!r.ok){if(page===1)throw new Error(`HTTP ${r.status} from ${url}`);break}
   const html=await r.text();

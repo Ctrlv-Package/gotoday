@@ -34,10 +34,16 @@ export function parseGovAccessTiles(html:string,origin:string){
   const href=li.match(/href="([^"]+Components\/Calendar\/Event[^"]*)"/i)?.[1];
   const title=decode(stripHtml(li.match(/itemprop="summary"[^>]*>([\s\S]*?)<\/span>/i)?.[1]||li.match(/aria-label="([^"]+)"/i)?.[1]||""));
   const s=li.match(/itemprop="startDate"[^>]*datetime="([^"]+)"/i)?.[1],e=li.match(/itemprop="endDate"[^>]*datetime="([^"]+)"/i)?.[1];
-  const st=s?eastern(s):null;if(!href||!title||!st)continue;
+  let st=s?eastern(s):null;
+  if(!st){ // date-only listing: "10/12/2026" in the time slot, or the Month/Day boxes
+   const md=li.match(/(\d{1,2})\/(\d{1,2})\/(20\d{2})/);
+   if(md)st={date:`${md[3]}-${md[1].padStart(2,"0")}-${md[2].padStart(2,"0")}`,time:""};
+  }
+  if(!href||!title||!st)continue;
   const desc=decode(stripHtml(li.match(/<p[^>]*>([\s\S]*?)<\/p>/i)?.[1]||""));
   const img=li.match(/background-image:\s*url\(([^)]+)\)/i)?.[1]?.replace(/['"]/g,"");
-  out.push({href:new URL(decode(href),origin).toString(),title,date:st.date,time:st.time,endTime:e?eastern(e)?.time||"":"",desc,image:img?new URL(img,origin).toString():undefined});
+  const u=new URL(decode(href),origin);u.searchParams.delete("backlist");
+  out.push({href:u.toString(),title,date:st.date,time:st.time,endTime:e?eastern(e)?.time||"":"",desc,image:img?new URL(img,origin).toString():undefined});
  }
  return out;
 }
@@ -63,8 +69,13 @@ export async function fetchGovAccess(cfg:GovAccessConfig,startDate:string,endDat
  const get=async(url:string)=>{const r=await fetchRetry(url,{headers:HEADERS,cache:"no-store"});if(!r.ok){errors.push(`HTTP ${r.status} ${url}`);return null}pagesOk++;return r.text()};
  // Rich tiles first (they carry descriptions and images).
  for(const p of cfg.tilePages||[]){
-  const url=origin+p,html=await get(url);if(!html)continue;
-  for(const t of parseGovAccessTiles(html,origin))items.set(t.href+"|"+t.date,{...t,from:url});
+  for(let page=1;page<=6;page++){
+   const url=origin+p.replace(/\/$/,"")+(page>1?`/-npage-${page}`:""),html=await get(url);if(!html)break;
+   const tiles=parseGovAccessTiles(html,origin);let added=0;
+   for(const t of tiles){const k=t.href+"|"+t.date;if(!items.has(k)){items.set(k,{...t,from:url});added++}}
+   const lastDate=tiles.map(t=>t.date).sort().pop()||"";
+   if(!added||lastDate>endDate||!new RegExp(`-npage-${page+1}`).test(html))break;
+  }
  }
  // Calendar grid for every month the window touches.
  const months=new Set<string>();

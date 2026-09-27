@@ -1,13 +1,9 @@
 import type {EventRecord} from "../ingestion/types";
-import {fetchOpenCities} from "./opencities";
+import {fetchGovAccess} from "./govaccess";
 
-// The month-grid URL (/-curm-/-cury-) doesn't include titles in the HTML; use the list page.
+// sunrisefl.gov is Granicus govAccess. Leisure Services "Events" has the public events as tiles;
+// the city calendar grid adds anything else (meetings there are rejected by the discovery rules).
 export function fetchSunriseEvents(startDate:string,endDate:string):Promise<EventRecord[]>{
- return fetchOpenCities({
-  listUrl:"https://www.sunrisefl.gov/our-city/calendar-of-events",
-  eventPath:"/our-city/calendar-of-events",
-  source:"City of Sunrise",idPrefix:"sunrise",city:"Sunrise, FL",venue:"City of Sunrise",
-  block:/\b(board|commission|committee|hearing|workshop|advisory|meeting|budget|planning|zoning|orientation|essay contest)\b/i,
-  maxPages:6
- },startDate,endDate);
+ return fetchGovAccess({site:"https://www.sunrisefl.gov",source:"City of Sunrise",idPrefix:"sunrise",city:"Sunrise, FL",venue:"City of Sunrise",
+  tilePages:["/departments-services/leisure-services/events"],calendarPaths:["/our-city/calendar-of-events"]},startDate,endDate);
 }

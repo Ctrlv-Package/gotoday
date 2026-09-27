@@ -8,6 +8,7 @@ export function fetchFortLauderdaleEvents(startDate:string,endDate:string):Promi
   eventPath:"/Explore-FTL/Event-Calendar",
   source:"City of Fort Lauderdale",idPrefix:"ftl",city:"Fort Lauderdale, FL",venue:"Fort Lauderdale",
   block:/\b(board|commission|committee|advisory|meeting|hearing|webinar|king tides|hazardous waste|waste|drop-off|certificate of use|bargaining session|magistrate|development review|code enforcement)\b/i,
-  maxPages:8
+  maxPages:8,
+  pageUrl:n=>`https://www.fortlauderdale.gov/Explore-FTL/Event-Calendar?dlv_OC%20CL%20Public%20Events%20Listing=(pageindex=${n})`
  },startDate,endDate);
 }
