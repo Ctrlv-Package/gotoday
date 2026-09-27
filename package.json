@@ -10,16 +10,17 @@
   },
   "dependencies": {
     "@types/node": "latest",
+    "@types/pg": "^8.11.10",
     "@types/react": "latest",
     "@types/react-dom": "latest",
     "next": "latest",
+    "pg": "^8.13.1",
     "react": "latest",
     "react-dom": "latest",
-    "typescript": "latest",
-    "pg": "^8.13.1",
-    "@types/pg": "^8.11.10"
+    "typescript": "latest"
   },
   "devDependencies": {
+    "playwright": "^1.63.0",
     "tsx": "^4.19.2"
   }
 }

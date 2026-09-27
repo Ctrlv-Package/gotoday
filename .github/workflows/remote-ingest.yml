@@ -15,6 +15,7 @@ jobs:
         with:
           node-version: 22
       - run: npm install --no-audit --no-fund
+      - run: npx playwright install --with-deps chromium
       - run: npx tsx scripts/remote-ingest.ts
         env:
           GOTODAY_URL: ${{ secrets.GOTODAY_URL }}

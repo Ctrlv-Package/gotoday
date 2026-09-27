@@ -1,0 +1,36 @@
+// Replaces global fetch for page GETs with a real (headless) Chrome, so sites whose firewalls reject
+// Node's HTTP client see an ordinary browser. POSTs (our push to GoToday) still use the normal fetch.
+import {chromium,type Browser,type BrowserContext} from "playwright";
+
+const UA="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36";
+let browser:Browser|null=null,ctx:BrowserContext|null=null;
+
+export async function installBrowserFetch(){
+ const exe=process.env.CHROMIUM_PATH;
+ browser=await chromium.launch({...(exe?{executablePath:exe}:{channel:"chromium"}),headless:true,args:["--disable-blink-features=AutomationControlled"]});
+ ctx=await browser.newContext({userAgent:UA,locale:"en-US",timezoneId:"America/New_York",viewport:{width:1366,height:900}});
+ await ctx.addInitScript(()=>{Object.defineProperty(navigator,"webdriver",{get:()=>undefined})});
+ const nodeFetch=globalThis.fetch;
+ globalThis.fetch=(async(input:any,init?:any)=>{
+  const url=typeof input==="string"?input:input instanceof URL?input.toString():input.url;
+  const method=(init?.method||"GET").toUpperCase();
+  if(method!=="GET"||!/^https?:/.test(url))return nodeFetch(input,init);
+  const page=await ctx!.newPage();
+  try{
+   let resp=await page.goto(url,{waitUntil:"domcontentloaded",timeout:45000});
+   let status=resp?.status()??0;
+   // Bot-check interstitials ("Just a moment…") resolve themselves in a real browser; give it time.
+   if(status===403||status===429||status===503){
+    await page.waitForLoadState("networkidle",{timeout:15000}).catch(()=>{});
+    const again=await page.waitForResponse(r=>r.url().split("#")[0]===url.split("#")[0]&&r.status()<400,{timeout:12000}).catch(()=>null);
+    if(again)status=again.status();
+   }
+   const body=await page.content();
+   const server=resp?.headers()["server"]||"";
+   if(status>=400)console.log(`   browser GET ${status} ${url} (server: ${server||"?"}; title: ${(await page.title()).slice(0,80)})`);
+   return new Response(body,{status:status||200,headers:{"content-type":"text/html; charset=utf-8"}});
+  }finally{await page.close()}
+ }) as typeof fetch;
+}
+
+export async function closeBrowserFetch(){await ctx?.close().catch(()=>{});await browser?.close().catch(()=>{})}

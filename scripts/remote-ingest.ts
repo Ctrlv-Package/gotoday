@@ -5,6 +5,7 @@
 //   GOTODAY_URL=https://gotoday-six.vercel.app INGESTION_SECRET=... npx tsx scripts/remote-ingest.ts
 import {remoteSources} from "../lib/ingestion/registry";
 import {appendFileSync} from "node:fs";
+import {installBrowserFetch,closeBrowserFetch} from "./browser-fetch";
 
 const base=(process.env.GOTODAY_URL||"").replace(/\/$/,""),secret=process.env.INGESTION_SECRET||"";
 if(!base||!secret){console.error("Set GOTODAY_URL and INGESTION_SECRET");process.exit(1)}
@@ -12,6 +13,7 @@ const ymd=(d:Date)=>d.toISOString().slice(0,10);
 const now=new Date(),end=new Date(now);end.setUTCDate(end.getUTCDate()+30);
 
 async function main(){
+if(process.env.USE_BROWSER!=="0"){await installBrowserFetch();console.log("Fetching city pages with headless Chrome")}
 let failures=0;const rows:string[]=[];
 for(const s of remoteSources()){
  let payload:any;
@@ -27,5 +29,6 @@ console.log(failures?`${failures} source(s) did not succeed`:"All remote sources
  // Show a results table on the GitHub Actions run page, and mark the run failed if any city failed.
  if(process.env.GITHUB_STEP_SUMMARY)appendFileSync(process.env.GITHUB_STEP_SUMMARY,["### Remote ingest results","","| Source | OK | Found | Accepted | Rejected | Error |","|---|---|---|---|---|---|",...rows,""].join("\n"));
  if(failures)process.exitCode=1;
+ await closeBrowserFetch();
 }
 main().catch(e=>{console.error(e);process.exit(1)});
