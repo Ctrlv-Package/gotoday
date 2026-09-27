@@ -43,6 +43,7 @@ export type OpenCitiesConfig={
  block?:RegExp;         // titles to skip (meetings etc.)
  maxPages?:number;
  pageUrl?:(page:number)=>string; // URL of page N (default: OpenCities "dlv" pager on listUrl)
+ detailLimit?:number;   // max event pages opened for all dates + exact times (0 = list cards only)
 };
 
 // Government business that shows up on city event lists; discovery rules catch most, this catches the rest.
@@ -99,6 +100,28 @@ function streetAddress(addr:string|undefined,city:string){
  return `${rest.join(", ")}, ${cityName}, ${state}${zip?" "+zip:""}`;
 }
 
+type Occurrence={date:string;time:string;endTime?:string};
+const pad=(n:string|number)=>String(n).padStart(2,"0");
+/** Event detail pages list every date with exact times:
+ *  <li class="multi-date-item" data-start-year='2026' data-start-month='10' data-start-day='07' data-start-hour='18' ...>
+ *  or, for one-off events, <p class="event-date">Next date: Wednesday, October 07, 2026 | 06:00 PM to 08:00 PM</p>. */
+export function detailOccurrences(html:string):Occurrence[]{
+ const out:Occurrence[]=[];
+ for(const m of html.matchAll(/<li[^>]*class=["'][^"']*multi-date-item[^"']*["'][^>]*>/gi)){
+  const a=(k:string)=>m[0].match(new RegExp(`data-${k}=['"](\\d+)['"]`))?.[1];
+  const y=a("start-year"),mo=a("start-month"),d=a("start-day");if(!y||!mo||!d)continue;
+  const sh=a("start-hour"),sm=a("start-mins"),eh=a("end-hour"),em=a("end-mins");
+  const time=sh!=null&&!(sh==="0"&&(sm||"0")==="0"&&eh==="23")?`${pad(sh)}:${pad(sm||0)}:00`:"";
+  const endTime=time&&eh!=null&&`${pad(eh)}:${pad(em||0)}`>time.slice(0,5)?`${pad(eh)}:${pad(em||0)}:00`:undefined;
+  out.push({date:`${y}-${pad(mo)}-${pad(d)}`,time,endTime});
+ }
+ if(out.length)return out;
+ const line=html.match(/<p[^>]*class=["'][^"']*event-date[^"']*["'][^>]*>([\s\S]*?)<\/p>/i)?.[1];
+ if(line){const t=stripHtml(line),date=parseDate(t);if(date){const times=[...t.matchAll(/\b\d{1,2}(?::\d{2})?\s*[AP]\.?M\.?/gi)].map(x=>parseTime(x[0])).filter(Boolean);
+  out.push({date,time:times[0]||"",endTime:times[1]&&times[1]>times[0]?times[1]:undefined})}}
+ return out;
+}
+
 export async function fetchOpenCities(cfg:OpenCitiesConfig,startDate:string,endDate:string):Promise<EventRecord[]>{
  const origin=new URL(cfg.listUrl).origin;
  const listBase=cfg.listUrl.split("?")[0].replace(/\/$/,"");
@@ -146,5 +169,29 @@ export async function fetchOpenCities(cfg:OpenCitiesConfig,startDate:string,endD
   if(newOnPage===0||allPastEnd)break;
  }
  if(out.length===0)throw new Error(`No events in ${startDate}..${endDate} (found ${linksSeen} event cards on ${cfg.listUrl})`);
+ return expandFromDetails(out,startDate,endDate,cfg.detailLimit??60);
+}
+
+/** List cards show only the next date and rarely a time ("Open Play Chess · 5 more dates"). Open each event's
+ *  page once to get every date in the window with its real start/end time and a full-size image. */
+async function expandFromDetails(events:EventRecord[],startDate:string,endDate:string,limit:number):Promise<EventRecord[]>{
+ const out:EventRecord[]=[],byUrl=new Map<string,EventRecord>();
+ for(const e of events)if(!byUrl.has(e.url))byUrl.set(e.url,e);
+ let opened=0;
+ for(const [url,e] of byUrl){
+  let occ:Occurrence[]=[],img:string|undefined,desc:string|undefined;
+  if(opened<limit){
+   opened++;
+   try{const r=await fetchRetry(url,{headers:BROWSER_HEADERS,cache:"no-store"});
+    if(r.ok){const h=await r.text();occ=detailOccurrences(h);
+     img=h.match(/<meta property=["']og:image["'] content=["']([^"']+)["']/i)?.[1]?.replace(/&amp;/g,"&");
+     desc=h.match(/<meta name=["']description["'] content=["']([^"']+)["']/i)?.[1]}}catch{}
+  }
+  const dates=occ.filter(o=>o.date>=startDate&&o.date<=endDate);
+  if(!dates.length){out.push({...e,image:img||e.image});continue}
+  for(const o of dates)out.push({...e,id:`${e.id.replace(/-\d{4}-\d{2}-\d{2}$/,"")}-${o.date}`,
+   date:o.date,time:o.time||e.time,endTime:o.time?o.endTime:e.endTime,image:img||e.image,
+   desc:e.desc.length<60&&desc&&desc.length>e.desc.length?stripHtml(desc):e.desc});
+ }
  return out;
 }
