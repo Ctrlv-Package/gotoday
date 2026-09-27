@@ -14,7 +14,9 @@ export async function installBrowserFetch(){
  globalThis.fetch=(async(input:any,init?:any)=>{
   const url=typeof input==="string"?input:input instanceof URL?input.toString():input.url;
   const method=(init?.method||"GET").toUpperCase();
-  if(method!=="GET"||!/^https?:/.test(url))return nodeFetch(input,init);
+  // Calls that carry credentials (our own GoToday API) go direct: a page load can't send an Authorization header.
+  const hasAuth=!!new Headers(init?.headers||{}).get("authorization");
+  if(method!=="GET"||hasAuth||!/^https?:/.test(url))return nodeFetch(input,init);
   const page=await ctx!.newPage();
   try{
    let resp=await page.goto(url,{waitUntil:"domcontentloaded",timeout:45000});

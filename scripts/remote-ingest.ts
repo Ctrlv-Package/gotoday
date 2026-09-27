@@ -23,7 +23,7 @@ let failures=0;const rows:string[]=[];
 // The source list lives in GoToday's database; ask the site which sources to fetch from here.
 const cfgRes=await fetch(`${base}/api/admin/sources?remote=1`,{headers:{authorization:`Bearer ${secret}`}});
 if(!cfgRes.ok){
- const msg=cfgRes.status===401?"HTTP 401 — the INGESTION_SECRET GitHub secret doesn't match the site's INGESTION_SECRET in Vercel":`HTTP ${cfgRes.status}`;
+ const msg=cfgRes.status===401?"HTTP 401 (unauthorized) — check that the INGESTION_SECRET GitHub secret matches INGESTION_SECRET in Vercel":`HTTP ${cfgRes.status}`;
  if(process.env.GITHUB_STEP_SUMMARY)appendFileSync(process.env.GITHUB_STEP_SUMMARY,`### Remote ingest could not start\n\nCould not load the source list from ${base}: ${msg}\n`);
  throw new Error(`Could not load remote sources from ${base}: ${msg}`);
 }
