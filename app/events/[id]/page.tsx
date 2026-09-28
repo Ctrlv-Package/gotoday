@@ -32,6 +32,9 @@ export default async function EventPage({params}:{params:Promise<{id:string}>}){
  const ended=isAllDay(e.start,e.tz)?e.start.getTime()+24*3600e3<Date.now():((e.end&&e.end>e.start?e.end:e.start).getTime()<Date.now()-3*3600e3);
  const ages=agesText(e),cost=costText(e),map=mapEmbedUrl(e),where=whereText(e);
  const regFull=/full/i.test(e.registrationText||"");
+ // A separate sign-up link (Eventbrite etc.) gets its own button; otherwise registration happens on the event page itself.
+ const directReg=!!e.registrationUrl&&e.registrationUrl!==e.officialUrl;
+ const regWhere=/library/i.test(e.source)?"library":/parks/i.test(e.source)?"parks":"event";
  const paras=e.description.split(/\n+/).map(x=>x.trim()).filter(Boolean);
  const tags=e.tags.filter(t=>!["Local","Library","Parks","Free","Tickets","Kids","Family"].includes(t)&&!/\(\d/.test(t)).slice(0,5);
 
@@ -57,12 +60,13 @@ export default async function EventPage({params}:{params:Promise<{id:string}>}){
      </div>
 
      {e.registrationText&&<div className={`reg${regFull?" full":""}`}>
-      <div><b>{e.registrationText.split(" · ")[0]}</b>{e.registrationText.includes(" · ")&&<span> · {e.registrationText.split(" · ").slice(1).join(" · ")}</span>}</div>
-      <a href={e.registrationUrl||e.officialUrl} target="_blank" rel="noreferrer">{e.source==="Ticketmaster"?"Get tickets ↗":"Register ↗"}</a>
+      <div><b>{e.registrationText.split(" · ")[0]}</b>{e.registrationText.includes(" · ")&&<span> · {e.registrationText.split(" · ").slice(1).join(" · ")}</span>}
+       {!directReg&&e.source!=="Ticketmaster"&&<div className="regHow">Tap <b>Register</b> on the {regWhere} page to sign up.</div>}</div>
+      {directReg&&<a href={e.registrationUrl!} target="_blank" rel="noreferrer">Register ↗</a>}
      </div>}
 
      <div className="ctaRow">
-      <a className="btn primary" href={e.officialUrl} target="_blank" rel="noreferrer">{e.source==="Ticketmaster"?"Tickets & details ↗":"Official event page ↗"}</a>
+      <a className="btn primary" href={e.officialUrl} target="_blank" rel="noreferrer">{e.source==="Ticketmaster"?"Tickets & details ↗":e.registrationText&&!directReg&&!regFull?`Register on ${regWhere} page ↗`:"Official event page ↗"}</a>
       {!ended&&<AddToCalendar base={`/events/${encodeURIComponent(id)}`}/>}
       <ShareButton title={e.title} text={`${e.title} — ${fmtDate(e.start,undefined,e.tz)}${isAllDay(e.start,e.tz)?"":`, ${fmtTime(e.start,e.tz)}`} at ${e.venue||e.city}`}/>
      </div>

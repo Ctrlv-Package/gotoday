@@ -232,3 +232,4 @@ nav{display:flex;justify-content:space-between;align-items:center;max-width:1180
 .card .pic{border-radius:17px 17px 0 0}
 .card:has(.calMenu){z-index:20}
 .cal.compact .calMenu{top:auto;bottom:calc(100% + 6px)}
+.regHow{font-size:13px;color:var(--body);margin-top:4px}
