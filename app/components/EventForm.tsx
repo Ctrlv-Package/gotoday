@@ -31,13 +31,13 @@ export default function EventForm({initial,submitLabel,onSubmit,busy}:{initial:F
   <div className="efRow">
    <label className="efField">Date<input type="date" required min={today} value={v.date} onChange={e=>set("date",e.target.value)}/></label>
    {!v.allDay&&<label className="efField">Starts<input type="time" required value={v.startTime} onChange={e=>set("startTime",e.target.value)}/></label>}
-   {!v.allDay&&<label className="efField">Ends <small>(optional)</small><input type="time" value={v.endTime} onChange={e=>set("endTime",e.target.value)}/></label>}
+   {!v.allDay&&<label className="efField"><span>Ends <small>(optional)</small></span><input type="time" value={v.endTime} onChange={e=>set("endTime",e.target.value)}/></label>}
   </div>
   <label className="efCheck"><input type="checkbox" checked={v.allDay} onChange={e=>set("allDay",e.target.checked)}/> All day</label>
 
   <label className="efField">Place name<input maxLength={120} value={v.venue} onChange={e=>set("venue",e.target.value)} placeholder="Weston Town Center, Vista Park, our house…"/></label>
   <div className="efRow">
-   <label className="efField grow">Street address {v.visibility==="private"?<small>(only guests with the link see it)</small>:<small>(helps people find it)</small>}<input maxLength={200} value={v.address} onChange={e=>set("address",e.target.value)} placeholder="1675 Market St" autoComplete="street-address"/></label>
+   <label className="efField grow"><span>Street address {v.visibility==="private"?<small>(only guests with the link see it)</small>:<small>(helps people find it)</small>}</span><input maxLength={200} value={v.address} onChange={e=>set("address",e.target.value)} placeholder="1675 Market St" autoComplete="street-address"/></label>
    <label className="efField">City<input required maxLength={80} value={v.city} onChange={e=>set("city",e.target.value)} placeholder="Weston, FL"/></label>
   </div>
 
@@ -54,8 +54,8 @@ export default function EventForm({initial,submitLabel,onSubmit,busy}:{initial:F
   </div>
 
   <div className="efRow">
-   <label className="efField grow">Link <small>(optional: tickets, sign-up, more info)</small><input type="url" maxLength={500} value={v.link} onChange={e=>set("link",e.target.value)} placeholder="https://"/></label>
-   <label className="efField">{v.visibility==="private"?"Hosted by":"Organizer"} <small>(optional)</small><input maxLength={80} value={v.hostName} onChange={e=>set("hostName",e.target.value)} placeholder={v.visibility==="private"?"The Garcias":"Weston Town Center"}/></label>
+   <label className="efField grow"><span>Link <small>(optional: tickets, sign-up, more info)</small></span><input type="url" maxLength={500} value={v.link} onChange={e=>set("link",e.target.value)} placeholder="https://"/></label>
+   <label className="efField"><span>{v.visibility==="private"?"Hosted by":"Organizer"} <small>(optional)</small></span><input maxLength={80} value={v.hostName} onChange={e=>set("hostName",e.target.value)} placeholder={v.visibility==="private"?"The Garcias":"Weston Town Center"}/></label>
   </div>
 
   <input className="efTrap" tabIndex={-1} autoComplete="off" name="website" aria-hidden onChange={e=>(v as any).website=e.target.value}/>

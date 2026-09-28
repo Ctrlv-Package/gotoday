@@ -20,7 +20,7 @@ export default function Rsvp({share,counts}:{share:string;counts:{going:number;m
    <div className="seg">{(["going","maybe","no"] as const).map(s=><button type="button" key={s} className={status===s?"active":""} onClick={()=>setStatus(s)}>{label[s]}</button>)}</div>
    <label className="efField">Your name<input required minLength={2} maxLength={60} value={name} onChange={e=>setName(e.target.value)} autoComplete="name"/></label>
    {status!=="no"&&<label className="efField">Bringing anyone? <select value={guests} onChange={e=>setGuests(Number(e.target.value))}>{Array.from({length:11},(_,i)=><option key={i} value={i}>{i===0?"Just me":`+${i}`}</option>)}</select></label>}
-   <label className="efField">Note for the host <small>(optional)</small><input maxLength={280} value={note} onChange={e=>setNote(e.target.value)} placeholder="Allergies, running late…"/></label>
+   <label className="efField"><span>Note for the host <small>(optional)</small></span><input maxLength={280} value={note} onChange={e=>setNote(e.target.value)} placeholder="Allergies, running late…"/></label>
    {err&&<div className="efErrors">{err}</div>}
    <button className="btn primary" disabled={busy}>{busy?"Sending…":"Send RSVP"}</button>
   </form>}

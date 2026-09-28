@@ -178,7 +178,7 @@ nav{display:flex;justify-content:space-between;align-items:center;max-width:1180
 .efField input,.efField select,.efField textarea{border:1px solid var(--line);border-radius:12px;padding:12px;font-size:16px;font-weight:500;background:#fff;width:100%;font-family:inherit}
 .efField textarea{resize:vertical}
 .efField input:focus,.efField select:focus,.efField textarea:focus{outline:2px solid var(--accent-soft);border-color:var(--accent)}
-.efRow{display:flex;gap:12px;flex-wrap:wrap}
+.efRow{display:flex;gap:12px;flex-wrap:wrap;align-items:flex-end}
 .efRow>.efField{min-width:140px}.efRow>.efField.grow{flex:2;min-width:220px}
 .efCheck{display:flex;align-items:center;gap:8px;font-weight:600;font-size:15px;margin-top:-6px}
 .efCheck input{width:18px;height:18px}
