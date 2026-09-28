@@ -28,7 +28,14 @@ const CITY_COORDS:Record<string,[number,number]>={
 "Lantana, FL":[26.5865,-80.0521],"Tequesta, FL":[26.9709,-80.1284],"Palm Springs, FL":[26.6359,-80.0962],"Loxahatchee, FL":[26.6837,-80.2798]
 };
 function miles(a:number,b:number,c:number,d:number){const R=3958.8,q=(x:number)=>x*Math.PI/180,dp=q(c-a),dl=q(d-b),z=Math.sin(dp/2)**2+Math.cos(q(a))*Math.cos(q(c))*Math.sin(dl/2)**2;return 2*R*Math.asin(Math.sqrt(z))}
-async function zipCoords(zip:string):Promise<[number,number]|null>{if(!/^\d{5}$/.test(zip))return null;try{const r=await fetch(`https://api.zippopotam.us/us/${zip}`,{next:{revalidate:2592000}});if(!r.ok)return null;const d=await r.json(),p=d?.places?.[0],la=Number(p?.latitude),lo=Number(p?.longitude);return Number.isFinite(la)&&Number.isFinite(lo)?[la,lo]:null}catch{return null}}
+const zipPlace=new Map<string,string>();
+async function zipCoords(zip:string):Promise<[number,number]|null>{if(!/^\d{5}$/.test(zip))return null;try{const r=await fetch(`https://api.zippopotam.us/us/${zip}`,{next:{revalidate:2592000}});if(!r.ok)return null;const d=await r.json(),p=d?.places?.[0],la=Number(p?.latitude),lo=Number(p?.longitude);if(p?.["place name"])zipPlace.set(zip,`${p["place name"]}, ${p["state abbreviation"]||""}`.replace(/, $/,""));return Number.isFinite(la)&&Number.isFinite(lo)?[la,lo]:null}catch{return null}}
+/** Does GoToday cover this area at all? (any upcoming event within ~60 miles) */
+async function covered(lat:number,lng:number,today:string){
+ const dLat=60/69,dLng=60/(69*Math.cos(lat*Math.PI/180));
+ const {rows}=await db.query(`select 1 from events where status='active' and local_date between $1::date and $1::date+45 and latitude between $2 and $3 and longitude between $4 and $5 limit 1`,[today,lat-dLat,lat+dLat,lng-dLng,lng+dLng]);
+ return rows.length>0;
+}
 
 /** Date window for a range, from the searcher's own "today" (sent by the browser) or Eastern time. */
 function windowDates(range:string,today:string){
@@ -45,7 +52,8 @@ export async function GET(request:NextRequest){
  // Number(null) is 0, so only parse coordinates that were actually sent.
  const num=(k:string)=>{const v=p.get(k);return v==null||v.trim()===""?NaN:Number(v)};
  let lat=num("lat"),lng=num("lng");
- if(!Number.isFinite(lat)||!Number.isFinite(lng)||(lat===0&&lng===0)){const c=await zipCoords(postalCode);[lat,lng]=c||[26.12,-80.25]}
+ let usedZip=false;
+ if(!Number.isFinite(lat)||!Number.isFinite(lng)||(lat===0&&lng===0)){const c=await zipCoords(postalCode);usedZip=!!c;[lat,lng]=c||[26.12,-80.25]}
  const w=windowDates(range,today);
  await ensureSchema();
  // Bounding box first (uses the lat/lng index), exact distance second; rows without coordinates
@@ -80,6 +88,22 @@ export async function GET(request:NextRequest){
  for(const e of events){const k=collapseKey(e.title,e.date);const g=groups.get(k);g?g.push(e):groups.set(k,[e])}
  events=[...groups.values()].map(g=>{g.sort((a:any,b:any)=>a.distanceMiles-b.distanceMiles||((a.source==="Ticketmaster"?1:0)-(b.source==="Ticketmaster"?1:0)));const venues=new Set(g.map((x:any)=>x.venue));return{...g[0],moreLocations:venues.size-1,otherVenues:[...venues].slice(1,6)}})
   .sort((a:any,b:any)=>(a.date+(a.time||"")).localeCompare(b.date+(b.time||""))||((a.source==="Ticketmaster"?1:0)-(b.source==="Ticketmaster"?1:0)));
+ // An event a town posts on Instagram is often also on its calendar under a slightly different title
+ // ("Fall Festival" vs "Weston Fall Festival 2026"). Keep the calendar listing, drop the Instagram copy.
+ const STOP=new Set(["the","and","of","a","at","in","on","for","with","to","annual","city","town","village","free","fl","event","day","night","2025","2026","2027"]);
+ const words=(t:string)=>new Set(t.toLowerCase().replace(/&/g," and ").replace(/[^a-z0-9]+/g," ").split(" ").filter(w=>w.length>2&&!STOP.has(w)));
+ const isIg=(e:any)=>/ · Instagram$/.test(e.source||"")||e.genre==="Venue Event";
+ const cal=events.filter((e:any)=>!isIg(e));
+ events=events.filter((e:any)=>{
+  if(!isIg(e))return true;
+  const w=words(e.title);if(!w.size)return true;
+  return!cal.some((c:any)=>{if(c.date!==e.date)return false;
+   const near=typeof c.distanceMiles==="number"&&typeof e.distanceMiles==="number"?Math.abs(c.distanceMiles-e.distanceMiles)<4:c.city===e.city;
+   if(!near)return false;const cw=words(c.title);let hit=0;for(const x of w)if(cw.has(x))hit++;
+   return hit>=Math.min(2,w.size)&&hit/Math.min(w.size,cw.size||1)>=0.6});
+ });
  const localCount=events.filter((e:any)=>e.source!=="Ticketmaster").length;
- return NextResponse.json({events:events.slice(0,300),range,startDate:w.startDate,endDate:w.endDate,center:[lat,lng],radius,localCount,ticketmasterCount:events.length-localCount,total:events.length});
+ // No results: tell the page whether that's "nothing this day" or "we're not in this area yet".
+ const coverage=events.length?{covered:true}:{covered:await covered(lat,lng,today),place:usedZip?zipPlace.get(postalCode)||null:null};
+ return NextResponse.json({coverage,events:events.slice(0,300),range,startDate:w.startDate,endDate:w.endDate,center:[lat,lng],radius,localCount,ticketmasterCount:events.length-localCount,total:events.length});
 }

@@ -233,3 +233,10 @@ nav{display:flex;justify-content:space-between;align-items:center;max-width:1180
 .card:has(.calMenu){z-index:20}
 .cal.compact .calMenu{top:auto;bottom:calc(100% + 6px)}
 .regHow{font-size:13px;color:var(--body);margin-top:4px}
+.soon{background:#fff;border:1px solid var(--line);border-radius:20px;padding:26px 20px;text-align:center;margin:18px 0;box-shadow:0 10px 30px rgba(39,39,42,.06)}
+.soonIcon{font-size:40px}
+.soon h3{font-size:22px;margin:8px 0 10px;letter-spacing:-.3px}
+.soon p{color:var(--body);max-width:520px;margin:0 auto 10px;line-height:1.5}
+.soon .muted{font-size:14px;color:var(--muted)}
+.soonActions{display:flex;gap:8px;justify-content:center;flex-wrap:wrap;margin-top:14px}
+.soonActions .btn{flex:0 1 auto;min-width:0}

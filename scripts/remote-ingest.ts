@@ -41,6 +41,23 @@ for(const s of configs.map(sourceFromConfig)){
  const sm=out.summary||{};rows.push(`| ${s.name} | ${ok?"✅":"❌"} | ${sm.found??0} | ${sm.accepted??0} | ${sm.rejected??0} | ${String(sm.error||out.error||"").replace(/\|/g,"/").slice(0,160)} |`);
 }
 console.log(failures?`${failures} source(s) did not succeed`:"All remote sources succeeded");
+ // Instagram accounts: the site does the work (Instagram API + flyer reading); we just call each one, 3 at a time.
+ const igRows:string[]=[];let igEvents=0,igFailed=0;
+ try{
+  const lr=await fetch(`${base}/api/ingest?list=instagram`,{headers:{authorization:`Bearer ${secret}`}});
+  const names:string[]=((await lr.json().catch(()=>({}))).sources)||[];
+  console.log(`Instagram accounts: ${names.length}`);
+  let next=0;
+  await Promise.all(Array.from({length:3},async()=>{while(next<names.length){const name=names[next++];
+   try{const r=await fetch(`${base}/api/ingest?source=${encodeURIComponent(name)}`,{method:"POST",headers:{authorization:`Bearer ${secret}`},signal:AbortSignal.timeout(310000)});
+    const d:any=await r.json().catch(()=>({}));const sm=d?.sources?.[0]||{status:"error",error:d?.error||`HTTP ${r.status}`};
+    const ok=sm.status==="success";if(ok)igEvents+=sm.accepted||0;else igFailed++;
+    console.log(`${name}: ${ok?`${sm.accepted} events`:`failed — ${sm.error}`}`);
+    if(!ok||sm.accepted)igRows.push(`| ${name.replace(/ · Instagram$/,"")} | ${ok?"✅":"❌"} | ${sm.accepted??0} | ${String(sm.error||"").replace(/\|/g,"/").slice(0,160)} |`);
+   }catch(e:any){igFailed++;igRows.push(`| ${name} | ❌ | 0 | ${String(e?.message||e).slice(0,120)} |`)}
+  }}));
+  if(process.env.GITHUB_STEP_SUMMARY)appendFileSync(process.env.GITHUB_STEP_SUMMARY,["",`### Instagram accounts: ${names.length} checked, ${igEvents} events, ${igFailed} problems`,"","Accounts with no upcoming events aren't listed.","","| Account | OK | Events | Note |","|---|---|---|---|",...igRows,""].join("\n"));
+ }catch(e:any){console.log(`Instagram step failed: ${e?.message||e}`)}
  // Show a results table on the GitHub Actions run page, and mark the run failed if any city failed.
  if(process.env.GITHUB_STEP_SUMMARY)appendFileSync(process.env.GITHUB_STEP_SUMMARY,["### Remote ingest results","","| Source | OK | Found | Accepted | Rejected | Error |","|---|---|---|---|---|---|",...rows,""].join("\n"));
  if(failures)process.exitCode=1;

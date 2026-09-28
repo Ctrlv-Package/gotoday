@@ -28,16 +28,18 @@ export default function Home(){
  const[zip,setZip]=useState(DEFAULT_ZIP),[searchedZip,setSearchedZip]=useState(DEFAULT_ZIP),[coords,setCoords]=useState<{lat:number;lng:number}|null>(null);
  const[radius,setRadius]=useState("25"),[range,setRange]=useState("today"),[selected,setSelected]=useState<string[]>([]),[ageBands,setAgeBands]=useState<string[]>([]),[moreOpen,setMoreOpen]=useState(false),[setting,setSetting]=useState("Any"),[dropIn,setDropIn]=useState(false),[spanish,setSpanish]=useState(false),[seniors,setSeniors]=useState(false);
  const[timeFilter,setTimeFilter]=useState("Any time"),[sort,setSort]=useState("Soonest"),[query,setQuery]=useState("");
- const[events,setEvents]=useState<EventItem[]>([]),[loading,setLoading]=useState(false),[message,setMessage]=useState(""),[toast,setToast]=useState("");
+ const[soon,setSoon]=useState<{place:string|null}|null>(null),[events,setEvents]=useState<EventItem[]>([]),[loading,setLoading]=useState(false),[message,setMessage]=useState(""),[toast,setToast]=useState("");
 
  async function load(z:string,r:string,c:{lat:number;lng:number}|null,rad:string){
-  setLoading(true);setMessage("");
+  setLoading(true);setMessage("");setSoon(null);
   try{
    const now=new Date(),today=`${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,"0")}-${String(now.getDate()).padStart(2,"0")}`;
    const q=new URLSearchParams({postalCode:z||DEFAULT_ZIP,radius:rad,range:r,today});
    if(c){q.set("lat",String(c.lat));q.set("lng",String(c.lng))}
    const d=await (await fetch("/api/events?"+q,{cache:"no-store"})).json();
    setEvents(d.events||[]);
+   setSoon(d.coverage&&d.coverage.covered===false?{place:d.coverage.place||null}:null);
+   if(d.coverage?.covered===false)return;
    if(!d.events?.length)setMessage(r==="today"?"Nothing else found for today nearby. Try Tomorrow, Next Weekend, or a bigger distance.":"Nothing found for this period yet. Try a bigger distance.");
   }catch{setEvents([]);setMessage("Events are temporarily unavailable.")}
   finally{setLoading(false)}
@@ -54,7 +56,7 @@ export default function Home(){
   if(v&&v.day===today&&Date.now()-v.savedAt<45*60e3&&(!fromUrl||fromUrl===v.searchedZip)){
    setZip(v.zip);setSearchedZip(v.searchedZip);setCoords(v.coords);setRadius(v.radius);setRange(v.range);setSelected(v.selected);setAgeBands(v.ageBands);
    setMoreOpen(v.moreOpen);setSetting(v.setting);setDropIn(v.dropIn);setSpanish(v.spanish);setSeniors(v.seniors);setTimeFilter(v.timeFilter);setSort(v.sort);setQuery(v.query);
-   setEvents(v.events||[]);setMessage(v.message||"");setRestored(true);
+   setEvents(v.events||[]);setMessage(v.message||"");setSoon(v.soon||null);setRestored(true);
    try{history.scrollRestoration="manual"}catch{}
    // Jump back to the card you opened only when returning from an event (not on a fresh visit).
    let back=false;try{back=sessionStorage.getItem("gotoday:openedEvent")==="1";sessionStorage.removeItem("gotoday:openedEvent")}catch{}
@@ -69,13 +71,13 @@ export default function Home(){
  useEffect(()=>{
   if(!restored)return;
   const save=()=>{try{sessionStorage.setItem(VIEW,JSON.stringify({zip,searchedZip,coords,radius,range,selected,ageBands,moreOpen,setting,dropIn,spanish,seniors,timeFilter,sort,query,
-   events,message,scrollY:window.scrollY,savedAt:Date.now(),day:new Date().toDateString()}))}catch{}};
+   events,message,soon,scrollY:window.scrollY,savedAt:Date.now(),day:new Date().toDateString()}))}catch{}};
   save();
   let t:any=null;const onScroll=()=>{clearTimeout(t);t=setTimeout(save,150)};
   const onClick=(e:MouseEvent)=>{if((e.target as HTMLElement)?.closest?.(".card a"))try{sessionStorage.setItem("gotoday:openedEvent","1")}catch{};save()};
   window.addEventListener("scroll",onScroll,{passive:true});window.addEventListener("pagehide",save);document.addEventListener("click",onClick,true);
   return()=>{clearTimeout(t);window.removeEventListener("scroll",onScroll);window.removeEventListener("pagehide",save);document.removeEventListener("click",onClick,true)};
- },[restored,zip,searchedZip,coords,radius,range,selected,ageBands,moreOpen,setting,dropIn,spanish,seniors,timeFilter,sort,query,events,message]);
+ },[restored,zip,searchedZip,coords,radius,range,selected,ageBands,moreOpen,setting,dropIn,spanish,seniors,timeFilter,sort,query,events,message,soon]);
 
  function submitZip(){const z=zip.trim();if(!/^\d{5}$/.test(z)){setMessage("Enter a valid 5-digit ZIP code.");return}store.set("gotoday:zip",z);setCoords(null);setSearchedZip(z);load(z,range,null,radius);document.getElementById("results")?.scrollIntoView({behavior:"smooth"})}
  function useLocation(){if(!navigator.geolocation)return setMessage("Location is not supported by this browser.");setMessage("Finding your location…");navigator.geolocation.getCurrentPosition(p=>{const c={lat:p.coords.latitude,lng:p.coords.longitude};setCoords(c);setSearchedZip("");setZip("");load("",range,c,radius);document.getElementById("results")?.scrollIntoView({behavior:"smooth"})},()=>setMessage("Location permission was not granted. Enter a ZIP code instead."),{timeout:10000,maximumAge:600000})}
@@ -149,7 +151,14 @@ export default function Home(){
    </div>
 
    {message&&<p className="notice">{message}</p>}
-   <div className="resultsHead"><div className="kicker">NEAR {where.toUpperCase()}</div><h2>{loading?"Searching…":`${filtered.length} thing${filtered.length===1?"":"s"} to do`}</h2></div>
+   {soon&&!loading&&<div className="soon">
+    <div className="soonIcon">📍</div>
+    <h3>GoToday is coming to {soon.place||"your area"} soon</h3>
+    <p>We're bringing local events to new cities every week: festivals, library programs, park activities, markets and more. We're not showing events here yet, but your area is on our list.</p>
+    <p className="muted">Right now GoToday covers South Florida (Miami-Dade, Broward and Palm Beach), Greater Orlando and Tampa Bay.</p>
+    <div className="soonActions"><a className="btn primary" href="/create">Post an event in your area</a><button type="button" className="btn ghost" onClick={()=>{setZip("");document.querySelector<HTMLInputElement>('input[aria-label="ZIP code"]')?.focus();window.scrollTo({top:0,behavior:"smooth"})}}>Try another ZIP</button></div>
+   </div>}
+   {!soon&&<div className="resultsHead"><div className="kicker">NEAR {where.toUpperCase()}</div><h2>{loading?"Searching…":`${filtered.length} thing${filtered.length===1?"":"s"} to do`}</h2></div>}
 
    <div className="grid">{filtered.map((e,i)=><article className="card" key={e.id||e.title+i}>
     <a className={e.image?"pic":"pic noimg"} href={detailHref(e)} target={e.source==="Ticketmaster"?"_blank":undefined} rel="noreferrer" aria-hidden tabIndex={-1}>

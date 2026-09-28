@@ -21,7 +21,9 @@ async function run(req:NextRequest){
  const only=req.nextUrl.searchParams.get("source");
  try{
   if(only)return NextResponse.json({ok:true,startDate:ymd(now),endDate:ymd(end),sources:await persistIngestion(ymd(now),ymd(end),only)});
-  const names=(await activeSources()).map(s=>s.name),origin=req.nextUrl.origin,results:any[]=new Array(names.length);
+  // Instagram accounts (100+) are run one by one by the GitHub job (scripts/remote-ingest.ts), which asks for the list here.
+  if(req.nextUrl.searchParams.get("list")==="instagram")return NextResponse.json({ok:true,sources:(await activeSources()).filter(s=>s.platform==="instagram").map(s=>s.name)});
+  const names=(await activeSources()).filter(s=>s.platform!=="instagram").map(s=>s.name),origin=req.nextUrl.origin,results:any[]=new Array(names.length);
   let next=0;
   const worker=async()=>{while(next<names.length){const i=next++,name=names[i];
    try{
