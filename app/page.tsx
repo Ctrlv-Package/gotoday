@@ -43,12 +43,39 @@ export default function Home(){
   finally{setLoading(false)}
  }
 
- // Start from ?zip= in the link, else the last ZIP used on this device, else the default.
+ // Coming back from an event page: restore the exact view (results, filters, scroll) saved in this tab.
+ // Otherwise start from ?zip= in the link, else the last ZIP used on this device, else the default.
+ const VIEW="gotoday:view";
+ const [restored,setRestored]=useState(false);
  useEffect(()=>{
-  const fromUrl=new URLSearchParams(location.search).get("zip"),saved=store.get("gotoday:zip"),savedRadius=store.get("gotoday:radius");
+  const fromUrl=new URLSearchParams(location.search).get("zip");
+  let v:any=null;try{v=JSON.parse(sessionStorage.getItem(VIEW)||"null")}catch{}
+  const today=new Date().toDateString();
+  if(v&&v.day===today&&Date.now()-v.savedAt<45*60e3&&(!fromUrl||fromUrl===v.searchedZip)){
+   setZip(v.zip);setSearchedZip(v.searchedZip);setCoords(v.coords);setRadius(v.radius);setRange(v.range);setSelected(v.selected);setAgeBands(v.ageBands);
+   setMoreOpen(v.moreOpen);setSetting(v.setting);setDropIn(v.dropIn);setSpanish(v.spanish);setSeniors(v.seniors);setTimeFilter(v.timeFilter);setSort(v.sort);setQuery(v.query);
+   setEvents(v.events||[]);setMessage(v.message||"");setRestored(true);
+   try{history.scrollRestoration="manual"}catch{}
+   // Jump back to the card you opened only when returning from an event (not on a fresh visit).
+   let back=false;try{back=sessionStorage.getItem("gotoday:openedEvent")==="1";sessionStorage.removeItem("gotoday:openedEvent")}catch{}
+   const y=back?v.scrollY||0:0;requestAnimationFrame(()=>requestAnimationFrame(()=>window.scrollTo(0,y)));
+   return;
+  }
+  const saved=store.get("gotoday:zip"),savedRadius=store.get("gotoday:radius");
   const z=[fromUrl,saved].find(x=>x&&/^\d{5}$/.test(x))||DEFAULT_ZIP,rad=savedRadius&&["10","15","25","50"].includes(savedRadius)?savedRadius:"25";
-  setZip(z);setSearchedZip(z);setRadius(rad);load(z,"today",null,rad);
+  setZip(z);setSearchedZip(z);setRadius(rad);load(z,"today",null,rad);setRestored(true);
  },[]);
+ // Keep the saved view current (filters, results and scroll position) so "Back" lands where you were.
+ useEffect(()=>{
+  if(!restored)return;
+  const save=()=>{try{sessionStorage.setItem(VIEW,JSON.stringify({zip,searchedZip,coords,radius,range,selected,ageBands,moreOpen,setting,dropIn,spanish,seniors,timeFilter,sort,query,
+   events,message,scrollY:window.scrollY,savedAt:Date.now(),day:new Date().toDateString()}))}catch{}};
+  save();
+  let t:any=null;const onScroll=()=>{clearTimeout(t);t=setTimeout(save,150)};
+  const onClick=(e:MouseEvent)=>{if((e.target as HTMLElement)?.closest?.(".card a"))try{sessionStorage.setItem("gotoday:openedEvent","1")}catch{};save()};
+  window.addEventListener("scroll",onScroll,{passive:true});window.addEventListener("pagehide",save);document.addEventListener("click",onClick,true);
+  return()=>{clearTimeout(t);window.removeEventListener("scroll",onScroll);window.removeEventListener("pagehide",save);document.removeEventListener("click",onClick,true)};
+ },[restored,zip,searchedZip,coords,radius,range,selected,ageBands,moreOpen,setting,dropIn,spanish,seniors,timeFilter,sort,query,events,message]);
 
  function submitZip(){const z=zip.trim();if(!/^\d{5}$/.test(z)){setMessage("Enter a valid 5-digit ZIP code.");return}store.set("gotoday:zip",z);setCoords(null);setSearchedZip(z);load(z,range,null,radius);document.getElementById("results")?.scrollIntoView({behavior:"smooth"})}
  function useLocation(){if(!navigator.geolocation)return setMessage("Location is not supported by this browser.");setMessage("Finding your location…");navigator.geolocation.getCurrentPosition(p=>{const c={lat:p.coords.latitude,lng:p.coords.longitude};setCoords(c);setSearchedZip("");setZip("");load("",range,c,radius);document.getElementById("results")?.scrollIntoView({behavior:"smooth"})},()=>setMessage("Location permission was not granted. Enter a ZIP code instead."),{timeout:10000,maximumAge:600000})}
