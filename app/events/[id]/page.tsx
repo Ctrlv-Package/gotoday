@@ -1,9 +1,11 @@
 import Link from "next/link";
 import type {Metadata} from "next";
 import {headers} from "next/headers";
+import {redirect} from "next/navigation";
 import BackLink from "./BackLink";
 import ShareButton from "./ShareButton";
-import {loadEvent,loadRelated,fmtDate,fmtTime,timeRange,isAllDay,googleCalendarUrl,directionsUrl,mapEmbedUrl,whereText,type EventDetail} from "../../../lib/event-detail";
+import AddToCalendar from "../../components/AddToCalendar";
+import {loadEvent,loadRelated,fmtDate,fmtTime,timeRange,isAllDay,directionsUrl,mapEmbedUrl,whereText,type EventDetail} from "../../../lib/event-detail";
 
 export const dynamic="force-dynamic";
 
@@ -22,6 +24,8 @@ export default async function EventPage({params}:{params:Promise<{id:string}>}){
  const {id}=await params;
  const e=await loadEvent(id);
  if(!e)return <main className="detail"><div className="detailWrap"><Link href="/" className="detailLogo">Go<span>Today</span></Link><h1>Event unavailable</h1><p>This event may have ended or been removed.</p><Link href="/">Find something else to do →</Link></div></main>;
+ // Events people created on GoToday live on their own page (RSVPs, host details).
+ if(e.source==="GoToday Community"&&/\/e\/[\w-]+$/.test(e.officialUrl))redirect(new URL(e.officialUrl).pathname);
  const h=await headers(),origin=`${h.get("x-forwarded-proto")||"https"}://${h.get("host")}`,pageUrl=`${origin}/events/${encodeURIComponent(id)}`;
  const {otherDates,atVenue}=await loadRelated(e);
  // All-day events run until the end of their day; timed events count as over 3 hours after they end/start.
@@ -59,12 +63,8 @@ export default async function EventPage({params}:{params:Promise<{id:string}>}){
 
      <div className="ctaRow">
       <a className="btn primary" href={e.officialUrl} target="_blank" rel="noreferrer">{e.source==="Ticketmaster"?"Tickets & details ↗":"Official event page ↗"}</a>
+      {!ended&&<AddToCalendar base={`/events/${encodeURIComponent(id)}`}/>}
       <ShareButton title={e.title} text={`${e.title} — ${fmtDate(e.start,undefined,e.tz)}${isAllDay(e.start,e.tz)?"":`, ${fmtTime(e.start,e.tz)}`} at ${e.venue||e.city}`}/>
-     </div>
-     <div className="calRow">
-      <span>Add to calendar:</span>
-      <a href={googleCalendarUrl(e,pageUrl)} target="_blank" rel="noreferrer">Google</a>
-      <a href={`/events/${encodeURIComponent(id)}/calendar.ics`}>Apple / Outlook (.ics)</a>
      </div>
 
      {paras.length>0&&<section className="about"><h2>About this event</h2>{paras.map((p,i)=><p key={i}>{p}</p>)}</section>}

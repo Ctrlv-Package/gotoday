@@ -2,6 +2,7 @@ import {db} from "./db";
 import {ensureSchema} from "./schema";
 
 import {DEFAULT_TZ} from "./time";
+import {googleCalendarLink,icsText,type CalEvent} from "./calendar";
 export const TZ=DEFAULT_TZ;
 export function decodeHtml(s:string){return String(s||"").replace(/&#(\d+);/g,(_,n)=>String.fromCharCode(Number(n))).replace(/&#x([0-9a-f]+);/gi,(_,n)=>String.fromCharCode(parseInt(n,16))).replace(/&amp;/g,"&").replace(/&quot;/g,'"').replace(/&apos;|&#39;/g,"'")}
 
@@ -55,13 +56,11 @@ export function calendarTimes(e:EventDetail){
  return{allDay:false,start:ics(e.start),end:ics(end)};
 }
 export function whereText(e:EventDetail){return[e.venue,e.address||e.city].filter(Boolean).join(", ")}
-export function googleCalendarUrl(e:EventDetail,pageUrl:string){
- const t=calendarTimes(e);const u=new URL("https://calendar.google.com/calendar/render");
- u.searchParams.set("action","TEMPLATE");u.searchParams.set("text",e.title);u.searchParams.set("dates",`${t.start}/${t.end}`);
- u.searchParams.set("details",`${e.description.slice(0,600)}\n\nDetails: ${e.officialUrl}\nFound on GoToday: ${pageUrl}`);u.searchParams.set("location",whereText(e));
- if(!t.allDay)u.searchParams.set("ctz",e.tz);
- return u.toString();
+/** Calendar-ready shape of an event (see lib/calendar.ts for the Google/Outlook/Apple formats). */
+export function toCalEvent(e:EventDetail,pageUrl:string):CalEvent{
+ return{uid:`gotoday-${e.id}`,title:e.title,description:e.description,location:whereText(e),start:e.start,end:e.end,allDay:isAllDay(e.start,e.tz),tz:e.tz,url:pageUrl};
 }
+export function googleCalendarUrl(e:EventDetail,pageUrl:string){return googleCalendarLink(toCalEvent(e,pageUrl))}
 export function directionsUrl(e:EventDetail){
  const q=e.lat!=null&&e.lng!=null&&!e.address?`${e.lat},${e.lng}`:whereText(e);
  return `https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(q)}`;
@@ -71,12 +70,4 @@ export function mapEmbedUrl(e:EventDetail){
  const q=e.lat!=null&&e.lng!=null?`${e.lat},${e.lng}`:whereText(e);
  return q?`https://maps.google.com/maps?q=${encodeURIComponent(q)}&z=15&output=embed`:null;
 }
-export function icsFile(e:EventDetail,pageUrl:string){
- const t=calendarTimes(e),esc=(x:string)=>x.replace(/\\/g,"\\\\").replace(/\n/g,"\\n").replace(/([,;])/g,"\\$1");
- const lines=["BEGIN:VCALENDAR","VERSION:2.0","PRODID:-//GoToday//EN","CALSCALE:GREGORIAN","METHOD:PUBLISH","BEGIN:VEVENT",
-  `UID:gotoday-${e.id}@gotoday`,`DTSTAMP:${new Date().toISOString().replace(/[-:]/g,"").replace(/\.\d{3}/,"")}`,
-  t.allDay?`DTSTART;VALUE=DATE:${t.start}`:`DTSTART:${t.start}`,t.allDay?`DTEND;VALUE=DATE:${t.end}`:`DTEND:${t.end}`,
-  `SUMMARY:${esc(e.title)}`,`LOCATION:${esc(whereText(e))}`,`DESCRIPTION:${esc(`${e.description.slice(0,800)}\n\nDetails: ${e.officialUrl}`)}`,`URL:${pageUrl}`,
-  "END:VEVENT","END:VCALENDAR"];
- return lines.join("\r\n")+"\r\n";
-}
+export function icsFile(e:EventDetail,pageUrl:string){return icsText(toCalEvent(e,pageUrl))}

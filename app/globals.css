@@ -157,3 +157,78 @@ nav{display:flex;justify-content:space-between;align-items:center;max-width:1180
 .hint.ok{color:#137a4b;background:#e7f7ee}
 @media(min-width:720px){.morePanel{flex-direction:row;align-items:center;flex-wrap:wrap;gap:18px}}
 .moreBtn{margin-top:10px;display:inline-block}
+/* Add to calendar */
+.cal{position:relative;display:inline-block}
+.calBtn{display:inline-flex;align-items:center;gap:8px;border:1px solid var(--line);background:#fff;padding:13px 18px;border-radius:12px;font-weight:700;font-size:15px;cursor:pointer;color:var(--ink)}
+.cal.compact .calBtn{padding:10px 12px;font-size:14px;border-radius:12px}
+.calMenu{position:absolute;z-index:30;top:calc(100% + 6px);left:0;min-width:240px;background:#fff;border:1px solid var(--line);border-radius:14px;box-shadow:0 18px 40px rgba(24,24,27,.16);padding:6px;display:flex;flex-direction:column}
+.cal.compact .calMenu{left:auto;right:0}
+.calMenu a{display:flex;flex-direction:column;padding:10px 12px;border-radius:10px;text-decoration:none;color:var(--ink)}
+.calMenu a:hover,.calMenu a:focus{background:var(--soft)}
+.calMenu b{font-size:15px;display:flex;align-items:center;gap:8px}
+.calMenu em{font-style:normal;font-size:11px;font-weight:800;color:var(--accent);background:var(--accent-soft);padding:2px 7px;border-radius:99px}
+.calMenu span{font-size:13px;color:var(--muted)}
+/* Create / manage events */
+.createBtn{background:var(--ink);color:#fff;text-decoration:none;font-weight:800;font-size:14px;padding:9px 14px;border-radius:999px;white-space:nowrap}
+.navLink{color:var(--accent);font-weight:800;text-decoration:none;font-size:15px}
+.detail .lead{color:var(--body);font-size:17px;line-height:1.5;margin:-6px 0 18px}
+.ef{display:flex;flex-direction:column;gap:14px}
+.efField{display:flex;flex-direction:column;gap:6px;font-weight:700;font-size:14px;flex:1;min-width:0}
+.efField small{font-weight:500;color:var(--muted)}
+.efField input,.efField select,.efField textarea{border:1px solid var(--line);border-radius:12px;padding:12px;font-size:16px;font-weight:500;background:#fff;width:100%;font-family:inherit}
+.efField textarea{resize:vertical}
+.efField input:focus,.efField select:focus,.efField textarea:focus{outline:2px solid var(--accent-soft);border-color:var(--accent)}
+.efRow{display:flex;gap:12px;flex-wrap:wrap}
+.efRow>.efField{min-width:140px}.efRow>.efField.grow{flex:2;min-width:220px}
+.efCheck{display:flex;align-items:center;gap:8px;font-weight:600;font-size:15px;margin-top:-6px}
+.efCheck input{width:18px;height:18px}
+.efVis{border:0;padding:0;margin:0;display:grid;grid-template-columns:1fr;gap:10px}
+.efVis legend{font-weight:800;font-size:14px;margin-bottom:8px}
+.efVis label{display:flex;flex-direction:column;gap:2px;border:2px solid var(--line);border-radius:14px;padding:12px 14px;cursor:pointer;position:relative}
+.efVis label.on{border-color:var(--accent);background:#faf7ff}
+.efVis input{position:absolute;opacity:0}
+.efVis b{font-size:16px}.efVis span{color:var(--body);font-size:14px}
+.efErrors{background:#fef2f2;border:1px solid #fecaca;color:#991b1b;border-radius:12px;padding:10px 14px;font-size:14px;font-weight:600}
+.efTrap{position:absolute;left:-9999px;width:1px;height:1px;opacity:0}
+.efSubmit{margin-top:4px;border:0;cursor:pointer;font-size:16px}
+.efSubmit:disabled{opacity:.6}
+.efNote{font-size:13px;color:var(--muted);margin:0}
+.btn{cursor:pointer;border:0}
+.btn.ghost{background:#fff;border:1px solid var(--line);color:var(--ink)}
+.btn.dangerBtn{background:#dc2626;color:#fff}
+.linkBtn{background:none;border:0;color:var(--accent);font-weight:800;cursor:pointer;padding:6px 0;font-size:15px}
+.created{text-align:left}
+.createdIcon{font-size:44px}
+.linkBox{border:1px solid var(--line);background:var(--bg);border-radius:14px;padding:14px;margin:14px 0}
+.linkBox.secret{background:#fffbeb;border-color:#fde68a}
+.linkBox .k{font-weight:800;font-size:14px;margin-bottom:8px}
+.linkBox .small,.small{font-size:13px}
+.linkBox .inline{color:var(--accent);font-weight:800;text-decoration:none}
+.linkActions{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}
+.linkActions .btn{padding:10px 14px;font-size:14px;flex:0 1 auto;min-width:0}
+.copyLink{display:flex;gap:6px}
+.copyLink input{flex:1;min-width:0;border:1px solid var(--line);border-radius:10px;padding:10px;font-size:14px;background:#fff;font-family:ui-monospace,Menlo,monospace}
+.copyLink button{border:0;background:var(--ink);color:#fff;font-weight:800;border-radius:10px;padding:0 14px;cursor:pointer;white-space:nowrap}
+.b.private{background:#18181b;color:#fff}
+.host{margin:-8px 0 14px;color:var(--body)}
+.okMsg{background:#e7f7ee;color:#137a4b;border-radius:12px;padding:10px 14px;font-weight:700;margin-bottom:12px}
+.rsvp{margin-top:22px;border-top:1px solid var(--line);padding-top:16px}
+.rsvp h2{margin:0 0 2px}
+.rsvpForm{display:flex;flex-direction:column;gap:12px;margin-top:10px}
+.rsvpForm .seg{display:flex}.rsvpForm .seg button{flex:1;padding:12px 8px;font-size:15px;cursor:pointer}
+.rsvpForm .seg button.active,.seg button.active{background:var(--ink);color:#fff}
+.rsvpForm .btn{align-self:flex-start}
+.rsvpDone{display:flex;flex-direction:column;gap:4px;background:#e7f7ee;border-radius:12px;padding:12px 14px;margin-top:8px}
+.guests{list-style:none;padding:0;margin:0;display:flex;flex-direction:column;gap:6px}
+.guests li{display:flex;gap:10px;align-items:baseline;flex-wrap:wrap;padding:10px 12px;border:1px solid var(--line);border-radius:12px}
+.g{font-size:12px;font-weight:800;padding:2px 8px;border-radius:99px}.g.going{background:#e7f7ee;color:#137a4b}.g.maybe{background:#fffbeb;color:#92400e}.g.no{background:var(--soft);color:var(--muted)}
+.danger{margin-top:28px;border-top:1px solid var(--line);padding-top:12px}
+.review{list-style:none;padding:0;display:flex;flex-direction:column;gap:14px}
+.review li{border:1px solid var(--line);border-radius:14px;padding:14px;display:flex;flex-direction:column;gap:6px}
+@media(min-width:720px){.efVis{grid-template-columns:1fr 1fr}}
+.cal.compact .calBtn{padding:0;width:44px;height:44px;justify-content:center}
+.actions .cal{flex:0 0 auto}
+.card{overflow:visible;position:relative}
+.card .pic{border-radius:17px 17px 0 0}
+.card:has(.calMenu){z-index:20}
+.cal.compact .calMenu{top:auto;bottom:calc(100% + 6px)}

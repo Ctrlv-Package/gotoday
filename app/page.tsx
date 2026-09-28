@@ -1,5 +1,6 @@
 "use client";
 import {useEffect,useMemo,useState} from "react";
+import AddToCalendar from "./components/AddToCalendar";
 
 type EventItem={id?:string;title:string;city:string;venue?:string;date?:string;time?:string;image?:string;url?:string;category?:string;genre?:string;minPrice?:number|null;desc?:string;tags?:string[];emoji?:string;source?:string;distanceMiles?:number;distanceAccuracy?:string;ageMin?:number;ageMax?:number;registration?:string;moreLocations?:number;otherVenues?:string[];isFree?:boolean};
 
@@ -20,7 +21,7 @@ function nextWeekendLabel(){
  const m=(d:Date)=>d.toLocaleDateString("en-US",{month:"short",timeZone:"UTC"});
  return m(sat)===m(sun)?`${m(sat)} ${sat.getUTCDate()}–${sun.getUTCDate()}`:`${m(sat)} ${sat.getUTCDate()} – ${m(sun)} ${sun.getUTCDate()}`;
 }
-function detailHref(e:EventItem){return e.source==="Ticketmaster"?(e.url||"#"):"/events/"+encodeURIComponent(e.id||"")}
+function detailHref(e:EventItem){return e.source==="Ticketmaster"?(e.url||"#"):e.source==="GoToday Community"&&e.url?e.url:"/events/"+encodeURIComponent(e.id||"")}
 const store={get:(k:string)=>{try{return localStorage.getItem(k)}catch{return null}},set:(k:string,v:string)=>{try{localStorage.setItem(k,v)}catch{}}};
 
 export default function Home(){
@@ -81,7 +82,7 @@ export default function Home(){
  const where=coords?"your location":searchedZip||"your area";
  return <main className="page">
   <section className="hero">
-   <nav><div className="logo">Go<span>Today</span></div></nav>
+   <nav><div className="logo">Go<span>Today</span></div><a className="createBtn" href="/create">+ Create event</a></nav>
    <div className="heroContent">
     <div className="eyebrow">EXPLORE MORE. TODAY.</div>
     <h1>Find your <span>next thing.</span></h1>
@@ -138,6 +139,7 @@ export default function Home(){
      <div className="tags">{ageLabel(e)&&<span className="age">{ageLabel(e)}</span>}{(e.tags||[]).filter(t=>!["Local","Library","Free","Parks","Tickets","Drop-in"].includes(t)&&!/\(/.test(t)).slice(0,3).map(t=><span key={t}>{t}</span>)}</div>
      <div className="actions">
       <a className="primary" href={detailHref(e)} target={e.source==="Ticketmaster"?"_blank":undefined} rel="noreferrer">{e.source==="Ticketmaster"?"Tickets ↗":"View details"}</a>
+      {e.id&&<AddToCalendar compact base={`/events/${encodeURIComponent(e.id)}`}/>}
       <button type="button" className="share" onClick={()=>share(e)} aria-label={`Share ${e.title}`}>
        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden><path d="M4 12v7a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-7"/><polyline points="16 6 12 2 8 6"/><line x1="12" y1="2" x2="12" y2="15"/></svg>Share
       </button>

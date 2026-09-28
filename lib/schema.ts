@@ -19,6 +19,14 @@ const STATEMENTS=[
    enabled boolean not null default true,remote boolean not null default false,created_at timestamptz default now(),updated_at timestamptz default now())`,
  // API keys that renew themselves (Instagram's 60-day token); seed = tail of the Vercel value it came from.
  `create table if not exists app_tokens(name text primary key,value text not null,expires_at timestamptz,seed text,updated_at timestamptz default now())`,
+ // Events people create on GoToday (public ones are also mirrored into events). manage_hash = sha256 of the creator's secret link.
+ `create table if not exists community_events(id serial primary key,share_token text unique not null,manage_hash text unique not null,visibility text not null,status text not null,
+   review_reason text,title text not null,description text,start_date date not null,start_time text,end_time text,all_day boolean not null default false,timezone text not null,
+   venue text,address text,city text,latitude double precision,longitude double precision,is_free boolean not null default true,price_text text,age_min smallint,age_max smallint,
+   category text,link text,host_name text,event_id bigint,ip_hash text,created_at timestamptz default now(),updated_at timestamptz default now())`,
+ `create table if not exists rsvps(id serial primary key,community_event_id int not null references community_events(id) on delete cascade,name text not null,status text not null,
+   guests int not null default 0,note text,created_at timestamptz default now())`,
+ `create unique index if not exists rsvps_event_name_idx on rsvps(community_event_id,lower(name))`,
  // Instagram posts already read (and the events found in them), so each post is sent to the AI once.
  `create table if not exists social_posts(id text primary key,permalink text,posted_at timestamptz,extracted jsonb not null default '[]',created_at timestamptz default now())`,
  // Discovery once saved North Miami Beach's library over the city calendar (same name). The library now has
