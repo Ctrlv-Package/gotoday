@@ -48,7 +48,7 @@ nav{display:flex;justify-content:space-between;align-items:center;max-width:1180
 .resultsHead h2{font-size:26px;margin:4px 0 0;letter-spacing:-.5px}
 
 /* ---------- Cards ---------- */
-.grid{display:grid;grid-template-columns:1fr;gap:14px}
+.grid{display:grid;grid-template-columns:minmax(0,1fr);gap:14px}
 .card{display:flex;flex-direction:column;background:#fff;border:1px solid var(--line);border-radius:18px;overflow:hidden;box-shadow:0 8px 26px rgba(39,39,42,.06)}
 .pic{position:relative;display:block;aspect-ratio:16/9;background:linear-gradient(145deg,#ede9fe,#fce7f3);overflow:hidden}
 .pic.noimg{aspect-ratio:auto;height:84px}
@@ -240,3 +240,7 @@ nav{display:flex;justify-content:space-between;align-items:center;max-width:1180
 .soon .muted{font-size:14px;color:var(--muted)}
 .soonActions{display:flex;gap:8px;justify-content:center;flex-wrap:wrap;margin-top:14px}
 .soonActions .btn{flex:0 1 auto;min-width:0}
+/* Never scroll sideways on phones: long words/links wrap, grid columns can shrink below their content. */
+html,body{overflow-x:clip}
+.grid>*,.card,.cardBody{min-width:0}
+.card h3,.card .meta,.card .desc,.detail h1,.about p,.fact .v,.fact .s,.reg,.sourceNote,.tags span{overflow-wrap:anywhere}
