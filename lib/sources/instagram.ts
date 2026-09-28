@@ -46,7 +46,7 @@ async function accessToken():Promise<string|undefined>{
 async function loadPosts(username:string):Promise<Post[]>{
  const token=await accessToken(),me=process.env.IG_USER_ID;
  if(!token||!me)throw new Error("Instagram not connected yet (set IG_USER_ID and IG_ACCESS_TOKEN in Vercel)");
- const fields=`business_discovery.username(${username}){media.limit(25){id,caption,media_type,media_url,thumbnail_url,permalink,timestamp,children{media_url,media_type}}}`;
+ const fields=`business_discovery.username(${username}){media.limit(15){id,caption,media_type,media_url,thumbnail_url,permalink,timestamp,children{media_url,media_type}}}`;
  const r=await fetchRetry(`${GRAPH}/${me}?fields=${encodeURIComponent(fields)}&access_token=${encodeURIComponent(token)}`,{cache:"no-store"});
  const d:any=await r.json().catch(()=>({}));
  if(!r.ok){if(d?.error?.code===190)tokenCache=null;throw new Error(`Instagram API: ${d?.error?.message||`HTTP ${r.status}`}${d?.error?.code===190?" — the Instagram key expired; generate a new one and update IG_ACCESS_TOKEN in Vercel":""}`)}
@@ -122,12 +122,18 @@ async function cached(p:Post,venue:string):Promise<Extracted[]>{
 export async function fetchInstagram(cfg:InstagramConfig,startDate:string,endDate:string):Promise<EventRecord[]>{
  await ensureSchema();
  const posts=await loadPosts(cfg.username);
- const cutoff=new Date(Date.now()-(cfg.maxAgeDays??60)*86400e3).toISOString();
+ const cutoff=new Date(Date.now()-(cfg.maxAgeDays??45)*86400e3).toISOString();
  const found:(Extracted&{post:Post})[]=[];let errors=0,firstError="";
  // Newest first, so a later "moved to Sunday" post wins over the original announcement.
- for(const p of posts.filter(p=>p.timestamp>=cutoff).sort((a,b)=>b.timestamp.localeCompare(a.timestamp))){
-  try{for(const e of await cached(p,cfg.venue))found.push({...e,post:p})}catch(e:any){errors++;firstError||=String(e?.message||e);console.log(`instagram ${cfg.username} post ${p.id}: ${e?.message||e}`)}
- }
+ // Read up to 5 posts at once (each is an AI call with an image); results are cached, so later runs are instant.
+ const recent=posts.filter(p=>p.timestamp>=cutoff).sort((a,b)=>b.timestamp.localeCompare(a.timestamp));
+ const results:Extracted[][]=new Array(recent.length);
+ let next=0;
+ await Promise.all(Array.from({length:Math.min(5,recent.length)},async()=>{
+  while(next<recent.length){const i=next++;const p=recent[i];
+   try{results[i]=await cached(p,cfg.venue)}catch(e:any){results[i]=[];errors++;firstError||=String(e?.message||e);console.log(`instagram ${cfg.username} post ${p.id}: ${e?.message||e}`)}}
+ }));
+ recent.forEach((p,i)=>{for(const e of results[i]||[])found.push({...e,post:p})});
  const key=(e:Extracted)=>`${e.date}|${slug(e.title).split("-").filter(w=>w.length>2).slice(0,2).join("-")}`;
  const cancelled=new Set(found.filter(e=>e.cancelled).map(key)),seen=new Set<string>(),out:EventRecord[]=[];
  for(const e of found){
