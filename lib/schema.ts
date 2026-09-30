@@ -29,6 +29,8 @@ const STATEMENTS=[
  `create unique index if not exists rsvps_event_name_idx on rsvps(community_event_id,lower(name))`,
  // One row per full ingest (scheduled or manual) so the status page can show when the daily update last ran.
  `create table if not exists ingest_log(id serial primary key,trigger text,sources int,succeeded int,failed int,started_at timestamptz default now(),finished_at timestamptz)`,
+ // CivicPlus-hosted city sites block Vercel's servers: fetch them all from the GitHub job instead.
+ `update source_configs set remote=true,updated_at=now() where platform='civicplus' and remote=false`,
  // Instagram posts already read (and the events found in them), so each post is sent to the AI once.
  `create table if not exists social_posts(id text primary key,permalink text,posted_at timestamptz,extracted jsonb not null default '[]',created_at timestamptz default now())`,
  // Discovery once saved North Miami Beach's library over the city calendar (same name). The library now has

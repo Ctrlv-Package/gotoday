@@ -8,7 +8,7 @@ import {ensureSchema} from "../schema";
 // without deploying). Preferred source order: JSON API > RSS/ICS > HTML.
 export type SourceConfig={name:string;platform:string;params:Record<string,any>;source_type?:string;url?:string;priority?:number;region?:string;timezone?:string;enabled?:boolean;remote?:boolean};
 
-const civic=(name:string,site:string,city:string,region:string):SourceConfig=>({name,platform:"civicplus",params:{site,city,idPrefix:city.split(",")[0].toLowerCase().replace(/[^a-z]/g,"")},source_type:"official-city",url:site+"/Calendar.aspx",priority:100,region});
+const civic=(name:string,site:string,city:string,region:string):SourceConfig=>({name,platform:"civicplus",remote:true,params:{site,city,idPrefix:city.split(",")[0].toLowerCase().replace(/[^a-z]/g,"")},source_type:"official-city",url:site+"/Calendar.aspx",priority:100,region});
 // Granicus OpenCities city sites block cloud servers, so they're fetched by the GitHub remote job.
 const oc=(name:string,listUrl:string,city:string,idPrefix:string,region:string):SourceConfig=>({name,platform:"opencities",remote:true,params:{listUrl,city,venue:city.split(",")[0],idPrefix,maxPages:15},source_type:"official-city",url:listUrl,priority:100,region});
 // Official town, parks and public-venue Instagram accounts (read through Instagram's Business Discovery API).
