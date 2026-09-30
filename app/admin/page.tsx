@@ -9,7 +9,7 @@ export default function Admin(){
  async function load(s=secret){setErr("");const r=await fetch("/api/admin/community",{headers:{authorization:`Bearer ${s}`},cache:"no-store"});const d=await r.json().catch(()=>({}));
   if(!d.ok){setErr(d.error||"Couldn't load");setList(null);return}try{sessionStorage.setItem("gotoday:admin",s)}catch{}setList(d.pending)}
  async function decide(id:number,approve:boolean){await fetch("/api/admin/community",{method:"POST",headers:{authorization:`Bearer ${secret}`,"content-type":"application/json"},body:JSON.stringify({id,approve})});load()}
- return <main className="detail"><header className="detailHeader"><div className="detailWrap row"><Link href="/" className="detailLogo">Go<span>Today</span></Link><span className="navLink">Review</span></div></header>
+ return <main className="detail"><header className="detailHeader"><div className="detailWrap row"><Link href="/" className="detailLogo">Go<span>Today</span></Link><a href="/admin/status" className="navLink">Source status</a></div></header>
   <div className="detailWrap"><article className="detailCard"><div className="detailBody">
    <h1>Events waiting for review</h1>
    {list===null?<form className="ef" onSubmit={e=>{e.preventDefault();load()}}><label className="efField">Ingestion secret<input type="password" value={secret} onChange={e=>setSecret(e.target.value)} autoComplete="off"/></label>{err&&<div className="efErrors">{err}</div>}<button className="btn primary">Open</button></form>

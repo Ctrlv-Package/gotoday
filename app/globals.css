@@ -244,3 +244,12 @@ nav{display:flex;justify-content:space-between;align-items:center;max-width:1180
 html,body{overflow-x:clip}
 .grid>*,.card,.cardBody{min-width:0}
 .card h3,.card .meta,.card .desc,.detail h1,.about p,.fact .v,.fact .s,.reg,.sourceNote,.tags span{overflow-wrap:anywhere}
+.statusBar{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin:10px 0 14px}
+.statusBar input{flex:1;min-width:140px;border:1px solid var(--line);border-radius:10px;padding:9px 12px}
+.statusBar .seg button{cursor:pointer}
+.statusList{list-style:none;padding:0;margin:0;display:flex;flex-direction:column;gap:6px}
+.statusList li{border:1px solid var(--line);border-left:4px solid #22c55e;border-radius:10px;padding:10px 12px;font-size:14px}
+.statusList li.failing{border-left-color:#dc2626}.statusList li.late{border-left-color:#f59e0b}.statusList li.paused,.statusList li.new{border-left-color:#a1a1aa}
+.statusList .row2{display:flex;gap:14px;flex-wrap:wrap;color:var(--body);margin-top:3px}
+.errText{color:#991b1b;font-size:13px;margin-top:4px;overflow-wrap:anywhere}
+.statusBar .seg{max-width:100%;overflow-x:auto;flex-wrap:nowrap}.statusBar .seg button{white-space:nowrap}
