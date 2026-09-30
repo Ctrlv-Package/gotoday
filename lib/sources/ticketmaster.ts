@@ -17,7 +17,10 @@ export async function fetchTicketmasterEvents(startDate:string,endDate:string,cf
   if(cfg.latlong){u.searchParams.set("latlong",cfg.latlong);u.searchParams.set("radius",String(cfg.radius||50));u.searchParams.set("unit","miles")}else u.searchParams.set("marketId",cfg.marketId||"15");
   u.searchParams.set("localStartEndDateTime",`${startDate}T00:00:00,${endDate}T23:59:59`);
   u.searchParams.set("sort","date,asc");u.searchParams.set("size","199");u.searchParams.set("page",String(page));
-  const r=await fetch(u.toString(),{cache:"no-store"});
+  // Ticketmaster allows ~5 requests/second per key and three regions share it: pace pages, wait out 429s.
+  if(page>0)await new Promise(res=>setTimeout(res,400));
+  let r=await fetch(u.toString(),{cache:"no-store"});
+  for(let t=0;t<3&&r.status===429;t++){await new Promise(res=>setTimeout(res,2000*(t+1)+Math.random()*1000));r=await fetch(u.toString(),{cache:"no-store"})}
   if(!r.ok){if(page===0)throw new Error(`Ticketmaster HTTP ${r.status}`);break}
   const d:any=await r.json();
   for(const ev of d?._embedded?.events||[]){

@@ -1,6 +1,11 @@
 import {NextRequest,NextResponse} from "next/server";
 import {persistIngestion} from "../../../lib/ingestion/persist";
 import {activeSources} from "../../../lib/ingestion/registry";
+import {db} from "../../../lib/db";
+import {ensureSchema} from "../../../lib/schema";
+// Call the site by its public address: a scheduled run may arrive on an internal Vercel URL that
+// deployment protection blocks for the per-source calls below.
+const SITE=(process.env.NEXT_PUBLIC_SITE_URL||"https://www.mygotoday.com").replace(/\/$/,"");
 export const dynamic="force-dynamic";
 export const maxDuration=300;
 
@@ -22,8 +27,18 @@ async function run(req:NextRequest){
  try{
   if(only)return NextResponse.json({ok:true,startDate:ymd(now),endDate:ymd(end),sources:await persistIngestion(ymd(now),ymd(end),only)});
   // Instagram accounts (100+) are run one by one by the GitHub job (scripts/remote-ingest.ts), which asks for the list here.
+  // Website sources whose last try failed with a network block: the GitHub job retries them from its own computers.
+  if(req.nextUrl.searchParams.get("list")==="fallback"){
+   const {rows}=await db.query(`select name from sources where last_error_at is not null and (last_success_at is null or last_error_at>last_success_at)
+     and last_error ~* '(network error|timeout|http 403|http 429|econnreset|fetch failed)'`);
+   const failing=new Set(rows.map((r:any)=>r.name));
+   return NextResponse.json({ok:true,sources:(await activeSources()).filter(s=>failing.has(s.name)&&s.platform!=="instagram"&&s.platform!=="ticketmaster").map(s=>s.name)});
+  }
   if(req.nextUrl.searchParams.get("list")==="instagram")return NextResponse.json({ok:true,sources:(await activeSources()).filter(s=>s.platform==="instagram").map(s=>s.name)});
-  const names=(await activeSources()).filter(s=>s.platform!=="instagram").map(s=>s.name),origin=req.nextUrl.origin,results:any[]=new Array(names.length);
+  const names=(await activeSources()).filter(s=>s.platform!=="instagram").map(s=>s.name),origin=/localhost|127\.0\.0\.1/.test(req.nextUrl.host)?req.nextUrl.origin:SITE,results:any[]=new Array(names.length);
+  await ensureSchema();
+  const trigger=req.headers.get("user-agent")?.includes("vercel-cron")?"schedule":"manual";
+  const log=await db.query("insert into ingest_log(trigger,sources) values($1,$2) returning id",[trigger,names.length]).catch(()=>null);
   let next=0;
   const worker=async()=>{while(next<names.length){const i=next++,name=names[i];
    try{
@@ -33,6 +48,8 @@ async function run(req:NextRequest){
    }catch(e:any){results[i]={source:name,found:0,accepted:0,rejected:0,status:"error",error:e?.name==="TimeoutError"?"Timed out":String(e?.message||e)}}
   }};
   await Promise.all(Array.from({length:Math.min(4,names.length)},worker));
+  const ok=results.filter(r=>r?.status==="success").length;
+  if(log?.rows?.[0])await db.query("update ingest_log set finished_at=now(),succeeded=$2,failed=$3 where id=$1",[log.rows[0].id,ok,results.length-ok]).catch(()=>{});
   return NextResponse.json({ok:true,startDate:ymd(now),endDate:ymd(end),sources:results});
  }catch(e:any){console.error("Ingestion failed",e);return NextResponse.json({ok:false,error:e?.message||"Ingestion failed"},{status:500})}
 }

@@ -1,5 +1,5 @@
 import {NextRequest,NextResponse} from "next/server";
-import {remoteSources} from "../../../../lib/ingestion/registry";
+import {remoteSources,activeSources} from "../../../../lib/ingestion/registry";
 import {runSource} from "../../../../lib/ingestion/persist";
 import type {EventRecord} from "../../../../lib/ingestion/types";
 export const dynamic="force-dynamic";
@@ -12,7 +12,8 @@ export async function POST(req:NextRequest){
  const secret=process.env.INGESTION_SECRET;
  if(!secret||req.headers.get("authorization")!==`Bearer ${secret}`)return NextResponse.json({ok:false,error:"Unauthorized"},{status:401});
  let body:any;try{body=await req.json()}catch{return NextResponse.json({ok:false,error:"Invalid JSON"},{status:400})}
- const s=(await remoteSources()).find(x=>x.name===body?.source);
+ // Remote-only sources, or (with fallback:true) a website source the GitHub job re-fetched after Vercel was blocked.
+ const s=(await remoteSources()).find(x=>x.name===body?.source)||(body?.fallback?(await activeSources()).find(x=>x.name===body?.source):undefined);
  if(!s)return NextResponse.json({ok:false,error:`Not a remote source: ${body?.source}`},{status:400});
  if(!Array.isArray(body.events)&&!body.error)return NextResponse.json({ok:false,error:"events[] or error required"},{status:400});
  const events:EventRecord[]=(body.events||[]).filter((e:any)=>e&&typeof e.title==="string"&&typeof e.date==="string"&&typeof e.url==="string").slice(0,5000)

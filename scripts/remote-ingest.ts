@@ -41,6 +41,28 @@ for(const s of configs.map(sourceFromConfig)){
  const sm=out.summary||{};rows.push(`| ${s.name} | ${ok?"✅":"❌"} | ${sm.found??0} | ${sm.accepted??0} | ${sm.rejected??0} | ${String(sm.error||out.error||"").replace(/\|/g,"/").slice(0,160)} |`);
 }
 console.log(failures?`${failures} source(s) did not succeed`:"All remote sources succeeded");
+ // Website sources Vercel couldn't reach on their last try (city firewalls): fetch them from here and push.
+ const fbRows:string[]=[];
+ try{
+  const lr=await fetch(`${base}/api/ingest?list=fallback`,{headers:{authorization:`Bearer ${secret}`}});
+  const fbNames:string[]=((await lr.json().catch(()=>({}))).sources)||[];
+  if(fbNames.length){
+   const cr=await fetch(`${base}/api/admin/sources?names=${encodeURIComponent(fbNames.join("|"))}`,{headers:{authorization:`Bearer ${secret}`}});
+   const cfgs:SourceConfig[]=((await cr.json().catch(()=>({}))).sources)||[];
+   console.log(`Retrying ${cfgs.length} blocked website source(s) from GitHub: ${cfgs.map(c=>c.name).join(", ")}`);
+   for(const s of cfgs.map(sourceFromConfig)){
+    await new Promise(r=>setTimeout(r,2000));
+    let payload:any;
+    try{payload={source:s.name,fallback:true,events:await s.fetch(ymd(now),ymd(end))}}catch(e:any){payload={source:s.name,fallback:true,error:e?.message||String(e)}}
+    const r=await fetch(`${base}/api/ingest/push`,{method:"POST",headers:{"content-type":"application/json",authorization:`Bearer ${secret}`},body:JSON.stringify(payload)});
+    const out=await r.json().catch(()=>({})),sm=out.summary||{},ok=r.ok&&sm.status==="success";
+    console.log(`${s.name} (retry): ${ok?`${sm.accepted} events`:`failed — ${sm.error||out.error}`}`);
+    fbRows.push(`| ${s.name} | ${ok?"✅":"❌"} | ${sm.accepted??0} | ${String(sm.error||out.error||"").replace(/\|/g,"/").slice(0,160)} |`);
+   }
+   if(process.env.GITHUB_STEP_SUMMARY)appendFileSync(process.env.GITHUB_STEP_SUMMARY,["",`### Retried from GitHub (Vercel was blocked)`,"","| Source | OK | Events | Error |","|---|---|---|---|",...fbRows,""].join("\n"));
+  }
+ }catch(e:any){console.log(`Retry step failed: ${e?.message||e}`)}
+
  // Instagram accounts: the site does the work (Instagram API + flyer reading); we just call each one, 3 at a time.
  const igRows:string[]=[];let igEvents=0,igFailed=0;
  try{

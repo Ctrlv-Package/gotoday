@@ -13,10 +13,13 @@ export async function GET(req:NextRequest){
  if(!authed(req))return NextResponse.json({ok:false,error:"Unauthorized"},{status:401});
  const configs=await loadSourceConfigs();
  if(req.nextUrl.searchParams.get("remote")==="1")return NextResponse.json({ok:true,sources:configs.filter(c=>c.enabled!==false&&c.remote)});
+ const names=req.nextUrl.searchParams.get("names");
+ if(names){const want=new Set(names.split("|"));return NextResponse.json({ok:true,sources:configs.filter(c=>want.has(c.name))})}
  const {rows}=await db.query(`select s.name,s.last_success_at,s.last_error_at,s.last_error,count(e.id) filter (where e.status='active')::int as active_events
   from sources s left join events e on e.source_id=s.id group by s.id`);
  const status=new Map(rows.map((r:any)=>[r.name,r]));
- return NextResponse.json({ok:true,sources:configs.map(c=>({...c,status:status.get(c.name)||null})),platforms:Object.fromEntries(Object.entries(PLATFORMS).map(([k,v])=>[k,{describe:v.describe,params:v.params}]))});
+ const lastRun=(await db.query("select * from ingest_log order by id desc limit 1").catch(()=>({rows:[]}))).rows[0]||null;
+ return NextResponse.json({ok:true,lastRun,sources:configs.map(c=>({...c,status:status.get(c.name)||null})),platforms:Object.fromEntries(Object.entries(PLATFORMS).map(([k,v])=>[k,{describe:v.describe,params:v.params}]))});
 }
 
 // POST /api/admin/sources  {name, platform, params, url?, region?, timezone?, remote?, enabled?, priority?, source_type?, test?}

@@ -13,10 +13,10 @@ function state(s:S){
 }
 const LABEL:Record<string,string>={ok:"✅ Updated",late:"⏰ Late",failing:"❌ Failing",paused:"⏸ Paused",new:"🆕 Not run yet"};
 export default function Status(){
- const [secret,setSecret]=useState(""),[list,setList]=useState<S[]|null>(null),[err,setErr]=useState(""),[filter,setFilter]=useState("problems"),[q,setQ]=useState("");
+ const [secret,setSecret]=useState(""),[run,setRun]=useState<any>(null),[list,setList]=useState<S[]|null>(null),[err,setErr]=useState(""),[filter,setFilter]=useState("problems"),[q,setQ]=useState("");
  useEffect(()=>{try{const s=sessionStorage.getItem("gotoday:admin");if(s){setSecret(s);load(s)}}catch{}},[]);
  async function load(s=secret){setErr("");const r=await fetch("/api/admin/sources",{headers:{authorization:`Bearer ${s}`},cache:"no-store"});const d=await r.json().catch(()=>({}));
-  if(!d.ok){setErr(d.error||"Couldn't load");setList(null);return}try{sessionStorage.setItem("gotoday:admin",s)}catch{}setList(d.sources)}
+  if(!d.ok){setErr(d.error||"Couldn't load");setList(null);return}try{sessionStorage.setItem("gotoday:admin",s)}catch{}setList(d.sources);setRun(d.lastRun)}
  const rows=useMemo(()=>(list||[]).map(s=>({...s,st:state(s)})),[list]);
  const counts=useMemo(()=>{const c:Record<string,number>={ok:0,late:0,failing:0,paused:0,new:0};for(const r of rows)c[r.st]++;return c},[rows]);
  const lastRun=useMemo(()=>rows.map(r=>r.status?.last_success_at).filter(Boolean).sort().pop()||null,[rows]);
@@ -30,6 +30,7 @@ export default function Status(){
    :<>
     <div className="facts">
      <div className="fact"><div className="k">Last update</div><div className="v">{ago(lastRun)}</div><div className="s">{events.toLocaleString()} upcoming events</div></div>
+     <div className="fact"><div className="k">Last full website update</div><div className="v">{run?ago(run.started_at):"not logged yet"}</div><div className="s">{run?`${run.trigger==="schedule"?"Automatic (6 AM)":"Run by hand"} · ${run.finished_at?`${run.succeeded} ok, ${run.failed} failed`:"still running or cut off"}`:"Logged from the next run on"}</div></div>
      <div className="fact"><div className="k">Sources</div><div className="v">{counts.ok} updated</div><div className="s">{counts.failing} failing · {counts.late} late · {counts.paused} paused · {counts.new} not run yet</div></div>
     </div>
     <p className="muted small">Automatic runs: website sources daily ~6:00 AM; blocked city sites + Instagram at ~6:20 AM and ~6:20 PM. "Late" = no successful update in 36 hours.</p>
