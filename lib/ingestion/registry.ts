@@ -151,7 +151,9 @@ const INSTAGRAM_ACCOUNTS:SourceConfig[]=[
  ig("City of Dunedin","Dunedin, FL","cityofdunedin","tampa"),
  ig("City of Pinellas Park","Pinellas Park, FL","cityofpinellaspark","tampa"),
  ig("City of Oldsmar","Oldsmar, FL","oldsmarflorida","tampa"),
- ig("City of Safety Harbor","Safety Harbor, FL","cityofsafetyharbor","tampa")
+ ig("City of Safety Harbor","Safety Harbor, FL","cityofsafetyharbor","tampa"),
+ // Community round-up accounts (not official): lower priority, so an official listing of the same event wins.
+ {...ig("Miami Residents","Miami, FL","miami_residents","miami-dade"),source_type:"roundup",priority:70}
 ];
 export const SEED_SOURCES:SourceConfig[]=[
  // ---- Broward ----
