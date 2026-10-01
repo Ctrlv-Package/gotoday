@@ -18,7 +18,7 @@ export default function CreatePage(){
   }catch{return["Couldn't reach GoToday. Check your connection and try again."]}finally{setBusy(false)}
  }
  return <main className="detail">
-  <header className="detailHeader"><div className="detailWrap row"><Link href="/" className="detailLogo">Go<span>Today</span></Link><Link href="/" className="navLink">Find events</Link></div></header>
+  <header className="detailHeader"><div className="detailWrap row"><Link href="/?fresh=1" className="detailLogo">Go<span>Today</span></Link><Link href="/" className="navLink">Find events</Link></div></header>
   <div className="detailWrap">
    <article className="detailCard"><div className="detailBody">
     {done?<div className="created">

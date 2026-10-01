@@ -253,3 +253,4 @@ html,body{overflow-x:clip}
 .statusList .row2{display:flex;gap:14px;flex-wrap:wrap;color:var(--body);margin-top:3px}
 .errText{color:#991b1b;font-size:13px;margin-top:4px;overflow-wrap:anywhere}
 .statusBar .seg{max-width:100%;overflow-x:auto;flex-wrap:nowrap}.statusBar .seg button{white-space:nowrap}
+a.logo{text-decoration:none;color:inherit}

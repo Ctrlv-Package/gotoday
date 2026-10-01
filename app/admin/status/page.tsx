@@ -23,7 +23,7 @@ export default function Status(){
  const events=rows.reduce((n,r)=>n+(r.status?.active_events||0),0);
  const shown=rows.filter(r=>(filter==="all"||(filter==="problems"?["failing","late"].includes(r.st):filter==="instagram"?r.platform==="instagram":r.st===filter))&&(!q||r.name.toLowerCase().includes(q.toLowerCase())))
   .sort((a,b)=>["failing","late","new","paused","ok"].indexOf(a.st)-["failing","late","new","paused","ok"].indexOf(b.st)||a.name.localeCompare(b.name));
- return <main className="detail"><header className="detailHeader"><div className="detailWrap row"><Link href="/" className="detailLogo">Go<span>Today</span></Link><Link href="/admin" className="navLink">Review queue</Link></div></header>
+ return <main className="detail"><header className="detailHeader"><div className="detailWrap row"><Link href="/?fresh=1" className="detailLogo">Go<span>Today</span></Link><Link href="/admin" className="navLink">Review queue</Link></div></header>
   <div className="detailWrap"><article className="detailCard"><div className="detailBody">
    <h1>Source status</h1>
    {list===null?<form className="ef" onSubmit={e=>{e.preventDefault();load()}}><label className="efField">Ingestion secret<input type="password" value={secret} onChange={e=>setSecret(e.target.value)} autoComplete="off"/></label>{err&&<div className="efErrors">{err}</div>}<button className="btn primary">Open</button></form>

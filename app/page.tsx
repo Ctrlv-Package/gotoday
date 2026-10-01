@@ -53,14 +53,19 @@ export default function Home(){
   const fromUrl=new URLSearchParams(location.search).get("zip");
   let v:any=null;try{v=JSON.parse(sessionStorage.getItem(VIEW)||"null")}catch{}
   const today=new Date().toDateString();
+  // Only coming BACK from an event restores the view. A refresh, the logo, or a new visit starts fresh.
+  const nav=(performance.getEntriesByType("navigation")[0] as PerformanceNavigationTiming|undefined)?.type;
+  let realReload=false;try{const seen=sessionStorage.getItem("gotoday:load");realReload=nav==="reload"&&seen!==String(performance.timeOrigin);sessionStorage.setItem("gotoday:load",String(performance.timeOrigin))}catch{}
+  const freshParam=new URLSearchParams(location.search).has("fresh");
+  let returning=false;try{returning=sessionStorage.getItem("gotoday:openedEvent")==="1";sessionStorage.removeItem("gotoday:openedEvent")}catch{}
+  if(freshParam||realReload||!returning){try{sessionStorage.removeItem(VIEW)}catch{};v=null}
+  if(freshParam)history.replaceState(null,"",location.pathname+(fromUrl?`?zip=${fromUrl}`:""));
   if(v&&v.day===today&&Date.now()-v.savedAt<45*60e3&&(!fromUrl||fromUrl===v.searchedZip)){
    setZip(v.zip);setSearchedZip(v.searchedZip);setCoords(v.coords);setRadius(v.radius);setRange(v.range);setSelected(v.selected);setAgeBands(v.ageBands);
    setMoreOpen(v.moreOpen);setSetting(v.setting);setDropIn(v.dropIn);setSpanish(v.spanish);setSeniors(v.seniors);setTimeFilter(v.timeFilter);setSort(v.sort);setQuery(v.query);
    setEvents(v.events||[]);setMessage(v.message||"");setSoon(v.soon||null);setRestored(true);
    try{history.scrollRestoration="manual"}catch{}
-   // Jump back to the card you opened only when returning from an event (not on a fresh visit).
-   let back=false;try{back=sessionStorage.getItem("gotoday:openedEvent")==="1";sessionStorage.removeItem("gotoday:openedEvent")}catch{}
-   const y=back?v.scrollY||0:0;requestAnimationFrame(()=>requestAnimationFrame(()=>window.scrollTo(0,y)));
+   const y=v.scrollY||0;requestAnimationFrame(()=>requestAnimationFrame(()=>window.scrollTo(0,y)));
    return;
   }
   const saved=store.get("gotoday:zip"),savedRadius=store.get("gotoday:radius");
@@ -111,7 +116,7 @@ export default function Home(){
  const where=coords?"your location":searchedZip||"your area";
  return <main className="page">
   <section className="hero">
-   <nav><div className="logo">Go<span>Today</span></div><a className="createBtn" href="/create">+ Create event</a></nav>
+   <nav><a className="logo" href="/?fresh=1">Go<span>Today</span></a><a className="createBtn" href="/create">+ Create event</a></nav>
    <div className="heroContent">
     <div className="eyebrow">EXPLORE MORE. TODAY.</div>
     <h1>Find your <span>next thing.</span></h1>

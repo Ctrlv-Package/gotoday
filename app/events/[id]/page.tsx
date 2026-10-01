@@ -23,7 +23,7 @@ export async function generateMetadata({params}:{params:Promise<{id:string}>}):P
 export default async function EventPage({params}:{params:Promise<{id:string}>}){
  const {id}=await params;
  const e=await loadEvent(id);
- if(!e)return <main className="detail"><div className="detailWrap"><Link href="/" className="detailLogo">Go<span>Today</span></Link><h1>Event unavailable</h1><p>This event may have ended or been removed.</p><Link href="/">Find something else to do →</Link></div></main>;
+ if(!e)return <main className="detail"><div className="detailWrap"><Link href="/?fresh=1" className="detailLogo">Go<span>Today</span></Link><h1>Event unavailable</h1><p>This event may have ended or been removed.</p><Link href="/">Find something else to do →</Link></div></main>;
  // Events people created on GoToday live on their own page (RSVPs, host details).
  if(e.source==="GoToday Community"&&/\/e\/[\w-]+$/.test(e.officialUrl))redirect(new URL(e.officialUrl).pathname);
  const h=await headers(),origin=`${h.get("x-forwarded-proto")||"https"}://${h.get("host")}`,pageUrl=`${origin}/events/${encodeURIComponent(id)}`;
@@ -39,7 +39,7 @@ export default async function EventPage({params}:{params:Promise<{id:string}>}){
  const tags=e.tags.filter(t=>!["Local","Library","Parks","Free","Tickets","Kids","Family"].includes(t)&&!/\(\d/.test(t)).slice(0,5);
 
  return <main className="detail">
-  <header className="detailHeader"><div className="detailWrap row"><Link href="/" className="detailLogo">Go<span>Today</span></Link><BackLink/></div></header>
+  <header className="detailHeader"><div className="detailWrap row"><Link href="/?fresh=1" className="detailLogo">Go<span>Today</span></Link><BackLink/></div></header>
   <div className="detailWrap">
    <article className="detailCard">
     {e.image?<img className="detailHero" src={e.image} alt="" referrerPolicy="no-referrer"/>:null}
