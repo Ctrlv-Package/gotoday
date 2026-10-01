@@ -31,6 +31,9 @@ const STATEMENTS=[
  `create table if not exists ingest_log(id serial primary key,trigger text,sources int,succeeded int,failed int,started_at timestamptz default now(),finished_at timestamptz)`,
  // CivicPlus-hosted city sites block Vercel's servers: fetch them all from the GitHub job instead.
  `update source_configs set remote=true,updated_at=now() where platform='civicplus' and remote=false`,
+ // Temple Terrace's parks account is @ttleisureservices (the earlier handle wasn't readable): switch and un-pause.
+ `update source_configs set params=jsonb_set(jsonb_set(params,'{username}','"ttleisureservices"'),'{idPrefix}','"ig-ttleisureservices"'),url='https://www.instagram.com/ttleisureservices/',enabled=true,updated_at=now()
+   where name='Temple Terrace Parks & Rec · Instagram' and params->>'username'='templeterraceparks_recreation'`,
  // Instagram posts already read (and the events found in them), so each post is sent to the AI once.
  `create table if not exists social_posts(id text primary key,permalink text,posted_at timestamptz,extracted jsonb not null default '[]',created_at timestamptz default now())`,
  // Discovery once saved North Miami Beach's library over the city calendar (same name). The library now has

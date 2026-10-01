@@ -147,7 +147,7 @@ const INSTAGRAM_ACCOUNTS:SourceConfig[]=[
  ig("City of Largo","Largo, FL","cityoflargo","tampa"),
  ig("Largo Recreation","Largo, FL","largorec","tampa"),
  ig("City of Temple Terrace","Temple Terrace, FL","cityoftempleterrace","tampa"),
- ig("Temple Terrace Parks & Rec","Temple Terrace, FL","templeterraceparks_recreation","tampa"),
+ ig("Temple Terrace Parks & Rec","Temple Terrace, FL","ttleisureservices","tampa"),
  ig("City of Dunedin","Dunedin, FL","cityofdunedin","tampa"),
  ig("City of Pinellas Park","Pinellas Park, FL","cityofpinellaspark","tampa"),
  ig("City of Oldsmar","Oldsmar, FL","oldsmarflorida","tampa"),

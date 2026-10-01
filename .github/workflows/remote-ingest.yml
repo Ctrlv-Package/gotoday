@@ -2,7 +2,7 @@ name: Remote ingest (city sites that block Vercel)
 
 on:
   schedule:
-    - cron: "20 10,22 * * *"   # twice a day (UTC)
+    - cron: "20 10,16,22 * * *"   # ~6:20 AM, 12:20 PM, 6:20 PM Eastern (GitHub often starts scheduled runs late)
   workflow_dispatch: {}         # "Run workflow" button in the Actions tab
 
 jobs:
