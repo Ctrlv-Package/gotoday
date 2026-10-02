@@ -43,4 +43,12 @@ export async function installBrowserFetch(){
  }) as typeof fetch;
 }
 
+/** Start over with a clean browser profile (new cookies/session), e.g. before retrying a site that refused us. */
+export async function resetBrowserContext(){
+ if(!browser)return;
+ await ctx?.close().catch(()=>{});
+ ctx=await browser.newContext({userAgent:UA,locale:"en-US",timezoneId:"America/New_York",viewport:{width:1366,height:900}});
+ await ctx.addInitScript(()=>{Object.defineProperty(navigator,"webdriver",{get:()=>undefined})});
+}
+
 export async function closeBrowserFetch(){await ctx?.close().catch(()=>{});await browser?.close().catch(()=>{})}

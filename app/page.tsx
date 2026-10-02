@@ -68,9 +68,11 @@ export default function Home(){
    const y=v.scrollY||0;requestAnimationFrame(()=>requestAnimationFrame(()=>window.scrollTo(0,y)));
    return;
   }
-  const saved=store.get("gotoday:zip"),savedRadius=store.get("gotoday:radius");
-  const z=[fromUrl,saved].find(x=>x&&/^\d{5}$/.test(x))||DEFAULT_ZIP,rad=savedRadius&&["10","15","25","50"].includes(savedRadius)?savedRadius:"25";
-  setZip(z);setSearchedZip(z);setRadius(rad);load(z,"today",null,rad);setRestored(true);
+  // Fresh page: empty ZIP box and default filters. Results still show the last area searched on this
+  // device (labelled above the list) so the page isn't blank; a ?zip= link fills the box.
+  const saved=store.get("gotoday:zip"),okUrl=fromUrl&&/^\d{5}$/.test(fromUrl)?fromUrl:null;
+  const z=okUrl||(saved&&/^\d{5}$/.test(saved)?saved:DEFAULT_ZIP);
+  setZip(okUrl||"");setSearchedZip(z);setRadius("25");load(z,"today",null,"25");setRestored(true);
  },[]);
  // Keep the saved view current (filters, results and scroll position) so "Back" lands where you were.
  useEffect(()=>{

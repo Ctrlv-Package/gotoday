@@ -5,7 +5,7 @@
 //   GOTODAY_URL=https://mygotoday.com INGESTION_SECRET=... npx tsx scripts/remote-ingest.ts
 import {sourceFromConfig,type SourceConfig} from "../lib/ingestion/registry";
 import {appendFileSync} from "node:fs";
-import {installBrowserFetch,closeBrowserFetch} from "./browser-fetch";
+import {installBrowserFetch,closeBrowserFetch,resetBrowserContext} from "./browser-fetch";
 
 let base=(process.env.GOTODAY_URL||"").replace(/\/$/,"");const secret=process.env.INGESTION_SECRET||"";
 if(!base||!secret){console.error("Set GOTODAY_URL and INGESTION_SECRET");process.exit(1)}
@@ -29,11 +29,21 @@ if(!cfgRes.ok){
 }
 const configs:SourceConfig[]=(await cfgRes.json()).sources||[];
 console.log(`Remote sources: ${configs.map(c=>c.name).join(", ")||"(none)"}`);
-for(const s of configs.map(sourceFromConfig)){
- await new Promise(r=>setTimeout(r,3000));
+// City firewalls sometimes refuse one request (HTTP 403/429) and accept the next. Those sources aren't marked
+// failed right away: they're retried at the end, after a pause, with a fresh browser profile.
+const isBlock=(m:string)=>/HTTP (403|429)\b/.test(m);
+const deferred:{s:ReturnType<typeof sourceFromConfig>;error:string}[]=[];
+const queue:{s:ReturnType<typeof sourceFromConfig>;retry:boolean}[]=configs.map(c=>({s:sourceFromConfig(c),retry:false}));
+for(let i=0;i<queue.length;i++){
+ const {s,retry}=queue[i];
+ if(retry&&!queue[i-1]?.retry){console.log(`Retrying ${deferred.length} blocked source(s) after a pause…`);await new Promise(r=>setTimeout(r,90000));await resetBrowserContext()}
+ await new Promise(r=>setTimeout(r,retry?10000:3000));
  let payload:any;
- try{const events=await s.fetch(ymd(now),ymd(end));payload={source:s.name,events};console.log(`${s.name}: fetched ${events.length}`)}
- catch(e:any){payload={source:s.name,error:e?.message||String(e)};console.log(`${s.name}: fetch failed — ${payload.error}`)}
+ try{const events=await s.fetch(ymd(now),ymd(end));payload={source:s.name,events};console.log(`${s.name}: fetched ${events.length}${retry?" (retry)":""}`)}
+ catch(e:any){
+  const msg=e?.message||String(e);
+  if(!retry&&isBlock(msg)){console.log(`${s.name}: blocked (${msg.slice(0,120)}) — will retry at the end`);deferred.push({s,error:msg});queue.push({s,retry:true});continue}
+  payload={source:s.name,error:msg};console.log(`${s.name}: fetch failed — ${msg}`)}
  const r=await fetch(`${base}/api/ingest/push`,{method:"POST",headers:{"content-type":"application/json",authorization:`Bearer ${secret}`},body:JSON.stringify(payload)});
  const out=await r.json().catch(()=>({}));
  console.log(`  -> ${r.status} ${JSON.stringify(out.summary||out)}`);
