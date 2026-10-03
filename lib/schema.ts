@@ -30,6 +30,8 @@ const STATEMENTS=[
  // One row per full ingest (scheduled or manual) so the status page can show when the daily update last ran.
  `create table if not exists ingest_log(id serial primary key,trigger text,sources int,succeeded int,failed int,started_at timestamptz default now(),finished_at timestamptz)`,
  `alter table ingest_log add column if not exists notes text`,
+ // Web look-ups for events whose Instagram post says little (official page + description), one per event.
+ `create table if not exists event_details(key text primary key,data jsonb not null,created_at timestamptz default now())`,
  // Personal (not business) Instagram accounts can't be read; their towns' official accounts cover them.
  `delete from source_configs where name in ('Lake Eola · Instagram','Pines City Center · Instagram','Tamarac Parks & Rec · Instagram')`,
  // CivicPlus-hosted city sites block Vercel's servers: fetch them all from the GitHub job instead.

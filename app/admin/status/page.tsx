@@ -13,10 +13,10 @@ function state(s:S){
 }
 const LABEL:Record<string,string>={ok:"✅ Updated",late:"⏰ Late",failing:"❌ Failing",paused:"⏸ Paused",new:"🆕 Not run yet"};
 export default function Status(){
- const [secret,setSecret]=useState(""),[run,setRun]=useState<any>(null),[gh,setGh]=useState<any>(null),[list,setList]=useState<S[]|null>(null),[err,setErr]=useState(""),[filter,setFilter]=useState("problems"),[q,setQ]=useState("");
+ const [secret,setSecret]=useState(""),[run,setRun]=useState<any>(null),[gh,setGh]=useState<any>(null),[det,setDet]=useState<any>(null),[list,setList]=useState<S[]|null>(null),[err,setErr]=useState(""),[filter,setFilter]=useState("problems"),[q,setQ]=useState("");
  useEffect(()=>{try{const s=sessionStorage.getItem("gotoday:admin");if(s){setSecret(s);load(s)}}catch{}},[]);
  async function load(s=secret){setErr("");const r=await fetch("/api/admin/sources",{headers:{authorization:`Bearer ${s}`},cache:"no-store"});const d=await r.json().catch(()=>({}));
-  if(!d.ok){setErr(d.error||"Couldn't load");setList(null);return}try{sessionStorage.setItem("gotoday:admin",s)}catch{}setList(d.sources);setRun(d.lastRun);setGh(d.lastGithub||null)}
+  if(!d.ok){setErr(d.error||"Couldn't load");setList(null);return}try{sessionStorage.setItem("gotoday:admin",s)}catch{}setList(d.sources);setRun(d.lastRun);setGh(d.lastGithub||null);setDet(d.details||null)}
  const rows=useMemo(()=>(list||[]).map(s=>({...s,st:state(s)})),[list]);
  const counts=useMemo(()=>{const c:Record<string,number>={ok:0,late:0,failing:0,paused:0,new:0};for(const r of rows)c[r.st]++;return c},[rows]);
  const lastRun=useMemo(()=>rows.map(r=>r.status?.last_success_at).filter(Boolean).sort().pop()||null,[rows]);
@@ -35,6 +35,7 @@ export default function Status(){
      <div className="fact"><div className="k">Sources</div><div className="v">{counts.ok} updated</div><div className="s">{counts.failing} failing · {counts.late} late · {counts.paused} paused · {counts.new} not run yet</div></div>
     </div>
     {gh?.failed>0&&gh.notes&&<details className="ghNotes"><summary>What failed in the last GitHub job ({gh.failed})</summary><pre>{gh.notes}</pre></details>}
+    {det&&<p className="muted small">Event details found on the web (for Instagram posts that only name the event): {det.found} of {det.tried} looked up.{det.error&&<b style={{color:"#b91c1c"}}> Web search isn't working: {String(det.error).slice(0,200)}</b>}</p>}
     <p className="muted small">Automatic runs: website sources daily ~6:00 AM; city sites + Instagram from the GitHub job about 3 times a day (GitHub often starts it an hour or more late). "Late" = no successful update in 36 hours.</p>
     <div className="statusBar"><div className="seg">{[["problems","Problems"],["all","All"],["instagram","Instagram"],["paused","Paused"],["new","Not run"]].map(([k,l])=><button key={k} className={filter===k?"active":""} onClick={()=>setFilter(k)}>{l}</button>)}</div>
      <input type="search" placeholder="Find a source" value={q} onChange={e=>setQ(e.target.value)}/><button className="linkBtn" onClick={()=>load()}>Refresh</button></div>

@@ -3,6 +3,7 @@ import {db} from "../db";
 import {ensureSchema} from "../schema";
 import {fetchRetry} from "../http";
 import {slug} from "../ingestion/utils";
+import {lookupDetails,thinSummary} from "./eventDetails";
 
 // Venue Instagram accounts (town centers, markets, breweries...) announce events that never reach a
 // city calendar. Read them through Instagram's official Business Discovery API:
@@ -168,6 +169,25 @@ export async function fetchInstagram(cfg:InstagramConfig,startDate:string,endDat
    category:family?"Family":arts?"Arts & Theatre":"Local",genre:"Venue Event",desc:(e.summary||"").trim()||`Posted by @${cfg.username}.`,
    tags:[...(family?["Family"]:[]),...(e.kids?["Kids"]:[]),...(arts?["Arts & Theatre"]:[]),...(e.free?["Free"]:[]),"Local"],
    emoji:family?"🎉":arts?"🎨":"📍",source:cfg.source,isFree:e.free===true||undefined,eventType:"event"});
+ }
+ // Flyers that only name the event: look it up on the web for the official page and a real description.
+ // Soonest first, a few per account per run (each look-up is cached, so the rest are done on later runs).
+ const thin=out.filter(e=>thinSummary(e.title,e.desc&&!/^Posted by @/.test(e.desc)?e.desc:"")).sort((a,b)=>a.date.localeCompare(b.date)).slice(0,Number(process.env.EVENT_DETAILS_PER_ACCOUNT||4));
+ for(const e of thin){
+  try{
+   const d=await lookupDetails({title:e.title,date:e.date,city:cfg.city,place:e.venue!==cfg.venue?e.venue:undefined,account:cfg.username});
+   if(!d)continue;
+   if(d.summary&&d.summary.length>40)e.desc=d.summary.trim().slice(0,1000);
+   if(d.url){e.url=d.url}
+   const t=(x?:string)=>x&&/^\d{2}:\d{2}$/.test(x)?x+":00":undefined;
+   if(!e.time&&t(d.start))e.time=t(d.start)!;
+   if(!e.endTime&&t(d.end)&&e.time&&t(d.end)!>e.time)e.endTime=t(d.end);
+   // The post named no place (we fell back to the account's home venue): use the event page's place.
+   if(d.place&&(e.venue===cfg.venue||!e.venue)&&d.place.trim()!==cfg.venue){e.venue=d.place.trim().slice(0,120);e.address=d.address||undefined}
+   else if(d.address&&!e.address)e.address=d.address;
+   if(d.free===true){e.isFree=true;if(!e.tags.includes("Free"))e.tags.push("Free")}
+   if(d.kids===true&&!e.tags.includes("Kids"))e.tags.push("Kids");
+  }catch(err:any){console.log(`event details ${e.title}: ${err?.message||err}`)}
  }
  // Nothing upcoming is fine; only report a failure when posts couldn't be read.
  if(!out.length&&errors>0&&errors>=recent.length/2)throw new Error(`@${cfg.username}: ${posts.length} posts read, ${found.length} dated events found, none in ${startDate}..${endDate}${errors?`; ${errors} posts failed (${firstError.slice(0,200)})`:""}${process.env.ANTHROPIC_API_KEY?"":"; ANTHROPIC_API_KEY not set (captions only)"}`);
