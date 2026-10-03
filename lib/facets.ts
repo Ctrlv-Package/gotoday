@@ -16,7 +16,7 @@ const SPORTS=/\b(sports?|football|soccer|baseball|softball|basketball|volleyball
 const NOT_SPORTS=/\b(board games?|video games?|gaming|minecraft|trivia)\b/i;
 const KIDS=/\b(kids?|children'?s?|child|toddlers?|bab(y|ies)|infants?|preschool(ers)?|pre-k|storytimes?|story time|tweens?|teens?|youth|junior|jr\.?|lil|little ones|homeschool|camp|lego|perler|minecraft|sensory)\b/i;
 const KID_TAGS=/^(kids|children|toddlers|preschool|babies|tweens?|teens?|young adult|storytime|story time|tween \(|children \(|youth)/i;
-const FAMILY=/\b(famil(y|ies)|all ages|everyone|kids|children|parents?|festival|fest|fair|parade|carnival|halloween|trunk[- ]or[- ]treat|pumpkin|egg hunt|movie night|movie in the park|open house|celebration|block party|oktoberfest|bow ?wow|ween|boo|costume|dogs?|pets?|petting zoo|pony|zoo|farm|picnic|egg|santa|tree lighting|fireworks)\b/i;
+const FAMILY=/\b(famil(y|ies)|all ages|everyone|kids|children|parents?|festival|fest|fair|parade|carnival|halloween|trunk[- ]or[- ]treat|pumpkin|egg hunt|movie night|movie in the park|open house|celebration|block party|oktoberfest|bow ?wow|ween|boo|costume|dogs?|pets?|petting zoo|pony|zoo|petting|picnic|santa|tree lighting|fireworks)\b/i;
 const FAMILY_TAGS=/^(family|families|all ages|everyone)$/i;
 const ADULT=/\b(adults?|21\+|18\+|seniors?|older adults|55\+|50\+|wine|beer|brew(ery|ing)?|cocktails?|margarita|happy hour|bar crawl|pub|networking|career|job fair|resume|medicare|retirement|wealth|investing|taxes|estate planning|book club|singles|ladies night|date night)\b/i;
 const ADULT_TAGS=/^(adults?|adult \(|new adults|older adults|seniors|21\+|18\+)/i;
@@ -48,7 +48,9 @@ export function facetsFor(e:In):Facet[]{
  const adultOnly=ageMin!=null&&ageMin>=18;
  const kidAges=ageMax!=null&&ageMax<=17;
  const kids=!adultOnly&&(kidAges||has(KIDS,t)||tagHas(KID_TAGS)&&!tagHas(/^local$/i)||(has(KIDS,d)&&!has(ADULT,t)));
- if(kids)out.add("Kids");
+ // Big family events (festivals, open houses, Halloween, "all ages") are great for kids too.
+ const familyEvent=!adultOnly&&!has(ADULT,t)&&(has(FAMILY,t)||tagHas(/^(families|all ages|everyone)$/i)||has(/\b(famil(y|ies)|all ages|kids|children)\b/i,d));
+ if(kids||familyEvent)out.add("Kids");
  // Family = fine to bring the kids. Adult-themed titles never count; city and parks events count
  // unless they say otherwise; libraries and Ticketmaster have to say so.
  const adultish=has(ADULT,t);

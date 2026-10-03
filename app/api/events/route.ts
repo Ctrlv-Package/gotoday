@@ -47,6 +47,19 @@ function windowDates(range:string,today:string){
 }
 const TM_JUNK=/^(luxury|premium|club)\s*(&|and)?\s*suites?\b|\bsuites?:|\bparking\b/i;
 
+/** Two listings of the same event: keep the first, fill its gaps (photo, real description, facets) from the other. */
+const thinDesc=(d:string)=>!d||/^Official .* event\.$/.test(d)||d.length<40;
+function mergeCopy(keep:any,other:any){
+ const m={...keep};
+ if(!m.image&&other.image)m.image=other.image;
+ if(thinDesc(m.desc)&&!thinDesc(other.desc||""))m.desc=other.desc;
+ m.facets=[...new Set([...(m.facets||[]),...(other.facets||[])])];
+ if(!(m.labels||[]).length&&(other.labels||[]).length)m.labels=other.labels;
+ if(!m.isFree&&other.isFree)m.isFree=true;
+ if(m.ageMin==null&&other.ageMin!=null){m.ageMin=other.ageMin;m.ageMax=other.ageMax}
+ return m;
+}
+
 export async function GET(request:NextRequest){
  const p=request.nextUrl.searchParams,postalCode=p.get("postalCode")||"33326",radius=Math.min(100,Math.max(1,Number(p.get("radius"))||25)),range=p.get("range")||"today";
  const clientToday=p.get("today"),today=clientToday&&/^\d{4}-\d{2}-\d{2}$/.test(clientToday)?clientToday:todayIn(DEFAULT_TZ);
@@ -80,6 +93,8 @@ export async function GET(request:NextRequest){
    distanceMiles:Math.round(d*10)/10,distanceAccuracy:acc};
   if(e.source==="Ticketmaster"&&TM_JUNK.test(e.title))continue;
   if(discoveryRejection({...e,isDiscoveryEligible:e.source==="Ticketmaster"?true:undefined}))continue;
+  // Instagram photo links are signed and stop working after a few days (the "oe" value is the expiry).
+  {const oe=/cdninstagram\.com|fbcdn\.net/.test(e.image)&&e.image.match(/[?&]oe=([0-9A-Fa-f]{8})/);if(oe&&parseInt(oe[1],16)*1000<now+3600e3)e.image=""}
   {const facets=facetsFor(e),ages=cleanAges(e);e.facets=facets;e.labels=displayTags(e,facets).slice(0,3);e.ageMin=ages.ageMin;e.ageMax=ages.ageMax}
   // "Today": hide timed events that have already ended (or started over 2 hours ago with no end time).
   if(range==="today"&&!allDay){const end=r.end_at?new Date(r.end_at).getTime():start.getTime()+2*3600e3;if(end<now)continue}
@@ -88,7 +103,7 @@ export async function GET(request:NextRequest){
  // Same program on the same day at several places (library branches, city + Ticketmaster) -> one card, nearest first.
  const groups=new Map<string,any[]>();
  for(const e of events){const k=collapseKey(e.title,e.date);const g=groups.get(k);g?g.push(e):groups.set(k,[e])}
- events=[...groups.values()].map(g=>{g.sort((a:any,b:any)=>a.distanceMiles-b.distanceMiles||((a.source==="Ticketmaster"?1:0)-(b.source==="Ticketmaster"?1:0)));const venues=new Set(g.map((x:any)=>x.venue));return{...g[0],moreLocations:venues.size-1,otherVenues:[...venues].slice(1,6)}})
+ events=[...groups.values()].map(g=>{g.sort((a:any,b:any)=>a.distanceMiles-b.distanceMiles||((a.source==="Ticketmaster"?1:0)-(b.source==="Ticketmaster"?1:0)));const venues=new Set(g.map((x:any)=>x.venue));let m={...g[0]};for(const o of g.slice(1))m=mergeCopy(m,o);return{...m,moreLocations:venues.size-1,otherVenues:[...venues].slice(1,6)}})
   .sort((a:any,b:any)=>(a.date+(a.time||"")).localeCompare(b.date+(b.time||""))||((a.source==="Ticketmaster"?1:0)-(b.source==="Ticketmaster"?1:0)));
  // An event a town posts on Instagram is often also on its calendar under a slightly different title
  // ("Fall Festival" vs "Weston Fall Festival 2026"). Keep the calendar listing, drop the Instagram copy.
@@ -102,7 +117,8 @@ export async function GET(request:NextRequest){
   return!cal.some((c:any)=>{if(c.date!==e.date)return false;
    const near=typeof c.distanceMiles==="number"&&typeof e.distanceMiles==="number"?Math.abs(c.distanceMiles-e.distanceMiles)<4:c.city===e.city;
    if(!near)return false;const cw=words(c.title);let hit=0;for(const x of w)if(cw.has(x))hit++;
-   return hit>=Math.min(2,w.size)&&hit/Math.min(w.size,cw.size||1)>=0.6});
+   if(!(hit>=Math.min(2,w.size)&&hit/Math.min(w.size,cw.size||1)>=0.6))return false;
+   Object.assign(c,mergeCopy(c,e));return true});   // keep the calendar listing, but take the post's photo and details
  });
  const localCount=events.filter((e:any)=>e.source!=="Ticketmaster").length;
  // No results: tell the page whether that's "nothing this day" or "we're not in this area yet".
