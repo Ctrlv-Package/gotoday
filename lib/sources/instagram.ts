@@ -105,11 +105,16 @@ async function askClaude(content:any[]):Promise<Extracted[]>{
  return(JSON.parse(json).events||[]).filter((e:any)=>/^\d{4}-\d{2}-\d{2}$/.test(e?.date)&&String(e?.title||"").trim());
 }
 
-async function extractWithClaude(p:Post,venue:string,city:string):Promise<Extracted[]>{
+// Round-up accounts post one event per slide in carousels, so they get every slide read (up to 6), and
+// their posts are re-read once with the newer reading (each event's own town).
+const ROUNDUPS=new Set(["miami_residents","weekendbroward","todowithkidsbroward","todowithkidsmiami"]);
+async function extractWithClaude(p:Post,venue:string,city:string,roundup=false):Promise<Extracted[]>{
  if(!process.env.ANTHROPIC_API_KEY)return captionOnly(p);
- const img=await imageBlock(imageOf(p));
+ const urls=roundup&&p.media_type==="CAROUSEL_ALBUM"?(p.children?.data||[]).filter(c=>c.media_type==="IMAGE"&&c.media_url).slice(0,6).map(c=>c.media_url!):[imageOf(p)];
+ const imgs=(await Promise.all(urls.map(u=>imageBlock(u)))).filter(Boolean);
+ const img=imgs[0];
  const text={type:"text",text:PROMPT(p,venue,city)};
- try{return await askClaude(img?[img,text]:[text])}
+ try{return await askClaude([...imgs,text])}
  catch(e:any){
   // Out of API credit or over the spend limit: fall back to the free caption reading instead of failing.
   if(/credit|billing|balance|spend|limit|quota/i.test(e?.message||""))throw new NoCredit(e.message);
@@ -129,13 +134,13 @@ export function captionOnly(p:Post):Extracted[]{
 }
 
 class NoCredit extends Error{}
-async function cached(p:Post,venue:string,city:string):Promise<Extracted[]>{
+async function cached(p:Post,venue:string,city:string,roundup=false):Promise<Extracted[]>{
  if(!process.env.ANTHROPIC_API_KEY)return captionOnly(p);   // don't cache the weaker caption-only reading
- const id=`${p.id}:v3`;   // bump when the reading logic changes, so posts are read again
+ const id=`${p.id}:${roundup?"v4":"v3"}`;   // bump when the reading logic changes, so posts are read again
  const {rows}=await db.query("select extracted from social_posts where id=$1",[id]);
  if(rows[0])return rows[0].extracted||[];
  let ev:Extracted[];
- try{ev=await extractWithClaude(p,venue,city)}
+ try{ev=await extractWithClaude(p,venue,city,roundup)}
  catch(e){if(e instanceof NoCredit)return captionOnly(p);throw e}   // not cached: read properly once credit is back
  await db.query("insert into social_posts(id,permalink,posted_at,extracted) values($1,$2,$3,$4) on conflict(id) do update set extracted=excluded.extracted",[id,p.permalink,p.timestamp,JSON.stringify(ev)]);
  return ev;
@@ -159,7 +164,7 @@ export async function fetchInstagram(cfg:InstagramConfig,startDate:string,endDat
  let next=0;
  await Promise.all(Array.from({length:Math.min(3,recent.length)},async()=>{
   while(next<recent.length){const i=next++;const p=recent[i];
-   try{results[i]=await cached(p,cfg.venue,cfg.city)}catch(e:any){results[i]=[];errors++;firstError||=String(e?.message||e);console.log(`instagram ${cfg.username} post ${p.id}: ${e?.message||e}`)}}
+   try{results[i]=await cached(p,cfg.venue,cfg.city,ROUNDUPS.has(cfg.username))}catch(e:any){results[i]=[];errors++;firstError||=String(e?.message||e);console.log(`instagram ${cfg.username} post ${p.id}: ${e?.message||e}`)}}
  }));
  recent.forEach((p,i)=>{for(const e of results[i]||[])found.push({...e,post:p})});
  const key=(e:Extracted)=>`${e.date}|${slug(e.title).split("-").filter(w=>w.length>2).slice(0,2).join("-")}`;
