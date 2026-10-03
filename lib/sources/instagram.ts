@@ -14,7 +14,7 @@ import {freeLookup,captionSites} from "./freeDetails";
 // results are cached in social_posts so reruns cost nothing. Without ANTHROPIC_API_KEY, captions only.
 
 export type InstagramConfig={username:string;source:string;idPrefix:string;city:string;venue:string;address?:string;tz?:string;maxAgeDays?:number};
-type Extracted={place?:string;title:string;date:string;start?:string;end?:string;summary?:string;free?:boolean;kids?:boolean;cancelled?:boolean};
+type Extracted={place?:string;town?:string;title:string;date:string;start?:string;end?:string;summary?:string;free?:boolean;kids?:boolean;cancelled?:boolean};
 type Post={id:string;caption?:string;media_type:string;media_url?:string;thumbnail_url?:string;permalink:string;timestamp:string;children?:{data:{media_url?:string;media_type:string}[]}};
 
 const GRAPH="https://graph.facebook.com/v26.0";
@@ -67,13 +67,15 @@ List the dated, public, in-person events this post announces in or near ${city},
 Rules:
 - Only events with a specific calendar date. Resolve weekday/month-only dates relative to the posting date (never earlier than it).
 - Recurring series: list each date it states, up to 8.
+- Round-up posts (a list or calendar of many events): list every event in it, each with its own place. Keep "summary" short (one sentence).
 - Skip sales, promotions, store openings without an event, giveaways, and vague "coming soon" posts.
 - Skip government business: commission/council/board meetings, hearings, budget workshops, road closures, service notices, job fairs for city jobs.
 - "place": the venue or park name (and street address if shown), e.g. "Vista Park, 4001 Southwest 142nd Ave". Omit if not stated.
+- "town": the city the event is in, if the post says (e.g. "Plantation"). Omit if not stated.
 - If the post says an event is cancelled or moved, list the original date with "cancelled": true and the new date as a normal event.
 - Use a short, stable title (e.g. "Artisan Market", not "Fall Artisan Market is back!").
 - "kids": true when children are welcome and it suits them: family/community events, all-ages festivals, open houses, kids in the photo or flyer, kid activities. false only for adult events (21+, bars, wine/beer, business networking). null if you truly cannot tell.
-Reply with JSON only: {"events":[{"title":"","date":"YYYY-MM-DD","start":"HH:MM","end":"HH:MM","place":"","summary":"one or two sentences","free":true|false|null,"kids":true|false|null,"cancelled":false}]} — omit start/end when not stated.`;
+Reply with JSON only: {"events":[{"title":"","date":"YYYY-MM-DD","start":"HH:MM","end":"HH:MM","place":"","town":"","summary":"one or two sentences","free":true|false|null,"kids":true|false|null,"cancelled":false}]} — omit start/end when not stated.`;
 
 /** Instagram's image links are signed CDN URLs that outside services may not be allowed to open, so download
  *  the flyer here and send the bytes. */
@@ -90,7 +92,7 @@ async function askClaude(content:any[]):Promise<Extracted[]>{
  // Many accounts are read in one run: wait out rate limits instead of failing the post.
  for(let attempt=0;attempt<5;attempt++){
   r=await fetchRetry("https://api.anthropic.com/v1/messages",{method:"POST",headers:{"content-type":"application/json","x-api-key":process.env.ANTHROPIC_API_KEY!,"anthropic-version":"2023-06-01"},
-   body:JSON.stringify({model:MODEL,max_tokens:1500,messages:[{role:"user",content}]})},1);
+   body:JSON.stringify({model:MODEL,max_tokens:4096,messages:[{role:"user",content}]})},1);
   d=await r.json().catch(()=>({}));
   if(r.status!==429&&r.status!==529&&r.status<500)break;
   const wait=Math.min(40,Number(r.headers.get("retry-after"))||8*(attempt+1));
@@ -169,7 +171,8 @@ export async function fetchInstagram(cfg:InstagramConfig,startDate:string,endDat
   const arts=/\b(music|concert|band|dj|art|artisan|craft|theat(er|re)|dance|film|movie)\b/.test(blob);
   const time=e.start&&/^\d{2}:\d{2}$/.test(e.start)?e.start+":00":"";
   const end=e.end&&/^\d{2}:\d{2}$/.test(e.end)?e.end+":00":undefined;
-  out.push({id:`${cfg.idPrefix}-${slug(e.title)}-${e.date}`,title:e.title.trim(),city:cfg.city,
+  const town=(e.town||"").trim().replace(/,?\s*(FL|Florida)$/i,"");
+  out.push({id:`${cfg.idPrefix}-${slug(e.title)}-${e.date}`,title:e.title.trim(),city:town&&/^[A-Za-z .'-]{3,40}$/.test(town)?`${town}, FL`:cfg.city,
    // City and parks accounts post events all over town: use the place the post names, else the account's own venue.
    venue:(e.place||"").split(",")[0].trim().slice(0,120)||cfg.venue,address:e.place&&/\d/.test(e.place)?e.place.split(",").slice(1).join(",").trim()||e.place:e.place?undefined:cfg.address,date:e.date,time,endTime:end&&time&&end>time?end:undefined,
    url:e.post.permalink,sourceUrl:`https://www.instagram.com/${cfg.username}/`,image:imageOf(e.post),
