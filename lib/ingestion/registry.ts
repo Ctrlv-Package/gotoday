@@ -160,6 +160,7 @@ export const SEED_SOURCES:SourceConfig[]=[
  {...civic("City of Hallandale Beach","https://www.cohb.org","Hallandale Beach, FL","broward"),params:{site:"https://www.cohb.org",city:"Hallandale Beach, FL",idPrefix:"hallandale"}},
  {...civic("Town of Davie","https://www.davie-fl.gov","Davie, FL","broward"),params:{site:"https://www.davie-fl.gov",city:"Davie, FL",idPrefix:"davie"}},
  civic("City of Margate","https://www.margatefl.com","Margate, FL","broward"),
+ civic("City of Tamarac","https://www.tamarac.gov","Tamarac, FL","broward"),   // city calendar (parks & rec events live here)
  {...civic("City of Deerfield Beach","https://www.deerfield-beach.com","Deerfield Beach, FL","broward"),params:{site:"https://www.deerfield-beach.com",city:"Deerfield Beach, FL",idPrefix:"deerfield"}},
  {name:"City of Cooper City",platform:"thrillshare",params:{orgId:30103,city:"Cooper City, FL",site:"https://www.coopercity.gov",idPrefix:"coopercity"},url:"https://www.coopercity.gov/events",priority:100,region:"broward"},
  {name:"City of Weston",platform:"govaccess",remote:true,params:{site:"https://www.westonfl.org",city:"Weston, FL",idPrefix:"weston",tilePages:["/government/parks-and-recreation/special-events"],calendarPaths:["/about/events-calendar"]},url:"https://www.westonfl.org/about/events-calendar",priority:100,region:"broward"},
