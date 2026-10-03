@@ -19,7 +19,17 @@ async function resolveBase(u:string){try{const r=await fetch(u,{method:"GET",red
 async function main(){
 base=await resolveBase(base);console.log(`GoToday site: ${base}`);
 if(process.env.USE_BROWSER!=="0"){await installBrowserFetch();console.log("Fetching city pages with headless Chrome")}
-let failures=0;const rows:string[]=[];
+let failures=0;const rows:string[]=[],problems:string[]=[];const startedAt=new Date().toISOString();
+// Send results to the site; if the site hiccups (deploy in progress, timeout), wait and try once more.
+async function push(payload:any){
+ for(let i=0;i<2;i++){
+  try{const r=await fetch(`${base}/api/ingest/push`,{method:"POST",headers:{"content-type":"application/json",authorization:`Bearer ${secret}`},body:JSON.stringify(payload),signal:AbortSignal.timeout(300000)});
+   const out=await r.json().catch(()=>({}));if(r.ok&&out.summary)return{r,out};if(i)return{r,out:{...out,error:out.error||`site answered HTTP ${r.status}`}};}
+  catch(e:any){if(i)return{r:{ok:false,status:0} as any,out:{error:`could not reach the site: ${e?.message||e}`}}}
+  await new Promise(r=>setTimeout(r,8000));
+ }
+ return{r:{ok:false,status:0} as any,out:{}};
+}
 // The source list lives in GoToday's database; ask the site which sources to fetch from here.
 const cfgRes=await fetch(`${base}/api/admin/sources?remote=1`,{headers:{authorization:`Bearer ${secret}`}});
 if(!cfgRes.ok){
@@ -44,10 +54,9 @@ for(let i=0;i<queue.length;i++){
   const msg=e?.message||String(e);
   if(!retry&&isBlock(msg)){console.log(`${s.name}: blocked (${msg.slice(0,120)}) — will retry at the end`);deferred.push({s,error:msg});queue.push({s,retry:true});continue}
   payload={source:s.name,error:msg};console.log(`${s.name}: fetch failed — ${msg}`)}
- const r=await fetch(`${base}/api/ingest/push`,{method:"POST",headers:{"content-type":"application/json",authorization:`Bearer ${secret}`},body:JSON.stringify(payload)});
- const out=await r.json().catch(()=>({}));
+ const {r,out}=await push(payload);
  console.log(`  -> ${r.status} ${JSON.stringify(out.summary||out)}`);
- const ok=r.ok&&out.summary?.status==="success";if(!ok)failures++;
+ const ok=r.ok&&out.summary?.status==="success";if(!ok){failures++;problems.push(`${s.name}: ${String(out.summary?.error||out.error||"failed").slice(0,140)}`)}
  const sm=out.summary||{};rows.push(`| ${s.name} | ${ok?"✅":"❌"} | ${sm.found??0} | ${sm.accepted??0} | ${sm.rejected??0} | ${String(sm.error||out.error||"").replace(/\|/g,"/").slice(0,160)} |`);
 }
 console.log(failures?`${failures} source(s) did not succeed`:"All remote sources succeeded");
@@ -64,8 +73,7 @@ console.log(failures?`${failures} source(s) did not succeed`:"All remote sources
     await new Promise(r=>setTimeout(r,2000));
     let payload:any;
     try{payload={source:s.name,fallback:true,events:await s.fetch(ymd(now),ymd(end))}}catch(e:any){payload={source:s.name,fallback:true,error:e?.message||String(e)}}
-    const r=await fetch(`${base}/api/ingest/push`,{method:"POST",headers:{"content-type":"application/json",authorization:`Bearer ${secret}`},body:JSON.stringify(payload)});
-    const out=await r.json().catch(()=>({})),sm=out.summary||{},ok=r.ok&&sm.status==="success";
+    const {r,out}=await push(payload);const sm=out.summary||{},ok=r.ok&&sm.status==="success";if(!ok)problems.push(`${s.name}: ${String(sm.error||out.error||"failed").slice(0,140)}`);
     console.log(`${s.name} (retry): ${ok?`${sm.accepted} events`:`failed — ${sm.error||out.error}`}`);
     fbRows.push(`| ${s.name} | ${ok?"✅":"❌"} | ${sm.accepted??0} | ${String(sm.error||out.error||"").replace(/\|/g,"/").slice(0,160)} |`);
    }
@@ -74,24 +82,28 @@ console.log(failures?`${failures} source(s) did not succeed`:"All remote sources
  }catch(e:any){console.log(`Retry step failed: ${e?.message||e}`)}
 
  // Instagram accounts: the site does the work (Instagram API + flyer reading); we just call each one, 3 at a time.
- const igRows:string[]=[];let igEvents=0,igFailed=0;
+ const igRows:string[]=[];let igEvents=0,igFailed=0,igTotal=0;
  try{
   const lr=await fetch(`${base}/api/ingest?list=instagram`,{headers:{authorization:`Bearer ${secret}`}});
   const names:string[]=((await lr.json().catch(()=>({}))).sources)||[];
-  console.log(`Instagram accounts: ${names.length}`);
+  console.log(`Instagram accounts: ${names.length}`);igTotal=names.length;if(!names.length)problems.push(`Instagram list came back empty (HTTP ${lr.status})`);
   let next=0;
   await Promise.all(Array.from({length:3},async()=>{while(next<names.length){const name=names[next++];
    try{const r=await fetch(`${base}/api/ingest?source=${encodeURIComponent(name)}`,{method:"POST",headers:{authorization:`Bearer ${secret}`},signal:AbortSignal.timeout(310000)});
     const d:any=await r.json().catch(()=>({}));const sm=d?.sources?.[0]||{status:"error",error:d?.error||`HTTP ${r.status}`};
-    const ok=sm.status==="success";if(ok)igEvents+=sm.accepted||0;else igFailed++;
+    const ok=sm.status==="success";if(ok)igEvents+=sm.accepted||0;else{igFailed++;problems.push(`${name}: ${String(sm.error||"failed").slice(0,140)}`)}
     console.log(`${name}: ${ok?`${sm.accepted} events`:`failed — ${sm.error}`}`);
     if(!ok||sm.accepted)igRows.push(`| ${name.replace(/ · Instagram$/,"")} | ${ok?"✅":"❌"} | ${sm.accepted??0} | ${String(sm.error||"").replace(/\|/g,"/").slice(0,160)} |`);
-   }catch(e:any){igFailed++;igRows.push(`| ${name} | ❌ | 0 | ${String(e?.message||e).slice(0,120)} |`)}
+   }catch(e:any){igFailed++;problems.push(`${name}: ${String(e?.message||e).slice(0,140)}`);igRows.push(`| ${name} | ❌ | 0 | ${String(e?.message||e).slice(0,120)} |`)}
   }}));
   if(process.env.GITHUB_STEP_SUMMARY)appendFileSync(process.env.GITHUB_STEP_SUMMARY,["",`### Instagram accounts: ${names.length} checked, ${igEvents} events, ${igFailed} problems`,"","Accounts with no upcoming events aren't listed.","","| Account | OK | Events | Note |","|---|---|---|---|",...igRows,""].join("\n"));
  }catch(e:any){console.log(`Instagram step failed: ${e?.message||e}`)}
  // Show a results table on the GitHub Actions run page, and mark the run failed if any city failed.
  if(process.env.GITHUB_STEP_SUMMARY)appendFileSync(process.env.GITHUB_STEP_SUMMARY,["### Remote ingest results","","| Source | OK | Found | Accepted | Rejected | Error |","|---|---|---|---|---|---|",...rows,""].join("\n"));
+ // Tell the site how this run went (shown on the status page).
+ const total=configs.length+igTotal,bad=failures+igFailed;
+ await fetch(`${base}/api/ingest/report`,{method:"POST",headers:{"content-type":"application/json",authorization:`Bearer ${secret}`},
+  body:JSON.stringify({sources:total,succeeded:total-bad,failed:bad,startedAt,notes:problems.slice(0,25).join("\n")})}).catch(e=>console.log(`Could not send the run report: ${e?.message||e}`));
  if(failures)process.exitCode=1;
  await closeBrowserFetch();
 }

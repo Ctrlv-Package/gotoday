@@ -310,3 +310,4 @@ a.logo{text-decoration:none;color:inherit}
 }
 @media(max-width:380px){.filterCard{padding:12px}.filterCard .filters{gap:6px}.filterCard .filters select{font-size:13px;padding-left:6px}.seg.setting button{font-size:13px;padding:9px 2px}}
 .liveNow{color:#137a4b;font-weight:700}
+.ghNotes{margin:6px 0 10px;font-size:14px}.ghNotes summary{cursor:pointer;font-weight:700;color:#b91c1c}.ghNotes pre{white-space:pre-wrap;overflow-wrap:anywhere;background:var(--soft,#f4f4f5);padding:10px 12px;border-radius:10px;font-size:12px;max-height:260px;overflow:auto}

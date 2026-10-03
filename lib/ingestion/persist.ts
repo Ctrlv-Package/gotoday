@@ -29,7 +29,8 @@ export async function runSource(s:EventSource,getRaw:()=>Promise<EventRecord[]>)
   const raw=await getRaw();
   found=raw.length;
   // An Instagram account with no upcoming events is normal; a calendar feed returning nothing usually means it broke.
-  if(found===0&&s.platform!=="instagram")throw new Error("Source returned zero records; treating as ingestion failure instead of success");
+  // Riverwalk's own calendar often goes empty between seasons (its Instagram covers it), so zero is fine there too.
+  if(found===0&&s.platform!=="instagram"&&s.platform!=="riverwalk")throw new Error("Source returned zero records; treating as ingestion failure instead of success");
   const good:EventRecord[]=[];
   for(const item of raw){
    const e=normalize(item);e.eventType=classifyEventType(e);

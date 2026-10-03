@@ -29,6 +29,9 @@ const STATEMENTS=[
  `create unique index if not exists rsvps_event_name_idx on rsvps(community_event_id,lower(name))`,
  // One row per full ingest (scheduled or manual) so the status page can show when the daily update last ran.
  `create table if not exists ingest_log(id serial primary key,trigger text,sources int,succeeded int,failed int,started_at timestamptz default now(),finished_at timestamptz)`,
+ `alter table ingest_log add column if not exists notes text`,
+ // Personal (not business) Instagram accounts can't be read; their towns' official accounts cover them.
+ `delete from source_configs where name in ('Lake Eola · Instagram','Pines City Center · Instagram','Tamarac Parks & Rec · Instagram')`,
  // CivicPlus-hosted city sites block Vercel's servers: fetch them all from the GitHub job instead.
  `update source_configs set remote=true,updated_at=now() where platform='civicplus' and remote=false`,
  // Temple Terrace's parks account is @ttleisureservices (the earlier handle wasn't readable): switch and un-pause.

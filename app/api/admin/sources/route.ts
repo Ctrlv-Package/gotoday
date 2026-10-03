@@ -18,8 +18,9 @@ export async function GET(req:NextRequest){
  const {rows}=await db.query(`select s.name,s.last_success_at,s.last_error_at,s.last_error,count(e.id) filter (where e.status='active')::int as active_events
   from sources s left join events e on e.source_id=s.id group by s.id`);
  const status=new Map(rows.map((r:any)=>[r.name,r]));
- const lastRun=(await db.query("select * from ingest_log order by id desc limit 1").catch(()=>({rows:[]}))).rows[0]||null;
- return NextResponse.json({ok:true,lastRun,sources:configs.map(c=>({...c,status:status.get(c.name)||null})),platforms:Object.fromEntries(Object.entries(PLATFORMS).map(([k,v])=>[k,{describe:v.describe,params:v.params}]))});
+ const lastRun=(await db.query("select * from ingest_log where trigger<>'github' order by id desc limit 1").catch(()=>({rows:[]}))).rows[0]||null;
+ const lastGithub=(await db.query("select * from ingest_log where trigger='github' order by id desc limit 1").catch(()=>({rows:[]}))).rows[0]||null;
+ return NextResponse.json({ok:true,lastRun,lastGithub,sources:configs.map(c=>({...c,status:status.get(c.name)||null})),platforms:Object.fromEntries(Object.entries(PLATFORMS).map(([k,v])=>[k,{describe:v.describe,params:v.params}]))});
 }
 
 // POST /api/admin/sources  {name, platform, params, url?, region?, timezone?, remote?, enabled?, priority?, source_type?, test?}
