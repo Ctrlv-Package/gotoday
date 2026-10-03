@@ -22,6 +22,28 @@ function nextWeekendLabel(){
  return m(sat)===m(sun)?`${m(sat)} ${sat.getUTCDate()}–${sun.getUTCDate()}`:`${m(sat)} ${sat.getUTCDate()} – ${m(sun)} ${sun.getUTCDate()}`;
 }
 function detailHref(e:EventItem){return e.source==="Ticketmaster"?(e.url||"#"):e.source==="GoToday Community"&&e.url?e.url:"/events/"+encodeURIComponent(e.id||"")}
+// Card art. Photos close to the card's shape fill it; flyers, posters and odd crops are shown whole
+// over a blurred copy of themselves, so nothing important (faces, text) gets cut off.
+function fitPic(img:HTMLImageElement){const r=img.naturalWidth/(img.naturalHeight||1);img.parentElement?.classList.toggle("whole",!(r>1.45&&r<2.1))}
+// No image: a themed tile picked from what the event is about, same size as a photo.
+const ART:[RegExp,string,string][]=[
+ [/story ?time|book|librar|read|author|poet|writ/i,"📚","linear-gradient(135deg,#e0e7ff,#ede9fe)"],
+ [/music|concert|jazz|band|orchestra|sing|choir|dj|piano|guitar/i,"🎵","linear-gradient(135deg,#fce7f3,#ede9fe)"],
+ [/art|paint|craft|draw|exhibit|museum|gallery|photo/i,"🎨","linear-gradient(135deg,#fef3c7,#fce7f3)"],
+ [/lego|stem|science|code|coding|robot|tech|computer|maker/i,"🧪","linear-gradient(135deg,#cffafe,#e0e7ff)"],
+ [/yoga|fitness|run|5k|walk|sport|soccer|basket|swim|tennis|pickle|golf/i,"🏃","linear-gradient(135deg,#dcfce7,#cffafe)"],
+ [/market|farmer|food|cook|bake|taste|wine|beer|brunch/i,"🧺","linear-gradient(135deg,#ffedd5,#fef3c7)"],
+ [/movie|film|cinema|screening/i,"🎬","linear-gradient(135deg,#e5e7eb,#e0e7ff)"],
+ [/game|chess|trivia|bingo|puzzle|video ?game/i,"🎲","linear-gradient(135deg,#ede9fe,#cffafe)"],
+ [/garden|nature|park|hike|bird|beach|outdoor|eco|plant/i,"🌿","linear-gradient(135deg,#dcfce7,#fef9c3)"],
+ [/baby|toddler|kid|child|family|teen|tween/i,"🧸","linear-gradient(135deg,#fef3c7,#dcfce7)"],
+ [/dance|ballet|salsa|zumba/i,"💃","linear-gradient(135deg,#fce7f3,#ffedd5)"],
+ [/history|civic|scavenger|tour|heritage|lecture|class|workshop|learn/i,"🏛️","linear-gradient(135deg,#e0e7ff,#dcfce7)"],
+ [/halloween|pumpkin|trick|costume/i,"🎃","linear-gradient(135deg,#ffedd5,#ede9fe)"],
+ [/festival|party|celebrat|parade|fair|oktoberfest/i,"🎉","linear-gradient(135deg,#fce7f3,#fef3c7)"],
+];
+function artFor(e:EventItem){const t=`${e.title} ${e.category||""} ${e.genre||""} ${(e.tags||[]).join(" ")}`;
+ const hit=ART.find(([re])=>re.test(t));return hit?{icon:hit[1],bg:hit[2]}:{icon:"📍",bg:"linear-gradient(135deg,#ede9fe,#fce7f3)"}}
 const store={get:(k:string)=>{try{return localStorage.getItem(k)}catch{return null}},set:(k:string,v:string)=>{try{localStorage.setItem(k,v)}catch{}}};
 
 export default function Home(){
@@ -168,9 +190,10 @@ export default function Home(){
    {!soon&&<div className="resultsHead"><div className="kicker">NEAR {where.toUpperCase()}</div><h2>{loading?"Searching…":`${filtered.length} thing${filtered.length===1?"":"s"} to do`}</h2></div>}
 
    <div className="grid">{filtered.map((e,i)=><article className="card" key={e.id||e.title+i}>
-    <a className={e.image?"pic":"pic noimg"} href={detailHref(e)} target={e.source==="Ticketmaster"?"_blank":undefined} rel="noreferrer" aria-hidden tabIndex={-1}>
-     {e.image?<img src={e.image} alt="" loading="lazy" referrerPolicy="no-referrer" onError={x=>{x.currentTarget.style.display="none";const n=x.currentTarget.nextElementSibling as HTMLElement|null;if(n)n.style.display="flex"}}/>:null}
-     <span style={e.image?{display:"none"}:undefined}>{e.emoji||"🎟️"}</span>
+    <a className={e.image?"pic":"pic noimg"} style={e.image?undefined:{background:artFor(e).bg}} href={detailHref(e)} target={e.source==="Ticketmaster"?"_blank":undefined} rel="noreferrer" aria-hidden tabIndex={-1}>
+     {e.image?<><img className="picBlur" src={e.image} alt="" loading="lazy" referrerPolicy="no-referrer"/>
+      <img className="picMain" src={e.image} alt="" loading="lazy" referrerPolicy="no-referrer" onLoad={x=>fitPic(x.currentTarget)} onError={x=>{const a=x.currentTarget.parentElement as HTMLElement;a.classList.add("noimg");a.style.background=artFor(e).bg;a.querySelectorAll("img").forEach(i=>i.remove());const n=a.querySelector("span") as HTMLElement|null;if(n)n.style.display="flex"}}/></>:null}
+     <span style={e.image?{display:"none"}:undefined}><i>{artFor(e).icon}</i></span>
      {e.isFree&&<em className="freeBadge">Free</em>}
     </a>
     <div className="cardBody">
