@@ -15,7 +15,7 @@ nav{display:flex;justify-content:space-between;align-items:center;max-width:1180
 .eyebrow{letter-spacing:2px;font-size:11px;font-weight:800;color:var(--accent)}
 .hero h1{font-size:clamp(38px,9vw,80px);line-height:.98;letter-spacing:-1.5px;margin:10px 0 12px;font-weight:900}
 .hero h1 span{display:block;color:var(--accent)}
-.heroLead{font-size:16px;line-height:1.5;color:var(--body);margin:0 auto 20px;max-width:520px}
+.heroLead{font-size:16px;line-height:1.5;color:var(--body);margin:0 auto 20px;max-width:520px;text-wrap:balance}
 .searchRow{display:flex;gap:6px;background:#fff;padding:6px;border:1px solid var(--line);border-radius:16px;box-shadow:0 12px 36px rgba(39,39,42,.08)}
 .searchRow input{flex:1;min-width:0;border:0;padding:12px 12px;outline:0;font-size:18px;background:transparent;letter-spacing:1px}
 .searchRow .go{border:0;background:var(--ink);color:#fff;padding:0 20px;border-radius:11px;font-weight:800}
@@ -256,10 +256,17 @@ html,body{overflow-x:clip}
 .errText{color:#991b1b;font-size:13px;margin-top:4px;overflow-wrap:anywhere}
 .statusBar .seg{max-width:100%;overflow-x:auto;flex-wrap:nowrap}.statusBar .seg button{white-space:nowrap}
 a.logo{text-decoration:none;color:inherit}
-/* Fresh page: no area chosen yet */
-.content.start{text-align:center;padding-top:40px!important;padding-bottom:56px;margin-top:28px}
-.content.start .startIcon{font-size:40px;line-height:1}
-.content.start h2{margin:10px 0 6px;font-size:26px;letter-spacing:-.4px}
-.content.start p{margin:0 auto 22px;max-width:460px;color:var(--muted,#71717a);line-height:1.5}
-.content.start .label{margin-top:4px}
-.content.start .startAreas{justify-content:center;flex-wrap:wrap}
+/* Fresh page: no area chosen yet. Area buttons sit in an even grid (2 across on phones, 4 on wider
+   screens) so every row lines up and the block stays centred. */
+.content.start{text-align:center;padding:28px 16px 56px;margin-top:8px}
+.content.start .startIcon{font-size:34px;line-height:1}
+.content.start h2{margin:10px 0 8px;font-size:24px;letter-spacing:-.4px;text-wrap:balance}
+.content.start p{margin:0 auto 24px;max-width:420px;color:var(--muted,#71717a);line-height:1.5;text-wrap:balance}
+.content.start .label{margin:0 0 12px;text-align:center}
+.content.start .startAreas{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;max-width:420px;margin:0 auto;padding:0;overflow:visible}
+.content.start .startAreas button{width:100%;padding:12px 8px;text-align:center;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+@media(min-width:720px){
+ .content.start{padding-top:36px}
+ .content.start h2{font-size:28px}
+ .content.start .startAreas{grid-template-columns:repeat(4,minmax(0,1fr));max-width:720px}
+}

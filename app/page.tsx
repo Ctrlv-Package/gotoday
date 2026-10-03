@@ -146,7 +146,7 @@ export default function Home(){
    <div className="heroContent">
     <div className="eyebrow">EXPLORE MORE. TODAY.</div>
     <h1>Find your <span>next thing.</span></h1>
-    <p className="heroLead">Free and local things happening near you — from library storytimes to park concerts.</p>
+    <p className="heroLead">Free and local things happening near you&nbsp;— from library storytimes to park concerts.</p>
     <form className="searchRow" onSubmit={ev=>{ev.preventDefault();submitZip()}}>
      <input inputMode="numeric" autoComplete="postal-code" maxLength={5} aria-label="ZIP code" value={zip} onChange={e=>setZip(e.target.value.replace(/\D/g,""))} placeholder="ZIP code"/>
      <button type="submit" className="go">{loading?"…":"Search"}</button>
