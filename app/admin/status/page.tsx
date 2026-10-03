@@ -35,7 +35,7 @@ export default function Status(){
      <div className="fact"><div className="k">Sources</div><div className="v">{counts.ok} updated</div><div className="s">{counts.failing} failing · {counts.late} late · {counts.paused} paused · {counts.new} not run yet</div></div>
     </div>
     {gh?.failed>0&&gh.notes&&<details className="ghNotes"><summary>What failed in the last GitHub job ({gh.failed})</summary><pre>{gh.notes}</pre></details>}
-    {det&&<p className="muted small">Event details found on the web (for Instagram posts that only name the event): {det.found} of {det.tried} looked up.{det.error&&<b style={{color:"#b91c1c"}}> Web search isn't working: {String(det.error).slice(0,200)}</b>}</p>}
+    {det&&<p className="muted small">Event details found on the web for Instagram posts that only name the event (free: the post's links and the account's website): {det.found} of {det.tried} looked up.{det.error&&<b style={{color:"#b91c1c"}}> Web search isn't working: {String(det.error).slice(0,200)}</b>}</p>}
     <p className="muted small">Automatic runs: website sources daily ~6:00 AM; city sites + Instagram from the GitHub job about 3 times a day (GitHub often starts it an hour or more late). "Late" = no successful update in 36 hours.</p>
     <div className="statusBar"><div className="seg">{[["problems","Problems"],["all","All"],["instagram","Instagram"],["paused","Paused"],["new","Not run"]].map(([k,l])=><button key={k} className={filter===k?"active":""} onClick={()=>setFilter(k)}>{l}</button>)}</div>
      <input type="search" placeholder="Find a source" value={q} onChange={e=>setQ(e.target.value)}/><button className="linkBtn" onClick={()=>load()}>Refresh</button></div>

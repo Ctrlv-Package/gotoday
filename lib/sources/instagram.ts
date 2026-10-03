@@ -4,6 +4,7 @@ import {ensureSchema} from "../schema";
 import {fetchRetry} from "../http";
 import {slug} from "../ingestion/utils";
 import {lookupDetails,thinSummary} from "./eventDetails";
+import {freeLookup,captionSites} from "./freeDetails";
 
 // Venue Instagram accounts (town centers, markets, breweries...) announce events that never reach a
 // city calendar. Read them through Instagram's official Business Discovery API:
@@ -45,15 +46,15 @@ async function accessToken():Promise<string|undefined>{
 }
 
 class AccountMissing extends Error{}
-async function loadPosts(username:string):Promise<Post[]>{
+async function loadPosts(username:string):Promise<{posts:Post[];website:string}>{
  const token=await accessToken(),me=process.env.IG_USER_ID;
  if(!token||!me)throw new Error("Instagram not connected yet (set IG_USER_ID and IG_ACCESS_TOKEN in Vercel)");
- const fields=`business_discovery.username(${username}){media.limit(15){id,caption,media_type,media_url,thumbnail_url,permalink,timestamp,children{media_url,media_type}}}`;
+ const fields=`business_discovery.username(${username}){website,media.limit(15){id,caption,media_type,media_url,thumbnail_url,permalink,timestamp,children{media_url,media_type}}}`;
  const r=await fetchRetry(`${GRAPH}/${me}?fields=${encodeURIComponent(fields)}&access_token=${encodeURIComponent(token)}`,{cache:"no-store"});
  const d:any=await r.json().catch(()=>({}));
  if(!r.ok){if(d?.error?.code===190)tokenCache=null;
   if(/cannot be found|does not exist|invalid user id|not.*business/i.test(d?.error?.message||"")||d?.error?.error_subcode===2207013)throw new AccountMissing(`@${username} isn't a public business/creator account on Instagram (or the handle changed)`);throw new Error(`Instagram API: ${d?.error?.message||`HTTP ${r.status}`}${d?.error?.code===190?" — the Instagram key expired; generate a new one and update IG_ACCESS_TOKEN in Vercel":""}`)}
- return d?.business_discovery?.media?.data||[];
+ return{posts:d?.business_discovery?.media?.data||[],website:d?.business_discovery?.website||""};
 }
 
 const imageOf=(p:Post)=>p.media_type==="VIDEO"?p.thumbnail_url:p.media_type==="CAROUSEL_ALBUM"?(p.children?.data.find(c=>c.media_type==="IMAGE")?.media_url||p.media_url):p.media_url;
@@ -134,8 +135,8 @@ async function cached(p:Post,venue:string,city:string):Promise<Extracted[]>{
 
 export async function fetchInstagram(cfg:InstagramConfig,startDate:string,endDate:string):Promise<EventRecord[]>{
  await ensureSchema();
- let posts:Post[];
- try{posts=await loadPosts(cfg.username)}
+ let posts:Post[],website="";
+ try{({posts,website}=await loadPosts(cfg.username))}
  catch(e){
   // A wrong or private handle can't be read: switch the source off so it stops failing every run.
   if(e instanceof AccountMissing){await db.query("update source_configs set enabled=false,updated_at=now() where name=$1",[cfg.source]).catch(()=>{});throw new Error(`${e.message}. Source paused.`)}
@@ -175,7 +176,12 @@ export async function fetchInstagram(cfg:InstagramConfig,startDate:string,endDat
  const thin=out.filter(e=>thinSummary(e.title,e.desc&&!/^Posted by @/.test(e.desc)?e.desc:"")).sort((a,b)=>a.date.localeCompare(b.date)).slice(0,Number(process.env.EVENT_DETAILS_PER_ACCOUNT||4));
  for(const e of thin){
   try{
-   const d=await lookupDetails({title:e.title,date:e.date,city:cfg.city,place:e.venue!==cfg.venue?e.venue:undefined,account:cfg.username});
+   // Free first: the sites the post links to and the account's own website. The paid web search only
+   // runs if EVENT_DETAILS_WEB_SEARCH=on is set in Vercel (off by default).
+   const post=found.find(f=>`${cfg.idPrefix}-${slug(f.title)}-${f.date}`===e.id)?.post;
+   let d=await freeLookup({title:e.title,date:e.date,city:cfg.city,sites:[...captionSites(post?.caption||""),...(website?[website]:[])]});
+   // Already-paid look-ups are still used from the cache; new ones only when switched on.
+   if(!d)d=await lookupDetails({title:e.title,date:e.date,city:cfg.city,place:e.venue!==cfg.venue?e.venue:undefined,account:cfg.username},process.env.EVENT_DETAILS_WEB_SEARCH!=="on");
    if(!d)continue;
    if(d.summary&&d.summary.length>40)e.desc=d.summary.trim().slice(0,1000);
    if(d.url){e.url=d.url}

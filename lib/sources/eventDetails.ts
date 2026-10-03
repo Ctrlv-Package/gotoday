@@ -25,13 +25,13 @@ Reply with JSON only:
 {"found":true|false,"url":"https://...","summary":"2–3 plain sentences: what it is and what there is to do","start":"HH:MM","end":"HH:MM","place":"venue name","address":"street, city","free":true|false|null,"kids":true|false|null}
 Omit fields you don't know.`;
 
-export async function lookupDetails(a:Ask):Promise<Details|null>{
- if(!process.env.ANTHROPIC_API_KEY||searchUnavailable)return null;
+export async function lookupDetails(a:Ask,cacheOnly=false):Promise<Details|null>{
  await ensureSchema();
  const key=`${slug(a.title)}|${a.date}|${slug(a.city)}`;
  const {rows}=await db.query("select data,created_at from event_details where key=$1",[key]);
  // A miss is retried after 2 days (the page may be posted later); a hit is kept.
  if(rows[0]&&(rows[0].data?.found||Date.now()-new Date(rows[0].created_at).getTime()<2*86400e3))return rows[0].data?.found?rows[0].data:null;
+ if(cacheOnly||!process.env.ANTHROPIC_API_KEY||searchUnavailable)return null;
  let r!:Response,d:any={};
  for(let attempt=0;attempt<3;attempt++){
   r=await fetchRetry("https://api.anthropic.com/v1/messages",{method:"POST",headers:{"content-type":"application/json","x-api-key":process.env.ANTHROPIC_API_KEY!,"anthropic-version":"2023-06-01"},
