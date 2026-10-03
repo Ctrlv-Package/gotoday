@@ -311,3 +311,23 @@ a.logo{text-decoration:none;color:inherit}
 @media(max-width:380px){.filterCard{padding:12px}.filterCard .filters{gap:6px}.filterCard .filters select{font-size:13px;padding-left:6px}.seg.setting button{font-size:13px;padding:9px 2px}}
 .liveNow{color:#137a4b;font-weight:700}
 .ghNotes{margin:6px 0 10px;font-size:14px}.ghNotes summary{cursor:pointer;font-weight:700;color:#b91c1c}.ghNotes pre{white-space:pre-wrap;overflow-wrap:anywhere;background:var(--soft,#f4f4f5);padding:10px 12px;border-radius:10px;font-size:12px;max-height:260px;overflow:auto}
+
+/* Add-to-calendar menu.
+   Phones: a sheet that slides up from the bottom, full width, so it never runs off the screen.
+   Larger screens: a small menu anchored to the button (centered under/over the icon on cards). */
+.calBackdrop{display:none}
+.calHead{display:none}
+@media(max-width:719px){
+ .calBackdrop{display:block;position:fixed;inset:0;background:rgba(24,24,27,.38);z-index:60;animation:calFade .15s ease-out}
+ .calMenu,.cal.compact .calMenu{position:fixed;left:0;right:0;bottom:0;top:auto;min-width:0;z-index:61;border-radius:22px 22px 0 0;border:0;
+  padding:8px 12px calc(14px + env(safe-area-inset-bottom));box-shadow:0 -10px 40px rgba(24,24,27,.18);animation:calUp .2s ease-out}
+ .calHead{display:flex;align-items:center;justify-content:space-between;padding:10px 12px 8px;border-bottom:1px solid var(--line);margin-bottom:4px}
+ .calHead b{font-size:17px}
+ .calHead button{border:0;background:none;color:var(--accent);font-weight:700;font-size:15px;padding:6px 2px}
+ .calMenu a{padding:13px 12px}
+}
+@media(min-width:720px){
+ .cal.compact .calMenu{left:50%;right:auto;transform:translateX(-50%)}
+}
+@keyframes calUp{from{transform:translateY(100%)}to{transform:translateY(0)}}
+@keyframes calFade{from{opacity:0}to{opacity:1}}
