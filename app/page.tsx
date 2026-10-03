@@ -2,7 +2,7 @@
 import {useEffect,useMemo,useState} from "react";
 import AddToCalendar from "./components/AddToCalendar";
 
-type EventItem={id?:string;title:string;city:string;venue?:string;date?:string;time?:string;image?:string;url?:string;category?:string;genre?:string;minPrice?:number|null;desc?:string;tags?:string[];emoji?:string;source?:string;distanceMiles?:number;distanceAccuracy?:string;ageMin?:number;ageMax?:number;registration?:string;moreLocations?:number;otherVenues?:string[];isFree?:boolean;facets?:string[];labels?:string[]};
+type EventItem={id?:string;title:string;city:string;venue?:string;date?:string;time?:string;image?:string;url?:string;category?:string;genre?:string;minPrice?:number|null;desc?:string;tags?:string[];emoji?:string;source?:string;distanceMiles?:number;distanceAccuracy?:string;ageMin?:number;ageMax?:number;registration?:string;moreLocations?:number;otherVenues?:string[];isFree?:boolean;facets?:string[];labels?:string[];live?:boolean};
 
 const AGE_BANDS:[string,number,number][]=[["Babies & toddlers",0,2],["Preschool 3–5",3,5],["Ages 6–9",6,9],["Tweens 10–12",10,12],["Teens 13–17",13,17]];
 // Interest chips combine with OR; "Free" and the More-filters options always narrow the results.
@@ -218,7 +218,7 @@ export default function Home(){
     </a>
     <div className="cardBody">
      <h3><a href={detailHref(e)} target={e.source==="Ticketmaster"?"_blank":undefined} rel="noreferrer">{e.title}</a></h3>
-     <div className="meta">🗓 {fmt(e.date,e.time)}</div>
+     <div className="meta">🗓 {fmt(e.date,e.time)}{e.live&&<b className="liveNow"> · Happening now</b>}</div>
      <div className="meta">📍 {e.venue||e.city}{typeof e.distanceMiles==="number"?` · ${e.distanceMiles.toFixed(1)} mi`:""}{e.moreLocations?<b title={(e.otherVenues||[]).join(", ")}>{` · +${e.moreLocations} more location${e.moreLocations>1?"s":""}`}</b>:null}</div>
      {e.desc&&<p className="desc">{e.desc}</p>}
      {(e.tags||[]).includes("Drop-in")?<div className="hint ok">✓ Drop-in, no registration</div>:e.registration&&e.source!=="Ticketmaster"?<div className="hint">{e.registration}</div>:null}

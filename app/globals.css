@@ -309,3 +309,4 @@ a.logo{text-decoration:none;color:inherit}
  .seg.setting button{white-space:nowrap;font-size:14px}
 }
 @media(max-width:380px){.filterCard{padding:12px}.filterCard .filters{gap:6px}.filterCard .filters select{font-size:13px;padding-left:6px}.seg.setting button{font-size:13px;padding:9px 2px}}
+.liveNow{color:#137a4b;font-weight:700}

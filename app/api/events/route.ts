@@ -97,7 +97,11 @@ export async function GET(request:NextRequest){
   {const oe=/cdninstagram\.com|fbcdn\.net/.test(e.image)&&e.image.match(/[?&]oe=([0-9A-Fa-f]{8})/);if(oe&&parseInt(oe[1],16)*1000<now+3600e3)e.image=""}
   {const facets=facetsFor(e),ages=cleanAges(e);e.facets=facets;e.labels=displayTags(e,facets).slice(0,3);e.ageMin=ages.ageMin;e.ageMax=ages.ageMax}
   // "Today": hide timed events that have already ended (or started over 2 hours ago with no end time).
-  if(range==="today"&&!allDay){const end=r.end_at?new Date(r.end_at).getTime():start.getTime()+2*3600e3;if(end<now)continue}
+  // "Today": hide events that are over. Many listings give only a start time (open houses, festivals),
+  // so without an end time we assume 4 hours. Events in progress are marked "Happening now".
+  let live=false;
+  if(range==="today"&&!allDay){const end=r.end_at&&new Date(r.end_at).getTime()>start.getTime()?new Date(r.end_at).getTime():start.getTime()+4*3600e3;if(end<now)continue;live=start.getTime()<=now}
+  if(live)e.live=true;
   events.push(e);
  }
  // Same program on the same day at several places (library branches, city + Ticketmaster) -> one card, nearest first.
