@@ -70,6 +70,7 @@ Rules:
 - "place": the venue or park name (and street address if shown), e.g. "Vista Park, 4001 Southwest 142nd Ave". Omit if not stated.
 - If the post says an event is cancelled or moved, list the original date with "cancelled": true and the new date as a normal event.
 - Use a short, stable title (e.g. "Artisan Market", not "Fall Artisan Market is back!").
+- "kids": true when children are welcome and it suits them: family/community events, all-ages festivals, open houses, kids in the photo or flyer, kid activities. false only for adult events (21+, bars, wine/beer, business networking). null if you truly cannot tell.
 Reply with JSON only: {"events":[{"title":"","date":"YYYY-MM-DD","start":"HH:MM","end":"HH:MM","place":"","summary":"one or two sentences","free":true|false|null,"kids":true|false|null,"cancelled":false}]} — omit start/end when not stated.`;
 
 /** Instagram's image links are signed CDN URLs that outside services may not be allowed to open, so download
