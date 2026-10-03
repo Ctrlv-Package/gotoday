@@ -108,7 +108,10 @@ async function extractWithClaude(p:Post,venue:string,city:string):Promise<Extrac
  const img=await imageBlock(imageOf(p));
  const text={type:"text",text:PROMPT(p,venue,city)};
  try{return await askClaude(img?[img,text]:[text])}
- catch(e){if(!img)throw e;return askClaude([text])}   // image rejected: read the caption alone
+ catch(e:any){
+  // Out of API credit or over the spend limit: fall back to the free caption reading instead of failing.
+  if(/credit|billing|balance|spend|limit|quota/i.test(e?.message||""))throw new NoCredit(e.message);
+  if(!img)throw e;return askClaude([text])}   // image rejected: read the caption alone
 }
 
 /** Fallback without an AI key: a caption that names a month + day ("Sunday, Sept 27 · 4-8pm"). */
@@ -123,12 +126,15 @@ export function captionOnly(p:Post):Extracted[]{
  return[{title,date,start:t?h(t[1],t[2],t[3]||t[6]):undefined,end:t?h(t[4],t[5],t[6]):undefined,summary:c.slice(0,300)}];
 }
 
+class NoCredit extends Error{}
 async function cached(p:Post,venue:string,city:string):Promise<Extracted[]>{
  if(!process.env.ANTHROPIC_API_KEY)return captionOnly(p);   // don't cache the weaker caption-only reading
  const id=`${p.id}:v3`;   // bump when the reading logic changes, so posts are read again
  const {rows}=await db.query("select extracted from social_posts where id=$1",[id]);
  if(rows[0])return rows[0].extracted||[];
- const ev=await extractWithClaude(p,venue,city);
+ let ev:Extracted[];
+ try{ev=await extractWithClaude(p,venue,city)}
+ catch(e){if(e instanceof NoCredit)return captionOnly(p);throw e}   // not cached: read properly once credit is back
  await db.query("insert into social_posts(id,permalink,posted_at,extracted) values($1,$2,$3,$4) on conflict(id) do update set extracted=excluded.extracted",[id,p.permalink,p.timestamp,JSON.stringify(ev)]);
  return ev;
 }
