@@ -150,7 +150,8 @@ const INSTAGRAM_ACCOUNTS:SourceConfig[]=[
  ig("City of Oldsmar","Oldsmar, FL","oldsmarflorida","tampa"),
  ig("City of Safety Harbor","Safety Harbor, FL","cityofsafetyharbor","tampa"),
  // Community round-up accounts (not official): lower priority, so an official listing of the same event wins.
- {...ig("Miami Residents","Miami, FL","miami_residents","miami-dade"),source_type:"roundup",priority:70}
+ {...ig("Miami Residents","Miami, FL","miami_residents","miami-dade"),source_type:"roundup",priority:70},
+ {...ig("Weekend Broward","Fort Lauderdale, FL","weekendbroward","broward"),source_type:"roundup",priority:70}
 ];
 export const SEED_SOURCES:SourceConfig[]=[
  // ---- Broward ----
