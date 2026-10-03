@@ -8,6 +8,7 @@ const AGE_BANDS:[string,number,number][]=[["Babies & toddlers",0,2],["Preschool 
 // Interest chips combine with OR; "Free" and the More-filters options always narrow the results.
 const CHIPS=["All","Family","Kids","Adults","Free","Music","Arts & Theatre","Sports"];
 const SETTINGS=["Any","Indoor","Outdoor"];
+const AREAS:[string,string][]=[["Fort Lauderdale","33301"],["Weston","33326"],["Miami","33130"],["Boca Raton","33432"],["West Palm Beach","33401"],["Orlando","32801"],["Tampa","33602"],["St. Petersburg","33701"]];
 const RANGES=[["today","Today"],["tomorrow","Tomorrow"],["weekend","Next Weekend"]] as const;
 const TIMES=["Any time","Morning","Afternoon","Evening"];
 const DEFAULT_ZIP="33326";
@@ -47,7 +48,7 @@ function artFor(e:EventItem){const t=`${e.title} ${e.category||""} ${e.genre||""
 const store={get:(k:string)=>{try{return localStorage.getItem(k)}catch{return null}},set:(k:string,v:string)=>{try{localStorage.setItem(k,v)}catch{}}};
 
 export default function Home(){
- const[zip,setZip]=useState(DEFAULT_ZIP),[searchedZip,setSearchedZip]=useState(DEFAULT_ZIP),[coords,setCoords]=useState<{lat:number;lng:number}|null>(null);
+ const[zip,setZip]=useState(""),[searchedZip,setSearchedZip]=useState(""),[coords,setCoords]=useState<{lat:number;lng:number}|null>(null);
  const[radius,setRadius]=useState("25"),[range,setRange]=useState("today"),[selected,setSelected]=useState<string[]>([]),[ageBands,setAgeBands]=useState<string[]>([]),[moreOpen,setMoreOpen]=useState(false),[setting,setSetting]=useState("Any"),[dropIn,setDropIn]=useState(false),[spanish,setSpanish]=useState(false),[seniors,setSeniors]=useState(false);
  const[timeFilter,setTimeFilter]=useState("Any time"),[sort,setSort]=useState("Soonest"),[query,setQuery]=useState("");
  const[soon,setSoon]=useState<{place:string|null}|null>(null),[events,setEvents]=useState<EventItem[]>([]),[loading,setLoading]=useState(false),[message,setMessage]=useState(""),[toast,setToast]=useState("");
@@ -90,11 +91,11 @@ export default function Home(){
    const y=v.scrollY||0;requestAnimationFrame(()=>requestAnimationFrame(()=>window.scrollTo(0,y)));
    return;
   }
-  // Fresh page: empty ZIP box and default filters. Results still show the last area searched on this
-  // device (labelled above the list) so the page isn't blank; a ?zip= link fills the box.
-  const saved=store.get("gotoday:zip"),okUrl=fromUrl&&/^\d{5}$/.test(fromUrl)?fromUrl:null;
-  const z=okUrl||(saved&&/^\d{5}$/.test(saved)?saved:DEFAULT_ZIP);
-  setZip(okUrl||"");setSearchedZip(z);setRadius("25");load(z,"today",null,"25");setRestored(true);
+  // Fresh page: nothing searched yet. Empty ZIP box, default filters, no results until the person
+  // enters a ZIP or uses their location. A ?zip= link searches that ZIP right away.
+  const z=fromUrl&&/^\d{5}$/.test(fromUrl)?fromUrl:"";
+  setZip(z);setSearchedZip(z);setCoords(null);setRadius("25");setEvents([]);setRestored(true);
+  if(z)load(z,"today",null,"25");
  },[]);
  // Keep the saved view current (filters, results and scroll position) so "Back" lands where you were.
  useEffect(()=>{
@@ -108,7 +109,8 @@ export default function Home(){
   return()=>{clearTimeout(t);window.removeEventListener("scroll",onScroll);window.removeEventListener("pagehide",save);document.removeEventListener("click",onClick,true)};
  },[restored,zip,searchedZip,coords,radius,range,selected,ageBands,moreOpen,setting,dropIn,spanish,seniors,timeFilter,sort,query,events,message,soon]);
 
- function submitZip(){const z=zip.trim();if(!/^\d{5}$/.test(z)){setMessage("Enter a valid 5-digit ZIP code.");return}store.set("gotoday:zip",z);setCoords(null);setSearchedZip(z);load(z,range,null,radius);document.getElementById("results")?.scrollIntoView({behavior:"smooth"})}
+ function searchZip(z:string){if(!/^\d{5}$/.test(z)){setMessage("Enter a valid 5-digit ZIP code.");return}store.set("gotoday:zip",z);setCoords(null);setSearchedZip(z);load(z,range,null,radius);setTimeout(()=>document.getElementById("results")?.scrollIntoView({behavior:"smooth"}),50)}
+ function submitZip(){searchZip(zip.trim())}
  function useLocation(){if(!navigator.geolocation)return setMessage("Location is not supported by this browser.");setMessage("Finding your location…");navigator.geolocation.getCurrentPosition(p=>{const c={lat:p.coords.latitude,lng:p.coords.longitude};setCoords(c);setSearchedZip("");setZip("");load("",range,c,radius);document.getElementById("results")?.scrollIntoView({behavior:"smooth"})},()=>setMessage("Location permission was not granted. Enter a ZIP code instead."),{timeout:10000,maximumAge:600000})}
  function chooseRange(r:string){setRange(r);load(searchedZip,r,coords,radius)}
  function chooseRadius(rad:string){setRadius(rad);store.set("gotoday:radius",rad);load(searchedZip,range,coords,rad)}
@@ -137,7 +139,7 @@ export default function Home(){
  },[events,selected,timeFilter,sort,query,ageBands,setting,dropIn,spanish,seniors]);
 
  const moreCount=(setting!=="Any"?1:0)+(dropIn?1:0)+(spanish?1:0)+(seniors?1:0);
- const where=coords?"your location":searchedZip||"your area";
+ const where=coords?"your location":searchedZip||"your area",hasPlace=!!(coords||searchedZip);
  return <main className="page">
   <section className="hero">
    <nav><a className="logo" href="/?fresh=1">Go<span>Today</span></a><a className="createBtn" href="/create">+ Create event</a></nav>
@@ -153,7 +155,14 @@ export default function Home(){
    </div>
   </section>
 
-  <section className="content" id="results">
+  {!hasPlace&&<section className="content start" id="results">
+   <div className="startIcon">📍</div>
+   <h2>Where are you exploring?</h2>
+   <p>Enter a ZIP code above or tap <b>Use my location</b> to see what's happening near you today.</p>
+   <div className="label">OR PICK AN AREA</div>
+   <div className="chips startAreas">{AREAS.map(([l,z])=><button key={z} type="button" onClick={()=>{setZip(z);searchZip(z)}}>{l}</button>)}</div>
+  </section>}
+  {hasPlace&&<section className="content" id="results">
    <div className="toolbar">
     <div className="where"><b>📍 {where}</b><span className="rangeLabel">within {radius} mi</span></div>
     <input type="search" placeholder="Search events" value={query} onChange={e=>setQuery(e.target.value)}/>
@@ -212,7 +221,7 @@ export default function Home(){
      </div>
     </div>
    </article>)}</div>
-  </section>
+  </section>}
   {toast&&<div className="toast" role="status">{toast}</div>}
  </main>
 }

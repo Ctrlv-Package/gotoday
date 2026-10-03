@@ -256,3 +256,10 @@ html,body{overflow-x:clip}
 .errText{color:#991b1b;font-size:13px;margin-top:4px;overflow-wrap:anywhere}
 .statusBar .seg{max-width:100%;overflow-x:auto;flex-wrap:nowrap}.statusBar .seg button{white-space:nowrap}
 a.logo{text-decoration:none;color:inherit}
+/* Fresh page: no area chosen yet */
+.content.start{text-align:center;padding-top:40px!important;padding-bottom:56px;margin-top:28px}
+.content.start .startIcon{font-size:40px;line-height:1}
+.content.start h2{margin:10px 0 6px;font-size:26px;letter-spacing:-.4px}
+.content.start p{margin:0 auto 22px;max-width:460px;color:var(--muted,#71717a);line-height:1.5}
+.content.start .label{margin-top:4px}
+.content.start .startAreas{justify-content:center;flex-wrap:wrap}
