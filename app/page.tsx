@@ -2,7 +2,7 @@
 import {useEffect,useMemo,useState} from "react";
 import AddToCalendar from "./components/AddToCalendar";
 
-type EventItem={id?:string;title:string;city:string;venue?:string;date?:string;time?:string;image?:string;url?:string;category?:string;genre?:string;minPrice?:number|null;desc?:string;tags?:string[];emoji?:string;source?:string;distanceMiles?:number;distanceAccuracy?:string;ageMin?:number;ageMax?:number;registration?:string;moreLocations?:number;otherVenues?:string[];isFree?:boolean};
+type EventItem={id?:string;title:string;city:string;venue?:string;date?:string;time?:string;image?:string;url?:string;category?:string;genre?:string;minPrice?:number|null;desc?:string;tags?:string[];emoji?:string;source?:string;distanceMiles?:number;distanceAccuracy?:string;ageMin?:number;ageMax?:number;registration?:string;moreLocations?:number;otherVenues?:string[];isFree?:boolean;facets?:string[];labels?:string[]};
 
 const AGE_BANDS:[string,number,number][]=[["Babies & toddlers",0,2],["Preschool 3–5",3,5],["Ages 6–9",6,9],["Tweens 10–12",10,12],["Teens 13–17",13,17]];
 // Interest chips combine with OR; "Free" and the More-filters options always narrow the results.
@@ -128,10 +128,11 @@ export default function Home(){
   const q=query.trim().toLowerCase(),interests=selected.filter(x=>x!=="Free");
   return events.filter(e=>{
    const tags=new Set([e.category,...(e.tags||[])]);
-   const adultsOnly=e.ageMin!=null&&e.ageMin>=18;
-   const cm=(interests.length===0||interests.some(x=>x==="Adults"?adultsOnly:tags.has(x)||(x==="Family"&&tags.has("Kids"))))&&(!selected.includes("Free")||tags.has("Free")||!!e.isFree);
+   // Interests come from the server's facets (one consistent reading of every source); chips combine with OR.
+   const facets=new Set(e.facets||[...tags].filter(Boolean) as string[]);
+   const cm=(interests.length===0||interests.some(x=>facets.has(x)))&&(!selected.includes("Free")||facets.has("Free")||!!e.isFree);
    const more=(setting==="Any"||tags.has(setting))&&(!dropIn||tags.has("Drop-in"))&&(!spanish||tags.has("En Español"))&&(!seniors||tags.has("Seniors")||(e.ageMin!=null&&e.ageMin>=50));
-   const am=!selected.includes("Kids")||ageBands.length===0||!tags.has("Kids")||e.ageMin==null||e.ageMax==null||AGE_BANDS.some(([l,lo,hi])=>ageBands.includes(l)&&e.ageMin!<=hi&&e.ageMax!>=lo);
+   const am=!selected.includes("Kids")||ageBands.length===0||!facets.has("Kids")||(e.ageMin!=null&&e.ageMax!=null&&AGE_BANDS.some(([l,lo,hi])=>ageBands.includes(l)&&e.ageMin!<=hi&&e.ageMax!>=lo));
    const h=e.time?Number(e.time.slice(0,2)):-1;
    const tm=timeFilter==="Any time"||h<0||(timeFilter==="Morning"&&h<12)||(timeFilter==="Afternoon"&&h>=12&&h<17)||(timeFilter==="Evening"&&h>=17);
    return cm&&am&&more&&tm&&(!q||[e.title,e.city,e.venue,e.desc,e.category,e.genre].filter(Boolean).join(" ").toLowerCase().includes(q));
@@ -168,24 +169,34 @@ export default function Home(){
     <input type="search" placeholder="Search events" value={query} onChange={e=>setQuery(e.target.value)}/>
    </div>
 
-   <div className="label">WHEN</div>
-   <div className="chips">{RANGES.map(([k,l])=><button key={k} className={range===k?"active":""} onClick={()=>chooseRange(k)}>{l}{k==="weekend"&&<small className="chipDates"> · {nextWeekendLabel()}</small>}</button>)}</div>
-
-   <div className="label">WHAT ARE YOU INTO?</div>
-   <div className="chips">{CHIPS.map(c=><button key={c} className={(c==="All"?selected.length===0&&moreCount===0:selected.includes(c))?"active":""} onClick={()=>toggleChip(c)}>{c}</button>)}</div>
-   <button className={`moreBtn${moreOpen||moreCount?" on":""}`} onClick={()=>setMoreOpen(o=>!o)} aria-expanded={moreOpen}>⚙ More filters{moreCount?` (${moreCount})`:""} {moreOpen?"▴":"▾"}</button>
-   {moreOpen&&<div className="morePanel">
-    <div className="moreRow"><span>Setting</span><div className="seg">{SETTINGS.map(x=><button key={x} className={setting===x?"active":""} onClick={()=>setSetting(x)}>{x==="Indoor"?"🏠 Indoor":x==="Outdoor"?"🌳 Outdoor":x}</button>)}</div></div>
-    <label className="toggle"><input type="checkbox" checked={dropIn} onChange={e=>setDropIn(e.target.checked)}/> Drop-in <small>no registration needed</small></label>
-    <label className="toggle"><input type="checkbox" checked={spanish} onChange={e=>setSpanish(e.target.checked)}/> En Español</label>
-    <label className="toggle"><input type="checkbox" checked={seniors} onChange={e=>setSeniors(e.target.checked)}/> Seniors <small>50+ programs</small></label>
-   </div>}
-   {selected.includes("Kids")&&<><div className="label">KIDS' AGES</div><div className="chips">{AGE_BANDS.map(([l])=><button key={l} className={ageBands.includes(l)?"active":""} onClick={()=>setAgeBands(b=>b.includes(l)?b.filter(x=>x!==l):[...b,l])}>{l}</button>)}</div></>}
-
-   <div className="filters">
-    <label>Distance<select value={radius} onChange={e=>chooseRadius(e.target.value)}>{["10","15","25","50"].map(r=><option key={r} value={r}>{r} miles</option>)}</select></label>
-    <label>Time<select value={timeFilter} onChange={e=>setTimeFilter(e.target.value)}>{TIMES.map(t=><option key={t}>{t}</option>)}</select></label>
-    <label>Sort<select value={sort} onChange={e=>setSort(e.target.value)}><option>Soonest</option><option>Nearest</option></select></label>
+   {/* All filters live in one card: when + sort controls, interests, then optional extras. */}
+   <div className="filterCard">
+    <div className="fcTop">
+     <div className="fcWhen">
+      <div className="label">When</div>
+      <div className="seg when">{RANGES.map(([k,l])=><button key={k} className={range===k?"active":""} onClick={()=>chooseRange(k)}>{k==="weekend"?"Weekend":l}{k==="weekend"&&<small>{nextWeekendLabel()}</small>}</button>)}</div>
+     </div>
+     <div className="filters">
+      <label>Distance<select value={radius} onChange={e=>chooseRadius(e.target.value)}>{["10","15","25","50"].map(r=><option key={r} value={r}>{r} mi</option>)}</select></label>
+      <label>Time<select value={timeFilter} onChange={e=>setTimeFilter(e.target.value)}>{TIMES.map(t=><option key={t} value={t}>{t==="Any time"?"Any":t}</option>)}</select></label>
+      <label>Sort<select value={sort} onChange={e=>setSort(e.target.value)}><option>Soonest</option><option>Nearest</option></select></label>
+     </div>
+    </div>
+    <div className="fcSection">
+     <div className="label">What are you into?</div>
+     <div className="chips wrap even4">{CHIPS.map(c=><button key={c} className={(c==="All"?selected.length===0&&moreCount===0:selected.includes(c))?"active":""} onClick={()=>toggleChip(c)}>{c==="Arts & Theatre"?<><span className="lg">Arts & Theatre</span><span className="sm">Arts</span></>:c}</button>)}</div>
+    </div>
+    {selected.includes("Kids")&&<div className="fcSection">
+     <div className="label">Kids' ages</div>
+     <div className="chips wrap even5">{AGE_BANDS.map(([l,a,b])=><button key={l} title={l} className={ageBands.includes(l)?"active":""} onClick={()=>setAgeBands(x=>x.includes(l)?x.filter(y=>y!==l):[...x,l])}><span className="lg">{l}</span><span className="sm">{a}–{b}</span></button>)}</div>
+    </div>}
+    <button className={`moreBtn${moreOpen||moreCount?" on":""}`} onClick={()=>setMoreOpen(o=>!o)} aria-expanded={moreOpen}><span>⚙ More filters{moreCount?` (${moreCount})`:""}</span><span aria-hidden>{moreOpen?"▴":"▾"}</span></button>
+    {moreOpen&&<div className="morePanel">
+     <div className="moreRow"><span>Setting</span><div className="seg setting">{SETTINGS.map(x=><button key={x} className={setting===x?"active":""} onClick={()=>setSetting(x)}>{x}</button>)}</div></div>
+     <label className="toggle"><input type="checkbox" checked={dropIn} onChange={e=>setDropIn(e.target.checked)}/> Drop-in <small>no registration needed</small></label>
+     <label className="toggle"><input type="checkbox" checked={spanish} onChange={e=>setSpanish(e.target.checked)}/> En Español</label>
+     <label className="toggle"><input type="checkbox" checked={seniors} onChange={e=>setSeniors(e.target.checked)}/> Seniors <small>50+ programs</small></label>
+    </div>}
    </div>
 
    {message&&<p className="notice">{message}</p>}
@@ -211,7 +222,7 @@ export default function Home(){
      <div className="meta">📍 {e.venue||e.city}{typeof e.distanceMiles==="number"?` · ${e.distanceMiles.toFixed(1)} mi`:""}{e.moreLocations?<b title={(e.otherVenues||[]).join(", ")}>{` · +${e.moreLocations} more location${e.moreLocations>1?"s":""}`}</b>:null}</div>
      {e.desc&&<p className="desc">{e.desc}</p>}
      {(e.tags||[]).includes("Drop-in")?<div className="hint ok">✓ Drop-in, no registration</div>:e.registration&&e.source!=="Ticketmaster"?<div className="hint">{e.registration}</div>:null}
-     <div className="tags">{ageLabel(e)&&<span className="age">{ageLabel(e)}</span>}{(e.tags||[]).filter(t=>!["Local","Library","Free","Parks","Tickets","Drop-in"].includes(t)&&!/\(/.test(t)).slice(0,3).map(t=><span key={t}>{t}</span>)}</div>
+     <div className="tags">{ageLabel(e)&&<span className="age">{ageLabel(e)}</span>}{(e.labels||(e.tags||[]).filter(t=>!["Local","Library","Free","Parks","Tickets","Drop-in"].includes(t)&&!/\(/.test(t))).slice(0,3).map(t=><span key={t}>{t}</span>)}</div>
      <div className="actions">
       <a className="primary" href={detailHref(e)} target={e.source==="Ticketmaster"?"_blank":undefined} rel="noreferrer">{e.source==="Ticketmaster"?"Tickets ↗":"View details"}</a>
       {e.id&&<AddToCalendar compact base={`/events/${encodeURIComponent(e.id)}`}/>}

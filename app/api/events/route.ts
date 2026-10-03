@@ -1,4 +1,5 @@
 import { db } from "../../../lib/db";
+import { facetsFor, cleanAges, displayTags } from "../../../lib/facets";
 import { NextRequest, NextResponse } from "next/server";
 import { ensureSchema } from "../../../lib/schema";
 import { discoveryRejection } from "../../../lib/ingestion/utils";
@@ -79,6 +80,7 @@ export async function GET(request:NextRequest){
    distanceMiles:Math.round(d*10)/10,distanceAccuracy:acc};
   if(e.source==="Ticketmaster"&&TM_JUNK.test(e.title))continue;
   if(discoveryRejection({...e,isDiscoveryEligible:e.source==="Ticketmaster"?true:undefined}))continue;
+  {const facets=facetsFor(e),ages=cleanAges(e);e.facets=facets;e.labels=displayTags(e,facets).slice(0,3);e.ageMin=ages.ageMin;e.ageMax=ages.ageMax}
   // "Today": hide timed events that have already ended (or started over 2 hours ago with no end time).
   if(range==="today"&&!allDay){const end=r.end_at?new Date(r.end_at).getTime():start.getTime()+2*3600e3;if(end<now)continue}
   events.push(e);
@@ -105,5 +107,5 @@ export async function GET(request:NextRequest){
  const localCount=events.filter((e:any)=>e.source!=="Ticketmaster").length;
  // No results: tell the page whether that's "nothing this day" or "we're not in this area yet".
  const coverage=events.length?{covered:true}:{covered:await covered(lat,lng,today),place:usedZip?zipPlace.get(postalCode)||null:null};
- return NextResponse.json({coverage,events:events.slice(0,300),range,startDate:w.startDate,endDate:w.endDate,center:[lat,lng],radius,localCount,ticketmasterCount:events.length-localCount,total:events.length});
+ return NextResponse.json({coverage,events:events.slice(0,2000).map((e:any)=>({...e,desc:e.desc.length>320?e.desc.slice(0,317)+"…":e.desc})),range,startDate:w.startDate,endDate:w.endDate,center:[lat,lng],radius,localCount,ticketmasterCount:events.length-localCount,total:events.length});
 }

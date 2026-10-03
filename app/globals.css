@@ -270,3 +270,42 @@ a.logo{text-decoration:none;color:inherit}
  .content.start h2{font-size:28px}
  .content.start .startAreas{grid-template-columns:repeat(4,minmax(0,1fr));max-width:720px}
 }
+
+/* ---------- Filter card ----------
+   Phone: stacked, full width, nothing scrolls sideways; When is an even 3-way switch and the three
+   dropdowns share one even row. Desktop: When on the left, dropdowns on the right, interests below. */
+.filterCard{margin-top:12px;background:#fff;border:1px solid var(--line);border-radius:16px;padding:14px;box-shadow:0 10px 30px rgba(39,39,42,.05);display:flex;flex-direction:column;gap:14px}
+.filterCard .label{margin:0 0 8px;text-transform:uppercase}
+.fcTop{display:flex;flex-direction:column;gap:14px}
+.seg.when{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));width:100%;border-radius:12px}
+.seg.when button{padding:10px 4px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1px;line-height:1.15;min-height:46px}
+.seg.when small{font-size:11px;font-weight:500;opacity:.7}
+.filterCard .filters{margin:0;grid-template-columns:repeat(3,minmax(0,1fr))}
+.filterCard .filters select{height:42px}
+.chips.wrap{flex-wrap:wrap;overflow:visible;margin:0;padding:0}
+.filterCard .moreBtn{margin:0;width:100%;display:flex;justify-content:space-between;align-items:center;border-radius:12px;padding:11px 14px}
+.filterCard .morePanel{margin:0;border-radius:12px;background:var(--soft,#f4f4f5);border-color:transparent}
+.fcSection{padding-top:14px;border-top:1px solid var(--line)}
+@media(min-width:720px){
+ .filterCard{padding:18px 20px;margin-top:14px}
+ .fcTop{flex-direction:row;align-items:flex-end;justify-content:space-between;gap:24px}
+ .fcWhen{flex:0 1 420px}
+ .filterCard .filters{grid-template-columns:repeat(3,150px)}
+ .filterCard .moreBtn{width:auto;align-self:flex-start;gap:10px}
+}
+
+/* Phones: interests 4 across (2 even rows), kids' ages 5 across (one row), setting switch full width. */
+.chips .sm{display:none}
+@media(max-width:719px){
+ .chips.even4,.chips.even5{display:grid;gap:8px}
+ .chips.even4{grid-template-columns:repeat(4,minmax(0,1fr))}
+ .chips.even5{grid-template-columns:repeat(5,minmax(0,1fr))}
+ .chips.even4 button,.chips.even5 button{padding:9px 2px;text-align:center;overflow:hidden;text-overflow:ellipsis}
+ .chips .lg{display:none}.chips .sm{display:inline}
+ .seg.setting{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));width:100%}
+ .seg.setting button{padding:9px 4px}
+ .moreRow{flex-direction:column;align-items:stretch;gap:8px}
+ .filterCard .filters select{padding:9px 4px 9px 8px;font-size:14px}
+ .seg.setting button{white-space:nowrap;font-size:14px}
+}
+@media(max-width:380px){.filterCard{padding:12px}.filterCard .filters{gap:6px}.filterCard .filters select{font-size:13px;padding-left:6px}.seg.setting button{font-size:13px;padding:9px 2px}}
