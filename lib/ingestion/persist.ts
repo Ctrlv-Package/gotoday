@@ -17,7 +17,7 @@ async function saveEvent(sourceId:number,e:EventRecord,tz:string){const v=await 
  const start=zonedToUtc(e.date,e.time,tz),end=e.endTime?zonedToUtc(e.date,e.endTime,tz):null;await db.query(`insert into events(source_id,external_id,title,description,start_at,end_at,venue_id,city,category,genre,event_type,tags,is_free,is_family_friendly,is_kids_activity,price_text,image_url,official_url,source_url,fingerprint,age_min,age_max,registration_url,registration_text,recurrence,timezone,local_date,latitude,longitude,status,confidence,last_verified_at,updated_at)
 values($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18,$19,$20,$21,$22,$23,$24,$25,$26,$27,$28,$29,'active',100,now(),now())
 on conflict(fingerprint) do update set title=excluded.title,description=excluded.description,start_at=excluded.start_at,end_at=excluded.end_at,venue_id=excluded.venue_id,city=excluded.city,category=excluded.category,genre=excluded.genre,event_type=excluded.event_type,tags=excluded.tags,is_free=excluded.is_free,price_text=excluded.price_text,image_url=excluded.image_url,official_url=excluded.official_url,source_url=excluded.source_url,age_min=excluded.age_min,age_max=excluded.age_max,registration_url=excluded.registration_url,registration_text=excluded.registration_text,recurrence=excluded.recurrence,timezone=excluded.timezone,local_date=excluded.local_date,latitude=excluded.latitude,longitude=excluded.longitude,is_family_friendly=excluded.is_family_friendly,is_kids_activity=excluded.is_kids_activity,last_verified_at=now(),updated_at=now(),status='active'`,[sourceId,e.id,e.title,e.desc||null,start,end&&end>start?end:null,v,e.city||null,e.category||null,e.genre||null,e.eventType||classifyEventType(e)||"unknown",e.tags||[],!!e.isFree,(e.tags||[]).some(x=>/family/i.test(x)),(e.tags||[]).includes("Kids"),e.priceText||null,e.image||null,e.url,e.sourceUrl||null,fingerprint,e.ageMin??null,e.ageMax??null,e.registrationUrl||null,e.registrationText||null,e.recurrence||null,tz,e.date,pt?.latitude??null,pt?.longitude??null])}
-type SourceSummary={source:string;found:number;accepted:number;rejected:number;status:"success"|"error";rejectionReasons?:any[];error?:string};
+type SourceSummary={source:string;found:number;accepted:number;rejected:number;status:"success"|"error"|"skipped";rejectionReasons?:any[];error?:string};
 
 /** Ingest one source. `getRaw` fetches its records (or returns records fetched elsewhere). */
 export async function runSource(s:EventSource,getRaw:()=>Promise<EventRecord[]>):Promise<SourceSummary>{
@@ -48,6 +48,11 @@ export async function runSource(s:EventSource,getRaw:()=>Promise<EventRecord[]>)
   return{source:s.name,found,accepted,rejected,status:"success",rejectionReasons:reasons.rows};
  }catch(err){
   const msg=err instanceof Error?err.message:String(err);
+  // Hitting Instagram's hourly limit isn't the source's fault: skip it this time, keep its last good status.
+  if(/^Instagram rate limit/.test(msg)){
+   await db.query("update ingestion_runs set finished_at=now(),status='skipped',error_message=$1 where id=$2",[msg,runId]);
+   return{source:s.name,found:0,accepted:0,rejected:0,status:"skipped",error:msg};
+  }
   await db.query("update ingestion_runs set finished_at=now(),status='error',records_found=$1,records_accepted=$2,records_rejected=$3,error_message=$4 where id=$5",[found,accepted,rejected,msg,runId]);
   await db.query("update sources set last_error_at=now(),last_error=$1,updated_at=now() where id=$2",[msg,sourceId]);
   return{source:s.name,found,accepted,rejected,status:"error",error:msg};

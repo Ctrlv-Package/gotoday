@@ -52,6 +52,11 @@ async function loadPosts(username:string):Promise<{posts:Post[];website:string}>
  const fields=`business_discovery.username(${username}){website,media.limit(15){id,caption,media_type,media_url,thumbnail_url,permalink,timestamp,children{media_url,media_type}}}`;
  const r=await fetchRetry(`${GRAPH}/${me}?fields=${encodeURIComponent(fields)}&access_token=${encodeURIComponent(token)}`,{cache:"no-store"});
  const d:any=await r.json().catch(()=>({}));
+ // Meta allows only so many calls per hour. When we hit it, say so plainly; the source is skipped (not failed)
+ // and picked up on the next run. Also stop early when Meta reports we're nearly at the limit.
+ const usage=(()=>{try{const u=JSON.parse(r.headers.get("x-app-usage")||"{}");return Math.max(u.call_count||0,u.total_time||0,u.total_cputime||0)}catch{return 0}})();
+ if([4,17,32,613].includes(d?.error?.code)||/request limit reached|rate limit/i.test(d?.error?.message||""))throw new Error(`Instagram rate limit: ${d?.error?.message||"too many requests"} — will retry next run`);
+ if(r.ok&&usage>=95)console.log(`instagram app usage at ${usage}% of the hourly limit`);
  if(!r.ok){if(d?.error?.code===190)tokenCache=null;
   if(/cannot be found|does not exist|invalid user id|not.*business/i.test(d?.error?.message||"")||d?.error?.error_subcode===2207013)throw new AccountMissing(`@${username} isn't a public business/creator account on Instagram (or the handle changed)`);throw new Error(`Instagram API: ${d?.error?.message||`HTTP ${r.status}`}${d?.error?.code===190?" — the Instagram key expired; generate a new one and update IG_ACCESS_TOKEN in Vercel":""}`)}
  return{posts:d?.business_discovery?.media?.data||[],website:d?.business_discovery?.website||""};
