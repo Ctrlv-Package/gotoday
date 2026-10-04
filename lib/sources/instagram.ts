@@ -72,7 +72,8 @@ List the dated, public, in-person events this post announces in or near ${city},
 Rules:
 - Only events with a specific calendar date. Resolve weekday/month-only dates relative to the posting date (never earlier than it).
 - Recurring series: list each date it states, up to 8.
-- Round-up posts (a list or calendar of many events): list every event in it, each with its own place. Keep "summary" short (one sentence).
+- Round-up posts (a list or calendar of many events): list every event in it, each with its own place. Keep "summary" short (one sentence). Never list the round-up/guide itself ("Fun plans this weekend", "Things to do in Broward") as an event.
+- Skip deals and promotions that aren't an event at a specific place (e.g. "free museum admission with your Bank of America card", "kids eat free all month", store coupons), and chain-store activities with no specific location ("at your local Home Depot / check your local store").
 - Skip sales, promotions, store openings without an event, giveaways, and vague "coming soon" posts.
 - Skip government business: commission/council/board meetings, hearings, budget workshops, road closures, service notices, job fairs for city jobs.
 - "place": the venue or park name (and street address if shown), e.g. "Vista Park, 4001 Southwest 142nd Ave". Omit if not stated.
@@ -141,7 +142,7 @@ export function captionOnly(p:Post):Extracted[]{
 class NoCredit extends Error{}
 async function cached(p:Post,venue:string,city:string,roundup=false):Promise<Extracted[]>{
  if(!process.env.ANTHROPIC_API_KEY)return captionOnly(p);   // don't cache the weaker caption-only reading
- const id=`${p.id}:${roundup?"v4":"v3"}`;   // bump when the reading logic changes, so posts are read again
+ const id=`${p.id}:${roundup?"v5":"v3"}`;   // bump when the reading logic changes, so posts are read again
  const {rows}=await db.query("select extracted from social_posts where id=$1",[id]);
  if(rows[0])return rows[0].extracted||[];
  let ev:Extracted[];
@@ -176,6 +177,8 @@ export async function fetchInstagram(cfg:InstagramConfig,startDate:string,endDat
  const cancelled=new Set(found.filter(e=>e.cancelled).map(key)),seen=new Set<string>(),out:EventRecord[]=[];
  for(const e of found){
   const k=key(e);if(e.cancelled||cancelled.has(k)||seen.has(k)||e.date<startDate||e.date>endDate)continue;seen.add(k);
+  // Round-up accounts aren't a place: an event from them must name where it is, and the round-up itself isn't an event.
+  if(ROUNDUPS.has(cfg.username)&&(!(e.place||"").trim()||/^(fun plans|things to do|what to do|weekend (guide|plans|events)|(this|the) weekend|events? (this|for the) weekend|freebies|.*\bround-?up\b|.*\bguide\b)/i.test(e.title.trim())))continue;
   const blob=`${e.title} ${e.summary||""}`.toLowerCase();
   const family=e.kids===true||/\b(kids?|family|children|festival|halloween|trick|santa|egg hunt|parade)\b/.test(blob);
   const arts=/\b(music|concert|band|dj|art|artisan|craft|theat(er|re)|dance|film|movie)\b/.test(blob);
