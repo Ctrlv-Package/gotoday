@@ -111,7 +111,20 @@ export default function Home(){
 
  function searchZip(z:string){if(!/^\d{5}$/.test(z)){setMessage("Enter a valid 5-digit ZIP code.");return}store.set("gotoday:zip",z);setCoords(null);setSearchedZip(z);load(z,range,null,radius);setTimeout(()=>document.getElementById("results")?.scrollIntoView({behavior:"smooth"}),50)}
  function submitZip(){searchZip(zip.trim())}
- function useLocation(){if(!navigator.geolocation)return setMessage("Location is not supported by this browser.");setMessage("Finding your location…");navigator.geolocation.getCurrentPosition(p=>{const c={lat:p.coords.latitude,lng:p.coords.longitude};setCoords(c);setSearchedZip("");setZip("");load("",range,c,radius);document.getElementById("results")?.scrollIntoView({behavior:"smooth"})},()=>setMessage("Location permission was not granted. Enter a ZIP code instead."),{timeout:10000,maximumAge:600000})}
+ // "Use my location": the button itself shows progress (finding you → loading events) and can't be pressed twice;
+ // problems are explained right under it, where the person is looking.
+ const[locating,setLocating]=useState(false),[locErr,setLocErr]=useState("");
+ function useLocation(){
+  if(locating)return;setLocErr("");
+  if(!navigator.geolocation)return setLocErr("Your browser can't share its location. Enter a ZIP code instead.");
+  setLocating(true);
+  // If the browser's permission prompt is ignored, don't spin forever.
+  const guard=setTimeout(()=>{setLocating(false);setLocErr("Waiting for permission — tap Allow in your browser's location prompt, or enter a ZIP code.")},20000);
+  navigator.geolocation.getCurrentPosition(async p=>{clearTimeout(guard);setLocErr("");const c={lat:p.coords.latitude,lng:p.coords.longitude};setCoords(c);setSearchedZip("");setZip("");setLocating(false);
+    setTimeout(()=>document.getElementById("results")?.scrollIntoView({behavior:"smooth"}),50);await load("",range,c,radius)},
+   e=>{clearTimeout(guard);setLocating(false);setLocErr(e.code===1?"Location is turned off for this site. Allow it in your browser settings, or enter a ZIP code.":e.code===3?"Finding your location took too long. Try again, or enter a ZIP code.":"Couldn't find your location. Try again, or enter a ZIP code.")},
+   {timeout:15000,maximumAge:600000});
+ }
  function chooseRange(r:string){setRange(r);load(searchedZip,r,coords,radius)}
  function chooseRadius(rad:string){setRadius(rad);store.set("gotoday:radius",rad);load(searchedZip,range,coords,rad)}
  function toggleChip(c:string){if(c==="All"){setSelected([]);setAgeBands([]);setSetting("Any");setDropIn(false);setSpanish(false);setSeniors(false);return}setSelected(s=>s.includes(c)?s.filter(x=>x!==c):[...s,c])}
@@ -152,7 +165,10 @@ export default function Home(){
      <input inputMode="numeric" autoComplete="postal-code" maxLength={5} aria-label="ZIP code" value={zip} onChange={e=>setZip(e.target.value.replace(/\D/g,""))} placeholder="ZIP code"/>
      <button type="submit" className="go">{loading?"…":"Search"}</button>
     </form>
-    <button type="button" className="locate" onClick={useLocation}>📍 Use my location</button>
+    <button type="button" className={`locate${locating||(loading&&coords)?" busy":""}`} onClick={useLocation} disabled={locating||(loading&&!!coords)} aria-live="polite">
+     {locating?<><span className="spin" aria-hidden/>Finding your location…</>:loading&&coords?<><span className="spin" aria-hidden/>Finding events near you…</>:"📍 Use my location"}
+    </button>
+    {locErr&&<p className="locErr" role="alert">{locErr}</p>}
    </div>
   </section>
 
