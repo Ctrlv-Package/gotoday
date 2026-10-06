@@ -19,7 +19,7 @@ export async function fetchNycParks(startDate:string,endDate:string,source="NYC 
  const out:EventRecord[]=[];
  for(const x of rows){
   const title=stripHtml(String(x.title||"")).trim(),start=String(x.starttime||"");
-  if(!title||!/^\d{4}-\d{2}-\d{2}T/.test(start))continue;
+  if(!title||!/^\d{4}-\d{2}-\d{2}T/.test(start)||/^(cancel+ed|postponed)\b/i.test(title))continue;
   const date=start.slice(0,10),time=start.slice(11,19),end=String(x.endtime||"").slice(11,19)||undefined;
   const cats=String(x.categories||"").split("|").map(s=>s.trim()).filter(Boolean);
   const [lat,lng]=String(x.coordinates||"").split(",").map(s=>Number(s.trim()));

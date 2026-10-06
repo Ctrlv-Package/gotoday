@@ -3,7 +3,7 @@ import type {EventRecord} from "../ingestion/types";
 // Ticketmaster Discovery API: supplemental ticketed inventory (concerts, sports, theatre, comedy).
 // Market 15 = South Florida (Broward, Miami-Dade, Palm Beach). Free tier: 5,000 calls/day, 5 req/s,
 // and at most 1,000 results per query (size * page < 1000).
-const JUNK=/(^(luxury|premium|club)\s*(&|and)?\s*suites?\b|\bsuites?:|\bhospitality\b)|\b(parking|upgrade|vip package|ride and dine|big bus tours?|speedboat|gift card|voucher|season tickets?)\b/i;
+const JUNK=/(^(luxury|premium|club)\s*(&|and)?\s*suites?\b|\bsuites?:|\bhospitality\b)|\b(parking|upgrade|vip package|ride and dine|big bus tours?|(pregame|stadium|ballpark|arena|behind the scenes) tours?|speedboat|gift card|voucher|season tickets?)\b/i;
 
 /** Either a Ticketmaster market (15 = South Florida) or a center point + radius in miles. */
 export type TicketmasterConfig={marketId?:string;latlong?:string;radius?:number;label?:string};
