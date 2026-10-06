@@ -105,21 +105,41 @@ async function askClaude(content:any[]):Promise<Extracted[]>{
   await new Promise(res=>setTimeout(res,wait*1000));
  }
  if(!r.ok)throw new Error(`Claude API: ${d?.error?.message||`HTTP ${r.status}`}`);
- const text=(d.content||[]).map((c:any)=>c.text||"").join("");
+ return parseEvents((d.content||[]).map((c:any)=>c.text||"").join(""),"Claude API");
+}
+function parseEvents(text:string,who:string):Extracted[]{
  const json=text.match(/\{[\s\S]*\}/)?.[0];
- if(!json)throw new Error("Claude API: reply had no JSON");
+ if(!json)throw new Error(`${who}: reply had no JSON`);
  return(JSON.parse(json).events||[]).filter((e:any)=>/^\d{4}-\d{2}-\d{2}$/.test(e?.date)&&String(e?.title||"").trim());
+}
+
+/** Google Gemini's free tier (GEMINI_API_KEY from aistudio.google.com) reads flyers at no cost.
+ *  Same prompt and images as Claude; if Gemini is busy or out of free requests, Claude (within the daily
+ *  budget) or the free caption reading takes over. */
+const GEMINI_MODEL=process.env.GEMINI_MODEL||"gemini-flash-latest";   // alias that always points at the current Flash model
+async function askGemini(content:any[]):Promise<Extracted[]>{
+ const parts=content.map((c:any)=>c.type==="image"?{inline_data:{mime_type:c.source.media_type,data:c.source.data}}:{text:c.text});
+ const r=await fetchRetry(`https://generativelanguage.googleapis.com/v1beta/models/${GEMINI_MODEL}:generateContent`,{method:"POST",
+  headers:{"content-type":"application/json","x-goog-api-key":process.env.GEMINI_API_KEY!},
+  body:JSON.stringify({contents:[{role:"user",parts}],generationConfig:{responseMimeType:"application/json",maxOutputTokens:4096,temperature:0}})},2);
+ const d:any=await r.json().catch(()=>({}));
+ if(!r.ok)throw new Error(`Gemini API: ${d?.error?.message||`HTTP ${r.status}`}`);
+ return parseEvents((d.candidates?.[0]?.content?.parts||[]).map((x:any)=>x.text||"").join(""),"Gemini API");
 }
 
 // Round-up accounts post one event per slide in carousels, so they get every slide read (up to 6), and
 // their posts are re-read once with the newer reading (each event's own town).
 const ROUNDUPS=new Set(["miami_residents","weekendbroward","todowithkidsbroward","todowithkidsmiami"]);
-async function extractWithClaude(p:Post,venue:string,city:string,roundup=false):Promise<Extracted[]>{
- if(!process.env.ANTHROPIC_API_KEY)return captionOnly(p);
+async function extractWithClaude(p:Post,venue:string,city:string,roundup=false,allowClaude=true):Promise<Extracted[]>{
  const urls=roundup&&p.media_type==="CAROUSEL_ALBUM"?(p.children?.data||[]).filter(c=>c.media_type==="IMAGE"&&c.media_url).slice(0,6).map(c=>c.media_url!):[imageOf(p)];
  const imgs=(await Promise.all(urls.map(u=>imageBlock(u)))).filter(Boolean);
  const img=imgs[0];
  const text={type:"text",text:PROMPT(p,venue,city)};
+ if(process.env.GEMINI_API_KEY){
+  try{return await askGemini([...imgs,text])}
+  catch(e:any){console.log(`gemini: ${e?.message||e}`)}
+ }
+ if(!process.env.ANTHROPIC_API_KEY||!allowClaude)throw new NoCredit("no paid reading available");
  try{return await askClaude([...imgs,text])}
  catch(e:any){
   // Out of API credit or over the spend limit: fall back to the free caption reading instead of failing.
@@ -141,7 +161,7 @@ export function captionOnly(p:Post):Extracted[]{
 
 class NoCredit extends Error{}
 async function cached(p:Post,venue:string,city:string,roundup=false):Promise<Extracted[]>{
- if(!process.env.ANTHROPIC_API_KEY)return captionOnly(p);   // don't cache the weaker caption-only reading
+ if(!process.env.ANTHROPIC_API_KEY&&!process.env.GEMINI_API_KEY)return captionOnly(p);   // don't cache the weaker caption-only reading
  const id=`${p.id}:${roundup?"v5":"v3"}`;   // bump when the reading logic changes, so posts are read again
  const {rows}=await db.query("select extracted from social_posts where id=$1",[id]);
  if(rows[0])return rows[0].extracted||[];
@@ -149,9 +169,10 @@ async function cached(p:Post,venue:string,city:string,roundup=false):Promise<Ext
  // Past that, posts are read from the caption for free and get the full reading on a later day.
  const cap=Number(process.env.AI_POSTS_PER_DAY||120);
  const today=(await db.query("select count(*)::int as n from social_posts where created_at>=date_trunc('day',now() at time zone 'America/New_York') at time zone 'America/New_York'")).rows[0]?.n||0;
- if(today>=cap)return captionOnly(p);
+ // Free Gemini reading isn't capped; only paid Claude reading is.
+ if(today>=cap&&!process.env.GEMINI_API_KEY)return captionOnly(p);
  let ev:Extracted[];
- try{ev=await extractWithClaude(p,venue,city,roundup)}
+ try{ev=await extractWithClaude(p,venue,city,roundup,today<cap)}
  catch(e){if(e instanceof NoCredit)return captionOnly(p);throw e}   // not cached: read properly once credit is back
  await db.query("insert into social_posts(id,permalink,posted_at,extracted) values($1,$2,$3,$4) on conflict(id) do update set extracted=excluded.extracted",[id,p.permalink,p.timestamp,JSON.stringify(ev)]);
  return ev;
