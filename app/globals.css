@@ -349,3 +349,4 @@ a.logo{text-decoration:none;color:inherit}
 .spin{width:16px;height:16px;border-radius:50%;border:2px solid currentColor;border-right-color:transparent;animation:spin .7s linear infinite;flex:0 0 auto}
 @keyframes spin{to{transform:rotate(360deg)}}
 .locErr{margin:8px auto 0;max-width:420px;font-size:14px;color:#b91c1c;text-wrap:balance}
+.zipErr{margin-top:10px}

@@ -30,7 +30,9 @@ const CITY_COORDS:Record<string,[number,number]>={
 };
 function miles(a:number,b:number,c:number,d:number){const R=3958.8,q=(x:number)=>x*Math.PI/180,dp=q(c-a),dl=q(d-b),z=Math.sin(dp/2)**2+Math.cos(q(a))*Math.cos(q(c))*Math.sin(dl/2)**2;return 2*R*Math.asin(Math.sqrt(z))}
 const zipPlace=new Map<string,string>();
-async function zipCoords(zip:string):Promise<[number,number]|null>{if(!/^\d{5}$/.test(zip))return null;try{const r=await fetch(`https://api.zippopotam.us/us/${zip}`,{next:{revalidate:2592000}});if(!r.ok)return null;const d=await r.json(),p=d?.places?.[0],la=Number(p?.latitude),lo=Number(p?.longitude);if(p?.["place name"])zipPlace.set(zip,`${p["place name"]}, ${p["state abbreviation"]||""}`.replace(/, $/,""));return Number.isFinite(la)&&Number.isFinite(lo)?[la,lo]:null}catch{return null}}
+/** ZIPs the lookup service says don't exist (as opposed to the service being unreachable). */
+const badZips=new Set<string>();
+async function zipCoords(zip:string):Promise<[number,number]|null>{if(!/^\d{5}$/.test(zip)){badZips.add(zip);return null}try{const r=await fetch(`https://api.zippopotam.us/us/${zip}`,{next:{revalidate:2592000}});if(r.status===404){badZips.add(zip);return null}if(!r.ok)return null;const d=await r.json(),p=d?.places?.[0],la=Number(p?.latitude),lo=Number(p?.longitude);if(p?.["place name"])zipPlace.set(zip,`${p["place name"]}, ${p["state abbreviation"]||""}`.replace(/, $/,""));return Number.isFinite(la)&&Number.isFinite(lo)?[la,lo]:null}catch{return null}}
 /** Does GoToday cover this area at all? (any upcoming event within ~60 miles) */
 async function covered(lat:number,lng:number,today:string){
  const dLat=60/69,dLng=60/(69*Math.cos(lat*Math.PI/180));
@@ -67,7 +69,10 @@ export async function GET(request:NextRequest){
  const num=(k:string)=>{const v=p.get(k);return v==null||v.trim()===""?NaN:Number(v)};
  let lat=num("lat"),lng=num("lng");
  let usedZip=false;
- if(!Number.isFinite(lat)||!Number.isFinite(lng)||(lat===0&&lng===0)){const c=await zipCoords(postalCode);usedZip=!!c;[lat,lng]=c||[26.12,-80.25]}
+ if(!Number.isFinite(lat)||!Number.isFinite(lng)||(lat===0&&lng===0)){const c=await zipCoords(postalCode);usedZip=!!c;
+  // Not a real US ZIP (e.g. 00000, 99999): say so instead of showing some other area's events.
+  if(!c&&badZips.has(postalCode))return NextResponse.json({invalidZip:true,events:[],coverage:{covered:true}});
+  [lat,lng]=c||[26.12,-80.25]}
  const w=windowDates(range,today);
  await ensureSchema();
  // Bounding box first (uses the lat/lng index), exact distance second; rows without coordinates

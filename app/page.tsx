@@ -1,5 +1,5 @@
 "use client";
-import {useEffect,useMemo,useState} from "react";
+import {useEffect,useMemo,useRef,useState} from "react";
 import AddToCalendar from "./components/AddToCalendar";
 
 type EventItem={id?:string;title:string;city:string;venue?:string;date?:string;time?:string;image?:string;url?:string;category?:string;genre?:string;minPrice?:number|null;desc?:string;tags?:string[];emoji?:string;source?:string;distanceMiles?:number;distanceAccuracy?:string;ageMin?:number;ageMax?:number;registration?:string;moreLocations?:number;otherVenues?:string[];isFree?:boolean;facets?:string[];labels?:string[];live?:boolean};
@@ -48,7 +48,7 @@ function artFor(e:EventItem){const t=`${e.title} ${e.category||""} ${e.genre||""
 const store={get:(k:string)=>{try{return localStorage.getItem(k)}catch{return null}},set:(k:string,v:string)=>{try{localStorage.setItem(k,v)}catch{}}};
 
 export default function Home(){
- const[zip,setZip]=useState(""),[searchedZip,setSearchedZip]=useState(""),[coords,setCoords]=useState<{lat:number;lng:number}|null>(null);
+ const[zipErr,setZipErr]=useState(""),lastGood=useRef(""),[zip,setZip]=useState(""),[searchedZip,setSearchedZip]=useState(""),[coords,setCoords]=useState<{lat:number;lng:number}|null>(null);
  const[radius,setRadius]=useState("25"),[range,setRange]=useState("today"),[selected,setSelected]=useState<string[]>([]),[ageBands,setAgeBands]=useState<string[]>([]),[moreOpen,setMoreOpen]=useState(false),[setting,setSetting]=useState("Any"),[dropIn,setDropIn]=useState(false),[spanish,setSpanish]=useState(false),[seniors,setSeniors]=useState(false);
  const[timeFilter,setTimeFilter]=useState("Any time"),[sort,setSort]=useState("Soonest"),[query,setQuery]=useState("");
  const[soon,setSoon]=useState<{place:string|null}|null>(null),[events,setEvents]=useState<EventItem[]>([]),[loading,setLoading]=useState(false),[message,setMessage]=useState(""),[toast,setToast]=useState("");
@@ -60,6 +60,9 @@ export default function Home(){
    const q=new URLSearchParams({postalCode:z||DEFAULT_ZIP,radius:rad,range:r,today});
    if(c){q.set("lat",String(c.lat));q.set("lng",String(c.lng))}
    const d=await (await fetch("/api/events?"+q,{cache:"no-store"})).json();
+   // A ZIP that doesn't exist: explain it under the search box and keep whatever was showing before.
+   if(d.invalidZip){setZipErr(`We couldn't find ZIP code ${z}. Please check the number and try again.`);setSearchedZip(lastGood.current);return false}
+   if(!c&&z)lastGood.current=z;
    setEvents(d.events||[]);
    setSoon(d.coverage&&d.coverage.covered===false?{place:d.coverage.place||null}:null);
    if(d.coverage?.covered===false)return;
@@ -109,7 +112,7 @@ export default function Home(){
   return()=>{clearTimeout(t);window.removeEventListener("scroll",onScroll);window.removeEventListener("pagehide",save);document.removeEventListener("click",onClick,true)};
  },[restored,zip,searchedZip,coords,radius,range,selected,ageBands,moreOpen,setting,dropIn,spanish,seniors,timeFilter,sort,query,events,message,soon]);
 
- function searchZip(z:string){if(!/^\d{5}$/.test(z)){setMessage("Enter a valid 5-digit ZIP code.");return}store.set("gotoday:zip",z);setCoords(null);setSearchedZip(z);load(z,range,null,radius);setTimeout(()=>document.getElementById("results")?.scrollIntoView({behavior:"smooth"}),50)}
+ function searchZip(z:string){setZipErr("");if(!/^\d{5}$/.test(z)){setZipErr(z?"A ZIP code has 5 digits, like 33326.":"Enter a ZIP code to search.");return}store.set("gotoday:zip",z);setCoords(null);setSearchedZip(z);load(z,range,null,radius).then(ok=>{if(ok!==false)document.getElementById("results")?.scrollIntoView({behavior:"smooth"})})}
  function submitZip(){searchZip(zip.trim())}
  // "Use my location": the button itself shows progress (finding you → loading events) and can't be pressed twice;
  // problems are explained right under it, where the person is looking.
@@ -162,9 +165,10 @@ export default function Home(){
     <h1>Find your <span>next thing.</span></h1>
     <p className="heroLead">Free and local things happening near you&nbsp;— from library storytimes to park concerts.</p>
     <form className="searchRow" onSubmit={ev=>{ev.preventDefault();submitZip()}}>
-     <input inputMode="numeric" autoComplete="postal-code" maxLength={5} aria-label="ZIP code" value={zip} onChange={e=>setZip(e.target.value.replace(/\D/g,""))} placeholder="ZIP code"/>
+     <input inputMode="numeric" autoComplete="postal-code" maxLength={5} aria-label="ZIP code" value={zip} onChange={e=>{setZip(e.target.value.replace(/\D/g,""));if(zipErr)setZipErr("")}} aria-invalid={!!zipErr} aria-describedby="zipErr" placeholder="ZIP code"/>
      <button type="submit" className="go">{loading?"…":"Search"}</button>
     </form>
+    {zipErr&&<p className="locErr zipErr" id="zipErr" role="alert">{zipErr}</p>}
     <button type="button" className={`locate${locating||(loading&&coords)?" busy":""}`} onClick={useLocation} disabled={locating||(loading&&!!coords)} aria-live="polite">
      {locating?<><span className="spin" aria-hidden/>Finding your location…</>:loading&&coords?<><span className="spin" aria-hidden/>Finding events near you…</>:"📍 Use my location"}
     </button>
