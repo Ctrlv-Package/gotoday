@@ -8,7 +8,7 @@ const AGE_BANDS:[string,number,number][]=[["Babies & toddlers",0,2],["Preschool 
 // Interest chips combine with OR; "Free" and the More-filters options always narrow the results.
 const CHIPS=["All","Family","Kids","Adults","Free","Music","Arts & Theatre","Sports"];
 const SETTINGS=["Any","Indoor","Outdoor"];
-const AREAS:[string,string][]=[["Fort Lauderdale","33301"],["Weston","33326"],["Miami","33130"],["Boca Raton","33432"],["West Palm Beach","33401"],["Orlando","32801"],["Tampa","33602"],["St. Petersburg","33701"]];
+const AREAS:[string,string][]=[["Fort Lauderdale","33301"],["Weston","33326"],["Miami","33130"],["Boca Raton","33432"],["West Palm Beach","33401"],["Orlando","32801"],["Tampa","33602"],["St. Petersburg","33701"],["Manhattan","10001"],["Brooklyn","11201"]];
 const RANGES=[["today","Today"],["tomorrow","Tomorrow"],["weekend","Next Weekend"]] as const;
 const TIMES=["Any time","Morning","Afternoon","Evening"];
 const DEFAULT_ZIP="33326";
@@ -220,7 +220,7 @@ export default function Home(){
     <div className="soonIcon">📍</div>
     <h3>GoToday is coming to {soon.place||"your area"} soon</h3>
     <p>We're bringing local events to new cities every week: festivals, library programs, park activities, markets and more. We're not showing events here yet, but your area is on our list.</p>
-    <p className="muted">Right now GoToday covers South Florida (Miami-Dade, Broward and Palm Beach), Greater Orlando and Tampa Bay.</p>
+    <p className="muted">Right now GoToday covers South Florida (Miami-Dade, Broward and Palm Beach), Greater Orlando, Tampa Bay and New York City.</p>
     <div className="soonActions"><a className="btn primary" href="/create">Post an event in your area</a><button type="button" className="btn ghost" onClick={()=>{setZip("");document.querySelector<HTMLInputElement>('input[aria-label="ZIP code"]')?.focus();window.scrollTo({top:0,behavior:"smooth"})}}>Try another ZIP</button></div>
    </div>}
    {!soon&&<div className="resultsHead"><div className="kicker">NEAR {where.toUpperCase()}</div><h2>{loading?"Searching…":`${filtered.length} thing${filtered.length===1?"":"s"} to do`}</h2></div>}

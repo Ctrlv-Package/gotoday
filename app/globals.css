@@ -268,7 +268,7 @@ a.logo{text-decoration:none;color:inherit}
 @media(min-width:720px){
  .content.start{padding-top:36px}
  .content.start h2{font-size:28px}
- .content.start .startAreas{grid-template-columns:repeat(4,minmax(0,1fr));max-width:720px}
+ .content.start .startAreas{grid-template-columns:repeat(5,minmax(0,1fr));max-width:860px}
 }
 
 /* ---------- Filter card ----------

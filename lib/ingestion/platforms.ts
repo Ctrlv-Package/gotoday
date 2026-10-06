@@ -1,4 +1,5 @@
 import type {EventRecord} from "./types";
+import {fetchNycParks} from "../sources/nycparks";
 import {fetchCommunico} from "../sources/communico";
 import {branchCity as browardBranchCity} from "../sources/broward-library";
 import {cityFor as miamiDadeBranchCity} from "../sources/miami-dade-library";
@@ -54,6 +55,7 @@ export const PLATFORMS:Record<string,{describe:string;params:string;build:(p:Par
   build:(p)=>(s,e)=>fetchTicketmasterEvents(s,e,{marketId:p.marketId,latlong:p.latlong,radius:p.radius,label:p.label})},
  "broward-parks":{describe:"Broward County Parks event-calendar API",params:"(none)",build:()=>fetchBrowardParkEvents},
  riverwalk:{describe:"Riverwalk Fort Lauderdale calendar",params:"(none)",build:()=>fetchRiverwalkEvents},
+ "nyc-parks":{describe:"NYC Parks public events (NYC Open Data)",params:"(none)",build:(p,m)=>(s,e)=>fetchNycParks(s,e,m.name)},
 };
 
 export function buildFetcher(platform:string,params:Params,meta:Meta):Fetcher{

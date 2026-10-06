@@ -199,6 +199,9 @@ export const SEED_SOURCES:SourceConfig[]=[
  // ---- Ticketed (supplemental) ----
  {name:"Ticketmaster",platform:"ticketmaster",params:{marketId:"15",label:"South Florida"},source_type:"ticketing",url:"https://www.ticketmaster.com",priority:60,region:"south-florida"},
  {name:"Ticketmaster Orlando",platform:"ticketmaster",params:{latlong:"28.5383,-81.3792",radius:35,label:"Orlando"},source_type:"ticketing",url:"https://www.ticketmaster.com",priority:60,region:"orlando"},
+ // ---- New York City ----
+ {name:"NYC Parks",platform:"nyc-parks",params:{},source_type:"official-city",url:"https://www.nycgovparks.org/events",priority:98,region:"nyc"},
+ {name:"Ticketmaster New York",platform:"ticketmaster",params:{latlong:"40.7306,-73.9866",radius:15,label:"New York City"},source_type:"ticketing",url:"https://www.ticketmaster.com",priority:60,region:"nyc"},
  {name:"Ticketmaster Tampa Bay",platform:"ticketmaster",params:{latlong:"27.9506,-82.4572",radius:35,label:"Tampa Bay"},source_type:"ticketing",url:"https://www.ticketmaster.com",priority:60,region:"tampa"},
 
  ...INSTAGRAM_ACCOUNTS,
