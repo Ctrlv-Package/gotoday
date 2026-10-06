@@ -145,6 +145,11 @@ async function cached(p:Post,venue:string,city:string,roundup=false):Promise<Ext
  const id=`${p.id}:${roundup?"v5":"v3"}`;   // bump when the reading logic changes, so posts are read again
  const {rows}=await db.query("select extracted from social_posts where id=$1",[id]);
  if(rows[0])return rows[0].extracted||[];
+ // Budget: at most AI_POSTS_PER_DAY posts get read by the AI each day (default 120, roughly $0.50/day).
+ // Past that, posts are read from the caption for free and get the full reading on a later day.
+ const cap=Number(process.env.AI_POSTS_PER_DAY||120);
+ const today=(await db.query("select count(*)::int as n from social_posts where created_at>=date_trunc('day',now() at time zone 'America/New_York') at time zone 'America/New_York'")).rows[0]?.n||0;
+ if(today>=cap)return captionOnly(p);
  let ev:Extracted[];
  try{ev=await extractWithClaude(p,venue,city,roundup)}
  catch(e){if(e instanceof NoCredit)return captionOnly(p);throw e}   // not cached: read properly once credit is back
