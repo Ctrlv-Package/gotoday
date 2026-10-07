@@ -15,8 +15,11 @@ const LABEL:Record<string,string>={ok:"✅ Updated",late:"⏰ Late",failing:"❌
 export default function Status(){
  const [secret,setSecret]=useState(""),[run,setRun]=useState<any>(null),[gh,setGh]=useState<any>(null),[det,setDet]=useState<any>(null),[list,setList]=useState<S[]|null>(null),[err,setErr]=useState(""),[filter,setFilter]=useState("problems"),[q,setQ]=useState("");
  useEffect(()=>{try{const s=sessionStorage.getItem("gotoday:admin");if(s){setSecret(s);load(s)}}catch{}},[]);
+ // A tab left open shows old numbers: reload whenever the page comes back into view.
+ useEffect(()=>{const on=()=>{if(document.visibilityState==="visible"&&secret&&list)load()};document.addEventListener("visibilitychange",on);return()=>document.removeEventListener("visibilitychange",on)},[secret,list]);
+ const[loadedAt,setLoadedAt]=useState<number|null>(null);
  async function load(s=secret){setErr("");const r=await fetch("/api/admin/sources",{headers:{authorization:`Bearer ${s}`},cache:"no-store"});const d=await r.json().catch(()=>({}));
-  if(!d.ok){setErr(d.error||"Couldn't load");setList(null);return}try{sessionStorage.setItem("gotoday:admin",s)}catch{}setList(d.sources);setRun(d.lastRun);setGh(d.lastGithub||null);setDet(d.details||null)}
+  if(!d.ok){setErr(d.error||"Couldn't load");setList(null);return}try{sessionStorage.setItem("gotoday:admin",s)}catch{}setList(d.sources);setRun(d.lastRun);setGh(d.lastGithub||null);setDet(d.details||null);setLoadedAt(Date.now())}
  const rows=useMemo(()=>(list||[]).map(s=>({...s,st:state(s)})),[list]);
  const counts=useMemo(()=>{const c:Record<string,number>={ok:0,late:0,failing:0,paused:0,new:0};for(const r of rows)c[r.st]++;return c},[rows]);
  const lastRun=useMemo(()=>rows.map(r=>r.status?.last_success_at).filter(Boolean).sort().pop()||null,[rows]);
@@ -38,7 +41,7 @@ export default function Status(){
     {det&&<p className="muted small">Event details found on the web for Instagram posts that only name the event (free: the post's links and the account's website): {det.found} of {det.tried} looked up.{det.error&&<b style={{color:"#b91c1c"}}> Web search isn't working: {String(det.error).slice(0,200)}</b>}</p>}
     <p className="muted small">Automatic runs: website sources daily ~6:00 AM; city sites + Instagram from the GitHub job about 3 times a day (GitHub often starts it an hour or more late). "Late" = no successful update in 36 hours.</p>
     <div className="statusBar"><div className="seg">{[["problems","Problems"],["all","All"],["instagram","Instagram"],["paused","Paused"],["new","Not run"]].map(([k,l])=><button key={k} className={filter===k?"active":""} onClick={()=>setFilter(k)}>{l}</button>)}</div>
-     <input type="search" placeholder="Find a source" value={q} onChange={e=>setQ(e.target.value)}/><button className="linkBtn" onClick={()=>load()}>Refresh</button></div>
+     <input type="search" placeholder="Find a source" value={q} onChange={e=>setQ(e.target.value)}/><button className="linkBtn" onClick={()=>load()}>Refresh</button>{loadedAt&&<span className="muted small"> · checked {new Date(loadedAt).toLocaleTimeString([],{hour:"numeric",minute:"2-digit"})}</span>}</div>
     {shown.length===0?<p>{filter==="problems"?"No problems. Everything updated recently. 🎉":"Nothing here."}</p>
     :<ul className="statusList">{shown.map(r=><li key={r.name} className={r.st}>
       <div><b>{r.name}</b><span className="muted"> · {r.platform}{r.remote?" (GitHub job)":""}</span></div>
