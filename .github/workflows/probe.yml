@@ -17,11 +17,13 @@ jobs:
       - name: Fetch
         env:
           URLS: ${{ inputs.urls }}
+          SECRET: ${{ secrets.INGESTION_SECRET }}
         run: |
           mkdir out; i=0
           for u in $URLS; do
             i=$((i+1))
-            curl -sSL -m 40 -A "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0 Safari/537.36" \
+            AUTH=""; case "$u" in *mygotoday.com/api/admin/*) AUTH="Authorization: Bearer $SECRET";; esac
+            curl -sSL -m 40 ${AUTH:+-H "$AUTH"} -A "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0 Safari/537.36" \
               -D "out/$i.headers" -o "out/$i.body" "$u" || echo "curl failed" > "out/$i.error"
             head -c 400000 "out/$i.body" > "out/$i.txt" 2>/dev/null; rm -f "out/$i.body"
             echo "$i $u" >> out/index.txt
