@@ -1,0 +1,46 @@
+name: Copy database to new host (one-time)
+# Copies every table from OLD_DATABASE_URL (Railway) to NEW_DATABASE_URL (Neon), then compares row counts.
+# Run by hand only. Connection strings live in GitHub secrets and are never printed.
+on:
+  workflow_dispatch: {}
+permissions:
+  contents: write
+jobs:
+  copy:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    steps:
+      - name: Install Postgres 17 tools
+        run: |
+          sudo install -d /usr/share/postgresql-common/pgdg
+          sudo curl -fsSo /usr/share/postgresql-common/pgdg/apt.postgresql.org.asc https://www.postgresql.org/media/keys/ACCC4CF8.asc
+          echo "deb [signed-by=/usr/share/postgresql-common/pgdg/apt.postgresql.org.asc] https://apt.postgresql.org/pub/repos/apt noble-pgdg main" | sudo tee /etc/apt/sources.list.d/pgdg.list >/dev/null
+          sudo apt-get update -qq && sudo apt-get install -y -qq postgresql-client-17 >/dev/null
+      - name: Copy
+        env:
+          OLD: ${{ secrets.OLD_DATABASE_URL }}
+          NEW: ${{ secrets.NEW_DATABASE_URL }}
+        run: |
+          set -euo pipefail
+          [ -n "$OLD" ] && [ -n "$NEW" ] || { echo "Missing OLD_DATABASE_URL or NEW_DATABASE_URL secret"; exit 1; }
+          export PATH=/usr/lib/postgresql/17/bin:$PATH
+          # The log of filtered-out events isn't needed on the new host (its table is created empty).
+          pg_dump "$OLD" --no-owner --no-acl -Fc --exclude-table-data=rejected_events -f db.dump
+          pg_restore --no-owner --no-acl --if-exists --clean -d "$NEW" db.dump || echo "pg_restore reported warnings (usually harmless 'does not exist' notices)"
+      - name: Compare row counts
+        env:
+          OLD: ${{ secrets.OLD_DATABASE_URL }}
+          NEW: ${{ secrets.NEW_DATABASE_URL }}
+        run: |
+          export PATH=/usr/lib/postgresql/17/bin:$PATH
+          mkdir out
+          Q="select 'events',count(*) from events union all select 'active events',count(*) from events where status='active' union all select 'sources',count(*) from sources union all select 'source_configs',count(*) from source_configs union all select 'social_posts',count(*) from social_posts union all select 'community_events',count(*) from community_events union all select 'app_tokens',count(*) from app_tokens union all select 'version',0 where false"
+          { echo "OLD:"; psql "$OLD" -Atc "$Q"; psql "$OLD" -Atc "select version()"; echo; echo "NEW:"; psql "$NEW" -Atc "$Q"; psql "$NEW" -Atc "select version()"; } > out/db-migrate.txt 2>&1 || true
+          cat out/db-migrate.txt
+      - name: Save result to probe-results branch
+        run: |
+          cd out
+          git init -q -b probe-results
+          git config user.name "probe"; git config user.email "probe@users.noreply.github.com"
+          git add -A; git commit -qm "db migrate $(date -u +%FT%TZ)"
+          git push -qf "https://x-access-token:${{ github.token }}@github.com/${{ github.repository }}.git" probe-results
