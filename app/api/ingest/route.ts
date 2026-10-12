@@ -39,6 +39,10 @@ async function run(req:NextRequest){
   await ensureSchema();
   const trigger=req.headers.get("user-agent")?.includes("vercel-cron")?"schedule":"manual";
   const log=await db.query("insert into ingest_log(trigger,sources) values($1,$2) returning id",[trigger,names.length]).catch(()=>null);
+  // Keep the database small (it's billed by size and memory): the log of filtered-out events only needs a week,
+  // and run history a month.
+  await db.query("delete from rejected_events where ingestion_run_id in (select id from ingestion_runs where started_at<now()-interval '7 days')").catch(()=>{});
+  await db.query("delete from ingestion_runs where started_at<now()-interval '30 days'").catch(()=>{});
   let next=0;
   const worker=async()=>{while(next<names.length){const i=next++,name=names[i];
    try{
