@@ -15,12 +15,16 @@ const DEFAULT_ZIP="33326";
 
 function ageLabel(e:EventItem){if(e.ageMin==null||e.ageMax==null||e.ageMax>18)return"";return e.ageMax<=1?"Babies":`Ages ${e.ageMin}–${e.ageMax}`}
 function fmt(d?:string,t?:string){if(!d)return"Date TBA";const day=new Intl.DateTimeFormat("en-US",{weekday:"short",month:"short",day:"numeric"}).format(new Date(d+"T12:00:00"));if(!t)return day+" · All day";return day+" · "+new Intl.DateTimeFormat("en-US",{hour:"numeric",minute:"2-digit"}).format(new Date(d+"T"+t))}
+// Search text: lowercase, no punctuation, and simple word endings dropped, so "chilling" finds "Chillin'"
+// and "festivals" finds "Festival".
+function norm(t:string){return t.toLowerCase().normalize("NFKD").replace(/[\u0300-\u036f]/g,"").replace(/['’]/g,"").replace(/[^a-z0-9]+/g," ").split(" ").map(w=>w.length>4?w.replace(/ing$/,"in").replace(/(?<!s)s$/,""):w).join(" ").trim()}
 function nextWeekendLabel(){
  const p=new Intl.DateTimeFormat("en-US",{timeZone:"America/New_York",year:"numeric",month:"2-digit",day:"2-digit"}).formatToParts(new Date());
  const g=(t:string)=>p.find(x=>x.type===t)?.value||"",base=new Date(`${g("year")}-${g("month")}-${g("day")}T12:00:00Z`);
  const day=base.getUTCDay(),n=day===6?7:(6-day+7)%7||7,sat=new Date(base);sat.setUTCDate(sat.getUTCDate()+n);const sun=new Date(sat);sun.setUTCDate(sun.getUTCDate()+1);
+ const fri=new Date(sat);fri.setUTCDate(fri.getUTCDate()-1);   // weekend = Fri–Sun
  const m=(d:Date)=>d.toLocaleDateString("en-US",{month:"short",timeZone:"UTC"});
- return m(sat)===m(sun)?`${m(sat)} ${sat.getUTCDate()}–${sun.getUTCDate()}`:`${m(sat)} ${sat.getUTCDate()} – ${m(sun)} ${sun.getUTCDate()}`;
+ return m(fri)===m(sun)?`${m(fri)} ${fri.getUTCDate()}–${sun.getUTCDate()}`:`${m(fri)} ${fri.getUTCDate()} – ${m(sun)} ${sun.getUTCDate()}`;
 }
 function detailHref(e:EventItem){return e.source==="Ticketmaster"?(e.url||"#"):e.source==="GoToday Community"&&e.url?e.url:"/events/"+encodeURIComponent(e.id||"")}
 // Card art. Photos close to the card's shape fill it; flyers, posters and odd crops are shown whole
@@ -141,7 +145,7 @@ export default function Home(){
  }
 
  const filtered=useMemo(()=>{
-  const q=query.trim().toLowerCase(),interests=selected.filter(x=>x!=="Free");
+  const qWords=norm(query).split(" ").filter(w=>w.length>1),interests=selected.filter(x=>x!=="Free");
   return events.filter(e=>{
    const tags=new Set([e.category,...(e.tags||[])]);
    // Interests come from the server's facets (one consistent reading of every source); chips combine with OR.
@@ -151,7 +155,7 @@ export default function Home(){
    const am=!selected.includes("Kids")||ageBands.length===0||!facets.has("Kids")||(e.ageMin!=null&&e.ageMax!=null&&AGE_BANDS.some(([l,lo,hi])=>ageBands.includes(l)&&e.ageMin!<=hi&&e.ageMax!>=lo));
    const h=e.time?Number(e.time.slice(0,2)):-1;
    const tm=timeFilter==="Any time"||h<0||(timeFilter==="Morning"&&h<12)||(timeFilter==="Afternoon"&&h>=12&&h<17)||(timeFilter==="Evening"&&h>=17);
-   return cm&&am&&more&&tm&&(!q||[e.title,e.city,e.venue,e.desc,e.category,e.genre].filter(Boolean).join(" ").toLowerCase().includes(q));
+   return cm&&am&&more&&tm&&(!qWords.length||(t=>qWords.every(w=>t.includes(w)))(norm([e.title,e.city,e.venue,e.desc,e.category,e.genre,...(e.labels||[])].filter(Boolean).join(" "))));
   }).sort((a,b)=>sort==="Nearest"?(a.distanceMiles??999)-(b.distanceMiles??999):((a.date||"")+(a.time||"")).localeCompare((b.date||"")+(b.time||"")));
  },[events,selected,timeFilter,sort,query,ageBands,setting,dropIn,spanish,seniors]);
 

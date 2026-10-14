@@ -44,7 +44,8 @@ async function covered(lat:number,lng:number,today:string){
 function windowDates(range:string,today:string){
  const base=new Date(today+"T12:00:00Z"),ymd=(d:Date)=>d.toISOString().slice(0,10);let s=new Date(base),e=new Date(base);
  if(range==="tomorrow"){s.setUTCDate(s.getUTCDate()+1);e=new Date(s)}
- if(range==="weekend"){const day=base.getUTCDay(),n=day===6?7:(6-day+7)%7||7;s.setUTCDate(s.getUTCDate()+n);e=new Date(s);e.setUTCDate(e.getUTCDate()+1)}
+ // Weekend = Friday through Sunday (Friday-evening events count).
+ if(range==="weekend"){const day=base.getUTCDay(),n=day===6?7:(6-day+7)%7||7;s.setUTCDate(s.getUTCDate()+n);e=new Date(s);e.setUTCDate(e.getUTCDate()+1);s.setUTCDate(s.getUTCDate()-1)}
  return{startDate:ymd(s),endDate:ymd(e)};
 }
 const TM_JUNK=/^(luxury|premium|club)\s*(&|and)?\s*suites?\b|\bsuites?:|\bparking\b|\b(pregame|stadium|ballpark|behind the scenes) tours?\b/i;
