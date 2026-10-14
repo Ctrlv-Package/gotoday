@@ -14,7 +14,7 @@ import {freeLookup,captionSites} from "./freeDetails";
 // results are cached in social_posts so reruns cost nothing. Without ANTHROPIC_API_KEY, captions only.
 
 export type InstagramConfig={username:string;source:string;idPrefix:string;city:string;venue:string;address?:string;tz?:string;maxAgeDays?:number};
-type Extracted={place?:string;town?:string;title:string;date:string;start?:string;end?:string;summary?:string;free?:boolean;kids?:boolean;cancelled?:boolean};
+type Extracted={slide?:number;place?:string;town?:string;title:string;date:string;start?:string;end?:string;summary?:string;free?:boolean;kids?:boolean;cancelled?:boolean};
 type Post={id:string;caption?:string;media_type:string;media_url?:string;thumbnail_url?:string;permalink:string;timestamp:string;children?:{data:{media_url?:string;media_type:string}[]}};
 
 const GRAPH="https://graph.facebook.com/v26.0";
@@ -62,6 +62,7 @@ async function loadPosts(username:string):Promise<{posts:Post[];website:string}>
  return{posts:d?.business_discovery?.media?.data||[],website:d?.business_discovery?.website||""};
 }
 
+const slides=(p:Post)=>(p.children?.data||[]).filter(c=>c.media_type==="IMAGE"&&c.media_url).map(c=>c.media_url!);
 const imageOf=(p:Post)=>p.media_type==="VIDEO"?p.thumbnail_url:p.media_type==="CAROUSEL_ALBUM"?(p.children?.data.find(c=>c.media_type==="IMAGE")?.media_url||p.media_url):p.media_url;
 
 const PROMPT=(p:Post,venue:string,city:string)=>`This Instagram post is from ${venue} (${city}). It was posted on ${p.timestamp.slice(0,10)}.
@@ -81,7 +82,8 @@ Rules:
 - If the post says an event is cancelled or moved, list the original date with "cancelled": true and the new date as a normal event.
 - Use a short, stable title (e.g. "Artisan Market", not "Fall Artisan Market is back!").
 - "kids": true when children are welcome and it suits them: family/community events, all-ages festivals, open houses, kids in the photo or flyer, kid activities. false only for adult events (21+, bars, wine/beer, business networking). null if you truly cannot tell.
-Reply with JSON only: {"events":[{"title":"","date":"YYYY-MM-DD","start":"HH:MM","end":"HH:MM","place":"","town":"","summary":"one or two sentences","free":true|false|null,"kids":true|false|null,"cancelled":false}]} — omit start/end when not stated.`;
+- "slide": if several images are attached, the number (1 = first) of the image that shows THIS event best (its own flyer or photo); omit if none does.
+Reply with JSON only: {"events":[{"title":"","date":"YYYY-MM-DD","start":"HH:MM","end":"HH:MM","slide":1,"place":"","town":"","summary":"one or two sentences","free":true|false|null,"kids":true|false|null,"cancelled":false}]} — omit start/end when not stated.`;
 
 /** Instagram's image links are signed CDN URLs that outside services may not be allowed to open, so download
  *  the flyer here and send the bytes. */
@@ -131,7 +133,8 @@ async function askGemini(content:any[]):Promise<Extracted[]>{
 // their posts are re-read once with the newer reading (each event's own town).
 const ROUNDUPS=new Set(["miami_residents","weekendbroward","todowithkidsbroward","todowithkidsmiami"]);
 async function extractWithClaude(p:Post,venue:string,city:string,roundup=false,allowClaude=true):Promise<Extracted[]>{
- const urls=roundup&&p.media_type==="CAROUSEL_ALBUM"?(p.children?.data||[]).filter(c=>c.media_type==="IMAGE"&&c.media_url).slice(0,6).map(c=>c.media_url!):[imageOf(p)];
+ // Carousels: every slide is read (up to 6, or 4 for ordinary accounts) so each event can use its own slide as its picture.
+ const urls=p.media_type==="CAROUSEL_ALBUM"?slides(p).slice(0,roundup?6:4):[imageOf(p)];
  const imgs=(await Promise.all(urls.map(u=>imageBlock(u)))).filter(Boolean);
  const img=imgs[0];
  const text={type:"text",text:PROMPT(p,venue,city)};
@@ -214,7 +217,7 @@ export async function fetchInstagram(cfg:InstagramConfig,startDate:string,endDat
   out.push({id:`${cfg.idPrefix}-${slug(e.title)}-${e.date}`,title:e.title.trim(),city:town&&/^[A-Za-z .'-]{3,40}$/.test(town)?`${town}, FL`:cfg.city,
    // City and parks accounts post events all over town: use the place the post names, else the account's own venue.
    venue:(e.place||"").split(",")[0].trim().slice(0,120)||cfg.venue,address:e.place&&/\d/.test(e.place)?e.place.split(",").slice(1).join(",").trim()||e.place:e.place?undefined:cfg.address,date:e.date,time,endTime:end&&time&&end>time?end:undefined,
-   url:e.post.permalink,sourceUrl:`https://www.instagram.com/${cfg.username}/`,image:imageOf(e.post),
+   url:e.post.permalink,sourceUrl:`https://www.instagram.com/${cfg.username}/`,image:(e.slide&&e.post.media_type==="CAROUSEL_ALBUM"&&slides(e.post)[e.slide-1])||imageOf(e.post),
    category:family?"Family":arts?"Arts & Theatre":"Local",genre:"Venue Event",desc:(e.summary||"").trim()||`Posted by @${cfg.username}.`,
    tags:[...(family?["Family"]:[]),...(e.kids?["Kids"]:[]),...(arts?["Arts & Theatre"]:[]),...(e.free?["Free"]:[]),"Local"],
    emoji:family?"🎉":arts?"🎨":"📍",source:cfg.source,isFree:e.free===true||undefined,eventType:"event"});

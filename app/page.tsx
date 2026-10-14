@@ -22,7 +22,7 @@ function nextWeekendLabel(){
  const p=new Intl.DateTimeFormat("en-US",{timeZone:"America/New_York",year:"numeric",month:"2-digit",day:"2-digit"}).formatToParts(new Date());
  const g=(t:string)=>p.find(x=>x.type===t)?.value||"",base=new Date(`${g("year")}-${g("month")}-${g("day")}T12:00:00Z`);
  const day=base.getUTCDay(),n=day===6?7:(6-day+7)%7||7,sat=new Date(base);sat.setUTCDate(sat.getUTCDate()+n);const sun=new Date(sat);sun.setUTCDate(sun.getUTCDate()+1);
- const fri=new Date(sat);fri.setUTCDate(fri.getUTCDate()-1);   // weekend = Fri–Sun
+ const fri=new Date(sat);fri.setUTCDate(fri.getUTCDate()-1);   // weekend = Friday evening–Sunday
  const m=(d:Date)=>d.toLocaleDateString("en-US",{month:"short",timeZone:"UTC"});
  return m(fri)===m(sun)?`${m(fri)} ${fri.getUTCDate()}–${sun.getUTCDate()}`:`${m(fri)} ${fri.getUTCDate()} – ${m(sun)} ${sun.getUTCDate()}`;
 }

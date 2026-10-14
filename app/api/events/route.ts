@@ -98,6 +98,8 @@ export async function GET(request:NextRequest){
    source:/^Ticketmaster/.test(r.source)?"Ticketmaster":r.source,priceText:r.price_text||undefined,isFree:Boolean(r.is_free),ageMin:r.age_min??undefined,ageMax:r.age_max??undefined,registration:r.registration_text||undefined,
    distanceMiles:Math.round(d*10)/10,distanceAccuracy:acc};
   if(e.source==="Ticketmaster"&&TM_JUNK.test(e.title))continue;
+  // Weekend starts Friday evening: Friday daytime classes and programs aren't "weekend plans".
+  if(range==="weekend"&&e.date===w.startDate&&(allDay||e.time<"16:00:00"))continue;
   if(/^\W*(cancel+ed|postponed)\b/i.test(e.title))continue;   // "CANCELED: Kids in Motion" etc.
   if(discoveryRejection({...e,isDiscoveryEligible:e.source==="Ticketmaster"?true:undefined}))continue;
   // Instagram photo links are signed and stop working after a few days (the "oe" value is the expiry).
