@@ -18,6 +18,14 @@ function fmt(d?:string,t?:string){if(!d)return"Date TBA";const day=new Intl.Date
 // Search text: lowercase, no punctuation, and simple word endings dropped, so "chilling" finds "Chillin'"
 // and "festivals" finds "Festival".
 function norm(t:string){return t.toLowerCase().normalize("NFKD").replace(/[\u0300-\u036f]/g,"").replace(/['’]/g,"").replace(/[^a-z0-9]+/g," ").split(" ").map(w=>w.length>4?w.replace(/ing$/,"in").replace(/(?<!s)s$/,""):w).join(" ").trim()}
+// Days for the "Pick a day" menu: the 21 days after tomorrow, in Eastern time.
+function upcomingDays(){
+ const p=new Intl.DateTimeFormat("en-US",{timeZone:"America/New_York",year:"numeric",month:"2-digit",day:"2-digit"}).formatToParts(new Date());
+ const g=(t:string)=>p.find(x=>x.type===t)?.value||"",base=new Date(`${g("year")}-${g("month")}-${g("day")}T12:00:00Z`);
+ return Array.from({length:21},(_,i)=>{const d=new Date(base);d.setUTCDate(d.getUTCDate()+i+2);return d.toISOString().slice(0,10)});
+}
+function dayLabel(d:string,kind:"weekday"|"date"|"full"){const x=new Date(d+"T12:00:00Z");
+ return kind==="weekday"?x.toLocaleDateString("en-US",{weekday:"short",timeZone:"UTC"}):kind==="date"?x.toLocaleDateString("en-US",{month:"short",day:"numeric",timeZone:"UTC"}):x.toLocaleDateString("en-US",{weekday:"long",month:"short",day:"numeric",timeZone:"UTC"})}
 function nextWeekendLabel(){
  const p=new Intl.DateTimeFormat("en-US",{timeZone:"America/New_York",year:"numeric",month:"2-digit",day:"2-digit"}).formatToParts(new Date());
  const g=(t:string)=>p.find(x=>x.type===t)?.value||"",base=new Date(`${g("year")}-${g("month")}-${g("day")}T12:00:00Z`);
@@ -198,7 +206,16 @@ export default function Home(){
     <div className="fcTop">
      <div className="fcWhen">
       <div className="label">When</div>
-      <div className="seg when">{RANGES.map(([k,l])=><button key={k} className={range===k?"active":""} onClick={()=>chooseRange(k)}>{k==="weekend"?"Weekend":l}{k==="weekend"&&<small>{nextWeekendLabel()}</small>}</button>)}</div>
+      <div className="seg when four">{RANGES.map(([k,l])=><button key={k} className={range===k?"active":""} onClick={()=>chooseRange(k)}>{k==="weekend"?"Weekend":l}{k==="weekend"&&<small>{nextWeekendLabel()}</small>}</button>)}
+       {/* Any other day in the next three weeks */}
+       <label className={`pickDay${/^\d{4}/.test(range)?" active":""}`}>
+        <span>{/^\d{4}/.test(range)?dayLabel(range,"weekday"):"Pick day"}</span><small>{/^\d{4}/.test(range)?dayLabel(range,"date"):"▾"}</small>
+        <select aria-label="Pick a day" value={/^\d{4}/.test(range)?range:""} onChange={e=>e.target.value&&chooseRange(e.target.value)}>
+         <option value="" disabled>Pick a day</option>
+         {upcomingDays().map(d=><option key={d} value={d}>{dayLabel(d,"full")}</option>)}
+        </select>
+       </label>
+      </div>
      </div>
      <div className="filters">
       <label>Distance<select value={radius} onChange={e=>chooseRadius(e.target.value)}>{["10","15","25","50"].map(r=><option key={r} value={r}>{r} mi</option>)}</select></label>

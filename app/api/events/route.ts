@@ -43,6 +43,8 @@ async function covered(lat:number,lng:number,today:string){
 /** Date window for a range, from the searcher's own "today" (sent by the browser) or Eastern time. */
 function windowDates(range:string,today:string){
  const base=new Date(today+"T12:00:00Z"),ymd=(d:Date)=>d.toISOString().slice(0,10);let s=new Date(base),e=new Date(base);
+ // A specific day ("2026-10-21"), up to 60 days ahead.
+ if(/^\d{4}-\d{2}-\d{2}$/.test(range)){const d=new Date(range+"T12:00:00Z"),days=(d.getTime()-base.getTime())/864e5;if(days>=0&&days<=60){s=d;e=new Date(d)}}
  if(range==="tomorrow"){s.setUTCDate(s.getUTCDate()+1);e=new Date(s)}
  // Weekend = Friday through Sunday (Friday-evening events count).
  if(range==="weekend"){const day=base.getUTCDay(),n=day===6?7:(6-day+7)%7||7;s.setUTCDate(s.getUTCDate()+n);e=new Date(s);e.setUTCDate(e.getUTCDate()+1);s.setUTCDate(s.getUTCDate()-1)}
