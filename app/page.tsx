@@ -30,9 +30,9 @@ function nextWeekendLabel(){
  const p=new Intl.DateTimeFormat("en-US",{timeZone:"America/New_York",year:"numeric",month:"2-digit",day:"2-digit"}).formatToParts(new Date());
  const g=(t:string)=>p.find(x=>x.type===t)?.value||"",base=new Date(`${g("year")}-${g("month")}-${g("day")}T12:00:00Z`);
  const day=base.getUTCDay(),n=day===6?7:(6-day+7)%7||7,sat=new Date(base);sat.setUTCDate(sat.getUTCDate()+n);const sun=new Date(sat);sun.setUTCDate(sun.getUTCDate()+1);
- const fri=new Date(sat);fri.setUTCDate(fri.getUTCDate()-1);   // weekend = Friday evening–Sunday
+
  const m=(d:Date)=>d.toLocaleDateString("en-US",{month:"short",timeZone:"UTC"});
- return m(fri)===m(sun)?`${m(fri)} ${fri.getUTCDate()}–${sun.getUTCDate()}`:`${m(fri)} ${fri.getUTCDate()} – ${m(sun)} ${sun.getUTCDate()}`;
+ return m(sat)===m(sun)?`${m(sat)} ${sat.getUTCDate()}–${sun.getUTCDate()}`:`${m(sat)} ${sat.getUTCDate()} – ${m(sun)} ${sun.getUTCDate()}`;
 }
 function detailHref(e:EventItem){return e.source==="Ticketmaster"?(e.url||"#"):e.source==="GoToday Community"&&e.url?e.url:"/events/"+encodeURIComponent(e.id||"")}
 // Card art. Photos close to the card's shape fill it; flyers, posters and odd crops are shown whole
@@ -255,7 +255,7 @@ export default function Home(){
      {e.image?<><img className="picBlur" src={e.image} alt="" loading="lazy" referrerPolicy="no-referrer"/>
       <img className="picMain" src={e.image} alt="" loading="lazy" referrerPolicy="no-referrer" onLoad={x=>fitPic(x.currentTarget)} onError={x=>{const a=x.currentTarget.parentElement as HTMLElement;a.classList.add("noimg");a.style.background=artFor(e).bg;a.querySelectorAll("img").forEach(i=>i.remove());const n=a.querySelector("span") as HTMLElement|null;if(n)n.style.display="flex"}}/></>:null}
      <span style={e.image?{display:"none"}:undefined}><i>{artFor(e).icon}</i></span>
-     {e.isFree&&<em className="freeBadge">Free</em>}
+     {(e.isFree||e.facets?.includes("Free"))&&<em className="freeBadge">Free</em>}
     </a>
     <div className="cardBody">
      <h3><a href={detailHref(e)} target={e.source==="Ticketmaster"?"_blank":undefined} rel="noreferrer">{e.title}</a></h3>

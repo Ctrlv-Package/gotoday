@@ -57,7 +57,11 @@ export function facetsFor(e:In):Facet[]{
  if(!adultOnly&&!adultish&&(kids||has(FAMILY,t)||tagHas(FAMILY_TAGS)&&!tagHas(ADULT_TAGS)||tagHas(/^families$|^everyone$|^all ages$/i)||has(/\b(famil(y|ies)|all ages|kids|children)\b/i,d)||(CITY_SOURCE(e.source)&&!has(ADULT,d)&&!out.has("Music")&&!/\b(meeting|commission|board|council|workshop|seminar|class)\b/i.test(t))))out.add("Family");
  if(adultOnly||has(ADULT,t)||tagHas(ADULT_TAGS)||(ageMin!=null&&ageMin>=13&&!kidAges))out.add("Adults");
 
- if(e.isFree||tagHas(/^free$/i))out.add("Free");
+ // Free: said so, or a public community event from a city, county, parks department or library that
+ // mentions no price, tickets or fees (those are free in practice). Ticketed venues never count.
+ const gov=/^(city|town|village) of\b|county\b|\bparks\b|parks & rec|library|libraries|nyc parks/i.test(e.source||"");
+ const priced=/\$\s?\d|\btickets?\b|\badmission\b|\bfees?\b|\bcost\b|\bprice\b|\bpurchase\b|\bpaid\b|\bper person\b/i.test(`${t} ${e.desc||""}`);
+ if(e.isFree||tagHas(/^free$/i)||(gov&&e.source!=="Ticketmaster"&&!priced&&!tagHas(/^tickets$/i)))out.add("Free");
  return[...out];
 }
 

@@ -46,8 +46,8 @@ function windowDates(range:string,today:string){
  // A specific day ("2026-10-21"), up to 60 days ahead.
  if(/^\d{4}-\d{2}-\d{2}$/.test(range)){const d=new Date(range+"T12:00:00Z"),days=(d.getTime()-base.getTime())/864e5;if(days>=0&&days<=60){s=d;e=new Date(d)}}
  if(range==="tomorrow"){s.setUTCDate(s.getUTCDate()+1);e=new Date(s)}
- // Weekend = Friday through Sunday (Friday-evening events count).
- if(range==="weekend"){const day=base.getUTCDay(),n=day===6?7:(6-day+7)%7||7;s.setUTCDate(s.getUTCDate()+n);e=new Date(s);e.setUTCDate(e.getUTCDate()+1);s.setUTCDate(s.getUTCDate()-1)}
+ // Weekend = Saturday and Sunday (any other day can be picked from "Pick day").
+ if(range==="weekend"){const day=base.getUTCDay(),n=day===6?7:(6-day+7)%7||7;s.setUTCDate(s.getUTCDate()+n);e=new Date(s);e.setUTCDate(e.getUTCDate()+1)}
  return{startDate:ymd(s),endDate:ymd(e)};
 }
 const TM_JUNK=/^(luxury|premium|club)\s*(&|and)?\s*suites?\b|\bsuites?:|\bparking\b|\b(pregame|stadium|ballpark|behind the scenes) tours?\b/i;
@@ -100,8 +100,6 @@ export async function GET(request:NextRequest){
    source:/^Ticketmaster/.test(r.source)?"Ticketmaster":r.source,priceText:r.price_text||undefined,isFree:Boolean(r.is_free),ageMin:r.age_min??undefined,ageMax:r.age_max??undefined,registration:r.registration_text||undefined,
    distanceMiles:Math.round(d*10)/10,distanceAccuracy:acc};
   if(e.source==="Ticketmaster"&&TM_JUNK.test(e.title))continue;
-  // Weekend starts Friday evening: Friday daytime classes and programs aren't "weekend plans".
-  if(range==="weekend"&&e.date===w.startDate&&(allDay||e.time<"16:00:00"))continue;
   if(/^\W*(cancel+ed|postponed)\b/i.test(e.title))continue;   // "CANCELED: Kids in Motion" etc.
   if(discoveryRejection({...e,isDiscoveryEligible:e.source==="Ticketmaster"?true:undefined}))continue;
   // Instagram photo links are signed and stop working after a few days (the "oe" value is the expiry).
