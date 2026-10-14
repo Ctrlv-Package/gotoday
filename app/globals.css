@@ -361,3 +361,5 @@ a.logo{text-decoration:none;color:inherit}
 .pickDay:focus-within{outline:2px solid #a78bfa;outline-offset:-2px}
 @media(min-width:1100px){.fcWhen{flex:0 0 520px}.fcWhen .pickDay{height:100%;min-height:0}}
 @media(max-width:380px){.seg.when.four button,.pickDay{font-size:13px;padding-left:2px;padding-right:2px}}
+/* The day list must not inherit the white text of the selected (dark) button, or the options turn invisible. */
+.pickDay select,.pickDay select option{color:#18181b;background:#fff}
