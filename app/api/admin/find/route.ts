@@ -14,5 +14,13 @@ export async function GET(req:NextRequest){
  const rejected=(await db.query(`select r.raw_title as title,r.rejection_reason,s.name as source,r.raw_data->>'date' as date from rejected_events r join sources s on s.id=r.source_id
    where r.raw_title ilike $1 order by r.id desc limit 20`,[q]).catch(()=>({rows:[]}))).rows;
  const posts=(await db.query(`select permalink,posted_at,extracted from social_posts where extracted::text ilike $1 order by posted_at desc limit 10`,[q]).catch(()=>({rows:[]}))).rows;
- return NextResponse.json({ok:true,events,rejected,posts});
+ // &tm=1: what Ticketmaster itself lists for this keyword (to tell "not on Ticketmaster" from "we dropped it").
+ let ticketmaster:any[]|undefined;
+ if(req.nextUrl.searchParams.get("tm")&&process.env.TICKETMASTER_API_KEY){
+  const u=new URL("https://app.ticketmaster.com/discovery/v2/events.json");
+  u.searchParams.set("apikey",process.env.TICKETMASTER_API_KEY);u.searchParams.set("keyword",q.slice(1,-1));u.searchParams.set("stateCode","FL");u.searchParams.set("size","30");
+  const d:any=await fetch(u.toString(),{cache:"no-store"}).then(r=>r.json()).catch(()=>({}));
+  ticketmaster=(d?._embedded?.events||[]).map((e:any)=>({title:e.name,date:e.dates?.start?.localDate,status:e.dates?.status?.code,segment:e.classifications?.[0]?.segment?.name,venue:e._embedded?.venues?.[0]?.name,city:e._embedded?.venues?.[0]?.city?.name,markets:(e._embedded?.venues?.[0]?.markets||[]).map((m:any)=>m.id).join(",")}));
+ }
+ return NextResponse.json({ok:true,events,rejected,posts,ticketmaster});
 }
