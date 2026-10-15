@@ -152,6 +152,7 @@ const INSTAGRAM_ACCOUNTS:SourceConfig[]=[
  // Community round-up accounts (not official): lower priority, so an official listing of the same event wins.
  {...ig("Miami Residents","Miami, FL","miami_residents","miami-dade"),source_type:"roundup",priority:70},
  {...ig("Weekend Broward","Fort Lauderdale, FL","weekendbroward","broward"),source_type:"roundup",priority:70},
+ {...ig("The Broward Scene","Fort Lauderdale, FL","thebrowardscene","broward"),source_type:"roundup",priority:70},
  {...ig("To Do with Kids Broward","Fort Lauderdale, FL","todowithkidsbroward","broward"),source_type:"roundup",priority:70},
  {...ig("To Do with Kids Miami","Miami, FL","todowithkidsmiami","miami-dade"),source_type:"roundup",priority:70}
 ];

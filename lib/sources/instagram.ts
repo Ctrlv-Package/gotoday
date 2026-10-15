@@ -131,7 +131,7 @@ async function askGemini(content:any[]):Promise<Extracted[]>{
 
 // Round-up accounts post one event per slide in carousels, so they get every slide read (up to 6), and
 // their posts are re-read once with the newer reading (each event's own town).
-const ROUNDUPS=new Set(["miami_residents","weekendbroward","todowithkidsbroward","todowithkidsmiami"]);
+const ROUNDUPS=new Set(["miami_residents","weekendbroward","todowithkidsbroward","todowithkidsmiami","thebrowardscene"]);
 async function extractWithClaude(p:Post,venue:string,city:string,roundup=false,allowClaude=true):Promise<Extracted[]>{
  // Carousels: every slide is read (up to 6, or 4 for ordinary accounts) so each event can use its own slide as its picture.
  const urls=p.media_type==="CAROUSEL_ALBUM"?slides(p).slice(0,roundup?6:4):[imageOf(p)];
