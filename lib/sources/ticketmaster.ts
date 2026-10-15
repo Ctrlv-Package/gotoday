@@ -11,17 +11,29 @@ export async function fetchTicketmasterEvents(startDate:string,endDate:string,cf
  const key=process.env.TICKETMASTER_API_KEY;
  if(!key)throw new Error("TICKETMASTER_API_KEY is not set");
  const out:EventRecord[]=[],seen=new Set<string>();
+ // Some big venues (Amerant Bank Arena, Boca Black Box) carry no market tag, so a market search misses
+ // them: South Florida is also searched by distance. Each week is its own query so the 1,000-result cap
+ // never cuts off the end of the month.
+ const areas:{marketId?:string;latlong?:string;radius?:number}[]=[];
+ if(cfg.latlong)areas.push({latlong:cfg.latlong,radius:cfg.radius});
+ if(cfg.marketId||!cfg.latlong){areas.push({marketId:cfg.marketId||"15"});if((cfg.marketId||"15")==="15"&&!cfg.latlong)areas.push({latlong:"26.15,-80.22",radius:60})}
+ const weeks:[string,string][]=[];
+ for(let d=new Date(`${startDate}T00:00:00Z`);d.toISOString().slice(0,10)<=endDate;d.setUTCDate(d.getUTCDate()+7)){
+  const e=new Date(d);e.setUTCDate(e.getUTCDate()+6);const a=d.toISOString().slice(0,10),b=e.toISOString().slice(0,10);weeks.push([a,b<endDate?b:endDate]);
+ }
+ let calls=0;
+ for(const area of areas)for(const [from,to] of weeks)
  for(let page=0;page<5;page++){
   const u=new URL("https://app.ticketmaster.com/discovery/v2/events.json");
   u.searchParams.set("apikey",key);u.searchParams.set("countryCode","US");
-  if(cfg.latlong){u.searchParams.set("latlong",cfg.latlong);u.searchParams.set("radius",String(cfg.radius||50));u.searchParams.set("unit","miles")}else u.searchParams.set("marketId",cfg.marketId||"15");
-  u.searchParams.set("localStartEndDateTime",`${startDate}T00:00:00,${endDate}T23:59:59`);
+  if(area.latlong){u.searchParams.set("latlong",area.latlong);u.searchParams.set("radius",String(area.radius||50));u.searchParams.set("unit","miles")}else u.searchParams.set("marketId",area.marketId!);
+  u.searchParams.set("localStartEndDateTime",`${from}T00:00:00,${to}T23:59:59`);
   u.searchParams.set("sort","date,asc");u.searchParams.set("size","199");u.searchParams.set("page",String(page));
   // Ticketmaster allows ~5 requests/second per key and three regions share it: pace pages, wait out 429s.
-  if(page>0)await new Promise(res=>setTimeout(res,400));
+  if(calls++>0)await new Promise(res=>setTimeout(res,300));
   let r=await fetch(u.toString(),{cache:"no-store"});
   for(let t=0;t<3&&r.status===429;t++){await new Promise(res=>setTimeout(res,2000*(t+1)+Math.random()*1000));r=await fetch(u.toString(),{cache:"no-store"})}
-  if(!r.ok){if(page===0)throw new Error(`Ticketmaster HTTP ${r.status}`);break}
+  if(!r.ok){if(calls===1)throw new Error(`Ticketmaster HTTP ${r.status}`);break}
   const d:any=await r.json();
   for(const ev of d?._embedded?.events||[]){
    const title=String(ev.name||"").trim(),date=ev.dates?.start?.localDate||"";
