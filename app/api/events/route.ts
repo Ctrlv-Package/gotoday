@@ -2,6 +2,7 @@ import { db } from "../../../lib/db";
 import { facetsFor, cleanAges, displayTags } from "../../../lib/facets";
 import { NextRequest, NextResponse } from "next/server";
 import { ensureSchema } from "../../../lib/schema";
+import { cityCoords } from "../../../lib/ingestion/geocode";
 import { discoveryRejection } from "../../../lib/ingestion/utils";
 import { localParts, todayIn, DEFAULT_TZ } from "../../../lib/time";
 
@@ -17,7 +18,8 @@ const CITY_COORDS:Record<string,[number,number]>={
 "Tamarac, FL":[26.2129,-80.2498],"Margate, FL":[26.2445,-80.2064],"Deerfield Beach, FL":[26.3184,-80.0998],
 "Oakland Park, FL":[26.1723,-80.132],"Lighthouse Point, FL":[26.2756,-80.0873],"Cooper City, FL":[26.0573,-80.2717],
 "West Park, FL":[25.9845,-80.1987],"North Lauderdale, FL":[26.2173,-80.2259],"Wilton Manors, FL":[26.1604,-80.1389],
-"Parkland, FL":[26.3101,-80.2373],"Broward County, FL":[26.1224,-80.2],
+"Parkland, FL":[26.3101,-80.2373],"Southwest Ranches, FL":[26.0587,-80.3373],"Lauderdale-By-The-Sea, FL":[26.192,-80.0964],
+"Hillsboro Beach, FL":[26.2995,-80.0784],"Pembroke Park, FL":[25.9879,-80.1773],"Sea Ranch Lakes, FL":[26.2003,-80.0937],"Broward County, FL":[26.1224,-80.2],
 "Miami, FL":[25.7617,-80.1918],"Miami Beach, FL":[25.7907,-80.13],"North Miami, FL":[25.8901,-80.1867],"North Miami Beach, FL":[25.9331,-80.1625],
 "Coral Gables, FL":[25.7215,-80.2684],"Hialeah, FL":[25.8576,-80.2781],"Homestead, FL":[25.4687,-80.4776],"Doral, FL":[25.8195,-80.3553],
 "Miami Springs, FL":[25.8223,-80.2895],"Miami Lakes, FL":[25.9087,-80.3087],"Opa-locka, FL":[25.9023,-80.2503],"Key Biscayne, FL":[25.6937,-80.1628],
@@ -92,7 +94,7 @@ export async function GET(request:NextRequest){
  for(const r of rows){
   const tz=r.timezone||DEFAULT_TZ,start=new Date(r.start_at),lp=localParts(start,tz);
   let la=r.latitude==null?NaN:Number(r.latitude),lo=r.longitude==null?NaN:Number(r.longitude),acc="venue";
-  if(!Number.isFinite(la)){const c=CITY_COORDS[String(r.city||"").trim()];if(!c)continue;[la,lo]=c;acc="city"}
+  if(!Number.isFinite(la)){const k=String(r.city||"").trim();let c=CITY_COORDS[k];if(!c){const p=await cityCoords(k);if(p)c=[p.latitude,p.longitude]}if(!c)continue;[la,lo]=c;acc="city"}
   const d=miles(lat,lng,la,lo);if(d>radius)continue;
   const allDay=lp.time==="00:00:00";
   const e:any={id:"db-"+r.id,title:decodeHtml(r.title||""),city:r.city||"",venue:decodeHtml(r.venue||""),date:r.local_date||lp.date,time:allDay?"":lp.time,

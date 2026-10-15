@@ -2,6 +2,7 @@ import {NextRequest,NextResponse} from "next/server";
 import {persistIngestion} from "../../../lib/ingestion/persist";
 import {activeSources} from "../../../lib/ingestion/registry";
 import {db} from "../../../lib/db";
+import {cityCoords} from "../../../lib/ingestion/geocode";
 import {ensureSchema} from "../../../lib/schema";
 // Call the site by its public address: a scheduled run may arrive on an internal Vercel URL that
 // deployment protection blocks for the per-source calls below.
@@ -43,6 +44,9 @@ async function run(req:NextRequest){
   // and run history a month.
   await db.query("delete from rejected_events where ingestion_run_id in (select id from ingestion_runs where started_at<now()-interval '7 days')").catch(()=>{});
   await db.query("delete from ingestion_runs where started_at<now()-interval '30 days'").catch(()=>{});
+  // Upcoming events saved without a map position get their town's center, so searches can find them.
+  try{const {rows}=await db.query("select distinct city from events where latitude is null and status='active' and local_date>=current_date and city is not null limit 40");
+   for(const {city} of rows){const p=await cityCoords(city);if(p)await db.query("update events set latitude=$1,longitude=$2 where latitude is null and city=$3",[p.latitude,p.longitude,city])}}catch{}
   let next=0;
   const worker=async()=>{while(next<names.length){const i=next++,name=names[i];
    try{

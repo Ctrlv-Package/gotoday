@@ -17,7 +17,8 @@
     "pg": "^8.13.1",
     "react": "latest",
     "react-dom": "latest",
-    "typescript": "latest"
+    "typescript": "latest",
+    "zipcodes": "^8.0.0"
   },
   "devDependencies": {
     "playwright": "^1.63.0",

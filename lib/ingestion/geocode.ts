@@ -2,7 +2,7 @@ import {db} from "../db";
 import type { EventRecord } from "./types";
 const ENDPOINT="https://geocoding.geo.census.gov/geocoder/locations/onelineaddress";
 const cache=new Map<string,{latitude:number;longitude:number}|null>();
-function addressFor(e:EventRecord){const v=(e.address||"").trim();if(v)return v;const venue=(e.venue||"").trim(),city=(e.city||"").trim();if(!venue||/^(city of|broward county|greater fort lauderdale)/i.test(venue))return"";return [venue,city].filter(Boolean).join(", ")}
+function addressFor(e:EventRecord){const v=(e.address||"").trim();if(v)return v;const venue=(e.venue||"").trim(),city=(e.city||"").trim();if(!venue||/^((city|town|village) of|broward county|greater fort lauderdale)/i.test(venue))return"";return [venue,city].filter(Boolean).join(", ")}
 export async function geocodeEvent(e:EventRecord):Promise<EventRecord>{if(Number.isFinite(e.latitude)&&Number.isFinite(e.longitude))return e;const q=addressFor(e);if(!q)return e;if(cache.has(q)){const hit=cache.get(q);return hit?{...e,...hit}:e}try{const u=new URL(ENDPOINT);u.searchParams.set("address",q);u.searchParams.set("benchmark","Public_AR_Current");u.searchParams.set("format","json");const r=await fetch(u.toString(),{next:{revalidate:86400}});if(!r.ok){cache.set(q,null);return e}const d=await r.json(),m=d?.result?.addressMatches?.[0],x=Number(m?.coordinates?.x),y=Number(m?.coordinates?.y);if(!Number.isFinite(x)||!Number.isFinite(y)){cache.set(q,null);return e}const p={latitude:y,longitude:x};cache.set(q,p);return{...e,...p,address:e.address||m?.matchedAddress||undefined}}catch{cache.set(q,null);return e}}
 export async function geocodeEvents(events:EventRecord[]){const out:EventRecord[]=[];for(let i=0;i<events.length;i+=8){const batch=events.slice(i,i+8);out.push(...await Promise.all(batch.map(geocodeEvent)))}return out}
 export function distanceMiles(a:number,b:number,c:number,d:number){const R=3958.8,q=(x:number)=>x*Math.PI/180,dp=q(c-a),dl=q(d-b),z=Math.sin(dp/2)**2+Math.cos(q(a))*Math.cos(q(c))*Math.sin(dl/2)**2;return 2*R*Math.asin(Math.sqrt(z))}
@@ -21,8 +21,9 @@ export function cityCoords(city:string){
 }
 async function lookupCity(key:string){
  try{
-  const hit=await db.query("select latitude,longitude from places where key=$1",[key]);
-  if(hit.rowCount)return hit.rows[0].latitude==null?null:{latitude:Number(hit.rows[0].latitude),longitude:Number(hit.rows[0].longitude)};
+  const hit=await db.query("select latitude,longitude,updated_at from places where key=$1",[key]);
+  // A failed lookup is retried after a week (the town may be known by then, or the service was down).
+  if(hit.rowCount&&!(hit.rows[0].latitude==null&&Date.now()-new Date(hit.rows[0].updated_at).getTime()>7*864e5))return hit.rows[0].latitude==null?null:{latitude:Number(hit.rows[0].latitude),longitude:Number(hit.rows[0].longitude)};
  }catch{}
  const m=key.match(/^(.+?),\s*([a-z]{2})$/i);
  let coords:{latitude:number;longitude:number}|null=null;
@@ -33,6 +34,15 @@ async function lookupCity(key:string){
     const pts=pl.map(x=>[Number(x.latitude),Number(x.longitude)]).filter(([a,b])=>Number.isFinite(a)&&Number.isFinite(b));
     if(pts.length)coords={latitude:pts.reduce((s,x)=>s+x[0],0)/pts.length,longitude:pts.reduce((s,x)=>s+x[1],0)/pts.length};}
   }catch{}
+  // Towns the postal service doesn't name (Southwest Ranches mail goes to "Fort Lauderdale"): OpenStreetMap, free.
+  if(!coords){
+   try{
+    const u=new URL("https://nominatim.openstreetmap.org/search");
+    u.searchParams.set("city",m[1]);u.searchParams.set("state",m[2].toUpperCase());u.searchParams.set("country","us");u.searchParams.set("format","json");u.searchParams.set("limit","1");
+    const r=await fetch(u.toString(),{headers:{"user-agent":"GoToday/1.0 (https://www.mygotoday.com)"},signal:AbortSignal.timeout(10000)});
+    if(r.ok){const d:any[]=await r.json(),la=Number(d?.[0]?.lat),lo=Number(d?.[0]?.lon);if(Number.isFinite(la)&&Number.isFinite(lo))coords={latitude:la,longitude:lo}}
+   }catch{}
+  }
  }
  try{await db.query("insert into places(key,latitude,longitude) values($1,$2,$3) on conflict(key) do update set latitude=excluded.latitude,longitude=excluded.longitude,updated_at=now()",[key,coords?.latitude??null,coords?.longitude??null])}catch{}
  return coords;
