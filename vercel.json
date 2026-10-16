@@ -1,5 +1,6 @@
 {
   "crons": [
     { "path": "/api/ingest", "schedule": "0 10 * * *" }
-  ]
+  ],
+  "git": { "deploymentEnabled": { "probe-results": false, "fix/ingest-sources": false } }
 }
