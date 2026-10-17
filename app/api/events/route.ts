@@ -1,5 +1,5 @@
 import { db } from "../../../lib/db";
-import { facetsFor, cleanAges, displayTags } from "../../../lib/facets";
+import { facetsFor, cleanAges, displayTags, settingFor } from "../../../lib/facets";
 import { NextRequest, NextResponse } from "next/server";
 import { ensureSchema } from "../../../lib/schema";
 import { cityCoords } from "../../../lib/ingestion/geocode";
@@ -106,7 +106,8 @@ export async function GET(request:NextRequest){
   if(discoveryRejection({...e,isDiscoveryEligible:e.source==="Ticketmaster"?true:undefined}))continue;
   // Instagram photo links are signed and stop working after a few days (the "oe" value is the expiry).
   {const oe=/cdninstagram\.com|fbcdn\.net/.test(e.image)&&e.image.match(/[?&]oe=([0-9A-Fa-f]{8})/);if(oe&&parseInt(oe[1],16)*1000<now+3600e3)e.image=""}
-  {const facets=facetsFor(e),ages=cleanAges(e);e.facets=facets;e.labels=displayTags(e,facets).slice(0,3);e.ageMin=ages.ageMin;e.ageMax=ages.ageMax}
+  {const st=settingFor(e);e.tags=[...e.tags.filter((t:string)=>t!=="Indoor"&&t!=="Outdoor"),...(st?[st]:[])];
+   const facets=facetsFor(e),ages=cleanAges(e);e.facets=facets;e.labels=displayTags(e,facets).slice(0,3);e.ageMin=ages.ageMin;e.ageMax=ages.ageMax}
   // "Today": hide timed events that have already ended (or started over 2 hours ago with no end time).
   // "Today": hide events that are over. Many listings give only a start time (open houses, festivals),
   // so without an end time we assume 4 hours. Events in progress are marked "Happening now".

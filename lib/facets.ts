@@ -42,6 +42,23 @@ export function kidAgeRange(e:In):[number,number]|null{
  return null;
 }
 
+/** Indoors or outdoors, from what the event is (a 5K, a festival) first, then where it is. undefined = can't tell. */
+const OUT_WHAT=/\b(5k|10k|fun run|run(ning)?|walk(athon)?|race|trot|dash|marathon|triathlon|parade|fireworks|festival|fest|fair|carnival|farmers market|market|pumpkin patch|hayrides?|trunk[- ]or[- ]treat|block party|egg hunt|food trucks?|movie (in|at) the park|moonlight movie|kayak\w*|paddle\w*|bike ride|fishing|camping|hike|hiking|nature walk|outdoors?|picnic|beach clean ?up|car show|golf|soccer|baseball|softball|flag football|regatta|boat parade)\b/i;
+const OUT_WHERE=/\b(park|parks|beach|trail|garden|gardens|farm|stables|lake|nature (area|center|preserve)|natural area|preserve|amphithea\w*|pier|marina|campground|field|fields|plaza|promenade|boulevard|blvd|street|stadium|ranch|ranches|sanctuary|pool|splash pad|zoo|outdoors?)\b/i;
+const IN_WHERE=/\b(library|branch|museum|theat(re|er)|gallery|auditorium|room|indoors?|studio|mall|arena|hall|center|centre|church|school|cinema|bowling|skating rink|ice rink)\b/i;
+export function settingFor(e:{title?:string;venue?:string;source?:string;desc?:string}):"Indoor"|"Outdoor"|undefined{
+ const t=e.title||"",v=e.venue||"";
+ if(/\bindoors?\b/i.test(t))return"Indoor";
+ if(/\b(in the park|at the park|outdoors?)\b/i.test(t))return"Outdoor";
+ const lib=!/\bpark\b/i.test(v)&&(/library/i.test(e.source||"")||/\b(library|branch)\b/i.test(v));
+ if(OUT_WHAT.test(t)&&!(lib&&!/\b(outdoors?|garden|nature walk|in the park)\b/i.test(t)))return"Outdoor";
+ if(lib)return"Indoor";
+ if(OUT_WHERE.test(v)&&!/\b(arena|theat(re|er)|museum|mall)\b/i.test(v))return"Outdoor";
+ if(/\b(in the park|at the park|outdoors?)\b/i.test(t))return"Outdoor";
+ if(IN_WHERE.test(v)||IN_WHERE.test(t))return"Indoor";
+ return undefined;
+}
+
 const CITY_SOURCE=(s?:string)=>!!s&&s!=="Ticketmaster"&&!/library/i.test(s);
 
 export function facetsFor(e:In):Facet[]{

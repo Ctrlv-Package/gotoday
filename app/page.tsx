@@ -5,7 +5,7 @@ import AddToCalendar from "./components/AddToCalendar";
 
 type EventItem={id?:string;title:string;city:string;venue?:string;date?:string;time?:string;image?:string;url?:string;category?:string;genre?:string;minPrice?:number|null;desc?:string;tags?:string[];emoji?:string;source?:string;distanceMiles?:number;distanceAccuracy?:string;ageMin?:number;ageMax?:number;registration?:string;moreLocations?:number;otherVenues?:string[];isFree?:boolean;facets?:string[];labels?:string[];live?:boolean};
 
-const AGE_BANDS:[string,number,number][]=[["Babies & toddlers",0,2],["Preschool 3–5",3,5],["Ages 6–9",6,9],["Tweens 10–12",10,12],["Teens 13–17",13,17]];
+const AGE_BANDS:[string,number,number][]=[["All ages",0,99],["Babies & toddlers",0,2],["Preschool 3–5",3,5],["Ages 6–9",6,9],["Tweens 10–12",10,12],["Teens 13–17",13,17]];
 // Interest chips combine with OR; "Free" and the More-filters options always narrow the results.
 const CHIPS=["All","Family","Kids","Adults","Free","Music","Arts & Theatre","Sports"];
 const SETTINGS=["Any","Indoor","Outdoor"];
@@ -163,7 +163,7 @@ export default function Home(){
    const more=(setting==="Any"||tags.has(setting))&&(!dropIn||tags.has("Drop-in"))&&(!spanish||tags.has("En Español"))&&(!seniors||tags.has("Seniors")||(e.ageMin!=null&&e.ageMin>=50));
    // Kids' ages: an event counts when its range overlaps a chosen band; a kids event that gives no ages is for any age.
    const kr=kidAgeRange(e as any);
-   const am=!selected.includes("Kids")||ageBands.length===0||!facets.has("Kids")||kr==null||AGE_BANDS.some(([l,lo,hi])=>ageBands.includes(l)&&kr[0]<=hi&&kr[1]>=lo);
+   const am=!selected.includes("Kids")||ageBands.length===0||!facets.has("Kids")||kr==null||AGE_BANDS.some(([l,lo,hi])=>ageBands.includes(l)&&(l==="All ages"?kr[0]<=2&&kr[1]>=17:kr[0]<=hi&&kr[1]>=lo));
    const h=e.time?Number(e.time.slice(0,2)):-1;
    const tm=timeFilter==="Any time"||h<0||(timeFilter==="Morning"&&h<12)||(timeFilter==="Afternoon"&&h>=12&&h<17)||(timeFilter==="Evening"&&h>=17);
    return cm&&am&&more&&tm&&(!qWords.length||(t=>qWords.every(w=>t.includes(w)))(norm([e.title,e.city,e.venue,e.desc,e.category,e.genre,...(e.labels||[])].filter(Boolean).join(" "))));
@@ -237,7 +237,7 @@ export default function Home(){
     </div>
     {selected.includes("Kids")&&<div className="fcSection">
      <div className="label">Kids' ages</div>
-     <div className="chips wrap even5">{AGE_BANDS.map(([l,a,b])=><button key={l} title={l} className={ageBands.includes(l)?"active":""} onClick={()=>setAgeBands(x=>x.includes(l)?x.filter(y=>y!==l):[...x,l])}><span className="lg">{l}</span><span className="sm">{a}–{b}</span></button>)}</div>
+     <div className="chips wrap even6">{AGE_BANDS.map(([l,a,b])=><button key={l} title={l} className={ageBands.includes(l)?"active":""} onClick={()=>setAgeBands(x=>x.includes(l)?x.filter(y=>y!==l):[...x,l])}><span className="lg">{l}</span><span className="sm">{l==="All ages"?"All ages":`${a}–${b}`}</span></button>)}</div>
     </div>}
     <button className={`moreBtn${moreOpen||moreCount?" on":""}`} onClick={()=>setMoreOpen(o=>!o)} aria-expanded={moreOpen}><span>⚙ More filters{moreCount?` (${moreCount})`:""}</span><span aria-hidden>{moreOpen?"▴":"▾"}</span></button>
     {moreOpen&&<div className="morePanel">

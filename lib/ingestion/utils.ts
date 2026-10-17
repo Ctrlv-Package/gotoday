@@ -1,3 +1,4 @@
+import {settingFor} from "../facets";
 import type { EventRecord } from "./types";
 export const slug=(s:string)=>s.toLowerCase().replace(/[^a-z0-9]+/g,"-").replace(/^-|-$/g,"");
 export const stripHtml=(s:string)=>s.replace(new RegExp("<script[^>]*>[\\s\\S]*?</script>","gi")," ").replace(new RegExp("<style[^>]*>[\\s\\S]*?</style>","gi")," ").replace(new RegExp("<[^>]+>","g")," ").replace(/&nbsp;|&#160;/g," ").replace(/&amp;/g,"&").replace(/&#39;|&apos;/g,"'").replace(/&quot;/g,'\"').replace(/\s+/g," ").trim();
@@ -98,13 +99,8 @@ export function normalize(e:EventRecord):EventRecord{
   if(kids||ages[0]===0||isAllAges(e))tags.push("Family");
  }
  if(free)tags.push("Free");
- // Setting: libraries, theaters and museums are indoors; parks, beaches, trails and festivals outdoors.
- const where=`${e.venue} ${e.title}`,isLib=/library/i.test(e.source)||/\blibrary|branch\b/i.test(e.venue);
- const OUT=/\b(outdoors?|in the park|parks?\b|beach|trail|hike|hiking|garden|farm|stables|lake|nature (walk|area)|natural area|fireworks|parade|amphithea|pier|kayak|paddle|bike ride|fishing|camping|campground|field day|food trucks?|block party|street fair|moonlight movie|movie in the park|pool)\b/i;
- const IN=/\b(library|museum|theat(re|er)|gallery|center|centre|arena|hall|auditorium|room|indoors?|studio|mall|civic center)\b/i;
- if(isLib&&!/\b(outdoors?|garden|nature walk|in the park)\b/i.test(e.title))tags.push("Indoor");
- else if(OUT.test(where))tags.push("Outdoor");
- else if(IN.test(where))tags.push("Indoor");
+ // Setting (Indoor/Outdoor): see settingFor in lib/facets.ts (also re-applied when results are served).
+ const st=settingFor({title:e.title,venue:e.venue,source:e.source,desc:e.desc});if(st)tags.push(st);
  // In Spanish (not Spanish-learning classes, which the discovery rules drop).
  if(/\b(en espa[ñn]ol|espa[ñn]ol|in spanish|bilingual|biling[üu]e)\b/i.test(`${e.title} ${(e.tags||[]).join(" ")}`))tags.push("En Español");
  // Seniors: audience starts at 50+ or is labeled for older adults.

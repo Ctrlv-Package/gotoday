@@ -298,6 +298,8 @@ a.logo{text-decoration:none;color:inherit}
  .chips.even4,.chips.even5{display:grid;gap:8px}
  .chips.even4{grid-template-columns:repeat(4,minmax(0,1fr))}
  .chips.even5{grid-template-columns:repeat(5,minmax(0,1fr))}
+ .chips.even6{display:grid;gap:8px;grid-template-columns:repeat(3,minmax(0,1fr))}
+ .chips.even6 button{padding:9px 2px;text-align:center;overflow:hidden;text-overflow:ellipsis}
  .chips.even4 button,.chips.even5 button{padding:9px 2px;text-align:center;overflow:hidden;text-overflow:ellipsis}
  .chips .lg{display:none}.chips .sm{display:inline}
  .seg.setting{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));width:100%}
