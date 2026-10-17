@@ -85,11 +85,15 @@ export default async function EventPage({params}:{params:Promise<{id:string}>}){
 
      <div className="ctaRow">
       <a className="btn primary" href={e.officialUrl} target="_blank" rel="noreferrer">{e.source==="Ticketmaster"?"Tickets & details ↗":e.registrationText&&!directReg&&!regFull?`Register on ${regWhere} page ↗`:"Official event page ↗"}</a>
+     </div>
+     <div className="ctaGrid">
       <SaveButton item={{id:`db-${e.id}`,title:e.title,date:new Intl.DateTimeFormat("en-CA",{timeZone:e.tz}).format(e.start),venue:e.venue||e.city}}/>
-      {canFollow&&<FollowButton id={`db-${e.id}`} signedIn={!!user} initial={following}/>}
       {!ended&&<CalendarChoice base={`/events/${encodeURIComponent(id)}`} id={`db-${e.id}`} connected={calConnected}/>}
       <ShareButton title={e.title} text={`${e.title} — ${fmtDate(e.start,undefined,e.tz)}${isAllDay(e.start,e.tz)?"":`, ${fmtTime(e.start,e.tz)}`} at ${e.venue||e.city}`}/>
      </div>
+     {canFollow&&<div className="ctaFollow">
+ {canFollow&&<FollowButton id={`db-${e.id}`} signedIn={!!user} initial={following}/>}
+     </div>}
      <p className="ctaHelp">♡ <b>Save</b> keeps it in My GoToday{calConnected?" and your GoToday calendar":""}{!ended&&!calConnected?<> · 📅 <b>Calendar</b> adds this date to your calendar</>:null}{canFollow?<> · 🔔 <b>Remind me next year</b> gets you next year's date as soon as it's announced</>:null}</p>
 
      {paras.length>0&&<section className="about"><h2>About this event</h2>{paras.map((p,i)=><p key={i}>{p}</p>)}</section>}

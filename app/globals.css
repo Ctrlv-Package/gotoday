@@ -442,3 +442,11 @@ a.linkBtn{text-decoration:none}
 .ctaHelp{margin:10px 0 0;font-size:13px;line-height:1.55;color:var(--muted)}
 .ctaHelp b{color:var(--body);font-weight:700}
 .calBtn.inCal{text-decoration:none;color:#166534;background:#f0fdf4;border-color:#bbf7d0}
+/* Event page actions: main button full width; Save | Calendar | Share as equal buttons; "Remind me next year" full width. */
+.ctaRow .btn.primary{width:100%}
+.ctaGrid{display:flex;gap:8px;margin-top:8px}
+.ctaGrid>*{flex:1 1 0;min-width:0}
+.ctaGrid .saveBtn,.ctaGrid .cal,.ctaGrid .calBtn,.ctaGrid .shareDetail{width:100%;justify-content:center;white-space:nowrap}
+.ctaFollow{margin-top:8px;display:flex;flex-direction:column}
+.ctaFollow .followBtn{width:100%}
+@media(max-width:540px){.wideOnly{display:none}.ctaGrid .saveBtn,.ctaGrid .calBtn,.ctaGrid .shareDetail{padding:12px 8px!important;font-size:14px!important}}
