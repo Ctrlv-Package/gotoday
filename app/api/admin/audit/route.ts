@@ -37,28 +37,37 @@ export async function GET(req:NextRequest){
    const a=events[i],b=events[j];if(a.date!==b.date)continue;
    const near=(Math.abs((a.distanceMiles??99)-(b.distanceMiles??-99))<1)||town(a.city)===town(b.city);if(!near)continue;
    const wa=words(a.title),wb=words(b.title);let hit=0;for(const x of wa)if(wb.has(x))hit++;
-   const sameSlot=a.time&&a.time===b.time&&String(a.venue).toLowerCase().replace(/&/g,"and")===String(b.venue).toLowerCase().replace(/&/g,"and");
-   if((hit>=2&&hit/Math.max(1,Math.min(wa.size,wb.size))>=0.6)||(sameSlot&&hit>=1))add("duplicates",{area,date:day,title:`${a.title}  ⟷  ${b.title}`,source:`${a.source} / ${b.source}`});
+   const fa=a.title.toLowerCase().replace(/[^a-z0-9]+/g,""),fb=b.title.toLowerCase().replace(/[^a-z0-9]+/g,"");
+   const sameVenue=String(a.venue).toLowerCase().replace(/&/g,"and")===String(b.venue).toLowerCase().replace(/&/g,"and");
+   const sameSlot=a.time&&a.time===b.time&&sameVenue;
+   const contains=fa.length>=6&&fb.length>=6&&(fa.includes(fb)||fb.includes(fa));
+   // Different programs at different library branches aren't duplicates; the same thing listed twice is.
+   const crossSource=a.source!==b.source;
+   const timesOk=!a.time||!b.time||a.time===b.time;
+   if((sameSlot&&(hit>=1||contains))||(timesOk&&(crossSource||sameVenue)&&(contains||(hit>=2&&hit/Math.max(1,Math.min(wa.size,wb.size))>=0.75))))
+    add("duplicates",{area,date:day,title:`${a.title}  ⟷  ${b.title}`,source:`${a.source} / ${b.source}`});
   }
   const pics=new Map<string,string[]>();
   for(const e of events){
    const key=`${e.id}|${day}`;if(seen.has(key))continue;seen.add(key);
    const t=e.title||"",f:string[]=e.facets||[],h={area,date:day,title:t,source:e.source,id:e.id};
-   if(e.image){const k=String(e.image).split("?")[0];pics.set(k,[...(pics.get(k)||[]),t])}
+   if(e.image&&!/static\.libnet\.info/.test(e.image)){const k=String(e.image).split("?")[0];pics.set(k,[...(pics.get(k)||[]),t])}
    if(/\b(kids?|children'?s?|toddlers?|bab(y|ies)|preschool|storytime|tweens?|teens?|youth|family|families)\b/i.test(t)&&!f.includes("Kids")&&!f.includes("Family"))add("kidsTitleNotKids",h);
-   if(/\bfree\b/i.test(t)&&!/\bgluten[- ]free|sugar[- ]free|free ?style|alcohol[- ]free\b/i.test(t)&&!f.includes("Free"))add("freeTitleNotFree",h);
+   if(/\bfree\b/i.test(t)&&!/\b(gluten|sugar|alcohol|dairy)[- ]free|free ?style|\beats? free\b/i.test(t)&&!f.includes("Free"))add("freeTitleNotFree",h);
    if(/\b(21\+|18\+|wine|beer|brewery|cocktails?|happy hour|bar crawl|burlesque)\b/i.test(t)&&f.includes("Family"))add("adultTitleFamily",h);
    const st=(e.tags||[]).find((x:string)=>x==="Indoor"||x==="Outdoor");
    if(st==="Indoor"&&settingFor({title:t,venue:e.venue,source:e.source})==="Outdoor")add("outdoorTitleIndoor",h);
    if(!st)add("noSetting",{...h,note:e.venue});
-   if(/^(dear |join us|don'?t miss|have you|did you|reminder|save the date|happy |thank you|we('| a)re |it'?s |mark your|come (out|join)|calling all|attention|just \d+ days?)/i.test(t)||/[?!]\s*$/.test(t)&&t.length>40||t.length>90)add("captionTitle",h);
+   if(/^(dear |we hope|join us (tomorrow|today|this)|don'?t (miss|forget)|have you|did you know|reminder|save the date|thank you|mark your|calling all|just \d+ days?|maintenance alert|why i love)/i.test(t)||(/ · Instagram$/.test(e.source||"")&&(t.length>80||/\?\s*$/.test(t))))add("captionTitle",h);
    if(/ · Instagram$/.test(e.source||"")&&String(e.venue||"").toLowerCase()===String(e.source).replace(/ · Instagram$/,"").toLowerCase())add("venueIsAccount",{...h,note:e.venue});
    if(f.includes("Kids")){const r=kidAgeRange(e);if(r&&r[1]-r[0]<3&&!e.ageMin)add("kidsNoAgesNarrowed",{...h,note:`${r[0]}–${r[1]}`})}
   }
   for(const [u,titles] of pics)if(new Set(titles.map(x=>x.toLowerCase())).size>=2)add("sharedPhoto",{area,date:day,title:titles.join("  |  "),source:u.slice(0,80)});
  }
  const summary=Object.fromEntries(Object.entries(found).map(([k,v])=>[k,v.length]));
- const out={ok:true,checkedAt:new Date().toISOString(),areas:AREAS.length,days:days.length,cards:total,summary,examples:Object.fromEntries(Object.entries(found).map(([k,v])=>[k,v.slice(0,40)]))};
+ // Counted as problems; noSetting / kidsNoAgesNarrowed / venueIsAccount are shown for information only.
+ const problems=["duplicates","sharedPhoto","kidsTitleNotKids","freeTitleNotFree","adultTitleFamily","outdoorTitleIndoor","captionTitle"].reduce((n,k)=>n+(summary[k]||0),0);
+ const out={ok:true,checkedAt:new Date().toISOString(),areas:AREAS.length,days:days.length,cards:total,problems,summary,examples:Object.fromEntries(Object.entries(found).map(([k,v])=>[k,v.slice(0,40)]))};
  if(req.nextUrl.searchParams.get("save")){
   await ensureSchema();
   await db.query("create table if not exists quality_audits(id serial primary key,checked_at timestamptz default now(),cards int,summary jsonb,examples jsonb)").catch(()=>{});

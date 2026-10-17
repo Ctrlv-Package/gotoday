@@ -35,6 +35,7 @@ const STATEMENTS=[
  // Web look-ups for events whose Instagram post says little (official page + description), one per event.
  `create table if not exists event_details(key text primary key,data jsonb not null,created_at timestamptz default now())`,
  // Personal (not business) Instagram accounts can't be read; their towns' official accounts cover them.
+ `create index if not exists events_image_url_idx on events(image_url)`,
  `delete from source_configs where name in ('Lake Eola · Instagram','Pines City Center · Instagram','Tamarac Parks & Rec · Instagram')`,
  // CivicPlus-hosted city sites block Vercel's servers: fetch them all from the GitHub job instead.
  `update source_configs set remote=true,updated_at=now() where platform='civicplus' and remote=false`,

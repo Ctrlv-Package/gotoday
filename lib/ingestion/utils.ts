@@ -48,6 +48,9 @@ export const isAllAges=(e:EventRecord)=>(e.tags||[]).some(t=>/\b(everyone|all ag
 // "Is this something a normal person might decide to go do?" Rules look at the TITLE and TAGS,
 // not boilerplate descriptions ("registration required", "ages 3-5" are not reasons to reject).
 const EVENT_TITLE=/\b(festival|fest|fair|concert|show|performance|celebration|celebrate|heritage|holiday|halloween|trunk[- ]or[- ]treat|parade|carnival|market|movie|film|screening|exhibit(ion)?|author|story ?time|storytelling|open house|block party|fireworks|jazz|symphony|orchestra|comedy|theat(re|er)|puppet|magic|dance party|tournament|game night)\b/i;
+// Post text or notices read as an event title ("Dear Neighbors", "We hope you will join us TOMORROW…",
+// "Maintenance Alert", "Shop Local. Play Along. Win!").
+const CAPTION=/^(dear |we hope|we('re| are) (so )?(excited|thrilled|happy)|join us (tomorrow|today|this)|don'?t (miss|forget)|did you know|have you (signed|registered|heard)|reminder\b|friendly reminder|save the date\b|thank you\b|thanks to|happy (birthday|anniversary|friday|monday|holidays?)\b|mark your calendars?|calling all\b|attention\b|just \d+ (more )?days?|only \d+ (more )?days?|\d+ days? (until|left)|maintenance alert|road (work|closure)|traffic (alert|advisory)|service alert|weather (alert|update)|why i love|meet (our|the) (new|team|staff)|now hiring|we'?re hiring|apply now|congratulations)|\b(shop local\. play along|giveaway|survey|government week|proclamation)\b|!\s*$(?<=win!\s*)/i;
 const ANNOUNCEMENT=/^(labor day|patriot day|memorial day|veterans'? day|thanksgiving( day)?|christmas( day| eve)?|new year'?s( day| eve)?|independence day|martin luther king.*day|presidents'? day|juneteenth|columbus day|indigenous peoples'? day|good friday|election day|rosh hashanah|yom kippur)$|\b(closed|closure|office hours|registration (opens|closes|deadline)|deadline|applications? (due|open)|no school|early release|contest registration)\b/i;
 const MEETING=/\b(board|commission|committee|council|hearing|advisory|magistrate|zoning|budget|bargaining|public meeting|town hall|pre-?bid|special meeting|workshop session)\b/i;
 const PASSIVE=/\b(grab[- ](?:and|&|n)[- ]go|information table|take (?:it )?(?:and|&) make|take[- ]home craft|photo op|word search|display (?:case|table)|coloring station|self[- ]guided|seed library|month$)\b/i;
@@ -66,7 +69,7 @@ export function discoveryRejection(e:EventRecord):DiscoveryReason|null{
  if(e.isDiscoveryEligible===false)return"marked-ineligible";
  const title=e.title.replace(/\bboard[- ]?games?\b/gi,"games");
  const tagText=(e.tags||[]).join(" | ");
- if(ANNOUNCEMENT.test(title.trim()))return"announcement";
+ if(ANNOUNCEMENT.test(title.trim())||CAPTION.test(title.trim()))return"announcement";
  if(MEETING.test(title))return"meeting";
  if(e.isDiscoveryEligible===true)return null; // curated sources (Ticketmaster) skip the rest
  const strong=STRONG_TAG.test(tagText);

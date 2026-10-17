@@ -92,7 +92,9 @@ export function facetsFor(e:In):Facet[]{
  // mentions no price, tickets or fees (those are free in practice). Ticketed venues never count.
  const gov=/^(city|town|village) of\b|county\b|\bparks\b|parks & rec|library|libraries|nyc parks/i.test(e.source||"");
  const priced=/\$\s?\d|\btickets?\b|\badmission\b|\bfees?\b|\bcost\b|\bprice\b|\bpurchase\b|\bpaid\b|\bper person\b/i.test(`${t} ${e.desc||""}`);
- if(e.isFree||tagHas(/^free$/i)||(gov&&e.source!=="Ticketmaster"&&!priced&&!tagHas(/^tickets$/i)))out.add("Free");
+ // The title says so ("FREE Record release show", "Free Family Movie Night") — not "gluten-free" or "kids eat free".
+ const freeTitle=/(^|[\s:–-])free\b(?![- ](style|agent|form|lance|dom|range|play\b))/i.test(t)&&!/\b(gluten|sugar|dairy|alcohol|smoke|tax|fee|cruelty|hands)[- ]free\b|\beat(s)? free\b|\bfree (with|for kids with) (purchase|paid|adult)/i.test(t);
+ if(e.isFree||tagHas(/^free$/i)||freeTitle||(gov&&e.source!=="Ticketmaster"&&!priced&&!tagHas(/^tickets$/i)))out.add("Free");
  return[...out];
 }
 

@@ -118,52 +118,55 @@ export async function GET(request:NextRequest){
  }
  // Same program on the same day at several places (library branches, city + Ticketmaster) -> one card, nearest first.
  const groups=new Map<string,any[]>();
- const isIg=(e:any)=>/ · Instagram$/.test(e.source||"")||e.genre==="Venue Event";
+ const isIg=(e:any)=>/ · Instagram$/.test(e.source||"");
  // Round-up accounts repost other people's events: their copy gives way to the organizer's own listing.
  const isRoundup=(e:any)=>/^(Miami Residents|Weekend Broward|The Broward Scene|To Do with Kids (Broward|Miami)) · Instagram$/.test(e.source||"");
  for(const e of events){const k=collapseKey(e.title,e.date);const g=groups.get(k);g?g.push(e):groups.set(k,[e])}
  events=[...groups.values()].map(g=>{g.sort((a:any,b:any)=>a.distanceMiles-b.distanceMiles||((a.source==="Ticketmaster"?1:0)-(b.source==="Ticketmaster"?1:0))||(isIg(a)?1:0)-(isIg(b)?1:0)||(isRoundup(a)?1:0)-(isRoundup(b)?1:0));const venues=new Set(g.map((x:any)=>x.venue));let m={...g[0]};for(const o of g.slice(1))m=mergeCopy(m,o);return{...m,moreLocations:venues.size-1,otherVenues:[...venues].slice(1,6)}})
   .sort((a:any,b:any)=>(a.date+(a.time||"")).localeCompare(b.date+(b.time||""))||((a.source==="Ticketmaster"?1:0)-(b.source==="Ticketmaster"?1:0)));
- // An event a town posts on Instagram is often also on its calendar under a slightly different title
- // ("Fall Festival" vs "Weston Fall Festival 2026"). Keep the calendar listing, drop the Instagram copy.
+ // ---- One card per real-world event, whatever the source ----
+ // The same event reaches us from a city calendar, the city's Instagram, round-up accounts and Ticketmaster, under
+ // slightly different titles ("Boo Bash" / "Boo Bash at ArtsPark", "Shred Event" / "Document Shred Event"), and
+ // sometimes twice from one source (a cut-off title). Two listings are the same event when they're on the same day
+ // and either (a) start at the same time at the same venue with overlapping titles, or (b) are in the same place and
+ // their titles mostly match (one of them a post), or (c) come from one source at one time with one title cut off.
  const STOP=new Set(["the","and","of","a","at","in","on","for","with","to","annual","city","town","village","free","fl","event","day","night","2025","2026","2027"]);
  const words=(t:string)=>new Set(t.toLowerCase().replace(/&/g," and ").replace(/[^a-z0-9]+/g," ").split(" ").filter(w=>w.length>2&&!STOP.has(w)));
- const cal=events.filter((e:any)=>!isIg(e)),official=events.filter((e:any)=>!isRoundup(e));
- events=events.filter((e:any)=>{
-  if(!isIg(e))return true;
-  const w=words(e.title);if(!w.size)return true;
-  return!(isRoundup(e)?official:cal).some((c:any)=>{if(c===e)return false;if(c.date!==e.date)return false;
-   // Same place: close together, or the same town (posts without a street address sit at the town's center).
-   const town=(x:string)=>String(x||"").toLowerCase().replace(/^ft\.?\s/,"fort ").replace(/,.*$/,"").trim();
-   const near=(typeof c.distanceMiles==="number"&&typeof e.distanceMiles==="number"&&Math.abs(c.distanceMiles-e.distanceMiles)<4)||(!!town(c.city)&&town(c.city)===town(e.city));
-   if(!near)return false;const cw=words(c.title);let hit=0;for(const x of w)if(cw.has(x))hit++;
-   if(!(hit>=Math.min(2,w.size)&&hit/Math.min(w.size,cw.size||1)>=0.6))return false;
-   Object.assign(c,mergeCopy(c,e));return true});   // keep the calendar listing, but take the post's photo and details
- });
- // The same photo on 3+ different Instagram events is a round-up cover, not any one event's picture.
- const igPics=[...new Set((events as any[]).filter(e=>e.image&&isIg(e)).map(e=>e.image as string))];
+ const place=(x:string)=>String(x||"").toLowerCase().replace(/&/g,"and").replace(/[^a-z0-9]+/g," ").trim();
+ const town=(x:string)=>String(x||"").toLowerCase().replace(/^ft\.?\s/,"fort ").replace(/,.*$/,"").trim();
+ const flat=(t:string)=>t.toLowerCase().replace(/[^a-z0-9]+/g,"");
+ // Which copy leads the card: the organizer's calendar, then Ticketmaster, then the organizer's post, then round-ups.
+ const rank=(e:any)=>isRoundup(e)?3:isIg(e)?2:e.source==="Ticketmaster"?1:0;
+ // The same photo on 3+ differently named events is a cover or a placeholder (a round-up post's cover, a city's
+ // generic banner), not any one event's picture. Library category pictures (a storytime photo on storytimes) are fine.
+ const igPics=[...new Set((events as any[]).filter(e=>e.image&&!/static\.libnet\.info|ticketm\.net/.test(e.image)).map(e=>e.image as string))];
  if(igPics.length){
   const shared=new Set((await db.query("select image_url from events where image_url=any($1) group by image_url having count(distinct lower(title))>=3",[igPics]).catch(()=>({rows:[]}))).rows.map((r:any)=>r.image_url));
   for(const e of events as any[])if(shared.has(e.image))e.image="";
  }
- // One account often posts the same event several times ("Champagne Welcome & Gallery Tour", "Hollywood Art Walk
- // Guided Tour"): same account and day, plus the same time and venue or nearly the same title -> one card.
- const place=(x:string)=>String(x||"").toLowerCase().replace(/&/g,"and").replace(/[^a-z0-9]+/g," ").trim();
- const kept:any[]=[];
- for(const e of events as any[]){
-  if(!isIg(e)){kept.push(e);continue}
-  const w=words(e.title);
-  const twin=kept.find((c:any)=>{if(!isIg(c)||c.source!==e.source||c.date!==e.date)return false;
-   if(e.time&&c.time===e.time&&place(c.venue)===place(e.venue))return true;
-   const cw=words(c.title);let hit=0;for(const x of w)if(cw.has(x))hit++;
-   return hit>=3&&hit/Math.min(w.size,cw.size||1)>=0.75&&(!e.time||!c.time||e.time===c.time)});
-  if(!twin){kept.push(e);continue}
-  // Keep whichever copy has a picture (then the longer description) as the card; fold the other in.
-  const better=(!twin.image&&e.image)||(!!twin.image===!!e.image&&(e.desc||"").length>(twin.desc||"").length);
-  const merged=better?mergeCopy(e,twin):mergeCopy(twin,e);
-  kept[kept.indexOf(twin)]=merged;
+ const wc=new Map<any,Set<string>>(),W=(e:any)=>{let w=wc.get(e);if(!w){w=words(e.title);wc.set(e,w)}return w};
+ const same=(a:any,b:any)=>{
+  if(a.date!==b.date)return false;
+  const wa=W(a),wb=W(b);let hit=0;for(const x of wa)if(wb.has(x))hit++;
+  const fa=flat(a.title),fb=flat(b.title),contains=fa.length>=4&&fb.length>=4&&(fa.includes(fb)||fb.includes(fa));
+  const timesOk=!a.time||!b.time||a.time===b.time;
+  if(a.time&&a.time===b.time&&place(a.venue)&&place(a.venue)===place(b.venue)&&(hit>=1||contains))return true;                       // (a)
+  if(a.source===b.source&&a.time===b.time&&fa.length>=10&&fb.length>=10&&(fa.startsWith(fb)||fb.startsWith(fa)))return true;           // (c)
+  if(!(isIg(a)||isIg(b))||!timesOk)return false;
+  const near=(typeof a.distanceMiles==="number"&&typeof b.distanceMiles==="number"&&Math.abs(a.distanceMiles-b.distanceMiles)<4)||(!!town(a.city)&&town(a.city)===town(b.city));
+  if(!near)return false;
+  const small=Math.min(wa.size,wb.size);if(!small)return contains;
+  return contains||(hit>=Math.min(2,small)&&hit/small>=0.6);                                                                            // (b)
+ };
+ const better=(a:any,b:any)=>rank(a)!==rank(b)?rank(a)<rank(b):(!!a.image!==!!b.image?!!a.image:(a.desc||"").length>=(b.desc||"").length);
+ const kept:any[]=[],byDay=new Map<string,number[]>();
+ for(const e of [...events].sort((a:any,b:any)=>rank(a)-rank(b))){
+  const idx=byDay.get(e.date)||[];const i=idx.find(k=>same(kept[k],e));
+  if(i===undefined){idx.push(kept.length);byDay.set(e.date,idx);kept.push(e);continue}
+  const c=kept[i],m=better(c,e)?mergeCopy(c,e):mergeCopy(e,c);   // the leading copy takes the other's photo/details if it lacks them
+  wc.set(m,words(m.title));kept[i]=m;
  }
- events=kept;
+ events=kept.sort((a:any,b:any)=>(a.date+(a.time||"")).localeCompare(b.date+(b.time||""))||((a.source==="Ticketmaster"?1:0)-(b.source==="Ticketmaster"?1:0)));
  const localCount=events.filter((e:any)=>e.source!=="Ticketmaster").length;
  // No results: tell the page whether that's "nothing this day" or "we're not in this area yet".
  const coverage=events.length?{covered:true}:{covered:await covered(lat,lng,today),place:usedZip?zipPlace.get(postalCode)||null:null};
