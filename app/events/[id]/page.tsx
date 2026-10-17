@@ -94,7 +94,7 @@ export default async function EventPage({params}:{params:Promise<{id:string}>}){
      {canFollow&&<div className="ctaFollow">
  {canFollow&&<FollowButton id={`db-${e.id}`} signedIn={!!user} initial={following}/>}
      </div>}
-     <p className="ctaHelp">♡ <b>Save</b> keeps it in My GoToday{calConnected?" and your GoToday calendar":""}{!ended&&!calConnected?<> · 📅 <b>Calendar</b> adds this date to your calendar</>:null}{canFollow?<> · 🔔 <b>Remind me next year</b> gets you next year's date as soon as it's announced</>:null}</p>
+     <p className="ctaHelp">♡ <b>Save</b> keeps it in My GoToday{calConnected?" and adds it to your GoToday calendar (Google Calendar can take up to a day to show new events)":""}{!ended&&!calConnected?<> · 📅 <b>Calendar</b> adds this date to your calendar</>:null}{canFollow?<> · 🔔 <b>Remind me next year</b> gets you next year's date as soon as it's announced</>:null}</p>
 
      {paras.length>0&&<section className="about"><h2>About this event</h2>{paras.map((p,i)=><p key={i}>{p}</p>)}</section>}
      {tags.length>0&&<div className="tagRow">{tags.map(t=><span key={t}>{t}</span>)}</div>}

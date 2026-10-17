@@ -8,6 +8,6 @@ import {isSaved,onSavedChange} from "./saved";
 export default function CalendarChoice({base,id,connected,compact=false}:{base:string;id:string;connected:boolean;compact?:boolean}){
  const [saved,setSaved]=useState(false);
  useEffect(()=>{if(!connected)return;let live=true;const f=()=>isSaved(id).then(v=>{if(live)setSaved(v)});f();const off=onSavedChange(f);return()=>{live=false;off()}},[id,connected]);
- if(connected&&saved)return <a className={`calBtn inCal${compact?" compact":""}`} href="/me" title="Saved events appear in your GoToday calendar automatically and stay up to date">✓ <span className="wideOnly">In your GoToday </span>calendar</a>;
+ if(connected&&saved)return <a className={`calBtn inCal${compact?" compact":""}`} href="/me" title="Saved events go to your GoToday calendar automatically and stay up to date. Google Calendar can take up to a day to show new ones; tap to see My GoToday.">✓ <span className="wideOnly">In your GoToday </span>calendar</a>;
  return <AddToCalendar base={base} compact={compact}/>;
 }

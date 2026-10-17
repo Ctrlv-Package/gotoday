@@ -51,7 +51,7 @@ export default async function Me(){
 
     <section className="meSection">
      <h2>Your GoToday calendar</h2>
-     <p className="muted">Subscribe once and every event you save shows up in your calendar by itself, including next year's dates for your reminders. Changes and cancellations update too (Google Calendar checks for updates a few times a day; Apple Calendar more often).</p>
+     <p className="muted">Subscribe once and every event you save shows up in your calendar by itself, including next year's dates for your reminders. Changes and cancellations update too. Note: Google Calendar only checks for new events every several hours (sometimes up to a day), so a new save can take a while to appear there; Apple Calendar checks more often. Need it on your calendar right now? Use the 📅 button on the event.</p>
      <CalendarLinks feed={feed} initial={cal}/>
     </section>
 
