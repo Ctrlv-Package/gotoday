@@ -1,6 +1,6 @@
 import type {EventRecord} from "../ingestion/types";
 import {fetchRetry} from "../http";
-import {slug,stripHtml} from "../ingestion/utils";
+import {slug,stripHtml,costFromPage} from "../ingestion/utils";
 
 // Shared parser for Granicus OpenCities event calendars (Fort Lauderdale, Sunrise, Plantation).
 // It keys off links to event detail pages instead of exact CSS classes, so small template
@@ -169,7 +169,7 @@ export async function fetchOpenCities(cfg:OpenCitiesConfig,startDate:string,endD
   if(newOnPage===0||allPastEnd)break;
  }
  if(out.length===0)throw new Error(`No events in ${startDate}..${endDate} (found ${linksSeen} event cards on ${cfg.listUrl})`);
- return expandFromDetails(out,startDate,endDate,cfg.detailLimit??60);
+ return expandFromDetails(out,startDate,endDate,cfg.detailLimit??120);
 }
 
 /** List cards show only the next date and rarely a time ("Open Play Chess · 5 more dates"). Open each event's
@@ -179,14 +179,18 @@ async function expandFromDetails(events:EventRecord[],startDate:string,endDate:s
  for(const e of events)if(!byUrl.has(e.url))byUrl.set(e.url,e);
  let opened=0;
  for(const [url,e] of byUrl){
-  let occ:Occurrence[]=[],img:string|undefined,desc:string|undefined;
+  let occ:Occurrence[]=[],img:string|undefined,desc:string|undefined,cost:string|undefined;
   if(opened<limit){
    opened++;
    try{const r=await fetchRetry(url,{headers:BROWSER_HEADERS,cache:"no-store"});
     if(r.ok){const h=await r.text();occ=detailOccurrences(h);
      img=h.match(/<meta property=["']og:image["'] content=["']([^"']+)["']/i)?.[1]?.replace(/&amp;/g,"&");
-     desc=h.match(/<meta name=["']description["'] content=["']([^"']+)["']/i)?.[1]}}catch{}
+     desc=h.match(/<meta name=["']description["'] content=["']([^"']+)["']/i)?.[1];
+     cost=costFromPage(h)}}catch{}
   }
+  // The page's Cost field decides free vs paid ("$5 (pre-purchase) $8 (day of event)"), not just the description.
+  if(cost){const paid=/\$\s?[1-9]/.test(cost),free=!paid&&/\bfree\b|no (cost|charge)/i.test(cost);
+   e.priceText=cost;e.isFree=free;e.tags=[...(e.tags||[]).filter(t=>t!=="Free"&&t!=="Paid"),...(free?["Free"]:paid?["Paid"]:[])]}
   const dates=occ.filter(o=>o.date>=startDate&&o.date<=endDate);
   if(!dates.length){out.push({...e,image:img||e.image});continue}
   for(const o of dates)out.push({...e,id:`${e.id.replace(/-\d{4}-\d{2}-\d{2}$/,"")}-${o.date}`,

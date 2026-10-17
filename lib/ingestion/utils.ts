@@ -111,3 +111,22 @@ export function normalize(e:EventRecord):EventRecord{
  return{...e,title:e.title.trim(),venue:e.venue.trim(),city:e.city.trim(),tags:Array.from(new Set(tags)),isFree:free,
   ageMin:ages?.[0],ageMax:ages?.[1],lastVerified:e.lastVerified||new Date().toISOString()};
 }
+
+/** The cost an event page states in a labeled field ("Cost: $5 (pre-purchase) $8 (day of event)", "Admission: Free",
+ *  a sidebar "Event Snapshot → Cost"). City sites often keep the price there and not in the description, so a missing
+ *  price in the text must not be read as "free". Returns the stated cost text, or undefined if the page has none. */
+export function costFromPage(html:string):string|undefined{
+ const text=html.replace(/<(script|style)[^>]*>[\s\S]*?<\/\1>/gi," ")
+  .replace(/<\/(h\d|dt|th|strong|b|label|span|div|p|li|td|dd)>/gi,"$&\n").replace(/<br\s*\/?>/gi,"\n");
+ const lines=stripLines(text);
+ for(let i=0;i<lines.length;i++){
+  const l=lines[i],m=l.match(/^(cost|costs|admission|price|prices|fees?|tickets?|entry|registration fee|ticket prices?)\s*:?\s*(.*)$/i);
+  if(!m)continue;
+  // "Cost" on its own line (a heading) → the value is on the next line(s).
+  let v=m[2].trim();if(!v)v=(lines[i+1]||"")+(/\$|free/i.test(lines[i+2]||"")?" "+lines[i+2]:"");
+  v=v.replace(/\s+/g," ").trim().slice(0,140);
+  if(v&&(/\$\s?\d|\bfree\b|no (cost|charge)|\d+\s*dollars/i.test(v)))return v;
+ }
+ return undefined;
+}
+function stripLines(s:string){return s.split("\n").map(x=>x.replace(/<[^>]+>/g," ").replace(/&nbsp;|&#160;/g," ").replace(/&amp;/g,"&").replace(/\s+/g," ").trim()).filter(Boolean)}
