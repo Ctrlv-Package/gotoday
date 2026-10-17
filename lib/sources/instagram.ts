@@ -166,6 +166,7 @@ export function captionOnly(p:Post):Extracted[]{
 class NoCredit extends Error{}
 async function cached(p:Post,venue:string,city:string,roundup=false):Promise<Extracted[]>{
  if(!process.env.ANTHROPIC_API_KEY&&!process.env.GEMINI_API_KEY)return captionOnly(p);   // don't cache the weaker caption-only reading
+ let prev:Extracted[]|null=null;   // an earlier reading, kept if a new one can't be done today
  const id=`${p.id}:${roundup?"v5":"v4"}`;   // bump when the reading logic changes, so posts are read again
  const {rows}=await db.query("select extracted from social_posts where id=$1",[id]);
  if(rows[0])return rows[0].extracted||[];
@@ -173,18 +174,20 @@ async function cached(p:Post,venue:string,city:string,roundup=false):Promise<Ext
  // valid unless they split a post into 3+ events on one day, so only those posts are read again.
  if(!roundup){
   const old=(await db.query("select extracted from social_posts where id=$1",[`${p.id}:v3`])).rows[0];
-  if(old){const ev:Extracted[]=old.extracted||[];const perDay=new Map<string,number>();for(const e of ev)perDay.set(e.date,(perDay.get(e.date)||0)+1);
-   if(![...perDay.values()].some(n=>n>=3))return ev;}
+  if(old){prev=old.extracted||[];const perDay=new Map<string,number>();for(const e of prev!)perDay.set(e.date,(perDay.get(e.date)||0)+1);
+   if(![...perDay.values()].some(n=>n>=3))return prev!;}
  }
  // Budget: at most AI_POSTS_PER_DAY posts get read by the AI each day (default 120, roughly $0.50/day).
  // Past that, posts are read from the caption for free and get the full reading on a later day.
  const cap=Number(process.env.AI_POSTS_PER_DAY||120);
  const today=(await db.query("select count(*)::int as n from social_posts where created_at>=date_trunc('day',now() at time zone 'America/New_York') at time zone 'America/New_York'")).rows[0]?.n||0;
  // Free Gemini reading isn't capped; only paid Claude reading is.
- if(today>=cap&&!process.env.GEMINI_API_KEY)return captionOnly(p);
+ // Re-reading a post that was split into pieces gets a small extra allowance (about half a cent each, at most 15 a day).
+ const allowance=prev?cap+15:cap;
+ if(today>=allowance&&!process.env.GEMINI_API_KEY)return prev??captionOnly(p);
  let ev:Extracted[];
- try{ev=await extractWithClaude(p,venue,city,roundup,today<cap)}
- catch(e){if(e instanceof NoCredit)return captionOnly(p);throw e}   // not cached: read properly once credit is back
+ try{ev=await extractWithClaude(p,venue,city,roundup,today<allowance)}
+ catch(e){if(e instanceof NoCredit)return prev??captionOnly(p);throw e}   // not cached: read properly once credit is back
  await db.query("insert into social_posts(id,permalink,posted_at,extracted) values($1,$2,$3,$4) on conflict(id) do update set extracted=excluded.extracted",[id,p.permalink,p.timestamp,JSON.stringify(ev)]);
  return ev;
 }
