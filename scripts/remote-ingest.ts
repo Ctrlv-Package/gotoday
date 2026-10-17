@@ -31,7 +31,13 @@ async function push(payload:any){
  return{r:{ok:false,status:0} as any,out:{}};
 }
 // The source list lives in GoToday's database; ask the site which sources to fetch from here.
-const cfgRes=await fetch(`${base}/api/admin/sources?remote=1`,{headers:{authorization:`Bearer ${secret}`}});
+// Retried: right after a deploy (or when the database is waking up) the first request can be slow or fail once.
+let cfgRes!:Response;
+for(let t=0;t<4;t++){
+ try{cfgRes=await fetch(`${base}/api/admin/sources?remote=1`,{headers:{authorization:`Bearer ${secret}`},signal:AbortSignal.timeout(60000)});if(cfgRes.ok||cfgRes.status===401)break;console.log(`Source list: HTTP ${cfgRes.status}, retrying…`)}
+ catch(e:any){console.log(`Source list: ${e?.message||e}, retrying…`);if(t===3)throw e}
+ await new Promise(r=>setTimeout(r,15000*(t+1)));
+}
 if(!cfgRes.ok){
  const msg=cfgRes.status===401?"HTTP 401 (unauthorized) — check that the INGESTION_SECRET GitHub secret matches INGESTION_SECRET in Vercel":`HTTP ${cfgRes.status}`;
  if(process.env.GITHUB_STEP_SUMMARY)appendFileSync(process.env.GITHUB_STEP_SUMMARY,`### Remote ingest could not start\n\nCould not load the source list from ${base}: ${msg}\n`);
