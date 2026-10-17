@@ -133,7 +133,9 @@ export async function GET(request:NextRequest){
   if(!isIg(e))return true;
   const w=words(e.title);if(!w.size)return true;
   return!(isRoundup(e)?official:cal).some((c:any)=>{if(c===e)return false;if(c.date!==e.date)return false;
-   const near=typeof c.distanceMiles==="number"&&typeof e.distanceMiles==="number"?Math.abs(c.distanceMiles-e.distanceMiles)<4:c.city===e.city;
+   // Same place: close together, or the same town (posts without a street address sit at the town's center).
+   const town=(x:string)=>String(x||"").toLowerCase().replace(/^ft\.?\s/,"fort ").replace(/,.*$/,"").trim();
+   const near=(typeof c.distanceMiles==="number"&&typeof e.distanceMiles==="number"&&Math.abs(c.distanceMiles-e.distanceMiles)<4)||(!!town(c.city)&&town(c.city)===town(e.city));
    if(!near)return false;const cw=words(c.title);let hit=0;for(const x of w)if(cw.has(x))hit++;
    if(!(hit>=Math.min(2,w.size)&&hit/Math.min(w.size,cw.size||1)>=0.6))return false;
    Object.assign(c,mergeCopy(c,e));return true});   // keep the calendar listing, but take the post's photo and details
