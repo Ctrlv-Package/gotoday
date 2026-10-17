@@ -1,5 +1,6 @@
 import type {EventRecord} from "../ingestion/types";
 import {fetchRetry} from "../http";
+import {addCostsFromPages} from "./pageCost";
 import {slug,stripHtml} from "../ingestion/utils";
 import {parseDate,parseTime} from "./opencities";
 
@@ -57,5 +58,5 @@ export async function fetchCivicPlus(cfg:CivicPlusConfig,startDate:string,endDat
  if(!r.ok)throw new Error(`HTTP ${r.status} from ${feed}`);
  const {items,events}=parseCivicPlusRss(await r.text(),cfg,startDate,endDate,feed);
  if(items===0)throw new Error(`Calendar RSS feed has no items: ${feed}`);
- return events;
+ return addCostsFromPages(events);   // the feed has no cost; each event page does
 }

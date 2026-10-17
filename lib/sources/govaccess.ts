@@ -1,5 +1,6 @@
 import type {EventRecord} from "../ingestion/types";
 import {fetchRetry} from "../http";
+import {addCostsFromPages} from "./pageCost";
 import {slug,stripHtml} from "../ingestion/utils";
 import {parseTime} from "./opencities";
 
@@ -101,5 +102,5 @@ export async function fetchGovAccess(cfg:GovAccessConfig,startDate:string,endDat
    desc:it.desc||`Official ${cfg.source} event.`,tags:[...(family?["Family"]:[]),...(kids?["Kids"]:[]),...(arts?["Arts & Theatre"]:[]),...(sports?["Sports"]:[]),"Local"],
    emoji:family?"🎉":arts?"🎵":sports?"🏃":"📍",source:cfg.source});
  }
- return out;
+ return addCostsFromPages(out);   // list pages have no cost; each event page does
 }
