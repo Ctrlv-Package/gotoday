@@ -73,7 +73,8 @@ List the dated, public, in-person events this post announces in or near ${city},
 Rules:
 - Only events with a specific calendar date. Resolve weekday/month-only dates relative to the posting date (never earlier than it).
 - Recurring series: list each date it states, up to 8.
-- Round-up posts (a list or calendar of many events): list every event in it, each with its own place. Keep "summary" short (one sentence). Never list the round-up/guide itself ("Fun plans this weekend", "Things to do in Broward") as an event.
+- ONE event with a schedule: when the post promotes a single named event (an ArtWalk, festival, fair, block party, open house, celebration) and lists the activities or times that happen as part of it ("6 p.m. guided mural tour, 9 p.m. magic show, then live music on the main stage"), list ONE event: the main event's name as the title (e.g. "Downtown Hollywood ArtWalk"), the earliest start and the latest end, the area or venue where it's held, and the schedule in "summary" (e.g. "5 PM champagne welcome at the Art & Culture Center; 6 PM guided mural tour; 7 PM art walk tour; 9 PM magic show at Twisted Roots; live music on the main stage."). Do NOT split its parts into separate events. Only list separate events when they really are separate (different days, different organizers, or unrelated to each other).
+- Round-up posts (a list or calendar of many different events): list every event in it, each with its own place. Keep "summary" short (one sentence). Never list the round-up/guide itself ("Fun plans this weekend", "Things to do in Broward") as an event.
 - Skip deals and promotions that aren't an event at a specific place (e.g. "free museum admission with your Bank of America card", "kids eat free all month", store coupons), and chain-store activities with no specific location ("at your local Home Depot / check your local store").
 - Skip sales, promotions, store openings without an event, giveaways, and vague "coming soon" posts.
 - Skip government business: commission/council/board meetings, hearings, budget workshops, road closures, service notices, job fairs for city jobs.
@@ -165,9 +166,16 @@ export function captionOnly(p:Post):Extracted[]{
 class NoCredit extends Error{}
 async function cached(p:Post,venue:string,city:string,roundup=false):Promise<Extracted[]>{
  if(!process.env.ANTHROPIC_API_KEY&&!process.env.GEMINI_API_KEY)return captionOnly(p);   // don't cache the weaker caption-only reading
- const id=`${p.id}:${roundup?"v5":"v3"}`;   // bump when the reading logic changes, so posts are read again
+ const id=`${p.id}:${roundup?"v5":"v4"}`;   // bump when the reading logic changes, so posts are read again
  const {rows}=await db.query("select extracted from social_posts where id=$1",[id]);
  if(rows[0])return rows[0].extracted||[];
+ // v4 only changed how one event with a schedule is read (one card, not one per activity). Earlier readings stay
+ // valid unless they split a post into 3+ events on one day, so only those posts are read again.
+ if(!roundup){
+  const old=(await db.query("select extracted from social_posts where id=$1",[`${p.id}:v3`])).rows[0];
+  if(old){const ev:Extracted[]=old.extracted||[];const perDay=new Map<string,number>();for(const e of ev)perDay.set(e.date,(perDay.get(e.date)||0)+1);
+   if(![...perDay.values()].some(n=>n>=3))return ev;}
+ }
  // Budget: at most AI_POSTS_PER_DAY posts get read by the AI each day (default 120, roughly $0.50/day).
  // Past that, posts are read from the caption for free and get the full reading on a later day.
  const cap=Number(process.env.AI_POSTS_PER_DAY||120);
