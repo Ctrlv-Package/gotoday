@@ -462,3 +462,4 @@ a.linkBtn{text-decoration:none}
 .backBtn{line-height:1}
 .backBtn svg{display:block;flex:none}
 @media(max-width:430px){.hideXs{display:none}nav .navRight{gap:6px}}
+.calHint{margin:0;font-size:13px;color:var(--muted);background:var(--soft);border-radius:10px;padding:9px 12px}

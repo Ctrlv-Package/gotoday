@@ -62,7 +62,7 @@ export function CalendarLinks({feed,initial}:{feed:string;initial:CalStatus}){
  return <div className="calSub">
   {connected?<div className="calStatus ok" role="status"><b>✓ Connected to {st.client}</b><span>Last updated {ago(st.fetchedAt!)}. Everything you save or follow will show up there automatically.</span></div>
   :waiting?<div className="calStatus wait" role="status"><b><span className="spin" aria-hidden/> Waiting for {st.clicked}…</b><span>{HOW[st.clicked||""]||"Confirm in your calendar app."} This page will say “Connected” as soon as it starts reading your GoToday calendar.</span></div>
-  :null}
+  :<p className="calHint">Already added GoToday to your calendar? This will say “✓ Connected” the next time your calendar app checks for updates (Google Calendar: within about a day).</p>}
   <div className="calSubBtns">
    <a className="btn ghost" href={google} target="_blank" rel="noreferrer" onClick={()=>clicked("Google Calendar")}>{connected&&st.client==="Google Calendar"?"✓ ":""}Add to Google Calendar</a>
    <a className="btn ghost" href={webcal} onClick={()=>clicked("Apple Calendar")}>{connected&&st.client==="Apple Calendar"?"✓ ":""}Add to Apple Calendar</a>

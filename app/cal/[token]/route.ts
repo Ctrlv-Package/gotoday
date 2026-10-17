@@ -15,9 +15,12 @@ export async function GET(req:NextRequest,{params}:{params:Promise<{token:string
  // Note which calendar app is reading it, so My GoToday can say "Connected to Google Calendar". A person opening
  // the link in their browser doesn't count.
  const ua=req.headers.get("user-agent")||"";
- const client=/Google-Calendar-Importer|Google\b.*Calendar/i.test(ua)?"Google Calendar":/dataaccessd|CalendarAgent|iOS|Mac ?OS.*Calendar|remindd/i.test(ua)&&!/Chrome|Safari\/\d/i.test(ua)?"Apple Calendar"
-  :/Microsoft|Outlook|Exchange/i.test(ua)?"Outlook":/Mozilla|Chrome|Safari/i.test(ua)?null:"your calendar app";
- if(client)await db.query("update users set cal_fetched_at=now(),cal_client=$1 where id=$2",[client,u.id]).catch(()=>{});
+ // Calendar apps identify themselves: Google ("Google-Calendar-Importer"/Google fetchers), Apple (dataaccessd,
+ // CalendarAgent), Outlook/Microsoft. Ordinary browsers (someone opening the link) don't count.
+ const browser=/Chrome\/|Firefox\/|Safari\/\d|Edg\//.test(ua)&&!/Google-Calendar|FeedFetcher|Googlebot|dataaccessd|CalendarAgent/i.test(ua);
+ const client=browser?null:/Google/i.test(ua)?"Google Calendar":/dataaccessd|CalendarAgent|iCal|Apple|iOS|Darwin|macOS/i.test(ua)?"Apple Calendar"
+  :/Microsoft|Outlook|Exchange|MSOffice/i.test(ua)?"Outlook":"your calendar app";
+ if(client)await db.query("update users set cal_fetched_at=now(),cal_client=$1,cal_ua=$2 where id=$3",[client,ua.slice(0,200),u.id]).catch(()=>{});
  const body=icsFeed("GoToday",await calendarEvents(u.id));
  return new Response(body,{headers:{"content-type":"text/calendar; charset=utf-8","content-disposition":'inline; filename="gotoday.ics"',"cache-control":"no-store"}});
 }
