@@ -1,4 +1,9 @@
 import Link from "next/link";
+import SaveButton from "../../components/SaveButton";
+import FollowButton from "../../components/FollowButton";
+import {currentUser} from "../../../lib/auth";
+import {db} from "../../../lib/db";
+import {seriesOf,followable} from "../../../lib/series";
 import {cleanAges} from "../../../lib/facets";
 import {localParts} from "../../../lib/time";
 import type {Metadata} from "next";
@@ -37,6 +42,11 @@ export default async function EventPage({params}:{params:Promise<{id:string}>}){
  const dayPassed=lastDay<todayLocal,endedToday=!dayPassed&&!!e.end&&e.end>e.start&&e.end.getTime()<Date.now();
  const ended=dayPassed||endedToday;
  const ages=agesText(e),cost=costText(e),map=mapEmbedUrl(e),where=whereText(e);
+ // Follow (be told when it's back next year) is offered for events that come around now and then, not weekly ones.
+ const user=await currentUser().catch(()=>null);
+ const series=await seriesOf(e.id).catch(()=>null);
+ const canFollow=!!series&&e.source!=="Ticketmaster"&&await followable(series).catch(()=>false);
+ const following=!!(user&&series&&(await db.query("select 1 from follows where user_id=$1 and series_id=$2",[user.id,series]).catch(()=>({rowCount:0}))).rowCount);
  const regFull=/full/i.test(e.registrationText||"");
  // A separate sign-up link (Eventbrite etc.) gets its own button; otherwise registration happens on the event page itself.
  const directReg=!!e.registrationUrl&&e.registrationUrl!==e.officialUrl;
@@ -73,6 +83,8 @@ export default async function EventPage({params}:{params:Promise<{id:string}>}){
 
      <div className="ctaRow">
       <a className="btn primary" href={e.officialUrl} target="_blank" rel="noreferrer">{e.source==="Ticketmaster"?"Tickets & details ↗":e.registrationText&&!directReg&&!regFull?`Register on ${regWhere} page ↗`:"Official event page ↗"}</a>
+      <SaveButton item={{id:`db-${e.id}`,title:e.title,date:new Intl.DateTimeFormat("en-CA",{timeZone:e.tz}).format(e.start),venue:e.venue||e.city}}/>
+      {canFollow&&<FollowButton id={`db-${e.id}`} signedIn={!!user} initial={following}/>}
       {!ended&&<AddToCalendar base={`/events/${encodeURIComponent(id)}`}/>}
       <ShareButton title={e.title} text={`${e.title} — ${fmtDate(e.start,undefined,e.tz)}${isAllDay(e.start,e.tz)?"":`, ${fmtTime(e.start,e.tz)}`} at ${e.venue||e.city}`}/>
      </div>

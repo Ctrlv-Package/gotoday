@@ -33,18 +33,33 @@ export function outlookCalendarLink(e:CalEvent,kind:"live"|"office"="live"){
  return u.toString();
 }
 
-/** iCalendar file (Apple Calendar on iPhone/Mac, Outlook desktop, anything else). Includes a reminder. */
-export function icsText(e:CalEvent){
- const s=calendarSpan(e),esc=(x:string)=>x.replace(/\\/g,"\\\\").replace(/\r?\n/g,"\\n").replace(/([,;])/g,"\\$1");
- const fold=(l:string)=>{const out:string[]=[];let x=l;while(x.length>73){out.push(x.slice(0,73));x=" "+x.slice(73)}out.push(x);return out.join("\r\n")};
- const lines=["BEGIN:VCALENDAR","VERSION:2.0","PRODID:-//GoToday//mygotoday.com//EN","CALSCALE:GREGORIAN","METHOD:PUBLISH","BEGIN:VEVENT",
-  `UID:${e.uid}@mygotoday.com`,`DTSTAMP:${stamp(new Date())}`,
+const esc=(x:string)=>x.replace(/\\/g,"\\\\").replace(/\r?\n/g,"\\n").replace(/([,;])/g,"\\$1");
+const fold=(l:string)=>{const out:string[]=[];let x=l;while(x.length>73){out.push(x.slice(0,73));x=" "+x.slice(73)}out.push(x);return out.join("\r\n")};
+/** One event's lines. `cancelled` marks it cancelled in subscribed calendars (they show it struck through or drop it). */
+function vevent(e:CalEvent,opts:{cancelled?:boolean;alarm?:boolean}={}){
+ const s=calendarSpan(e);
+ return["BEGIN:VEVENT",`UID:${e.uid}@mygotoday.com`,`DTSTAMP:${stamp(new Date())}`,
   s.allDay?`DTSTART;VALUE=DATE:${s.startDay.replace(/-/g,"")}`:`DTSTART:${stamp(s.start)}`,
   s.allDay?`DTEND;VALUE=DATE:${s.endDay.replace(/-/g,"")}`:`DTEND:${stamp(s.end)}`,
-  `SUMMARY:${esc(e.title)}`,`LOCATION:${esc(e.location)}`,`DESCRIPTION:${esc(details(e))}`,`URL:${e.url}`,
+  `SUMMARY:${esc((opts.cancelled?"CANCELLED: ":"")+e.title)}`,`LOCATION:${esc(e.location)}`,`DESCRIPTION:${esc(details(e))}`,`URL:${e.url}`,
+  ...(opts.cancelled?["STATUS:CANCELLED"]:[]),
   // Reminder: 1 hour before timed events; 9am the day of for all-day events.
-  "BEGIN:VALARM","ACTION:DISPLAY",`DESCRIPTION:${esc(e.title)}`,s.allDay?"TRIGGER:PT9H":"TRIGGER:-PT1H","END:VALARM",
-  "END:VEVENT","END:VCALENDAR"];
+  ...(opts.alarm!==false&&!opts.cancelled?["BEGIN:VALARM","ACTION:DISPLAY",`DESCRIPTION:${esc(e.title)}`,s.allDay?"TRIGGER:PT9H":"TRIGGER:-PT1H","END:VALARM"]:[]),
+  "END:VEVENT"];
+}
+
+/** iCalendar file (Apple Calendar on iPhone/Mac, Outlook desktop, anything else). Includes a reminder. */
+export function icsText(e:CalEvent){
+ const lines=["BEGIN:VCALENDAR","VERSION:2.0","PRODID:-//GoToday//mygotoday.com//EN","CALSCALE:GREGORIAN","METHOD:PUBLISH",...vevent(e),"END:VCALENDAR"];
+ return lines.map(fold).join("\r\n")+"\r\n";
+}
+
+/** A subscribed calendar (someone's "My GoToday" calendar): many events; calendars re-check it now and then. */
+export function icsFeed(name:string,events:{e:CalEvent;cancelled?:boolean}[]){
+ const lines=["BEGIN:VCALENDAR","VERSION:2.0","PRODID:-//GoToday//mygotoday.com//EN","CALSCALE:GREGORIAN","METHOD:PUBLISH",
+  `X-WR-CALNAME:${esc(name)}`,"X-WR-CALDESC:Events you saved or follow on GoToday (mygotoday.com)","X-WR-TIMEZONE:America/New_York",
+  "REFRESH-INTERVAL;VALUE=DURATION:PT4H","X-PUBLISHED-TTL:PT4H",
+  ...events.flatMap(x=>vevent(x.e,{cancelled:x.cancelled})),"END:VCALENDAR"];
  return lines.map(fold).join("\r\n")+"\r\n";
 }
 

@@ -51,6 +51,20 @@ const STATEMENTS=[
  `update source_configs set platform='civicplus',params='{"site":"https://www.citynmb.com","city":"North Miami Beach, FL","idPrefix":"nmb"}'::jsonb,
    source_type='official-city',url='https://www.citynmb.com/Calendar.aspx',remote=false,updated_at=now()
    where name='City of North Miami Beach' and platform<>'civicplus'`,
+ // ---- Accounts (optional: everything on the site works without one) ----
+ `create table if not exists users(id serial primary key,email text unique not null,name text,image text,google_sub text unique,
+   calendar_token text unique,created_at timestamptz default now(),last_seen_at timestamptz default now())`,
+ // Sign-in sessions: only a hash of the cookie's random token is stored.
+ `create table if not exists sessions(token_hash text primary key,user_id int not null references users(id) on delete cascade,
+   created_at timestamptz default now(),expires_at timestamptz not null)`,
+ `create index if not exists sessions_user_idx on sessions(user_id)`,
+ // Annual-event families: "Plantation Fall Festival" is one family; each year's listing is an occurrence of it.
+ `create table if not exists event_series(id serial primary key,key text unique not null,title text not null,town text,created_at timestamptz default now())`,
+ `alter table events add column if not exists series_id int`,
+ `create index if not exists events_series_idx on events(series_id)`,
+ `create table if not exists saved_events(user_id int not null references users(id) on delete cascade,event_id int not null,created_at timestamptz default now(),primary key(user_id,event_id))`,
+ `create table if not exists follows(user_id int not null references users(id) on delete cascade,series_id int not null references event_series(id) on delete cascade,
+   created_at timestamptz default now(),primary key(user_id,series_id))`,
 ];
 export function ensureSchema(){
  if(!ready)ready=(async()=>{for(const s of STATEMENTS)await db.query(s)})().catch(e=>{ready=null;throw e});
