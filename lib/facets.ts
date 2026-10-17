@@ -29,6 +29,19 @@ export function cleanAges(e:In):{ageMin?:number;ageMax?:number}{
  return{ageMin:min,ageMax:max};
 }
 
+/** The kids' age range an event is for, as far as we can tell: stated ages first, then words in the title
+ *  ("toddler", "teen"...). null = no age given, so it's for kids of any age (a family festival, chalk art day). */
+export function kidAgeRange(e:In):[number,number]|null{
+ const {ageMin,ageMax}=cleanAges(e);
+ if(ageMin!=null||ageMax!=null)return[ageMin??0,ageMax??17];
+ const t=e.title||"";
+ if(/\b(bab(y|ies)|infants?|toddlers?|lapsit|lap sit)\b/i.test(t))return[0,3];
+ if(/\b(preschool(ers)?|pre-?k|storytimes?|story time)\b/i.test(t))return[0,5];
+ if(/\btweens?\b/i.test(t))return[10,12];
+ if(/\bteens?\b/i.test(t))return[13,17];
+ return null;
+}
+
 const CITY_SOURCE=(s?:string)=>!!s&&s!=="Ticketmaster"&&!/library/i.test(s);
 
 export function facetsFor(e:In):Facet[]{

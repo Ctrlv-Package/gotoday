@@ -1,4 +1,5 @@
 import Link from "next/link";
+import {cleanAges} from "../../../lib/facets";
 import type {Metadata} from "next";
 import {headers} from "next/headers";
 import {redirect} from "next/navigation";
@@ -9,7 +10,8 @@ import {loadEvent,loadRelated,fmtDate,fmtTime,timeRange,isAllDay,directionsUrl,m
 
 export const dynamic="force-dynamic";
 
-function agesText(e:EventDetail){if(e.ageMin==null||e.ageMax==null)return"";if(e.ageMin===0&&e.ageMax>=99)return"All ages";if(e.ageMax>=99)return`Ages ${e.ageMin}+`;return e.ageMax<=1?"Babies (0–1)":`Ages ${e.ageMin}–${e.ageMax}`}
+// Same reading as the cards: a 5–11 guessed from a bare "Kids" label isn't shown as if the event said it.
+function agesText(d:EventDetail){const c=cleanAges({title:d.title,desc:d.description,tags:d.tags,ageMin:d.ageMin,ageMax:d.ageMax});const e={ageMin:c.ageMin??null,ageMax:c.ageMax??null};if(e.ageMin==null||e.ageMax==null)return"";if(e.ageMin===0&&e.ageMax>=99)return"All ages";if(e.ageMax>=99)return`Ages ${e.ageMin}+`;return e.ageMax<=1?"Babies (0–1)":`Ages ${e.ageMin}–${e.ageMax}`}
 function costText(e:EventDetail){if(e.isFree)return"Free";const p=(e.priceText||"").trim();return p&&p.length<=140?p:""}
 function sourceLabel(e:EventDetail){return e.source==="Ticketmaster"?"Ticketmaster":e.source}
 

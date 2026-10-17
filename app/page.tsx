@@ -1,4 +1,5 @@
 "use client";
+import {kidAgeRange} from "../lib/facets";
 import {useEffect,useMemo,useRef,useState} from "react";
 import AddToCalendar from "./components/AddToCalendar";
 
@@ -160,7 +161,9 @@ export default function Home(){
    const facets=new Set(e.facets||[...tags].filter(Boolean) as string[]);
    const cm=(interests.length===0||interests.some(x=>facets.has(x)))&&(!selected.includes("Free")||facets.has("Free")||!!e.isFree);
    const more=(setting==="Any"||tags.has(setting))&&(!dropIn||tags.has("Drop-in"))&&(!spanish||tags.has("En Español"))&&(!seniors||tags.has("Seniors")||(e.ageMin!=null&&e.ageMin>=50));
-   const am=!selected.includes("Kids")||ageBands.length===0||!facets.has("Kids")||(e.ageMin!=null&&e.ageMax!=null&&AGE_BANDS.some(([l,lo,hi])=>ageBands.includes(l)&&e.ageMin!<=hi&&e.ageMax!>=lo));
+   // Kids' ages: an event counts when its range overlaps a chosen band; a kids event that gives no ages is for any age.
+   const kr=kidAgeRange(e as any);
+   const am=!selected.includes("Kids")||ageBands.length===0||!facets.has("Kids")||kr==null||AGE_BANDS.some(([l,lo,hi])=>ageBands.includes(l)&&kr[0]<=hi&&kr[1]>=lo);
    const h=e.time?Number(e.time.slice(0,2)):-1;
    const tm=timeFilter==="Any time"||h<0||(timeFilter==="Morning"&&h<12)||(timeFilter==="Afternoon"&&h>=12&&h<17)||(timeFilter==="Evening"&&h>=17);
    return cm&&am&&more&&tm&&(!qWords.length||(t=>qWords.every(w=>t.includes(w)))(norm([e.title,e.city,e.venue,e.desc,e.category,e.genre,...(e.labels||[])].filter(Boolean).join(" "))));
