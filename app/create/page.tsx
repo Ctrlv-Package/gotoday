@@ -1,6 +1,7 @@
 "use client";
 import {useEffect,useState} from "react";
 import Link from "next/link";
+import SiteHeader from "../components/SiteHeader";
 import EventForm,{EMPTY,type FormValues} from "../components/EventForm";
 import CopyLink from "../components/CopyLink";
 import {myEvents,rememberEvent,type MyEvent} from "../components/myEvents";
@@ -18,7 +19,7 @@ export default function CreatePage(){
   }catch{return["Couldn't reach GoToday. Check your connection and try again."]}finally{setBusy(false)}
  }
  return <main className="detail">
-  <header className="detailHeader"><div className="detailWrap row"><Link href="/?fresh=1" className="detailLogo">Go<span>Today</span></Link><Link href="/" className="navLink">Find events</Link></div></header>
+  <SiteHeader/>
   <div className="detailWrap">
    <article className="detailCard"><div className="detailBody">
     {done?<div className="created">

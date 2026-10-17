@@ -2,6 +2,7 @@
 import {useEffect,useState} from "react";
 import {useParams} from "next/navigation";
 import Link from "next/link";
+import SiteHeader from "../../components/SiteHeader";
 import EventForm,{type FormValues} from "../../components/EventForm";
 import CopyLink from "../../components/CopyLink";
 import {rememberEvent,forgetEvent} from "../../components/myEvents";
@@ -24,7 +25,7 @@ export default function ManagePage(){
 
  const e=data?.event;
  return <main className="detail">
-  <header className="detailHeader"><div className="detailWrap row"><Link href="/?fresh=1" className="detailLogo">Go<span>Today</span></Link><Link href="/create" className="navLink">+ Create event</Link></div></header>
+  <SiteHeader extra={<Link href="/create" className="navLink small">+ Create event</Link>}/>
   <div className="detailWrap"><article className="detailCard"><div className="detailBody">
    {deleted?<><h1>Event deleted</h1><p>The event page and its link no longer work.</p><Link href="/create">Create another event →</Link></>
    :err?<><h1>Manage link not found</h1><p>{err}</p><Link href="/">Back to GoToday →</Link></>

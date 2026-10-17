@@ -1,4 +1,5 @@
 import Link from "next/link";
+import SiteHeader from "../components/SiteHeader";
 import type {Metadata} from "next";
 import {redirect} from "next/navigation";
 import {currentUser,safeNext,googleConfigured} from "../../lib/auth";
@@ -11,7 +12,7 @@ export default async function SignIn({searchParams}:{searchParams:Promise<Record
  const why=p.why==="follow"?"Sign in to follow this event. We'll keep track of it and add next year's date to your GoToday calendar as soon as it's announced."
   :"Save events on all your devices, follow the events you love so you never miss them next year, and get a personal calendar that fills itself.";
  return <main className="detail">
-  <header className="detailHeader"><div className="detailWrap row"><Link href="/?fresh=1" className="detailLogo">Go<span>Today</span></Link><Link href={next==="/me"?"/":next.replace(/[?&]follow=1/,"")} className="backLink">Not now</Link></div></header>
+  <SiteHeader me={false}/>
   <div className="detailWrap narrow">
    <section className="detailCard authCard">
     <div className="detailBody">

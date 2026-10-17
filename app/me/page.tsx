@@ -1,4 +1,5 @@
 import Link from "next/link";
+import SiteHeader from "../components/SiteHeader";
 import type {Metadata} from "next";
 import {currentUser,calendarToken} from "../../lib/auth";
 import {db} from "../../lib/db";
@@ -15,8 +16,7 @@ const longDate=(d:string)=>new Date(d+"T12:00:00Z").toLocaleDateString("en-US",{
 
 export default async function Me(){
  const user=await currentUser().catch(()=>null);
- const head=<header className="detailHeader"><div className="detailWrap row"><Link href="/?fresh=1" className="detailLogo">Go<span>Today</span></Link>
-  {user?<form action="/api/auth/signout" method="post"><button className="linkBtn" type="submit">Sign out</button></form>:<Link href="/signin" className="linkBtn">Sign in</Link>}</div></header>;
+ const head=<SiteHeader me={false}/>;
 
  if(!user)return <main className="detail">{head}
   <div className="detailWrap">
@@ -76,7 +76,8 @@ export default async function Me(){
       </li>)}</ul>}
     </section>
 
-    <p className="authFine">Signed in as {user.email}. <Link href="/privacy">Privacy</Link> · <Link href="/terms">Terms</Link></p>
+    <div className="meFoot"><span>Signed in as <b>{user.email}</b></span><form action="/api/auth/signout" method="post"><button className="btn ghost small" type="submit">Sign out</button></form></div>
+    <p className="authFine"><Link href="/privacy">Privacy</Link> · <Link href="/terms">Terms</Link></p>
    </div></section>
   </div></main>;
 }

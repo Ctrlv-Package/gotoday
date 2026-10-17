@@ -1,11 +1,12 @@
 import Link from "next/link";
+import SiteHeader from "../components/SiteHeader";
 import type {Metadata} from "next";
 export const metadata:Metadata={title:"Terms of Use — GoToday"};
 const CONTACT=process.env.NEXT_PUBLIC_CONTACT_EMAIL||"hello@mygotoday.com";
 
 export default function Terms(){
  return <main className="detail">
-  <header className="detailHeader"><div className="detailWrap row"><Link href="/?fresh=1" className="detailLogo">Go<span>Today</span></Link><Link href="/" className="backLink">Back to events</Link></div></header>
+  <SiteHeader/>
   <div className="detailWrap narrow"><article className="detailCard legal"><div className="detailBody">
    <h1>Terms of Use</h1>
    <p className="muted">Last updated October 17, 2026</p>

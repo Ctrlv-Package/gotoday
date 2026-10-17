@@ -1,4 +1,5 @@
 import Link from "next/link";
+import SiteHeader from "../../components/SiteHeader";
 import type {Metadata} from "next";
 import {eventByShare,startOf,endOf,rsvpCounts,type CommunityEvent} from "../../../lib/community";
 import {fmtDate,fmtTime} from "../../../lib/event-detail";
@@ -20,7 +21,7 @@ export async function generateMetadata({params}:{params:Promise<{token:string}>}
 
 export default async function CommunityEventPage({params}:{params:Promise<{token:string}>}){
  const token=(await params).token,e=await eventByShare(token);
- const shell=(body:React.ReactNode)=><main className="detail"><header className="detailHeader"><div className="detailWrap row"><Link href="/?fresh=1" className="detailLogo">Go<span>Today</span></Link><Link href="/create" className="navLink">+ Create event</Link></div></header><div className="detailWrap">{body}</div></main>;
+ const shell=(body:React.ReactNode)=><main className="detail"><SiteHeader extra={<Link href="/create" className="navLink small">+ Create event</Link>}/><div className="detailWrap">{body}</div></main>;
  if(!e||e.status==="rejected")return shell(<article className="detailCard"><div className="detailBody"><h1>Event unavailable</h1><p>This link doesn't match an event, or the host removed it.</p><Link href="/">Find something to do →</Link></div></article>);
  const w=when(e),a=ages(e),where=[e.venue,e.address,e.city].filter(Boolean).join(", "),ended=(endOf(e)||new Date(startOf(e).getTime()+(e.allDay?24:3)*3600e3)).getTime()<Date.now();
  const counts=e.visibility==="private"?await rsvpCounts(e.id):null;
