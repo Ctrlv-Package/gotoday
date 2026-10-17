@@ -3,6 +3,7 @@ import {kidAgeRange} from "../lib/facets";
 import {useEffect,useMemo,useRef,useState} from "react";
 import SaveButton from "./components/SaveButton";
 import NavMe from "./components/NavMe";
+import Dropdown from "./components/Dropdown";
 import AddToCalendar from "./components/AddToCalendar";
 
 type EventItem={id?:string;title:string;city:string;venue?:string;date?:string;time?:string;image?:string;url?:string;category?:string;genre?:string;minPrice?:number|null;desc?:string;tags?:string[];emoji?:string;source?:string;distanceMiles?:number;distanceAccuracy?:string;ageMin?:number;ageMax?:number;registration?:string;moreLocations?:number;otherVenues?:string[];isFree?:boolean;facets?:string[];labels?:string[];live?:boolean};
@@ -222,19 +223,15 @@ export default function Home(){
       <div className="label">When</div>
       <div className="seg when four">{RANGES.map(([k,l])=><button key={k} className={range===k?"active":""} onClick={()=>chooseRange(k)}>{k==="weekend"?"Weekend":l}{k==="weekend"&&<small>{nextWeekendLabel()}</small>}</button>)}
        {/* Any other day in the next three weeks */}
-       <label className={`pickDay${/^\d{4}/.test(range)?" active":""}`}>
-        <span>{/^\d{4}/.test(range)?dayLabel(range,"weekday"):"Pick day"}</span><small>{/^\d{4}/.test(range)?dayLabel(range,"date"):"▾"}</small>
-        <select aria-label="Pick a day" value={/^\d{4}/.test(range)?range:""} onChange={e=>e.target.value&&chooseRange(e.target.value)}>
-         <option value="" disabled>Pick a day</option>
-         {upcomingDays().map(d=><option key={d} value={d}>{dayLabel(d,"full")}</option>)}
-        </select>
-       </label>
+       <Dropdown value={/^\d{4}/.test(range)?range:""} ariaLabel="Pick a day" align="right" triggerClass={`pickDay${/^\d{4}/.test(range)?" active":""}`}
+        trigger={<><span>{/^\d{4}/.test(range)?dayLabel(range,"weekday"):"Pick day"}</span><small>{/^\d{4}/.test(range)?dayLabel(range,"date"):"▾"}</small></>}
+        options={upcomingDays().map(d=>({value:d,label:dayLabel(d,"full")}))} onChange={v=>chooseRange(v)}/>
       </div>
      </div>
      <div className="filters">
-      <label>Distance<select value={radius} onChange={e=>chooseRadius(e.target.value)}>{["10","15","25","50"].map(r=><option key={r} value={r}>{r} mi</option>)}</select></label>
-      <label>Time<select value={timeFilter} onChange={e=>setTimeFilter(e.target.value)}>{TIMES.map(t=><option key={t} value={t}>{t==="Any time"?"Any":t}</option>)}</select></label>
-      <label>Sort<select value={sort} onChange={e=>setSort(e.target.value)}><option>Nearest</option><option>Soonest</option></select></label>
+      <Dropdown label="Distance" value={radius} options={["10","15","25","50"].map(r=>({value:r,label:`${r} mi`}))} onChange={chooseRadius}/>
+      <Dropdown label="Time" value={timeFilter} options={TIMES.map(t=>({value:t,label:t==="Any time"?"Any":t}))} onChange={setTimeFilter}/>
+      <Dropdown label="Sort" value={sort} align="right" options={[{value:"Nearest",label:"Nearest"},{value:"Soonest",label:"Soonest"}]} onChange={setSort}/>
      </div>
     </div>
     <div className="fcSection">
