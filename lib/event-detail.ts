@@ -22,6 +22,11 @@ export async function loadEvent(id:string):Promise<EventDetail|null>{
   e.registration_url,e.registration_text,e.recurrence,e.timezone,e.source_id,s.name as source,v.id as venue_id,v.name as venue,v.address,v.latitude,v.longitude
   from events e join sources s on s.id=e.source_id left join venues v on v.id=e.venue_id where e.id=$1 limit 1`,[n]);
  const r=rows[0];if(!r)return null;
+ // Same rule as the cards: a photo an Instagram post shares across 3+ different events is a cover, not this event's.
+ if(r.image_url&&/ · Instagram$/.test(r.source||"")){
+  const sh=await db.query("select count(distinct lower(title))::int as n from events where image_url=$1",[r.image_url]).catch(()=>({rows:[{n:0}]}));
+  if(Number(sh.rows[0]?.n)>=3)r.image_url=null;
+ }
  return{id:r.id,title:decodeHtml(r.title),description:decodeHtml(r.description||""),start:new Date(r.start_at),end:r.end_at?new Date(r.end_at):null,city:r.city||"",
   image:r.image_url,officialUrl:r.official_url,priceText:r.price_text?decodeHtml(r.price_text):null,isFree:!!r.is_free,category:r.category,tags:(()=>{const t:string[]=Array.isArray(r.tags)?r.tags.filter((x:string)=>x!=="Indoor"&&x!=="Outdoor"):[];const st=settingFor({title:r.title,venue:r.venue,source:r.source,desc:r.description});return st?[...t,st]:t})(),
   ageMin:r.age_min,ageMax:r.age_max,registrationUrl:r.registration_url,registrationText:r.registration_text,recurrence:r.recurrence,source:/^Ticketmaster/.test(r.source)?"Ticketmaster":r.source,sourceId:r.source_id,tz:r.timezone||DEFAULT_TZ,

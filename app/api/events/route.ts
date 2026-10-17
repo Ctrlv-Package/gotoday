@@ -146,6 +146,24 @@ export async function GET(request:NextRequest){
   const shared=new Set((await db.query("select image_url from events where image_url=any($1) group by image_url having count(distinct lower(title))>=3",[igPics]).catch(()=>({rows:[]}))).rows.map((r:any)=>r.image_url));
   for(const e of events as any[])if(shared.has(e.image))e.image="";
  }
+ // One account often posts the same event several times ("Champagne Welcome & Gallery Tour", "Hollywood Art Walk
+ // Guided Tour"): same account and day, plus the same time and venue or nearly the same title -> one card.
+ const place=(x:string)=>String(x||"").toLowerCase().replace(/&/g,"and").replace(/[^a-z0-9]+/g," ").trim();
+ const kept:any[]=[];
+ for(const e of events as any[]){
+  if(!isIg(e)){kept.push(e);continue}
+  const w=words(e.title);
+  const twin=kept.find((c:any)=>{if(!isIg(c)||c.source!==e.source||c.date!==e.date)return false;
+   if(e.time&&c.time===e.time&&place(c.venue)===place(e.venue))return true;
+   const cw=words(c.title);let hit=0;for(const x of w)if(cw.has(x))hit++;
+   return hit>=3&&hit/Math.min(w.size,cw.size||1)>=0.75&&(!e.time||!c.time||e.time===c.time)});
+  if(!twin){kept.push(e);continue}
+  // Keep whichever copy has a picture (then the longer description) as the card; fold the other in.
+  const better=(!twin.image&&e.image)||(!!twin.image===!!e.image&&(e.desc||"").length>(twin.desc||"").length);
+  const merged=better?mergeCopy(e,twin):mergeCopy(twin,e);
+  kept[kept.indexOf(twin)]=merged;
+ }
+ events=kept;
  const localCount=events.filter((e:any)=>e.source!=="Ticketmaster").length;
  // No results: tell the page whether that's "nothing this day" or "we're not in this area yet".
  const coverage=events.length?{covered:true}:{covered:await covered(lat,lng,today),place:usedZip?zipPlace.get(postalCode)||null:null};
