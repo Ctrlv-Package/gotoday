@@ -35,7 +35,11 @@ export async function GET(req:NextRequest){
   // Duplicates: same day, same place or town, mostly the same title words, still two cards.
   for(let i=0;i<events.length;i++)for(let j=i+1;j<events.length;j++){
    const a=events[i],b=events[j];if(a.date!==b.date)continue;
-   const near=(Math.abs((a.distanceMiles??99)-(b.distanceMiles??-99))<1)||town(a.city)===town(b.city);if(!near)continue;
+   // Same town (or the very same spot); a festival in Plantation and one in Boynton Beach are different events.
+   const near=town(a.city)===town(b.city)||(a.venue&&a.venue===b.venue);if(!near)continue;
+   // A part of an event listed on its own (its opening reception, a VIP preview) is its own listing, not a copy.
+   const partOf=(t:string)=>/^(opening|closing) reception|^vip\b|\bpreview\b|after ?party|pre-?show|meet (and|&) greet/i.test(t);
+   if(partOf(a.title)!==partOf(b.title))continue;
    const wa=words(a.title),wb=words(b.title);let hit=0;for(const x of wa)if(wb.has(x))hit++;
    const fa=a.title.toLowerCase().replace(/[^a-z0-9]+/g,""),fb=b.title.toLowerCase().replace(/[^a-z0-9]+/g,"");
    const sameVenue=String(a.venue).toLowerCase().replace(/&/g,"and")===String(b.venue).toLowerCase().replace(/&/g,"and");

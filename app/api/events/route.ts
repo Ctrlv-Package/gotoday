@@ -146,8 +146,9 @@ export async function GET(request:NextRequest){
   for(const e of events as any[])if(shared.has(e.image))e.image="";
  }
  const wc=new Map<any,Set<string>>(),W=(e:any)=>{let w=wc.get(e);if(!w){w=words(e.title);wc.set(e,w)}return w};
+ const partOf=(t:string)=>/^(opening|closing) reception|^vip\b|\bpreview\b|after ?party|pre-?show|meet (and|&) greet/i.test(t);
  const same=(a:any,b:any)=>{
-  if(a.date!==b.date)return false;
+  if(a.date!==b.date||partOf(a.title)!==partOf(b.title))return false;   // an opening reception isn't a copy of its exhibit
   const wa=W(a),wb=W(b);let hit=0;for(const x of wa)if(wb.has(x))hit++;
   const fa=flat(a.title),fb=flat(b.title),contains=fa.length>=4&&fb.length>=4&&(fa.includes(fb)||fb.includes(fa));
   const timesOk=!a.time||!b.time||a.time===b.time;

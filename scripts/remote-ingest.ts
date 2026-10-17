@@ -61,7 +61,7 @@ for(let i=0;i<queue.length;i++){
 }
 console.log(failures?`${failures} source(s) did not succeed`:"All remote sources succeeded");
  // Website sources Vercel couldn't reach on their last try (city firewalls): fetch them from here and push.
- const fbRows:string[]=[];
+ const fbRows:string[]=[];let fbTried=0,fbFailed=0;
  try{
   const lr=await fetch(`${base}/api/ingest?list=fallback`,{headers:{authorization:`Bearer ${secret}`}});
   const fbNames:string[]=((await lr.json().catch(()=>({}))).sources)||[];
@@ -73,7 +73,7 @@ console.log(failures?`${failures} source(s) did not succeed`:"All remote sources
     await new Promise(r=>setTimeout(r,2000));
     let payload:any;
     try{payload={source:s.name,fallback:true,events:await s.fetch(ymd(now),ymd(end))}}catch(e:any){payload={source:s.name,fallback:true,error:e?.message||String(e)}}
-    const {r,out}=await push(payload);const sm=out.summary||{},ok=r.ok&&sm.status==="success";if(!ok)problems.push(`${s.name}: ${String(sm.error||out.error||"failed").slice(0,140)}`);
+    const {r,out}=await push(payload);const sm=out.summary||{},ok=r.ok&&sm.status==="success";fbTried++;if(!ok)fbFailed++;if(!ok)problems.push(`${s.name}: ${String(sm.error||out.error||"failed").slice(0,140)}`);
     console.log(`${s.name} (retry): ${ok?`${sm.accepted} events`:`failed — ${sm.error||out.error}`}`);
     fbRows.push(`| ${s.name} | ${ok?"✅":"❌"} | ${sm.accepted??0} | ${String(sm.error||out.error||"").replace(/\|/g,"/").slice(0,160)} |`);
    }
@@ -107,7 +107,7 @@ console.log(failures?`${failures} source(s) did not succeed`:"All remote sources
   if(q.ok){console.log(`Quality check: ${q.problems} to look at across ${q.cards} cards ${JSON.stringify(q.summary)}`);if(q.problems>25)problems.push(`Quality check: ${q.problems} display problems (see status page)`)}
   else console.log(`Quality check failed: HTTP ${qr.status}`)}catch(e:any){console.log(`Quality check failed: ${e?.message||e}`)}
  // Tell the site how this run went (shown on the status page).
- const total=configs.length+igTotal,bad=failures+igFailed;
+ const total=configs.length+igTotal+fbTried,bad=failures+igFailed+fbFailed;
  await fetch(`${base}/api/ingest/report`,{method:"POST",headers:{"content-type":"application/json",authorization:`Bearer ${secret}`},
   body:JSON.stringify({sources:total,succeeded:total-bad,failed:bad,startedAt,notes:problems.slice(0,25).join("\n")})}).catch(e=>console.log(`Could not send the run report: ${e?.message||e}`));
  if(failures)process.exitCode=1;

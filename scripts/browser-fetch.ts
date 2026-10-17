@@ -1,5 +1,5 @@
-// Replaces global fetch for page GETs with a real (headless) Chrome, so sites whose firewalls reject
-// Node's HTTP client see an ordinary browser. POSTs (our push to GoToday) still use the normal fetch.
+// Replaces global fetch with a real (headless) Chrome, so sites whose firewalls reject Node's HTTP client see an
+// ordinary browser. Calls to GoToday itself (they carry our password header) still use the normal fetch.
 import {chromium,type Browser,type BrowserContext} from "playwright";
 
 const UA="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36";
@@ -16,7 +16,21 @@ export async function installBrowserFetch(){
   const method=(init?.method||"GET").toUpperCase();
   // Calls that carry credentials (our own GoToday API) go direct: a page load can't send an Authorization header.
   const hasAuth=!!new Headers(init?.headers||{}).get("authorization");
-  if(method!=="GET"||hasAuth||!/^https?:/.test(url))return nodeFetch(input,init);
+  if(hasAuth||!/^https?:/.test(url))return nodeFetch(input,init);
+  // Data requests other than GET (broward.org's calendar is a POST) are sent from inside the site's own page, so they
+  // carry the browser's cookies and fingerprint like a visitor's would.
+  if(method!=="GET"){
+   const page=await ctx!.newPage();
+   try{
+    const h=new Headers(init?.headers||{}),referer=h.get("referer")||new URL(url).origin+"/";
+    await page.goto(referer,{waitUntil:"domcontentloaded",timeout:45000}).catch(()=>{});
+    await page.waitForLoadState("networkidle",{timeout:10000}).catch(()=>{});
+    const headers:Record<string,string>={};h.forEach((v,k)=>{if(!/^(user-agent|referer|cookie|host|content-length)$/i.test(k))headers[k]=v});
+    const out=await page.evaluate(async({url,method,headers,body})=>{const r=await fetch(url,{method,headers,body,credentials:"include"});return{status:r.status,type:r.headers.get("content-type")||"",text:await r.text()}},{url,method,headers,body:typeof init?.body==="string"?init.body:undefined});
+    if(out.status>=400)console.log(`   browser ${method} ${out.status} ${url}`);
+    return new Response(out.text,{status:out.status,headers:{"content-type":out.type||"application/json"}});
+   }finally{await page.close()}
+  }
   const page=await ctx!.newPage();
   try{
    let resp=await page.goto(url,{waitUntil:"domcontentloaded",timeout:45000});
