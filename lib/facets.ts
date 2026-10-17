@@ -59,7 +59,8 @@ export function settingFor(e:{title?:string;venue?:string;source?:string;desc?:s
  return undefined;
 }
 
-const CITY_SOURCE=(s?:string)=>!!s&&s!=="Ticketmaster"&&!/library/i.test(s);
+// City, town and parks sources (not libraries, Ticketmaster or round-up accounts that repost anyone's events).
+const CITY_SOURCE=(s?:string)=>!!s&&s!=="Ticketmaster"&&!/library/i.test(s)&&!/^(Miami Residents|Weekend Broward|The Broward Scene|To Do with Kids (Broward|Miami)) · Instagram$/.test(s);
 
 export function facetsFor(e:In):Facet[]{
  const tags=e.tags||[],t=e.title||"",d=(e.desc||"").slice(0,600),text=`${t} ${d}`;
