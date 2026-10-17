@@ -111,9 +111,9 @@ export async function GET(request:NextRequest){
   // "Today": hide timed events that have already ended (or started over 2 hours ago with no end time).
   // "Today": hide events that are over. Many listings give only a start time (open houses, festivals),
   // so without an end time we assume 4 hours. Events in progress are marked "Happening now".
-  let live=false;
-  if(range==="today"&&!allDay){const end=r.end_at&&new Date(r.end_at).getTime()>start.getTime()?new Date(r.end_at).getTime():start.getTime()+4*3600e3;if(end<now)continue;live=start.getTime()<=now}
-  if(live)e.live=true;
+  let live=false,over=false;   // over: finished earlier today (kept until duplicates are matched, then removed)
+  if(range==="today"&&!allDay){const end=r.end_at&&new Date(r.end_at).getTime()>start.getTime()?new Date(r.end_at).getTime():start.getTime()+4*3600e3;if(end<now)over=true;else live=start.getTime()<=now}
+  if(live)e.live=true;if(over)e.over=true;
   events.push(e);
  }
  // Same program on the same day at several places (library branches, city + Ticketmaster) -> one card, nearest first.
@@ -122,7 +122,7 @@ export async function GET(request:NextRequest){
  // Round-up accounts repost other people's events: their copy gives way to the organizer's own listing.
  const isRoundup=(e:any)=>/^(Miami Residents|Weekend Broward|The Broward Scene|To Do with Kids (Broward|Miami)) · Instagram$/.test(e.source||"");
  for(const e of events){const k=collapseKey(e.title,e.date);const g=groups.get(k);g?g.push(e):groups.set(k,[e])}
- events=[...groups.values()].map(g=>{g.sort((a:any,b:any)=>a.distanceMiles-b.distanceMiles||((a.source==="Ticketmaster"?1:0)-(b.source==="Ticketmaster"?1:0))||(isIg(a)?1:0)-(isIg(b)?1:0)||(isRoundup(a)?1:0)-(isRoundup(b)?1:0));const venues=new Set(g.map((x:any)=>x.venue));let m={...g[0]};for(const o of g.slice(1))m=mergeCopy(m,o);return{...m,moreLocations:venues.size-1,otherVenues:[...venues].slice(1,6)}})
+ events=[...groups.values()].map(g=>{g.sort((a:any,b:any)=>(a.over?1:0)-(b.over?1:0)||a.distanceMiles-b.distanceMiles||((a.source==="Ticketmaster"?1:0)-(b.source==="Ticketmaster"?1:0))||(isIg(a)?1:0)-(isIg(b)?1:0)||(isRoundup(a)?1:0)-(isRoundup(b)?1:0));const venues=new Set(g.map((x:any)=>x.venue));let m={...g[0]};for(const o of g.slice(1))m=mergeCopy(m,o);return{...m,moreLocations:venues.size-1,otherVenues:[...venues].slice(1,6)}})
   .sort((a:any,b:any)=>(a.date+(a.time||"")).localeCompare(b.date+(b.time||""))||((a.source==="Ticketmaster"?1:0)-(b.source==="Ticketmaster"?1:0)));
  // ---- One card per real-world event, whatever the source ----
  // The same event reaches us from a city calendar, the city's Instagram, round-up accounts and Ticketmaster, under
@@ -176,6 +176,9 @@ export async function GET(request:NextRequest){
   const cores=cancelledList.map(c=>{const tw=new Set(town(c.city).split(/[^a-z]+/));return{date:c.date,town:town(c.city),core:c.title.toLowerCase().replace(/^\W*(cancel+ed|postponed)\W*/,"").split(/[^a-z0-9]+/).filter((w:string)=>w.length>=5&&!tw.has(w)&&!GENERIC.has(w)).sort((a:string,b:string)=>b.length-a.length)[0]}}).filter(c=>c.core);
   events=events.filter((e:any)=>!cores.some(c=>c.date===e.date&&c.town===town(e.city)&&new RegExp(`\\b${c.core}\\b`,"i").test(e.title)));
  }
+ // Finished earlier today: removed now, together with any copies merged into them (a round-up's "all day" repost of
+ // a 10 AM event shouldn't linger after the real one is over).
+ events=events.filter((e:any)=>!e.over);
  const localCount=events.filter((e:any)=>e.source!=="Ticketmaster").length;
  // No results: tell the page whether that's "nothing this day" or "we're not in this area yet".
  const coverage=events.length?{covered:true}:{covered:await covered(lat,lng,today),place:usedZip?zipPlace.get(postalCode)||null:null};
