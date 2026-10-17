@@ -204,6 +204,16 @@ export async function fetchInstagram(cfg:InstagramConfig,startDate:string,endDat
  recent.forEach((p,i)=>{for(const e of results[i]||[])found.push({...e,post:p})});
  const key=(e:Extracted)=>`${e.date}|${slug(e.title).split("-").filter(w=>w.length>2).slice(0,2).join("-")}`;
  const cancelled=new Set(found.filter(e=>e.cancelled).map(key)),seen=new Set<string>(),out:EventRecord[]=[];
+ // A post that lists several events (a weekly round-up) usually has one cover photo: that photo belongs to none
+ // of them. An event gets a picture only when the reading found its own slide (one no other event uses);
+ // otherwise the card shows its category art instead of someone else's photo.
+ const perPost=new Map<string,number>(),perSlide=new Map<string,number>();
+ for(const e of found){perPost.set(e.post.id,(perPost.get(e.post.id)||0)+1);if(e.slide)perSlide.set(`${e.post.id}#${e.slide}`,(perSlide.get(`${e.post.id}#${e.slide}`)||0)+1)}
+ const pictureFor=(e:any)=>{
+  const many=(perPost.get(e.post.id)||0)>=3||ROUNDUPS.has(cfg.username)&&(perPost.get(e.post.id)||0)>=2;
+  const own=e.slide&&e.post.media_type==="CAROUSEL_ALBUM"&&(perSlide.get(`${e.post.id}#${e.slide}`)||0)===1&&!(many&&e.slide===1)?slides(e.post)[e.slide-1]:undefined;
+  return own||(many?undefined:imageOf(e.post));
+ };
  for(const e of found){
   const k=key(e);if(e.cancelled||cancelled.has(k)||seen.has(k)||e.date<startDate||e.date>endDate)continue;seen.add(k);
   // Round-up accounts aren't a place: an event from them must name where it is, and the round-up itself isn't an event.
@@ -217,7 +227,7 @@ export async function fetchInstagram(cfg:InstagramConfig,startDate:string,endDat
   out.push({id:`${cfg.idPrefix}-${slug(e.title)}-${e.date}`,title:e.title.trim(),city:town&&/^[A-Za-z .'-]{3,40}$/.test(town)?`${town}, FL`:cfg.city,
    // City and parks accounts post events all over town: use the place the post names, else the account's own venue.
    venue:(e.place||"").split(",")[0].trim().slice(0,120)||cfg.venue,address:e.place&&/\d/.test(e.place)?e.place.split(",").slice(1).join(",").trim()||e.place:e.place?undefined:cfg.address,date:e.date,time,endTime:end&&time&&end>time?end:undefined,
-   url:e.post.permalink,sourceUrl:`https://www.instagram.com/${cfg.username}/`,image:(e.slide&&e.post.media_type==="CAROUSEL_ALBUM"&&slides(e.post)[e.slide-1])||imageOf(e.post),
+   url:e.post.permalink,sourceUrl:`https://www.instagram.com/${cfg.username}/`,image:pictureFor(e),
    category:family?"Family":arts?"Arts & Theatre":"Local",genre:"Venue Event",desc:(e.summary||"").trim()||`Posted by @${cfg.username}.`,
    tags:[...(family?["Family"]:[]),...(e.kids?["Kids"]:[]),...(arts?["Arts & Theatre"]:[]),...(e.free?["Free"]:[]),"Local"],
    emoji:family?"🎉":arts?"🎨":"📍",source:cfg.source,isFree:e.free===true||undefined,eventType:"event"});

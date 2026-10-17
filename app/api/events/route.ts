@@ -135,6 +135,12 @@ export async function GET(request:NextRequest){
    if(!(hit>=Math.min(2,w.size)&&hit/Math.min(w.size,cw.size||1)>=0.6))return false;
    Object.assign(c,mergeCopy(c,e));return true});   // keep the calendar listing, but take the post's photo and details
  });
+ // The same photo on 3+ different Instagram events is a round-up cover, not any one event's picture.
+ const igPics=[...new Set((events as any[]).filter(e=>e.image&&isIg(e)).map(e=>e.image as string))];
+ if(igPics.length){
+  const shared=new Set((await db.query("select image_url from events where image_url=any($1) group by image_url having count(distinct lower(title))>=3",[igPics]).catch(()=>({rows:[]}))).rows.map((r:any)=>r.image_url));
+  for(const e of events as any[])if(shared.has(e.image))e.image="";
+ }
  const localCount=events.filter((e:any)=>e.source!=="Ticketmaster").length;
  // No results: tell the page whether that's "nothing this day" or "we're not in this area yet".
  const coverage=events.length?{covered:true}:{covered:await covered(lat,lng,today),place:usedZip?zipPlace.get(postalCode)||null:null};
