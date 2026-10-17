@@ -215,6 +215,12 @@ export async function fetchInstagram(cfg:InstagramConfig,startDate:string,endDat
  recent.forEach((p,i)=>{for(const e of results[i]||[])found.push({...e,post:p})});
  const key=(e:Extracted)=>`${e.date}|${slug(e.title).split("-").filter(w=>w.length>2).slice(0,2).join("-")}`;
  const cancelled=new Set(found.filter(e=>e.cancelled).map(key)),seen=new Set<string>(),out:EventRecord[]=[];
+ // When an event is cancelled, the activities that were part of it go too ("POP-UP at ArtWalk" when the ArtWalk is
+ // cancelled): same day, and the title carries the cancelled event's distinctive name.
+ const townWords=new Set(String(cfg.city||"").toLowerCase().split(/[^a-z]+/));
+ const GENERIC=new Set(["downtown","annual","event","night","day","the","and","city","town","village","fall","spring","summer","winter","community","family","festival","fest","party","market","show"]);
+ const cancelCore=found.filter(e=>e.cancelled).map(e=>({date:e.date,core:e.title.toLowerCase().replace(/^\W*cancel+ed\W*/,"").split(/[^a-z0-9]+/).filter(w=>w.length>=5&&!townWords.has(w)&&!GENERIC.has(w)).sort((a,b)=>b.length-a.length)[0]})).filter(c=>c.core);
+ const partOfCancelled=(e:Extracted)=>!e.cancelled&&cancelCore.some(c=>c.date===e.date&&new RegExp(`\\b${c.core}\\b`,"i").test(e.title));
  // A post that lists several events (a weekly round-up) usually has one cover photo: that photo belongs to none
  // of them. An event gets a picture only when the reading found its own slide (one no other event uses);
  // otherwise the card shows its category art instead of someone else's photo.
@@ -226,7 +232,7 @@ export async function fetchInstagram(cfg:InstagramConfig,startDate:string,endDat
   return own||(many?undefined:imageOf(e.post));
  };
  for(const e of found){
-  const k=key(e);if(e.cancelled||cancelled.has(k)||seen.has(k)||e.date<startDate||e.date>endDate)continue;seen.add(k);
+  const k=key(e);if(e.cancelled||cancelled.has(k)||partOfCancelled(e)||seen.has(k)||e.date<startDate||e.date>endDate)continue;seen.add(k);
   // Round-up accounts aren't a place: an event from them must name where it is, and the round-up itself isn't an event.
   if(ROUNDUPS.has(cfg.username)&&(!(e.place||"").trim()||/^(fun plans|things to do|what to do|weekend (guide|plans|events)|(this|the) weekend|events? (this|for the) weekend|freebies|.*\bround-?up\b|.*\bguide\b)/i.test(e.title.trim())))continue;
   const blob=`${e.title} ${e.summary||""}`.toLowerCase();

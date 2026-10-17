@@ -90,7 +90,7 @@ export async function GET(request:NextRequest){
    and ((e.latitude between $3 and $4 and e.longitude between $5 and $6) or e.latitude is null)
   order by e.start_at limit 4000`,[w.startDate,w.endDate,lat-dLat,lat+dLat,lng-dLng,lng+dLng]);
  const now=Date.now();
- let events:any[]=[];
+ let events:any[]=[];const cancelledList:any[]=[];
  for(const r of rows){
   const tz=r.timezone||DEFAULT_TZ,start=new Date(r.start_at),lp=localParts(start,tz);
   let la=r.latitude==null?NaN:Number(r.latitude),lo=r.longitude==null?NaN:Number(r.longitude),acc="venue";
@@ -102,7 +102,7 @@ export async function GET(request:NextRequest){
    source:/^Ticketmaster/.test(r.source)?"Ticketmaster":r.source,priceText:r.price_text||undefined,isFree:Boolean(r.is_free),ageMin:r.age_min??undefined,ageMax:r.age_max??undefined,registration:r.registration_text||undefined,
    distanceMiles:Math.round(d*10)/10,distanceAccuracy:acc};
   if(e.source==="Ticketmaster"&&TM_JUNK.test(e.title))continue;
-  if(/^\W*(cancel+ed|postponed)\b/i.test(e.title))continue;   // "CANCELED: Kids in Motion" etc.
+  if(/^\W*(cancel+ed|postponed)\b/i.test(e.title)){cancelledList.push(e);continue}   // "CANCELED: Kids in Motion" etc.
   if(discoveryRejection({...e,isDiscoveryEligible:e.source==="Ticketmaster"?true:undefined}))continue;
   // Instagram photo links are signed and stop working after a few days (the "oe" value is the expiry).
   {const oe=/cdninstagram\.com|fbcdn\.net/.test(e.image)&&e.image.match(/[?&]oe=([0-9A-Fa-f]{8})/);if(oe&&parseInt(oe[1],16)*1000<now+3600e3)e.image=""}
@@ -168,6 +168,13 @@ export async function GET(request:NextRequest){
   wc.set(m,words(m.title));kept[i]=m;
  }
  events=kept.sort((a:any,b:any)=>(a.date+(a.time||"")).localeCompare(b.date+(b.time||""))||((a.source==="Ticketmaster"?1:0)-(b.source==="Ticketmaster"?1:0)));
+ // A listing marked cancelled ("CANCELLED: Downtown Hollywood ArtWalk") also hides other sources' copies of that event
+ // and its parts ("POP-UP at ArtWalk"): same day, same town, and the title carries its distinctive name.
+ if(cancelledList.length){
+  const GENERIC=new Set(["downtown","annual","event","night","the","and","city","town","village","fall","spring","summer","winter","community","family","festival","party","market","show","program","class"]);
+  const cores=cancelledList.map(c=>{const tw=new Set(town(c.city).split(/[^a-z]+/));return{date:c.date,town:town(c.city),core:c.title.toLowerCase().replace(/^\W*(cancel+ed|postponed)\W*/,"").split(/[^a-z0-9]+/).filter((w:string)=>w.length>=5&&!tw.has(w)&&!GENERIC.has(w)).sort((a:string,b:string)=>b.length-a.length)[0]}}).filter(c=>c.core);
+  events=events.filter((e:any)=>!cores.some(c=>c.date===e.date&&c.town===town(e.city)&&new RegExp(`\\b${c.core}\\b`,"i").test(e.title)));
+ }
  const localCount=events.filter((e:any)=>e.source!=="Ticketmaster").length;
  // No results: tell the page whether that's "nothing this day" or "we're not in this area yet".
  const coverage=events.length?{covered:true}:{covered:await covered(lat,lng,today),place:usedZip?zipPlace.get(postalCode)||null:null};
