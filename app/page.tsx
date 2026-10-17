@@ -62,7 +62,7 @@ const store={get:(k:string)=>{try{return localStorage.getItem(k)}catch{return nu
 export default function Home(){
  const[zipErr,setZipErr]=useState(""),lastGood=useRef(""),[zip,setZip]=useState(""),[searchedZip,setSearchedZip]=useState(""),[coords,setCoords]=useState<{lat:number;lng:number}|null>(null);
  const[radius,setRadius]=useState("25"),[range,setRange]=useState("today"),[selected,setSelected]=useState<string[]>([]),[ageBands,setAgeBands]=useState<string[]>([]),[moreOpen,setMoreOpen]=useState(false),[setting,setSetting]=useState("Any"),[dropIn,setDropIn]=useState(false),[spanish,setSpanish]=useState(false),[seniors,setSeniors]=useState(false);
- const[timeFilter,setTimeFilter]=useState("Any time"),[sort,setSort]=useState("Soonest"),[query,setQuery]=useState("");
+ const[timeFilter,setTimeFilter]=useState("Any time"),[sort,setSort]=useState("Nearest"),[query,setQuery]=useState("");
  const[soon,setSoon]=useState<{place:string|null}|null>(null),[events,setEvents]=useState<EventItem[]>([]),[loading,setLoading]=useState(false),[message,setMessage]=useState(""),[toast,setToast]=useState("");
 
  async function load(z:string,r:string,c:{lat:number;lng:number}|null,rad:string){
@@ -164,7 +164,12 @@ export default function Home(){
    const h=e.time?Number(e.time.slice(0,2)):-1;
    const tm=timeFilter==="Any time"||h<0||(timeFilter==="Morning"&&h<12)||(timeFilter==="Afternoon"&&h>=12&&h<17)||(timeFilter==="Evening"&&h>=17);
    return cm&&am&&more&&tm&&(!qWords.length||(t=>qWords.every(w=>t.includes(w)))(norm([e.title,e.city,e.venue,e.desc,e.category,e.genre,...(e.labels||[])].filter(Boolean).join(" "))));
-  }).sort((a,b)=>sort==="Nearest"?(a.distanceMiles??999)-(b.distanceMiles??999):((a.date||"")+(a.time||"")).localeCompare((b.date||"")+(b.time||"")));
+  }).sort((a,b)=>{
+   // Nearest (default): day by day, closest first within each day. Soonest: by start time.
+   const when=((a.date||"")+(a.time||"")).localeCompare((b.date||"")+(b.time||""));
+   if(sort!=="Nearest")return when;
+   return (a.date||"").localeCompare(b.date||"")||(a.distanceMiles??999)-(b.distanceMiles??999)||when;
+  });
  },[events,selected,timeFilter,sort,query,ageBands,setting,dropIn,spanish,seniors]);
 
  const moreCount=(setting!=="Any"?1:0)+(dropIn?1:0)+(spanish?1:0)+(seniors?1:0);
@@ -220,7 +225,7 @@ export default function Home(){
      <div className="filters">
       <label>Distance<select value={radius} onChange={e=>chooseRadius(e.target.value)}>{["10","15","25","50"].map(r=><option key={r} value={r}>{r} mi</option>)}</select></label>
       <label>Time<select value={timeFilter} onChange={e=>setTimeFilter(e.target.value)}>{TIMES.map(t=><option key={t} value={t}>{t==="Any time"?"Any":t}</option>)}</select></label>
-      <label>Sort<select value={sort} onChange={e=>setSort(e.target.value)}><option>Soonest</option><option>Nearest</option></select></label>
+      <label>Sort<select value={sort} onChange={e=>setSort(e.target.value)}><option>Nearest</option><option>Soonest</option></select></label>
      </div>
     </div>
     <div className="fcSection">
@@ -260,7 +265,7 @@ export default function Home(){
     <div className="cardBody">
      <h3><a href={detailHref(e)} target={e.source==="Ticketmaster"?"_blank":undefined} rel="noreferrer">{e.title}</a></h3>
      <div className="meta">🗓 {fmt(e.date,e.time)}{e.live&&<b className="liveNow"> · Happening now</b>}</div>
-     <div className="meta">📍 {e.venue||e.city}{typeof e.distanceMiles==="number"?` · ${e.distanceMiles.toFixed(1)} mi`:""}{e.moreLocations?<b title={(e.otherVenues||[]).join(", ")}>{` · +${e.moreLocations} more location${e.moreLocations>1?"s":""}`}</b>:null}</div>
+     <div className="meta locLine"><span className="locV" title={e.venue||e.city}>📍 {e.venue||e.city}</span><span className="locD">{typeof e.distanceMiles==="number"?`\u00a0· ${e.distanceMiles.toFixed(1)} mi`:""}{e.moreLocations?<b title={(e.otherVenues||[]).join(", ")}>{`\u00a0· +${e.moreLocations} more`}</b>:null}</span></div>
      {e.desc&&<p className="desc">{e.desc}</p>}
      {(e.tags||[]).includes("Drop-in")?<div className="hint ok">✓ Drop-in, no registration</div>:e.registration&&e.source!=="Ticketmaster"?<div className="hint">{e.registration}</div>:null}
      <div className="tags">{ageLabel(e)&&<span className="age">{ageLabel(e)}</span>}{(e.labels||(e.tags||[]).filter(t=>!["Local","Library","Free","Parks","Tickets","Drop-in"].includes(t)&&!/\(/.test(t))).slice(0,3).map(t=><span key={t}>{t}</span>)}</div>

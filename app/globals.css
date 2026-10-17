@@ -363,3 +363,8 @@ a.logo{text-decoration:none;color:inherit}
 @media(max-width:380px){.seg.when.four button,.pickDay{font-size:13px;padding-left:2px;padding-right:2px}}
 /* The day list must not inherit the white text of the selected (dark) button, or the options turn invisible. */
 .pickDay select,.pickDay select option{color:#18181b;background:#fff}
+
+/* Venue shrinks with "…"; distance and "+N more" always stay together on the same line. */
+.locLine{display:flex;min-width:0}
+.locLine .locV{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;min-width:0}
+.locLine .locD{white-space:nowrap;flex:none}
