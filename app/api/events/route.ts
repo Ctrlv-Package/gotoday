@@ -118,19 +118,21 @@ export async function GET(request:NextRequest){
  }
  // Same program on the same day at several places (library branches, city + Ticketmaster) -> one card, nearest first.
  const groups=new Map<string,any[]>();
+ const isIg=(e:any)=>/ · Instagram$/.test(e.source||"")||e.genre==="Venue Event";
+ // Round-up accounts repost other people's events: their copy gives way to the organizer's own listing.
+ const isRoundup=(e:any)=>/^(Miami Residents|Weekend Broward|The Broward Scene|To Do with Kids (Broward|Miami)) · Instagram$/.test(e.source||"");
  for(const e of events){const k=collapseKey(e.title,e.date);const g=groups.get(k);g?g.push(e):groups.set(k,[e])}
- events=[...groups.values()].map(g=>{g.sort((a:any,b:any)=>a.distanceMiles-b.distanceMiles||((a.source==="Ticketmaster"?1:0)-(b.source==="Ticketmaster"?1:0)));const venues=new Set(g.map((x:any)=>x.venue));let m={...g[0]};for(const o of g.slice(1))m=mergeCopy(m,o);return{...m,moreLocations:venues.size-1,otherVenues:[...venues].slice(1,6)}})
+ events=[...groups.values()].map(g=>{g.sort((a:any,b:any)=>a.distanceMiles-b.distanceMiles||((a.source==="Ticketmaster"?1:0)-(b.source==="Ticketmaster"?1:0))||(isIg(a)?1:0)-(isIg(b)?1:0));const venues=new Set(g.map((x:any)=>x.venue));let m={...g[0]};for(const o of g.slice(1))m=mergeCopy(m,o);return{...m,moreLocations:venues.size-1,otherVenues:[...venues].slice(1,6)}})
   .sort((a:any,b:any)=>(a.date+(a.time||"")).localeCompare(b.date+(b.time||""))||((a.source==="Ticketmaster"?1:0)-(b.source==="Ticketmaster"?1:0)));
  // An event a town posts on Instagram is often also on its calendar under a slightly different title
  // ("Fall Festival" vs "Weston Fall Festival 2026"). Keep the calendar listing, drop the Instagram copy.
  const STOP=new Set(["the","and","of","a","at","in","on","for","with","to","annual","city","town","village","free","fl","event","day","night","2025","2026","2027"]);
  const words=(t:string)=>new Set(t.toLowerCase().replace(/&/g," and ").replace(/[^a-z0-9]+/g," ").split(" ").filter(w=>w.length>2&&!STOP.has(w)));
- const isIg=(e:any)=>/ · Instagram$/.test(e.source||"")||e.genre==="Venue Event";
- const cal=events.filter((e:any)=>!isIg(e));
+ const cal=events.filter((e:any)=>!isIg(e)),official=events.filter((e:any)=>!isRoundup(e));
  events=events.filter((e:any)=>{
   if(!isIg(e))return true;
   const w=words(e.title);if(!w.size)return true;
-  return!cal.some((c:any)=>{if(c.date!==e.date)return false;
+  return!(isRoundup(e)?official:cal).some((c:any)=>{if(c===e)return false;if(c.date!==e.date)return false;
    const near=typeof c.distanceMiles==="number"&&typeof e.distanceMiles==="number"?Math.abs(c.distanceMiles-e.distanceMiles)<4:c.city===e.city;
    if(!near)return false;const cw=words(c.title);let hit=0;for(const x of w)if(cw.has(x))hit++;
    if(!(hit>=Math.min(2,w.size)&&hit/Math.min(w.size,cw.size||1)>=0.6))return false;
