@@ -1,5 +1,6 @@
 import Link from "next/link";
 import {cleanAges} from "../../../lib/facets";
+import {localParts} from "../../../lib/time";
 import type {Metadata} from "next";
 import {headers} from "next/headers";
 import {redirect} from "next/navigation";
@@ -30,8 +31,11 @@ export default async function EventPage({params}:{params:Promise<{id:string}>}){
  if(e.source==="GoToday Community"&&/\/e\/[\w-]+$/.test(e.officialUrl))redirect(new URL(e.officialUrl).pathname);
  const h=await headers(),origin=`${h.get("x-forwarded-proto")||"https"}://${h.get("host")}`,pageUrl=`${origin}/events/${encodeURIComponent(id)}`;
  const {otherDates,atVenue}=await loadRelated(e);
- // All-day events run until the end of their day; timed events count as over 3 hours after they end/start.
- const ended=isAllDay(e.start,e.tz)?e.start.getTime()+24*3600e3<Date.now():((e.end&&e.end>e.start?e.end:e.start).getTime()<Date.now()-3*3600e3);
+ // "Passed" means the event's day (its last day, if it runs several) is over in local time. On the day itself,
+ // it only says it ended when the listing gives an end time that has gone by.
+ const lastDay=localParts(e.end&&e.end>e.start?e.end:e.start,e.tz).date,todayLocal=localParts(new Date(),e.tz).date;
+ const dayPassed=lastDay<todayLocal,endedToday=!dayPassed&&!!e.end&&e.end>e.start&&e.end.getTime()<Date.now();
+ const ended=dayPassed||endedToday;
  const ages=agesText(e),cost=costText(e),map=mapEmbedUrl(e),where=whereText(e);
  const regFull=/full/i.test(e.registrationText||"");
  // A separate sign-up link (Eventbrite etc.) gets its own button; otherwise registration happens on the event page itself.
@@ -51,7 +55,7 @@ export default async function EventPage({params}:{params:Promise<{id:string}>}){
       {ages&&<span className="b age">{ages}</span>}
       {e.tags.includes("Kids")&&!ages&&<span className="b age">Kids</span>}
       {e.category&&e.category!=="Local"&&<span className="b">{e.category}</span>}
-      {ended&&<span className="b past">This date has passed</span>}
+      {ended&&<span className="b past">{dayPassed?"This date has passed":"Ended earlier today"}</span>}
      </div>
      <h1>{e.title}</h1>
 
