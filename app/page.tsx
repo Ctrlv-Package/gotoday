@@ -2,6 +2,7 @@
 import {kidAgeRange} from "../lib/facets";
 import {useEffect,useMemo,useRef,useState} from "react";
 import SaveButton from "./components/SaveButton";
+import NavMe from "./components/NavMe";
 import AddToCalendar from "./components/AddToCalendar";
 
 type EventItem={id?:string;title:string;city:string;venue?:string;date?:string;time?:string;image?:string;url?:string;category?:string;genre?:string;minPrice?:number|null;desc?:string;tags?:string[];emoji?:string;source?:string;distanceMiles?:number;distanceAccuracy?:string;ageMin?:number;ageMax?:number;registration?:string;moreLocations?:number;otherVenues?:string[];isFree?:boolean;facets?:string[];labels?:string[];live?:boolean};
@@ -180,7 +181,7 @@ export default function Home(){
  const where=coords?"your location":searchedZip||"your area",hasPlace=!!(coords||searchedZip);
  return <main className="page">
   <section className="hero">
-   <nav><a className="logo" href="/?fresh=1">Go<span>Today</span></a><span className="navRight"><a className="meLink" href="/me" title="My GoToday — saved events, following, your calendar"><svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><path d="M12 20.5s-7.5-4.6-9.3-9.2C1.5 8.1 3.4 4.5 7 4.5c2 0 3.6 1.1 5 2.9 1.4-1.8 3-2.9 5-2.9 3.6 0 5.5 3.6 4.3 6.8-1.8 4.6-9.3 9.2-9.3 9.2z" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinejoin="round"/></svg><span>My GoToday</span></a><a className="createBtn" href="/create">+ Create event</a></span></nav>
+   <nav><a className="logo" href="/?fresh=1">Go<span>Today</span></a><span className="navRight"><NavMe/><a className="createBtn" href="/create">+ Create event</a></span></nav>
    <div className="heroContent">
     <div className="eyebrow">EXPLORE MORE. TODAY.</div>
     <h1>Find your <span>next thing.</span></h1>

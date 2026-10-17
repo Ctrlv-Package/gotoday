@@ -376,7 +376,7 @@ a.logo{text-decoration:none;color:inherit}
 .navRight{display:flex;align-items:center;gap:8px}
 .meLink{display:inline-flex;align-items:center;gap:6px;color:var(--ink);text-decoration:none;font-weight:800;font-size:14px;padding:8px 12px;border:1px solid var(--line);border-radius:999px;background:#fff;white-space:nowrap}
 .meLink:hover{border-color:#c4b5fd;color:var(--accent)}
-@media(max-width:540px){.meLink span{display:none}.meLink{padding:8px 10px}}
+@media(max-width:540px){.meLink:not(.signed) span{display:none}.meLink:not(.signed){padding:8px 10px}}
 .saveBtn{display:inline-flex;align-items:center;justify-content:center;gap:8px;border:1px solid var(--line);background:#fff;padding:13px 18px;border-radius:12px;font-weight:700;font-size:15px;cursor:pointer;color:var(--ink)}
 .saveBtn.compact{padding:0;width:44px;height:44px;flex:none}
 .saveBtn.on{color:#e11d48;border-color:#fecdd3;background:#fff1f2}
@@ -425,3 +425,12 @@ a.logo{text-decoration:none;color:inherit}
 .actions .share{width:44px;height:44px;padding:0;flex:none}.actions .shareTxt{display:none}.actions .primary{white-space:nowrap}
 .detailBody .lead{font-size:16px;line-height:1.6;font-weight:400;margin:0 0 18px}
 a.linkBtn{text-decoration:none}
+.calStatus{display:flex;flex-direction:column;gap:3px;border-radius:12px;padding:11px 14px;font-size:14px;line-height:1.5}
+.calStatus b{display:flex;align-items:center;gap:8px;font-size:15px}
+.calStatus.ok{background:#f0fdf4;border:1px solid #bbf7d0;color:#166534}
+.calStatus.wait{background:#fffbeb;border:1px solid #fde68a;color:#92400e}
+.meLink.signed{padding:4px 12px 4px 4px;gap:8px;border-color:#ddd6fe;background:#faf5ff}
+.meLink.signed img{width:28px;height:28px;border-radius:50%;object-fit:cover;display:block}
+.meLink .initial{width:28px;height:28px;border-radius:50%;background:var(--accent);color:#fff;display:inline-flex;align-items:center;justify-content:center;font-size:13px;font-weight:800}
+.detailHeader .navRight{gap:14px}
+@media(max-width:540px){.meLink.signed span:not(.initial){display:none}.meLink.signed{padding:4px}.detailHeader .navRight{gap:10px}}

@@ -63,6 +63,9 @@ const STATEMENTS=[
  `alter table events add column if not exists series_id int`,
  `create index if not exists events_series_idx on events(series_id)`,
  `create table if not exists saved_events(user_id int not null references users(id) on delete cascade,event_id int not null,created_at timestamptz default now(),primary key(user_id,event_id))`,
+ // Personal calendar status: when they tapped "Add to …", and when a calendar app last read the feed (and which).
+ `alter table users add column if not exists cal_clicked_at timestamptz,add column if not exists cal_clicked text,
+   add column if not exists cal_fetched_at timestamptz,add column if not exists cal_client text`,
  `create table if not exists follows(user_id int not null references users(id) on delete cascade,series_id int not null references event_series(id) on delete cascade,
    created_at timestamptz default now(),primary key(user_id,series_id))`,
 ];

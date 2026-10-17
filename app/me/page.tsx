@@ -1,6 +1,7 @@
 import Link from "next/link";
 import type {Metadata} from "next";
 import {currentUser,calendarToken} from "../../lib/auth";
+import {db} from "../../lib/db";
 import {savedEvents,followedSeries,type MyEventRow} from "../../lib/me";
 import {fmtDate,fmtTime,isAllDay} from "../../lib/event-detail";
 import SaveButton from "../components/SaveButton";
@@ -35,6 +36,8 @@ export default async function Me(){
   </div></main>;
 
  const [saved,following,token]=await Promise.all([savedEvents(user.id,30),followedSeries(user.id),calendarToken(user)]);
+ const c=(await db.query("select cal_clicked_at,cal_clicked,cal_fetched_at,cal_client from users where id=$1",[user.id])).rows[0]||{};
+ const cal={clickedAt:c.cal_clicked_at?.toISOString?.()||null,clicked:c.cal_clicked,fetchedAt:c.cal_fetched_at?.toISOString?.()||null,client:c.cal_client};
  const today=new Intl.DateTimeFormat("en-CA",{timeZone:"America/New_York"}).format(new Date());
  const upcoming=saved.filter(r=>r.date>=today),past=saved.filter(r=>r.date<today).reverse();
  const feed=`${SITE.replace(/^https?:\/\//,"")}/cal/${token}.ics`;
@@ -42,14 +45,14 @@ export default async function Me(){
  return <main className="detail">{head}
   <div className="detailWrap">
    <section className="detailCard"><div className="detailBody">
-    <SignedInNote/>
+    <SignedInNote name={user.name}/>
     <h1>My GoToday</h1>
     <p className="lead">Hi{user.name?` ${user.name.split(" ")[0]}`:""}! Here's what you've saved and follow.</p>
 
     <section className="meSection">
      <h2>Your GoToday calendar</h2>
      <p className="muted">Subscribe once and every event you save or follow shows up in your calendar by itself, including next year's dates for events you follow. Changes and cancellations update too (Google Calendar checks for updates a few times a day; Apple Calendar more often).</p>
-     <CalendarLinks feed={feed}/>
+     <CalendarLinks feed={feed} initial={cal}/>
     </section>
 
     <section className="meSection">

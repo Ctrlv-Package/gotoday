@@ -1,5 +1,6 @@
 import Link from "next/link";
 import SaveButton from "../../components/SaveButton";
+import NavMe from "../../components/NavMe";
 import FollowButton from "../../components/FollowButton";
 import {currentUser} from "../../../lib/auth";
 import {db} from "../../../lib/db";
@@ -55,7 +56,7 @@ export default async function EventPage({params}:{params:Promise<{id:string}>}){
  const tags=e.tags.filter(t=>!["Local","Library","Parks","Free","Tickets","Kids","Family"].includes(t)&&!/\(\d/.test(t)).slice(0,5);
 
  return <main className="detail">
-  <header className="detailHeader"><div className="detailWrap row"><Link href="/?fresh=1" className="detailLogo">Go<span>Today</span></Link><BackLink/></div></header>
+  <header className="detailHeader"><div className="detailWrap row"><Link href="/?fresh=1" className="detailLogo">Go<span>Today</span></Link><span className="navRight"><BackLink/><NavMe/></span></div></header>
   <div className="detailWrap">
    <article className="detailCard">
     {e.image?<img className="detailHero" src={e.image} alt="" referrerPolicy="no-referrer"/>:null}
