@@ -5,6 +5,11 @@ on:
     - cron: "20 10,16,22 * * *"   # ~6:20 AM, 12:20 PM, 6:20 PM Eastern (GitHub often starts scheduled runs late)
   workflow_dispatch: {}         # "Run workflow" button in the Actions tab
 
+# One run at a time: a late scheduled run waits for a manual one instead of hitting Instagram twice at once.
+concurrency:
+  group: remote-ingest
+  cancel-in-progress: false
+
 jobs:
   ingest:
     runs-on: ubuntu-24.04
