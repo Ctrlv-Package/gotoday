@@ -1,6 +1,7 @@
 import Link from "next/link";
 import SiteHeader from "../../components/SiteHeader";
 import SaveButton from "../../components/SaveButton";
+import CalendarChoice from "../../components/CalendarChoice";
 import FollowButton from "../../components/FollowButton";
 import {currentUser} from "../../../lib/auth";
 import {db} from "../../../lib/db";
@@ -11,7 +12,6 @@ import type {Metadata} from "next";
 import {headers} from "next/headers";
 import {redirect} from "next/navigation";
 import ShareButton from "./ShareButton";
-import AddToCalendar from "../../components/AddToCalendar";
 import {loadEvent,loadRelated,fmtDate,fmtTime,timeRange,isAllDay,directionsUrl,mapEmbedUrl,whereText,type EventDetail} from "../../../lib/event-detail";
 
 export const dynamic="force-dynamic";
@@ -46,6 +46,8 @@ export default async function EventPage({params}:{params:Promise<{id:string}>}){
  const user=await currentUser().catch(()=>null);
  const series=await seriesOf(e.id).catch(()=>null);
  const canFollow=!!series&&e.source!=="Ticketmaster"&&await followable(series).catch(()=>false);
+ // Their GoToday calendar is connected (a calendar app reads it, or they just added it): saved = already in their calendar.
+ const calConnected=!!user&&!!(await db.query("select 1 from users where id=$1 and (cal_fetched_at is not null or cal_clicked_at>now()-interval '7 days')",[user.id]).catch(()=>({rowCount:0}))).rowCount;
  const following=!!(user&&series&&(await db.query("select 1 from follows where user_id=$1 and series_id=$2",[user.id,series]).catch(()=>({rowCount:0}))).rowCount);
  const regFull=/full/i.test(e.registrationText||"");
  // A separate sign-up link (Eventbrite etc.) gets its own button; otherwise registration happens on the event page itself.
@@ -85,9 +87,10 @@ export default async function EventPage({params}:{params:Promise<{id:string}>}){
       <a className="btn primary" href={e.officialUrl} target="_blank" rel="noreferrer">{e.source==="Ticketmaster"?"Tickets & details ↗":e.registrationText&&!directReg&&!regFull?`Register on ${regWhere} page ↗`:"Official event page ↗"}</a>
       <SaveButton item={{id:`db-${e.id}`,title:e.title,date:new Intl.DateTimeFormat("en-CA",{timeZone:e.tz}).format(e.start),venue:e.venue||e.city}}/>
       {canFollow&&<FollowButton id={`db-${e.id}`} signedIn={!!user} initial={following}/>}
-      {!ended&&<AddToCalendar base={`/events/${encodeURIComponent(id)}`}/>}
+      {!ended&&<CalendarChoice base={`/events/${encodeURIComponent(id)}`} id={`db-${e.id}`} connected={calConnected}/>}
       <ShareButton title={e.title} text={`${e.title} — ${fmtDate(e.start,undefined,e.tz)}${isAllDay(e.start,e.tz)?"":`, ${fmtTime(e.start,e.tz)}`} at ${e.venue||e.city}`}/>
      </div>
+     <p className="ctaHelp">♡ <b>Save</b> keeps it in My GoToday{calConnected?" and your GoToday calendar":""}{!ended&&!calConnected?<> · 📅 <b>Calendar</b> adds this date to your calendar</>:null}{canFollow?<> · 🔔 <b>Remind me next year</b> gets you next year's date as soon as it's announced</>:null}</p>
 
      {paras.length>0&&<section className="about"><h2>About this event</h2>{paras.map((p,i)=><p key={i}>{p}</p>)}</section>}
      {tags.length>0&&<div className="tagRow">{tags.map(t=><span key={t}>{t}</span>)}</div>}

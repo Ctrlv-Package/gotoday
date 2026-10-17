@@ -76,6 +76,6 @@ export function CalendarLinks({feed,initial}:{feed:string;initial:CalStatus}){
 /** Stop following one event family. */
 export function Unfollow({series}:{series:number}){
  const [gone,setGone]=useState(false);
- if(gone)return <span className="muted small">Unfollowed</span>;
- return <button type="button" className="linkBtn small" onClick={async()=>{const r=await fetch("/api/me/follow",{method:"POST",headers:{"content-type":"application/json"},body:JSON.stringify({series,on:false})});if(r.ok)setGone(true)}}>Unfollow</button>;
+ if(gone)return <span className="muted small">Removed</span>;
+ return <button type="button" className="linkBtn small" onClick={async()=>{const r=await fetch("/api/me/follow",{method:"POST",headers:{"content-type":"application/json"},body:JSON.stringify({series,on:false})});if(r.ok)setGone(true)}}>Remove</button>;
 }

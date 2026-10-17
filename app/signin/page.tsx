@@ -9,8 +9,8 @@ export const metadata:Metadata={title:"Sign in — GoToday",robots:{index:false}
 export default async function SignIn({searchParams}:{searchParams:Promise<Record<string,string|undefined>>}){
  const p=await searchParams,next=safeNext(p.next);
  if(await currentUser().catch(()=>null))redirect(next);
- const why=p.why==="follow"?"Sign in to follow this event. We'll keep track of it and add next year's date to your GoToday calendar as soon as it's announced."
-  :"Save events on all your devices, follow the events you love so you never miss them next year, and get a personal calendar that fills itself.";
+ const why=p.why==="follow"?"Sign in so we can remind you when this event is back next year. We'll add next year's date to My GoToday and your GoToday calendar as soon as it's announced."
+  :"Keep your saved events on all your devices, get reminded when your favorite events come back next year, and get a personal calendar that fills itself.";
  return <main className="detail">
   <SiteHeader me={false}/>
   <div className="detailWrap narrow">

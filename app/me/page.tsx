@@ -27,7 +27,7 @@ export default async function Me(){
      <h2>Get more with a free account</h2>
      <ul>
       <li><b>Saved events on every device</b> — your phone and computer stay in sync.</li>
-      <li><b>Follow events you love</b> — when a festival or fair comes back next year, its new date shows up for you as soon as it's announced.</li>
+      <li><b>Remind me next year</b> — when a festival or fair you liked comes back, its new date shows up for you as soon as it's announced.</li>
       <li><b>Your own GoToday calendar</b> — subscribe once in Google or Apple Calendar and everything you save appears there by itself.</li>
      </ul>
      <Link className="btn primary" href="/signin">Sign in or create an account</Link>
@@ -47,11 +47,11 @@ export default async function Me(){
    <section className="detailCard"><div className="detailBody">
     <SignedInNote name={user.name}/>
     <h1>My GoToday</h1>
-    <p className="lead">Hi{user.name?` ${user.name.split(" ")[0]}`:""}! Here's what you've saved and follow.</p>
+    <p className="lead">Hi{user.name?` ${user.name.split(" ")[0]}`:""}! Here's what you've saved and your next-year reminders.</p>
 
     <section className="meSection">
      <h2>Your GoToday calendar</h2>
-     <p className="muted">Subscribe once and every event you save or follow shows up in your calendar by itself, including next year's dates for events you follow. Changes and cancellations update too (Google Calendar checks for updates a few times a day; Apple Calendar more often).</p>
+     <p className="muted">Subscribe once and every event you save shows up in your calendar by itself, including next year's dates for your reminders. Changes and cancellations update too (Google Calendar checks for updates a few times a day; Apple Calendar more often).</p>
      <CalendarLinks feed={feed} initial={cal}/>
     </section>
 
@@ -67,8 +67,8 @@ export default async function Me(){
     </section>
 
     <section className="meSection">
-     <h2>Following <span className="count">{following.length}</span></h2>
-     {following.length===0?<p className="muted">Follow a festival, fair or yearly event from its page (the 🔔 Follow button) and we'll keep track of it for you, year after year.</p>
+     <h2>Remind me next year <span className="count">{following.length}</span></h2>
+     {following.length===0?<p className="muted">On a festival, fair or other yearly event, tap 🔔 “Remind me next year” and we'll keep track of it for you, year after year.</p>
      :<ul className="meList">{following.map(f=><li key={f.seriesId}>
        {f.next?<Link href={`/events/db-${f.next.id}`}><b>{f.title}</b><span>Next: {when(f.next)} · {f.next.venue||f.next.city}</span></Link>
         :<div className="meNo"><b>{f.title}</b><span>Next date not announced yet{f.last?` · last time ${longDate(f.last.date)}`:""}. We'll add it as soon as it's listed.</span></div>}
