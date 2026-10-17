@@ -102,6 +102,10 @@ console.log(failures?`${failures} source(s) did not succeed`:"All remote sources
  }catch(e:any){console.log(`Instagram step failed: ${e?.message||e}`)}
  // Show a results table on the GitHub Actions run page, and mark the run failed if any city failed.
  if(process.env.GITHUB_STEP_SUMMARY)appendFileSync(process.env.GITHUB_STEP_SUMMARY,["### Remote ingest results","","| Source | OK | Found | Accepted | Rejected | Error |","|---|---|---|---|---|---|",...rows,""].join("\n"));
+ // Check what visitors now see in every area (duplicates, borrowed photos, wrong labels) and save it for the status page.
+ try{const qr=await fetch(`${base}/api/admin/audit?save=1`,{headers:{authorization:`Bearer ${secret}`},signal:AbortSignal.timeout(280000)});const q:any=await qr.json().catch(()=>({}));
+  if(q.ok){console.log(`Quality check: ${q.problems} to look at across ${q.cards} cards ${JSON.stringify(q.summary)}`);if(q.problems>25)problems.push(`Quality check: ${q.problems} display problems (see status page)`)}
+  else console.log(`Quality check failed: HTTP ${qr.status}`)}catch(e:any){console.log(`Quality check failed: ${e?.message||e}`)}
  // Tell the site how this run went (shown on the status page).
  const total=configs.length+igTotal,bad=failures+igFailed;
  await fetch(`${base}/api/ingest/report`,{method:"POST",headers:{"content-type":"application/json",authorization:`Bearer ${secret}`},

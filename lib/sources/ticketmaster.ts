@@ -42,7 +42,8 @@ export async function fetchTicketmasterEvents(startDate:string,endDate:string,cf
    if(ev.dates?.status?.code==="cancelled")continue;
    seen.add(ev.id);
    const v=ev._embedded?.venues?.[0]||{},lat=Number(v.location?.latitude),lng=Number(v.location?.longitude);
-   const price=ev.priceRanges?.[0],img=[...(ev.images||[])].sort((a:any,b:any)=>(b.width||0)-(a.width||0))[0]?.url;
+   // Ticketmaster's generic category pictures (/dam/c/…) are reused across unrelated shows: only real show photos.
+   const price=ev.priceRanges?.[0],img=[...(ev.images||[])].filter((i:any)=>!/\/dam\/c\//.test(i.url||"")).sort((a:any,b:any)=>(b.width||0)-(a.width||0))[0]?.url;
    const family=seg==="Family"||/\bfamily|kids?\b/i.test(title);
    out.push({id:`tm-${ev.id}`,title,city:[v.city?.name,v.state?.stateCode||"FL"].filter(Boolean).join(", "),venue:v.name||"TBA",
     address:[v.address?.line1,v.city?.name,v.state?.stateCode,v.postalCode].filter(Boolean).join(", ")||undefined,

@@ -370,3 +370,4 @@ a.logo{text-decoration:none;color:inherit}
 .locLine{display:flex;min-width:0}
 .locLine .locV{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;min-width:0}
 .locLine .locD{white-space:nowrap;flex:none}
+.qaList{margin:8px 0 0;padding-left:18px}.qaList>li{margin:4px 0}.qaList ul{margin:2px 0 6px;padding-left:16px}

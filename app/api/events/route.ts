@@ -139,6 +139,7 @@ export async function GET(request:NextRequest){
  const rank=(e:any)=>isRoundup(e)?3:isIg(e)?2:e.source==="Ticketmaster"?1:0;
  // The same photo on 3+ differently named events is a cover or a placeholder (a round-up post's cover, a city's
  // generic banner), not any one event's picture. Library category pictures (a storytime photo on storytimes) are fine.
+ for(const e of events as any[])if(e.image&&/ticketm\.net\/dam\/c\//.test(e.image))e.image="";   // Ticketmaster stock picture
  const igPics=[...new Set((events as any[]).filter(e=>e.image&&!/static\.libnet\.info|ticketm\.net/.test(e.image)).map(e=>e.image as string))];
  if(igPics.length){
   const shared=new Set((await db.query("select image_url from events where image_url=any($1) group by image_url having count(distinct lower(title))>=3",[igPics]).catch(()=>({rows:[]}))).rows.map((r:any)=>r.image_url));

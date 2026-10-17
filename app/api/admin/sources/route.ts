@@ -22,7 +22,9 @@ export async function GET(req:NextRequest){
  const details=(await db.query(`select count(*) filter (where key<>'__error')::int as tried,count(*) filter (where (data->>'found')='true')::int as found,
    max(case when key='__error' then data->>'msg' end) as error from event_details`).catch(()=>({rows:[]}))).rows[0]||null;
  const lastGithub=(await db.query("select * from ingest_log where trigger='github' order by id desc limit 1").catch(()=>({rows:[]}))).rows[0]||null;
- return NextResponse.json({ok:true,lastRun,lastGithub,details,sources:configs.map(c=>({...c,status:status.get(c.name)||null})),platforms:Object.fromEntries(Object.entries(PLATFORMS).map(([k,v])=>[k,{describe:v.describe,params:v.params}]))});
+ // Latest quality check of what visitors see (duplicates, borrowed photos, wrong labels…), saved by the GitHub job.
+ const quality=(await db.query("select checked_at,cards,summary,examples from quality_audits order by id desc limit 1").catch(()=>({rows:[]}))).rows[0]||null;
+ return NextResponse.json({ok:true,lastRun,lastGithub,details,quality,sources:configs.map(c=>({...c,status:status.get(c.name)||null})),platforms:Object.fromEntries(Object.entries(PLATFORMS).map(([k,v])=>[k,{describe:v.describe,params:v.params}]))});
 }
 
 // POST /api/admin/sources  {name, platform, params, url?, region?, timezone?, remote?, enabled?, priority?, source_type?, test?}

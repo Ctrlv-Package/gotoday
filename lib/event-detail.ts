@@ -23,6 +23,7 @@ export async function loadEvent(id:string):Promise<EventDetail|null>{
   from events e join sources s on s.id=e.source_id left join venues v on v.id=e.venue_id where e.id=$1 limit 1`,[n]);
  const r=rows[0];if(!r)return null;
  // Same rule as the cards: a photo shared by 3+ differently named events is a cover or placeholder, not this event's.
+ if(r.image_url&&/ticketm\.net\/dam\/c\//.test(r.image_url))r.image_url=null;
  if(r.image_url&&!/static\.libnet\.info|ticketm\.net/.test(r.image_url)){
   const sh=await db.query("select count(distinct lower(title))::int as n from events where image_url=$1",[r.image_url]).catch(()=>({rows:[{n:0}]}));
   if(Number(sh.rows[0]?.n)>=3)r.image_url=null;
