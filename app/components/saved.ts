@@ -10,6 +10,16 @@ const listeners=new Set<()=>void>();
 export const onSavedChange=(f:()=>void)=>{listeners.add(f);return()=>{listeners.delete(f)}};
 const notify=()=>listeners.forEach(f=>f());
 
+// Coming back to a page (browser Back can show a frozen copy of it) or to the tab: re-check what's saved, so a heart
+// removed on My GoToday isn't still shown filled here.
+if(typeof window!=="undefined"){
+ let last=Date.now();
+ const refresh=()=>{last=Date.now();me=null;loadMe().then(()=>notify())};
+ window.addEventListener("pageshow",e=>{if((e as PageTransitionEvent).persisted)refresh()});
+ document.addEventListener("visibilitychange",()=>{if(document.visibilityState==="visible"&&Date.now()-last>20000)refresh()});
+ window.addEventListener("storage",e=>{if(e.key===KEY)notify()});
+}
+
 export function guestSaved():SavedItem[]{try{return JSON.parse(localStorage.getItem(KEY)||"[]")}catch{return[]}}
 function setGuest(list:SavedItem[]){try{localStorage.setItem(KEY,JSON.stringify(list.slice(0,200)))}catch{}}
 

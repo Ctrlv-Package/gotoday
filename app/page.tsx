@@ -94,11 +94,12 @@ export default function Home(){
   const fromUrl=new URLSearchParams(location.search).get("zip");
   let v:any=null;try{v=JSON.parse(sessionStorage.getItem(VIEW)||"null")}catch{}
   const today=new Date().toDateString();
-  // Only coming BACK from an event restores the view. A refresh, the logo, or a new visit starts fresh.
+  // Coming BACK to the page restores the view (search, filters, scroll). A refresh, the logo, or a new visit starts fresh.
   const nav=(performance.getEntriesByType("navigation")[0] as PerformanceNavigationTiming|undefined)?.type;
   let realReload=false;try{const seen=sessionStorage.getItem("gotoday:load");realReload=nav==="reload"&&seen!==String(performance.timeOrigin);sessionStorage.setItem("gotoday:load",String(performance.timeOrigin))}catch{}
   const freshParam=new URLSearchParams(location.search).has("fresh");
-  let returning=false;try{returning=sessionStorage.getItem("gotoday:openedEvent")==="1";sessionStorage.removeItem("gotoday:openedEvent")}catch{}
+  // Returning = coming back from any other GoToday page (an event, My GoToday, sign-in…), by link or the browser's Back.
+  let returning=nav==="back_forward";try{returning=returning||sessionStorage.getItem("gotoday:openedEvent")==="1";sessionStorage.removeItem("gotoday:openedEvent")}catch{}
   if(freshParam||realReload||!returning){try{sessionStorage.removeItem(VIEW)}catch{};v=null}
   if(freshParam)history.replaceState(null,"",location.pathname+(fromUrl?`?zip=${fromUrl}`:""));
   if(v&&v.day===today&&Date.now()-v.savedAt<45*60e3&&(!fromUrl||fromUrl===v.searchedZip)){
@@ -122,7 +123,10 @@ export default function Home(){
    events,message,soon,scrollY:window.scrollY,savedAt:Date.now(),day:new Date().toDateString()}))}catch{}};
   save();
   let t:any=null;const onScroll=()=>{clearTimeout(t);t=setTimeout(save,150)};
-  const onClick=(e:MouseEvent)=>{if((e.target as HTMLElement)?.closest?.(".card a"))try{sessionStorage.setItem("gotoday:openedEvent","1")}catch{};save()};
+  // Leaving for another GoToday page (an event, My GoToday, Create…) — but not the logo, which means "start over".
+  const onClick=(e:MouseEvent)=>{const a=(e.target as HTMLElement)?.closest?.("a") as HTMLAnchorElement|null;
+   if(a){try{const u=new URL(a.href,location.href);if(u.origin===location.origin&&!u.searchParams.has("fresh"))sessionStorage.setItem("gotoday:openedEvent","1")}catch{}}
+   save()};
   window.addEventListener("scroll",onScroll,{passive:true});window.addEventListener("pagehide",save);document.addEventListener("click",onClick,true);
   return()=>{clearTimeout(t);window.removeEventListener("scroll",onScroll);window.removeEventListener("pagehide",save);document.removeEventListener("click",onClick,true)};
  },[restored,zip,searchedZip,coords,radius,range,selected,ageBands,moreOpen,setting,dropIn,spanish,seniors,timeFilter,sort,query,events,message,soon]);
