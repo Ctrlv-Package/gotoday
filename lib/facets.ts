@@ -25,6 +25,9 @@ const ADULT_TAGS=/^(adults?|adult \(|new adults|older adults|seniors|21\+|18\+)/
 export function isPaid(e:In){
  const tags=e.tags||[];
  if(tags.some(t=>/^paid$/i.test(t.trim())))return true;
+ // A title that says FREE outweighs a ticketing site's fee field (Ticketmaster lists $1–2 fees on free shows).
+ const words=`${e.title||""} ${e.desc||""}`;
+ if(/(^|[\s:–-])free\b/i.test(e.title||"")&&!/\$\s?[1-9]/.test(words))return false;
  const txt=`${e.title||""} ${e.priceText||""} ${e.desc||""}`;
  return /\$\s?[1-9]\d*(\.\d\d)?\b/.test(txt)&&!/\$\s?\d+[^.]{0,40}\b(parking|donation|suggested|optional|raffle|food|drinks?|vendors?)\b/i.test(txt)&&!/\bfree (admission|entry|event)\b/i.test(txt);
 }
