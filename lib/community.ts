@@ -122,7 +122,7 @@ async function syncListing(e:CommunityEvent,origin:string){
  if(id!==e.eventId)await db.query("update community_events set event_id=$1 where id=$2",[id,e.id]);
 }
 
-export async function createEvent(v:CommunityInput,ip:string,origin:string){
+export async function createEvent(v:CommunityInput,ip:string,origin:string,userId?:number|null){
  await ensureSchema();
  const ipHash=hashToken(`${ip}|${process.env.INGESTION_SECRET||"gotoday"}`);
  const recent=await db.query("select count(*)::int as n from community_events where ip_hash=$1 and created_at>now()-interval '1 day'",[ipHash]);
@@ -135,6 +135,7 @@ export async function createEvent(v:CommunityInput,ip:string,origin:string){
    latitude,longitude,is_free,price_text,age_min,age_max,category,link,host_name,ip_hash) values($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18,$19,$20,$21,$22,$23,$24,$25) returning *`,
   [share,hashToken(manage),v.visibility,status,sc.reason,v.title,v.description,v.date,v.startTime||null,v.endTime||null,v.allDay,tz,v.venue||null,v.address||null,v.city,
    pt?.latitude??null,pt?.longitude??null,v.isFree,v.priceText||null,v.ageMin,v.ageMax,v.category,v.link||null,v.hostName||null,ipHash]);
+ if(userId)await db.query("update community_events set user_id=$1,owner_token=$2 where id=$3",[userId,manage,rows[0].id]);
  const e=rowToEvent(rows[0]);
  await syncListing(e,origin);
  return{event:e,manageToken:manage};
@@ -190,4 +191,21 @@ export async function rsvpsFor(eventId:number):Promise<Rsvp[]>{
 export async function rsvpCounts(eventId:number){
  const {rows}=await db.query("select status,count(*)::int as n,coalesce(sum(guests),0)::int as g from rsvps where community_event_id=$1 group by status",[eventId]);
  const c={going:0,maybe:0,no:0};for(const r of rows)(c as any)[r.status]=r.status==="no"?r.n:r.n+r.g;return c;
+}
+
+/** Events someone created, for My GoToday. */
+export async function eventsOfUser(userId:number){
+ await ensureSchema();
+ const {rows}=await db.query("select * from community_events where user_id=$1 and status<>'deleted' order by start_date desc,id desc limit 100",[userId]);
+ return rows.map((r:any)=>({...rowToEvent(r),ownerToken:r.owner_token as string|null}));
+}
+/** Attach events made on this device before signing in (proved by their manage links) to the account. */
+export async function claimEvents(userId:number,manageTokens:string[]){
+ await ensureSchema();let n=0;
+ for(const t of manageTokens.slice(0,50)){
+  if(!/^[A-Za-z0-9_-]{16,}$/.test(t))continue;
+  const r=await db.query("update community_events set user_id=$1,owner_token=$2 where manage_hash=$3 and user_id is null and status<>'deleted'",[userId,t,hashToken(t)]);
+  n+=r.rowCount||0;
+ }
+ return n;
 }

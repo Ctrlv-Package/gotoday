@@ -492,3 +492,7 @@ a.linkBtn{text-decoration:none}
 .seg .ddMenu button{flex-direction:row;align-items:center;justify-content:flex-start;min-height:42px;padding:8px 10px;gap:10px;line-height:1.3;background:none;color:var(--ink);border:0;font-size:14px}
 .seg .ddMenu button[aria-selected=true]{background:#f5f3ff;color:var(--accent)}
 .seg .ddMenu button:hover{background:#faf5ff}
+.meList .stat{font-size:12px;font-weight:700;margin-top:2px}
+.meList .stat.live{color:#166534}.meList .stat.pending{color:#92400e}.meList .stat.rejected{color:#b91c1c}
+.meList .btn.small{flex:none}
+.inlineLink{color:var(--accent);font-weight:700;text-decoration:none}

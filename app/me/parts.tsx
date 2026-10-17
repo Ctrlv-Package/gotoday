@@ -1,6 +1,7 @@
 "use client";
 import {useEffect,useState} from "react";
 import {guestSaved,loadMe,onSavedChange,type SavedItem} from "../components/saved";
+import {myEvents,type MyEvent} from "../components/myEvents";
 import SaveButton from "../components/SaveButton";
 
 /** Guests: the events saved in this browser. */
@@ -18,11 +19,35 @@ export function GuestSaved(){
  </section>;
 }
 
+/** Guests: events created on this device (the create page remembers their links here). */
+export function GuestCreated(){
+ const [list,setList]=useState<MyEvent[]|null>(null);
+ useEffect(()=>{setList(myEvents())},[]);
+ if(!list)return null;
+ return <section className="meSection">
+  <h2>My events <span className="count">{list.length}</span></h2>
+  {list.length===0?<p className="muted">Events you create show up here. <a href="/create" className="inlineLink">Create an event →</a></p>
+  :<ul className="meList">{list.map(x=><li key={x.manageUrl}>
+    <a href={x.shareUrl}><b>{x.title}</b><span>{x.date?new Date(x.date+"T12:00:00").toLocaleDateString("en-US",{weekday:"short",month:"short",day:"numeric"}):""}{x.visibility==="private"?" · Private":""}</span></a>
+    <a className="btn ghost small" href={x.manageUrl}>Manage</a>
+   </li>)}</ul>}
+  {list.length>0&&<p className="muted small" style={{marginTop:8}}>Saved on this device only. Sign in to see them on any device.</p>}
+ </section>;
+}
+
 /** Right after signing in: move this browser's saved events into the account, then show the full list. */
 export function SignedInNote({name}:{name?:string|null}){
  const [msg,setMsg]=useState("");
  useEffect(()=>{
   const had=guestSaved().length;
+  // Events created on this device before signing in join the account (once).
+  const made=myEvents().map(x=>x.manageUrl);
+  let claimKey="gotoday:claimed";let done:string[]=[];try{done=JSON.parse(localStorage.getItem(claimKey)||"[]")}catch{}
+  const todo=made.filter(u=>!done.includes(u));
+  if(todo.length)fetch("/api/me/events",{method:"POST",headers:{"content-type":"application/json"},body:JSON.stringify({manageUrls:todo})}).then(r=>r.json()).then(d=>{
+   try{localStorage.setItem(claimKey,JSON.stringify([...done,...todo].slice(-100)))}catch{}
+   if(d?.claimed>0){setMsg(`Added ${d.claimed} event${d.claimed>1?"s":""} you created on this device to My events.`);setTimeout(()=>location.reload(),1400)}
+  }).catch(()=>{});
   loadMe(true).then(()=>{
    const u=new URL(location.href);
    if(had&&!guestSaved().length){setMsg(`Moved ${had} saved event${had>1?"s":""} from this device into your account.`);setTimeout(()=>location.reload(),1200)}

@@ -6,7 +6,8 @@ import {db} from "../../lib/db";
 import {savedEvents,followedSeries,type MyEventRow} from "../../lib/me";
 import {fmtDate,fmtTime,isAllDay} from "../../lib/event-detail";
 import SaveButton from "../components/SaveButton";
-import {GuestSaved,CalendarLinks,Unfollow,SignedInNote} from "./parts";
+import {GuestSaved,GuestCreated,CalendarLinks,Unfollow,SignedInNote} from "./parts";
+import {eventsOfUser} from "../../lib/community";
 export const dynamic="force-dynamic";
 export const metadata:Metadata={title:"My GoToday",robots:{index:false}};
 
@@ -23,10 +24,12 @@ export default async function Me(){
    <section className="detailCard"><div className="detailBody">
     <h1>My GoToday</h1>
     <GuestSaved/>
+    <GuestCreated/>
     <div className="perk">
      <h2>Get more with a free account</h2>
      <ul>
       <li><b>Saved events on every device</b> — your phone and computer stay in sync.</li>
+      <li><b>Your events in one place</b> — events you create are listed here with their share and manage links, on any device.</li>
       <li><b>Remind me next year</b> — when a festival or fair you liked comes back, its new date shows up for you as soon as it's announced.</li>
       <li><b>Your own GoToday calendar</b> — subscribe once in Google or Apple Calendar and everything you save appears there by itself.</li>
      </ul>
@@ -35,7 +38,7 @@ export default async function Me(){
    </div></section>
   </div></main>;
 
- const [saved,following,token]=await Promise.all([savedEvents(user.id,30),followedSeries(user.id),calendarToken(user)]);
+ const [saved,following,token,created]=await Promise.all([savedEvents(user.id,30),followedSeries(user.id),calendarToken(user),eventsOfUser(user.id)]);
  const c=(await db.query("select cal_clicked_at,cal_clicked,cal_fetched_at,cal_client from users where id=$1",[user.id])).rows[0]||{};
  const cal={clickedAt:c.cal_clicked_at?.toISOString?.()||null,clicked:c.cal_clicked,fetchedAt:c.cal_fetched_at?.toISOString?.()||null,client:c.cal_client};
  const today=new Intl.DateTimeFormat("en-CA",{timeZone:"America/New_York"}).format(new Date());
@@ -64,6 +67,17 @@ export default async function Me(){
       </li>)}</ul>}
      {past.length>0&&<details className="mePast"><summary>Recently passed ({past.length})</summary><ul className="meList">{past.map(r=><li key={r.id}>
        <Link href={`/events/db-${r.id}`}><b>{r.title}</b><span>{when(r)} · {r.venue||r.city}</span></Link></li>)}</ul></details>}
+    </section>
+
+    <section className="meSection">
+     <h2>My events <span className="count">{created.length}</span></h2>
+     {created.length===0?<p className="muted">Events you create on GoToday show up here, with links to share and manage them. <Link href="/create" className="inlineLink">Create an event →</Link></p>
+     :<><ul className="meList">{created.map(c=><li key={c.id}>
+       <a href={`/e/${c.shareToken}`}><b>{c.title}</b><span>{longDate(c.date)}{c.startTime?` · ${c.startTime}`:""}{c.venue?` · ${c.venue}`:""}</span>
+        <span className={`stat ${c.status}`}>{c.visibility==="private"?"Private · link only":c.status==="live"?"Live on GoToday":c.status==="pending"?"Waiting for review":c.status==="rejected"?"Not approved":c.status}</span></a>
+       {c.ownerToken&&<Link className="btn ghost small" href={`/manage/${c.ownerToken}`}>Manage</Link>}
+      </li>)}</ul>
+      <p className="muted small" style={{marginTop:8}}><Link href="/create" className="inlineLink">+ Create another event</Link></p></>}
     </section>
 
     <section className="meSection">
