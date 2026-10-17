@@ -52,7 +52,7 @@ export async function GET(req:NextRequest){
    const key=`${e.id}|${day}`;if(seen.has(key))continue;seen.add(key);
    const t=e.title||"",f:string[]=e.facets||[],h={area,date:day,title:t,source:e.source,id:e.id};
    if(e.image&&!/static\.libnet\.info/.test(e.image)){const k=String(e.image).split("?")[0];pics.set(k,[...(pics.get(k)||[]),t])}
-   if(/\b(kids?|children'?s?|toddlers?|bab(y|ies)|preschool|storytime|tweens?|teens?|youth|family|families)\b/i.test(t)&&!f.includes("Kids")&&!f.includes("Family"))add("kidsTitleNotKids",h);
+   if(/\b(kids?|children'?s?|toddlers?|bab(y|ies)|preschool|storytime|tweens?|teens?|youth|family|families)\b/i.test(t)&&!f.includes("Kids")&&!f.includes("Family")&&!((e.ageMin??0)>=18))add("kidsTitleNotKids",h);
    if(/\bfree\b/i.test(t)&&!/\b(gluten|sugar|alcohol|dairy)[- ]free|free ?style|\beats? free\b/i.test(t)&&!f.includes("Free"))add("freeTitleNotFree",h);
    if(/\b(21\+|18\+|wine|beer|brewery|cocktails?|happy hour|bar crawl|burlesque)\b/i.test(t)&&f.includes("Family"))add("adultTitleFamily",h);
    const st=(e.tags||[]).find((x:string)=>x==="Indoor"||x==="Outdoor");
@@ -62,7 +62,9 @@ export async function GET(req:NextRequest){
    if(/ · Instagram$/.test(e.source||"")&&String(e.venue||"").toLowerCase()===String(e.source).replace(/ · Instagram$/,"").toLowerCase())add("venueIsAccount",{...h,note:e.venue});
    if(f.includes("Kids")){const r=kidAgeRange(e);if(r&&r[1]-r[0]<3&&!e.ageMin)add("kidsNoAgesNarrowed",{...h,note:`${r[0]}–${r[1]}`})}
   }
-  for(const [u,titles] of pics)if(new Set(titles.map(x=>x.toLowerCase())).size>=2)add("sharedPhoto",{area,date:day,title:titles.join("  |  "),source:u.slice(0,80)});
+  // A shared photo is only a problem between different events (the same show at two times rightly shares its photo).
+  const related=(a:string,b:string)=>{const fa=a.toLowerCase().replace(/[^a-z0-9]+/g,""),fb=b.toLowerCase().replace(/[^a-z0-9]+/g,"");if(fa.includes(fb)||fb.includes(fa))return true;const wa=words(a),wb=words(b);let h=0;for(const x of wa)if(wb.has(x))h++;return h>=1&&h/Math.max(1,Math.min(wa.size,wb.size))>=0.5};
+  for(const [u,titles] of pics){const t=[...new Set(titles)];if(t.some((a,i)=>t.some((b,j)=>j>i&&!related(a,b))))add("sharedPhoto",{area,date:day,title:t.join("  |  "),source:u.slice(0,80)})}
  }
  const summary=Object.fromEntries(Object.entries(found).map(([k,v])=>[k,v.length]));
  // Counted as problems; noSetting / kidsNoAgesNarrowed / venueIsAccount are shown for information only.
