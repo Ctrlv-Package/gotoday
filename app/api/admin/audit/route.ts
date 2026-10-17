@@ -27,7 +27,7 @@ export async function GET(req:NextRequest){
  await Promise.all(Array.from({length:6},async()=>{while(next<jobs.length){const j=jobs[next++];
   try{const r=await fetch(`${origin}/api/events?postalCode=${j.zip}&radius=25&range=${j.day}&today=${days[0]}`,{cache:"no-store"});const d:any=await r.json();results.push({area:j.area,day:j.day,events:d.events||[]})}catch{results.push({area:j.area,day:j.day,events:[]})}}}));
 
- const found:Record<string,Hit[]>={duplicates:[],sharedPhoto:[],kidsTitleNotKids:[],freeTitleNotFree:[],adultTitleFamily:[],outdoorTitleIndoor:[],captionTitle:[],venueIsAccount:[],noSetting:[],kidsNoAgesNarrowed:[]};
+ const found:Record<string,Hit[]>={freeButPriced:[],duplicates:[],sharedPhoto:[],kidsTitleNotKids:[],freeTitleNotFree:[],adultTitleFamily:[],outdoorTitleIndoor:[],captionTitle:[],venueIsAccount:[],noSetting:[],kidsNoAgesNarrowed:[]};
  const add=(k:string,h:Hit)=>{if(found[k].length<400)found[k].push(h)};
  let total=0;const seen=new Set<string>();
  for(const {area,day,events} of results){
@@ -58,6 +58,8 @@ export async function GET(req:NextRequest){
    if(e.image&&!/static\.libnet\.info/.test(e.image)){const k=String(e.image).split("?")[0];pics.set(k,[...(pics.get(k)||[]),t])}
    if(/\b(kids?|children'?s?|toddlers?|bab(y|ies)|preschool|storytime|tweens?|teens?|youth|family|families)\b/i.test(t)&&!f.includes("Kids")&&!f.includes("Family")&&!((e.ageMin??0)>=18))add("kidsTitleNotKids",h);
    if(/\bfree\b/i.test(t)&&!/\b(gluten|sugar|alcohol|dairy)[- ]free|free ?style|\beats? free\b/i.test(t)&&!f.includes("Free"))add("freeTitleNotFree",h);
+   // Labeled Free while the listing names a ticket price ("$5 per person", "$10 admission").
+   if(f.includes("Free")&&/\$\s?[1-9]\d*[^.]{0,25}\b(per (person|child|adult|car|family)|admission|entry|tickets?|wristband|each|pp)\b/i.test(`${t} ${e.desc||""} ${e.priceText||""}`))add("freeButPriced",{...h,note:(e.desc||"").slice(0,120)});
    if(/\b(21\+|18\+|wine|beer|brewery|cocktails?|happy hour|bar crawl|burlesque)\b/i.test(t)&&f.includes("Family"))add("adultTitleFamily",h);
    const st=(e.tags||[]).find((x:string)=>x==="Indoor"||x==="Outdoor");
    if(st==="Indoor"&&settingFor({title:t,venue:e.venue,source:e.source})==="Outdoor")add("outdoorTitleIndoor",h);
@@ -72,7 +74,7 @@ export async function GET(req:NextRequest){
  }
  const summary=Object.fromEntries(Object.entries(found).map(([k,v])=>[k,v.length]));
  // Counted as problems; noSetting / kidsNoAgesNarrowed / venueIsAccount are shown for information only.
- const problems=["duplicates","sharedPhoto","kidsTitleNotKids","freeTitleNotFree","adultTitleFamily","outdoorTitleIndoor","captionTitle"].reduce((n,k)=>n+(summary[k]||0),0);
+ const problems=["freeButPriced","duplicates","sharedPhoto","kidsTitleNotKids","freeTitleNotFree","adultTitleFamily","outdoorTitleIndoor","captionTitle"].reduce((n,k)=>n+(summary[k]||0),0);
  const out={ok:true,checkedAt:new Date().toISOString(),areas:AREAS.length,days:days.length,cards:total,problems,summary,examples:Object.fromEntries(Object.entries(found).map(([k,v])=>[k,v.slice(0,40)]))};
  if(req.nextUrl.searchParams.get("save")){
   await ensureSchema();

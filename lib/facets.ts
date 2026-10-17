@@ -5,7 +5,7 @@
 // something reliable.
 
 export type Facet="Family"|"Kids"|"Adults"|"Music"|"Arts & Theatre"|"Sports"|"Free";
-type In={title:string;desc?:string;tags?:string[];category?:string;genre?:string;source?:string;ageMin?:number|null;ageMax?:number|null;isFree?:boolean};
+type In={title:string;desc?:string;tags?:string[];category?:string;genre?:string;source?:string;ageMin?:number|null;ageMax?:number|null;isFree?:boolean;priceText?:string};
 
 const has=(re:RegExp,...xs:(string|undefined)[])=>xs.some(x=>!!x&&re.test(x));
 
@@ -20,6 +20,14 @@ const FAMILY=/\b(famil(y|ies)|all ages|everyone|kids|children|parents?|festivals
 const FAMILY_TAGS=/^(family|families|all ages|everyone)$/i;
 const ADULT=/\b(adults?|21\+|18\+|seniors?|older adults|55\+|50\+|wine|beer|brew(ery|ing)?|cocktails?|margarita|happy hour|bar crawl|pub|networking|career|job fair|resume|medicare|retirement|wealth|investing|taxes|estate planning|book club|singles|ladies night|date night)\b/i;
 const ADULT_TAGS=/^(adults?|adult \(|new adults|older adults|seniors|21\+|18\+)/i;
+
+/** The listing says it costs money: a "Paid" mark (the flyer reading found a price), a price, or a $ amount. */
+export function isPaid(e:In){
+ const tags=e.tags||[];
+ if(tags.some(t=>/^paid$/i.test(t.trim())))return true;
+ const txt=`${e.title||""} ${e.priceText||""} ${e.desc||""}`;
+ return /\$\s?[1-9]\d*(\.\d\d)?\b/.test(txt)&&!/\$\s?\d+[^.]{0,40}\b(parking|donation|suggested|optional|raffle|food|drinks?|vendors?)\b/i.test(txt)&&!/\bfree (admission|entry|event)\b/i.test(txt);
+}
 
 /** Ages inferred only from a bare "Kids" label are a guess (5–11), not information. */
 export function cleanAges(e:In):{ageMin?:number;ageMax?:number}{
@@ -94,7 +102,10 @@ export function facetsFor(e:In):Facet[]{
  const priced=/\$\s?\d|\btickets?\b|\badmission\b|\bfees?\b|\bcost\b|\bprice\b|\bpurchase\b|\bpaid\b|\bper person\b/i.test(`${t} ${e.desc||""}`);
  // The title says so ("FREE Record release show", "Free Family Movie Night") — not "gluten-free" or "kids eat free".
  const freeTitle=/(^|[\s:–-])free\b(?![- ](style|agent|form|lance|dom|range|play\b))/i.test(t)&&!/\b(gluten|sugar|dairy|alcohol|smoke|tax|fee|cruelty|hands)[- ]free\b|\beat(s)? free\b|\bfree (with|for kids with) (purchase|paid|adult)/i.test(t);
- if(e.isFree||tagHas(/^free$/i)||freeTitle||(gov&&e.source!=="Ticketmaster"&&!priced&&!tagHas(/^tickets$/i)))out.add("Free");
+ // A listing that shows a price isn't free, whatever a "no price mentioned" guess would say.
+ const paid=isPaid(e);
+ const freeSaid=/\bfree (admission|entry|to attend|and open to (the|all)|for (all|everyone|the public|families|kids|children))\b|\b(admission|entry) is free\b|\bno (cost|charge|admission)\b|\bat no cost\b/i.test(`${t} ${e.desc||""}`);
+ if(!paid&&(e.isFree||tagHas(/^free$/i)||freeTitle||freeSaid)||!paid&&(gov&&e.source!=="Ticketmaster"&&!priced&&!tagHas(/^tickets$/i)))out.add("Free");
  return[...out];
 }
 

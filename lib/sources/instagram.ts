@@ -246,7 +246,7 @@ export async function fetchInstagram(cfg:InstagramConfig,startDate:string,endDat
    venue:(e.place||"").split(",")[0].trim().slice(0,120)||cfg.venue,address:e.place&&/\d/.test(e.place)?e.place.split(",").slice(1).join(",").trim()||e.place:e.place?undefined:cfg.address,date:e.date,time,endTime:end&&time&&end>time?end:undefined,
    url:e.post.permalink,sourceUrl:`https://www.instagram.com/${cfg.username}/`,image:pictureFor(e),
    category:family?"Family":arts?"Arts & Theatre":"Local",genre:"Venue Event",desc:(e.summary||"").trim()||`Posted by @${cfg.username}.`,
-   tags:[...(family?["Family"]:[]),...(e.kids?["Kids"]:[]),...(arts?["Arts & Theatre"]:[]),...(e.free?["Free"]:[]),"Local"],
+   tags:[...(family?["Family"]:[]),...(e.kids?["Kids"]:[]),...(arts?["Arts & Theatre"]:[]),...(e.free?["Free"]:e.free===false?["Paid"]:[]),"Local"],
    emoji:family?"🎉":arts?"🎨":"📍",source:cfg.source,isFree:e.free===true||undefined,eventType:"event"});
  }
  // Flyers that only name the event: look it up on the web for the official page and a real description.
