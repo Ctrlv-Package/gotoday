@@ -185,7 +185,7 @@ export default function Home(){
  const where=coords?"your location":searchedZip||"your area",hasPlace=!!(coords||searchedZip);
  return <main className="page">
   <section className="hero">
-   <nav><a className="logo" href="/?fresh=1">Go<span>Today</span></a><span className="navRight"><NavMe/><a className="createBtn" href="/create">+ Create event</a></span></nav>
+   <nav><a className="logo" href="/?fresh=1">Go<span>Today</span></a><span className="navRight"><NavMe/><a className="createBtn" href="/create">+ Create<span className="hideXs"> event</span></a></span></nav>
    <div className="heroContent">
     <div className="eyebrow">EXPLORE MORE. TODAY.</div>
     <h1>Find your <span>next thing.</span></h1>

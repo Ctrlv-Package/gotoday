@@ -376,7 +376,7 @@ a.logo{text-decoration:none;color:inherit}
 .navRight{display:flex;align-items:center;gap:8px}
 .meLink{display:inline-flex;align-items:center;gap:6px;color:var(--ink);text-decoration:none;font-weight:800;font-size:14px;padding:8px 12px;border:1px solid var(--line);border-radius:999px;background:#fff;white-space:nowrap}
 .meLink:hover{border-color:#c4b5fd;color:var(--accent)}
-@media(max-width:540px){.meLink:not(.signed) span{display:none}.meLink:not(.signed){padding:8px 10px}}
+
 .saveBtn{display:inline-flex;align-items:center;justify-content:center;gap:8px;border:1px solid var(--line);background:#fff;padding:13px 18px;border-radius:12px;font-weight:700;font-size:15px;cursor:pointer;color:var(--ink)}
 .saveBtn.compact{padding:0;width:44px;height:44px;flex:none}
 .saveBtn.on{color:#e11d48;border-color:#fecdd3;background:#fff1f2}
@@ -450,3 +450,15 @@ a.linkBtn{text-decoration:none}
 .ctaFollow{margin-top:8px;display:flex;flex-direction:column}
 .ctaFollow .followBtn{width:100%}
 @media(max-width:540px){.wideOnly{display:none}.ctaGrid .saveBtn,.ctaGrid .calBtn,.ctaGrid .shareDetail{padding:12px 8px!important;font-size:14px!important}}
+.ctaGrid>.cal,.ctaGrid>a,.ctaGrid>button{flex:1 1 0!important;min-width:0}
+.ctaGrid svg{flex:none}
+@media(max-width:540px){.ctaGrid .calBtn>span,.ctaGrid .inCal{text-transform:capitalize}.ctaGrid .saveBtn,.ctaGrid .calBtn,.ctaGrid .shareDetail{gap:6px!important}}
+.ctaGrid .saveBtn,.ctaGrid .shareDetail,.ctaGrid .calBtn{padding-left:0!important;padding-right:0!important}
+.ctaGrid{display:grid;grid-auto-flow:column;grid-auto-columns:minmax(0,1fr)}
+
+/* Top bar: "My GoToday" on wide screens, "Saved" on phones (the heart alone wasn't clear). */
+.narrowOnly{display:none}
+@media(max-width:540px){.meLink .wideOnly{display:none}.meLink .narrowOnly{display:inline}}
+.backBtn{line-height:1}
+.backBtn svg{display:block;flex:none}
+@media(max-width:430px){.hideXs{display:none}nav .navRight{gap:6px}}

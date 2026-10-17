@@ -16,6 +16,6 @@ export default function NavMe(){
  }
  return <a className="meLink" href="/me" title="My GoToday — saved events, following, your calendar">
   <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><path d="M12 20.5s-7.5-4.6-9.3-9.2C1.5 8.1 3.4 4.5 7 4.5c2 0 3.6 1.1 5 2.9 1.4-1.8 3-2.9 5-2.9 3.6 0 5.5 3.6 4.3 6.8-1.8 4.6-9.3 9.2-9.3 9.2z" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinejoin="round"/></svg>
-  <span>My GoToday</span>
+  <span className="wideOnly">My GoToday</span><span className="narrowOnly">Saved</span>
  </a>;
 }
