@@ -1,6 +1,7 @@
 name: Copy database to new host (one-time)
 # Copies every table from OLD_DATABASE_URL (Railway) to NEW_DATABASE_URL (Neon), then compares row counts.
-# Run by hand only. Connection strings live in GitHub secrets and are never printed.
+# Run by hand only. Connection strings live in GitHub secrets and are never printed; the saved report has
+# passwords and hostnames stripped out.
 on:
   workflow_dispatch: {}
 permissions:
@@ -10,38 +11,52 @@ jobs:
     runs-on: ubuntu-24.04
     timeout-minutes: 30
     steps:
-      - name: Install Postgres 17 tools
+      - name: Install Postgres tools (newest, works with older servers too)
         run: |
           sudo install -d /usr/share/postgresql-common/pgdg
           sudo curl -fsSo /usr/share/postgresql-common/pgdg/apt.postgresql.org.asc https://www.postgresql.org/media/keys/ACCC4CF8.asc
           echo "deb [signed-by=/usr/share/postgresql-common/pgdg/apt.postgresql.org.asc] https://apt.postgresql.org/pub/repos/apt noble-pgdg main" | sudo tee /etc/apt/sources.list.d/pgdg.list >/dev/null
-          sudo apt-get update -qq && sudo apt-get install -y -qq postgresql-client-17 >/dev/null
-      - name: Copy
+          sudo apt-get update -qq && sudo apt-get install -y -qq postgresql-client-18 >/dev/null
+      - name: Copy and compare
         env:
-          OLD: ${{ secrets.OLD_DATABASE_URL }}
-          NEW: ${{ secrets.NEW_DATABASE_URL }}
+          OLD_RAW: ${{ secrets.OLD_DATABASE_URL }}
+          NEW_RAW: ${{ secrets.NEW_DATABASE_URL }}
         run: |
-          set -euo pipefail
-          [ -n "$OLD" ] && [ -n "$NEW" ] || { echo "Missing OLD_DATABASE_URL or NEW_DATABASE_URL secret"; exit 1; }
-          export PATH=/usr/lib/postgresql/17/bin:$PATH
-          # The log of filtered-out events isn't needed on the new host (its table is created empty).
-          pg_dump "$OLD" --no-owner --no-acl -Fc --exclude-table-data=rejected_events -f db.dump
-          pg_restore --no-owner --no-acl --if-exists --clean -d "$NEW" db.dump || echo "pg_restore reported warnings (usually harmless 'does not exist' notices)"
-      - name: Compare row counts
-        env:
-          OLD: ${{ secrets.OLD_DATABASE_URL }}
-          NEW: ${{ secrets.NEW_DATABASE_URL }}
-        run: |
-          export PATH=/usr/lib/postgresql/17/bin:$PATH
-          mkdir out
-          Q="select 'events',count(*) from events union all select 'active events',count(*) from events where status='active' union all select 'sources',count(*) from sources union all select 'source_configs',count(*) from source_configs union all select 'social_posts',count(*) from social_posts union all select 'community_events',count(*) from community_events union all select 'app_tokens',count(*) from app_tokens union all select 'version',0 where false"
-          { echo "OLD:"; psql "$OLD" -Atc "$Q"; psql "$OLD" -Atc "select version()"; echo; echo "NEW:"; psql "$NEW" -Atc "$Q"; psql "$NEW" -Atc "select version()"; } > out/db-migrate.txt 2>&1 || true
-          cat out/db-migrate.txt
-      - name: Save result to probe-results branch
+          export PATH=/usr/lib/postgresql/18/bin:$PATH
+          mkdir -p out; R=out/db-migrate.txt
+          # Strip anything that isn't the URL itself (e.g. a pasted "psql '...'" wrapper or quotes).
+          clean(){ printf '%s' "$1" | tr -d '\r\n' | grep -oE "postgres(ql)?://[^' \"]+" | head -1; }
+          OLD=$(clean "$OLD_RAW"); NEW=$(clean "$NEW_RAW")
+          hide(){ sed -E 's#(postgres(ql)?://)[^@ ]*@#\1***@#g; s#@[^/ ]+/#@HOST/#g'; }
+          shape(){ printf '%s' "$1" | sed -E 's#://[^@]*@#://USER:***@#; s#@([^.:/]+)[^:/]*#@\1…#'; }
+          {
+            echo "OLD looks like: $(shape "$OLD")"; echo "NEW looks like: $(shape "$NEW")"
+            [ -n "$OLD" ] || echo "!! OLD_DATABASE_URL is empty or not a postgres:// URL"
+            [ -n "$NEW" ] || echo "!! NEW_DATABASE_URL is empty or not a postgres:// URL"
+            echo; echo "== connect OLD"; psql "$OLD" -Atc "select version()" 2>&1 | hide
+            echo "== connect NEW"; psql "$NEW" -Atc "select version()" 2>&1 | hide
+          } > $R
+          ok=1
+          if psql "$OLD" -Atc "select 1" >/dev/null 2>&1 && psql "$NEW" -Atc "select 1" >/dev/null 2>&1; then
+            echo "== dump" >> $R
+            pg_dump "$OLD" --no-owner --no-acl -Fc --exclude-table-data=rejected_events -f db.dump 2>&1 | hide | tail -20 >> $R || ok=0
+            [ -s db.dump ] || { echo "!! dump produced no file" >> $R; ok=0; }
+            if [ $ok = 1 ]; then
+              echo "== restore (notices about things that don't exist yet are normal)" >> $R
+              pg_restore --no-owner --no-acl --if-exists --clean -d "$NEW" db.dump 2>&1 | hide | grep -v "does not exist" | tail -30 >> $R
+              Q="select 'events',count(*) from events union all select 'active events',count(*) from events where status='active' union all select 'sources',count(*) from sources union all select 'source_configs',count(*) from source_configs union all select 'social_posts',count(*) from social_posts union all select 'community_events',count(*) from community_events union all select 'app_tokens',count(*) from app_tokens union all select 'places',count(*) from places"
+              { echo; echo "OLD:"; psql "$OLD" -Atc "$Q" 2>&1 | hide; echo; echo "NEW:"; psql "$NEW" -Atc "$Q" 2>&1 | hide; } >> $R
+            fi
+          else ok=0; fi
+          cat $R
+          echo $ok > out/ok
+      - name: Save report to probe-results branch
+        if: always()
         run: |
           cd out
-          echo '{"git":{"deploymentEnabled":false}}' > vercel.json   # results only: Vercel shouldn't try to build this branch
+          echo '{"git":{"deploymentEnabled":false}}' > vercel.json
           git init -q -b probe-results
           git config user.name "probe"; git config user.email "probe@users.noreply.github.com"
           git add -A; git commit -qm "db migrate $(date -u +%FT%TZ)"
           git push -qf "https://x-access-token:${{ github.token }}@github.com/${{ github.repository }}.git" probe-results
+          [ "$(cat ok)" = 1 ]
