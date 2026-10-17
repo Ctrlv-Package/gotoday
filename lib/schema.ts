@@ -39,6 +39,8 @@ const STATEMENTS=[
  `delete from source_configs where name in ('Lake Eola · Instagram','Pines City Center · Instagram','Tamarac Parks & Rec · Instagram')`,
  // CivicPlus-hosted city sites block Vercel's servers: fetch them all from the GitHub job instead.
  `update source_configs set remote=true,updated_at=now() where platform='civicplus' and remote=false`,
+ // broward.org blocks cloud servers (since Oct 2026): the GitHub job fetches the parks calendar from a real browser.
+ `update source_configs set remote=true,updated_at=now() where platform='broward-parks' and remote=false`,
  // Temple Terrace's parks account is @ttleisureservices (the earlier handle wasn't readable): switch and un-pause.
  `update source_configs set params=jsonb_set(jsonb_set(params,'{username}','"ttleisureservices"'),'{idPrefix}','"ig-ttleisureservices"'),url='https://www.instagram.com/ttleisureservices/',enabled=true,updated_at=now()
    where name='Temple Terrace Parks & Rec · Instagram' and params->>'username'='templeterraceparks_recreation'`,
