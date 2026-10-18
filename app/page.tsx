@@ -38,7 +38,8 @@ function nextWeekendLabel(){
  const m=(d:Date)=>d.toLocaleDateString("en-US",{month:"short",timeZone:"UTC"});
  return m(sat)===m(sun)?`${m(sat)} ${sat.getUTCDate()}–${sun.getUTCDate()}`:`${m(sat)} ${sat.getUTCDate()} – ${m(sun)} ${sun.getUTCDate()}`;
 }
-function detailHref(e:EventItem){return e.source==="Ticketmaster"?(e.url||"#"):e.source==="GoToday Community"&&e.url?e.url:"/events/"+encodeURIComponent(e.id||"")}
+// Every event opens its GoToday page (Ticketmaster ones too); the card's Tickets button still goes straight to Ticketmaster.
+function detailHref(e:EventItem){return e.source==="GoToday Community"&&e.url?e.url:e.id?"/events/"+encodeURIComponent(e.id):(e.url||"#")}
 // Card art. Photos close to the card's shape fill it; flyers, posters and odd crops are shown whole
 // over a blurred copy of themselves, so nothing important (faces, text) gets cut off.
 function fitPic(img:HTMLImageElement){const r=img.naturalWidth/(img.naturalHeight||1);img.parentElement?.classList.toggle("whole",!(r>1.45&&r<2.1))}
@@ -153,7 +154,7 @@ export default function Home(){
  function toggleChip(c:string){if(c==="All"){setSelected([]);setAgeBands([]);setSetting("Any");setDropIn(false);setSpanish(false);setSeniors(false);return}setSelected(s=>s.includes(c)?s.filter(x=>x!==c):[...s,c])}
 
  async function share(e:EventItem){
-  const url=e.source==="Ticketmaster"?(e.url||location.origin):`${location.origin}/events/${encodeURIComponent(e.id||"")}`;
+  const url=!e.id?(e.url||location.origin):`${location.origin}/events/${encodeURIComponent(e.id||"")}`;
   const text=`${e.title} — ${fmt(e.date,e.time)} at ${e.venue||e.city}`;
   try{if(navigator.share){await navigator.share({title:e.title,text,url});return}}catch(err:any){if(err?.name==="AbortError")return}
   try{await navigator.clipboard.writeText(`${text}\n${url}`);setToast("Link copied")}catch{setToast("Couldn't copy link")}
@@ -262,21 +263,21 @@ export default function Home(){
    {!soon&&<div className="resultsHead"><div className="kicker">NEAR {where.toUpperCase()}</div><h2>{loading?"Searching…":`${filtered.length} thing${filtered.length===1?"":"s"} to do`}</h2></div>}
 
    <div className="grid">{filtered.map((e,i)=><article className="card" key={e.id||e.title+i}>
-    <a className={e.image?"pic":"pic noimg"} style={e.image?undefined:{background:artFor(e).bg}} href={detailHref(e)} target={e.source==="Ticketmaster"?"_blank":undefined} rel="noreferrer" aria-hidden tabIndex={-1}>
+    <a className={e.image?"pic":"pic noimg"} style={e.image?undefined:{background:artFor(e).bg}} href={detailHref(e)} aria-hidden tabIndex={-1}>
      {e.image?<><img className="picBlur" src={e.image} alt="" loading="lazy" referrerPolicy="no-referrer"/>
       <img className="picMain" src={e.image} alt="" loading="lazy" referrerPolicy="no-referrer" onLoad={x=>fitPic(x.currentTarget)} onError={x=>{const a=x.currentTarget.parentElement as HTMLElement;a.classList.add("noimg");a.style.background=artFor(e).bg;a.querySelectorAll("img").forEach(i=>i.remove());const n=a.querySelector("span") as HTMLElement|null;if(n)n.style.display="flex"}}/></>:null}
      <span style={e.image?{display:"none"}:undefined}><i>{artFor(e).icon}</i></span>
      {(e.isFree||e.facets?.includes("Free"))&&<em className="freeBadge">Free</em>}
     </a>
     <div className="cardBody">
-     <h3><a href={detailHref(e)} target={e.source==="Ticketmaster"?"_blank":undefined} rel="noreferrer">{e.title}</a></h3>
+     <h3><a href={detailHref(e)}>{e.title}</a></h3>
      <div className="meta">🗓 {fmt(e.date,e.time)}{e.live&&<b className="liveNow"> · Happening now</b>}</div>
      <div className="meta locLine"><span className="locV" title={e.venue||e.city}>📍 {e.venue||e.city}</span><span className="locD">{typeof e.distanceMiles==="number"?`\u00a0· ${e.distanceMiles.toFixed(1)} mi`:""}{e.moreLocations?<b title={(e.otherVenues||[]).join(", ")}>{`\u00a0· +${e.moreLocations} more`}</b>:null}</span></div>
      {e.desc&&<p className="desc">{e.desc}</p>}
      {(e.tags||[]).includes("Drop-in")?<div className="hint ok">✓ Drop-in, no registration</div>:e.registration&&e.source!=="Ticketmaster"?<div className="hint">{e.registration}</div>:null}
      <div className="tags">{ageLabel(e)&&<span className="age">{ageLabel(e)}</span>}{(e.labels||(e.tags||[]).filter(t=>!["Local","Library","Free","Parks","Tickets","Drop-in"].includes(t)&&!/\(/.test(t))).slice(0,3).map(t=><span key={t}>{t}</span>)}</div>
      <div className="actions">
-      <a className="primary" href={detailHref(e)} target={e.source==="Ticketmaster"?"_blank":undefined} rel="noreferrer">{e.source==="Ticketmaster"?"Tickets ↗":"View details"}</a>
+      <a className="primary" href={e.source==="Ticketmaster"&&e.url?e.url:detailHref(e)} target={e.source==="Ticketmaster"&&e.url?"_blank":undefined} rel="noreferrer">{e.source==="Ticketmaster"?"Tickets ↗":"View details"}</a>
       {e.id?.startsWith("db-")&&<SaveButton compact item={{id:e.id,title:e.title,date:e.date,venue:e.venue||e.city}}/>}
       {e.id&&<AddToCalendar compact base={`/events/${encodeURIComponent(e.id)}`}/>}
       <button type="button" className="share" title="Share" onClick={()=>share(e)} aria-label={`Share ${e.title}`}>

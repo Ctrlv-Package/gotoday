@@ -73,8 +73,18 @@ export function settingFor(e:{title?:string;venue?:string;source?:string;desc?:s
 // City, town and parks sources (not libraries, Ticketmaster or round-up accounts that repost anyone's events).
 const CITY_SOURCE=(s?:string)=>!!s&&s!=="Ticketmaster"&&!/library/i.test(s)&&!/^(Miami Residents|Weekend Broward|The Broward Scene|To Do with Kids (Broward|Miami)) · Instagram$/.test(s);
 
+// Ticket/admission rules ("Children 2 and older must have a ticket", "Kids under 3 free on a lap") say who needs a
+// ticket, not who the event is for, so they never make an event a Kids or Family event.
+const POLICY=/\b(tickets?|admission|admitted|on (a|an adult'?s?|their parent'?s?) lap|regardless of age|must (be accompanied|have|purchase)|accompanied by)\b/i;
+// "No one under 18 admitted", "Children under 13 are not admitted", "Adults only": not for kids, wherever it's listed.
+// ("No children under 3" still welcomes older kids, so the cut-off has to be 13 or more.)
+const noKids=(d:string)=>/\badults only\b|\b(guests|attendees|patrons|everyone) must be (18|21)\b/i.test(d)||
+ [...d.matchAll(/\b(?:no (?:one|children|kids|minors) under (?:the age of )?(\d+)|(?:children|kids|minors|guests|patrons)[^.]{0,30}under (?:the age of )?(\d+)[^.]{0,20}(?:not|won'?t be) (?:be )?(?:admitted|allowed|permitted))/gi)].some(m=>Number(m[1]||m[2])>=13);
+const aboutText=(d:string)=>d.split(/(?<=[.!?])\s+/).filter(x=>!(POLICY.test(x)&&/\b(child(ren)?|kids?|infants?|bab(y|ies)|ages?|minors?|everyone|all patrons)\b/i.test(x))).join(" ");
 export function facetsFor(e:In):Facet[]{
- const tags=e.tags||[],t=e.title||"",d=(e.desc||"").slice(0,600),text=`${t} ${d}`;
+ // Ticketmaster's text is the venue's notes (parking, memberships, ticket rules), not about the show: its own
+ // category, the title and stated ages decide there.
+ const tags=e.tags||[],t=e.title||"",d=e.source==="Ticketmaster"?"":aboutText((e.desc||"").slice(0,600)),text=`${t} ${d}`;
  const {ageMin,ageMax}=cleanAges(e);
  const tagHas=(re:RegExp)=>tags.some(x=>re.test(x.trim()));
  const out=new Set<Facet>();
@@ -87,11 +97,11 @@ export function facetsFor(e:In):Facet[]{
  if(!has(NOT_SPORTS,t)&&(has(SPORTS,t)||tagHas(/^sports$/i)||e.category==="Sports"))out.add("Sports");
 
  // Who it's for.
- const adultOnly=ageMin!=null&&ageMin>=18;
+ const adultOnly=(ageMin!=null&&ageMin>=18)||noKids(e.desc||"");
  const kidAges=ageMax!=null&&ageMax<=17;
  const kids=!adultOnly&&(kidAges||/^to do with kids/i.test(e.source||"")||has(KIDS,t)||tagHas(KID_TAGS)&&!tagHas(/^local$/i)||(has(KIDS,d)&&!has(ADULT,t)));
  // Big family events (festivals, open houses, Halloween, "all ages") are great for kids too.
- const familyEvent=!adultOnly&&!has(ADULT,t)&&(has(FAMILY,t)||tagHas(/^(families|all ages|everyone)$/i)||has(/\b(famil(y|ies)|all ages|kids|children)\b/i,d));
+ const familyEvent=!adultOnly&&!has(ADULT,t)&&(has(FAMILY,t)||(e.source==="Ticketmaster"&&e.category==="Family")||tagHas(/^(families|all ages|everyone)$/i)||has(/\b(famil(y|ies)|all ages|kids|children)\b/i,d));
  if(kids||familyEvent)out.add("Kids");
  // Family = fine to bring the kids. Adult-themed titles never count; city and parks events count
  // unless they say otherwise; libraries and Ticketmaster have to say so.
