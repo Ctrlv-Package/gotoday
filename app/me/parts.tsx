@@ -65,7 +65,7 @@ export function SignedInNote({name}:{name?:string|null}){
  *  (with what to do there) → "Connected to Google Calendar" once that app actually reads the calendar. */
 type CalStatus={clickedAt?:string|null;clicked?:string|null;apps?:{client:string;lastSeen:string}[]};
 const HOW:Record<string,string>={
- "Google Calendar":"In the Google Calendar tab that opened, click “Add” to confirm. GoToday then appears on the left under “Other calendars”. Google can take a few minutes to show the events.",
+ "Google Calendar":"In the Google Calendar tab that opened, click “Add” to confirm. If Google says GoToday is already added, you're all set: it's already in your Google Calendar under “Other calendars”. Google checks for new events every few hours (sometimes up to a day), and this page shows ✓ Connected after its next check.",
  "Apple Calendar":"Your device should ask “Subscribe to this calendar?” — tap Subscribe. GoToday then appears in your Calendars list.",
  "Outlook":"In the Outlook tab that opened, click “Import” to confirm. GoToday then appears under “Other calendars”."};
 const ago=(x:string,t:(s:string,v?:Record<string,string|number>)=>string)=>{const m=Math.round((Date.now()-new Date(x).getTime())/60000);return m<1?t("just now"):m<60?t("{n} min ago",{n:m}):m<1440?t("{n} h ago",{n:Math.round(m/60)}):t("{n} days ago",{n:Math.round(m/1440)})};
@@ -77,7 +77,10 @@ export function CalendarLinks({feed,initial}:{feed:string;initial:CalStatus}){
  const outlook=`https://outlook.live.com/calendar/0/addfromweb?url=${encodeURIComponent(https)}&name=GoToday`;
  // Each calendar app is tracked on its own: someone can have GoToday in Google Calendar and Apple Calendar at once.
  const apps=st.apps||[],isOn=(app:string)=>apps.some(a=>a.client===app);
- const waiting=!!st.clickedAt&&!!st.clicked&&!isOn(st.clicked)&&Date.now()-new Date(st.clickedAt).getTime()<6*3600e3;
+ // Google only checks every few hours (up to a day), so its "waiting" lasts a day; others 6 hours.
+ const since=st.clickedAt?Date.now()-new Date(st.clickedAt).getTime():Infinity;
+ const waiting=!!st.clicked&&!isOn(st.clicked)&&since<(st.clicked==="Google Calendar"?24:6)*3600e3;
+ const slow=waiting&&since>15*60e3;   // past the first minutes: it's waiting for the app's next scheduled check
  // While waiting, check every 15 seconds (for up to 15 minutes) whether the calendar app has started reading it.
  useEffect(()=>{if(!waiting)return;const start=Date.now();const t=setInterval(async()=>{
   if(Date.now()-start>15*60e3){clearInterval(t);return}
@@ -94,7 +97,7 @@ export function CalendarLinks({feed,initial}:{feed:string;initial:CalStatus}){
   {apps.length>0&&<div className="calStatus ok" role="status">
    {apps.map(a=><b key={a.client}>✓ {t("Connected to {app}",{app:t(a.client)})} <small>· {t("updated {when}",{when:ago(a.lastSeen,t)})}</small></b>)}
    <span>{t("Everything you save or follow will show up there automatically.")}</span></div>}
-  {waiting&&<div className="calStatus wait" role="status"><b><span className="spin" aria-hidden/> {t("Waiting for {app}…",{app:t(st.clicked||"")})}</b><span>{t(HOW[st.clicked||""]||"Confirm in your calendar app.")} {t("This page will say “Connected” as soon as it starts reading your GoToday calendar.")}</span></div>}
+  {waiting&&<div className="calStatus wait" role="status"><b>{slow?"🕓":<span className="spin" aria-hidden/>} {t(slow?"Waiting for {app}'s next check":"Waiting for {app}…",{app:t(st.clicked||"")})}</b><span>{t(HOW[st.clicked||""]||"Confirm in your calendar app.")} {t("This page will say “Connected” as soon as it starts reading your GoToday calendar.")}</span></div>}
   {!apps.length&&!waiting&&<p className="calHint">{t("Already added GoToday to your calendar? This will say “✓ Connected” the next time your calendar app checks for updates (Google Calendar: within about a day).")}</p>}
   <div className="calSubBtns">
    <a className="btn ghost" href={google} target="_blank" rel="noreferrer" onClick={()=>clicked("Google Calendar")}>{isOn("Google Calendar")?"✓ ":""}{t("Add to Google Calendar")}</a>

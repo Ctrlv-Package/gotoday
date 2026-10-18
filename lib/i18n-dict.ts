@@ -1,6 +1,7 @@
 // Spanish and Russian for every piece of GoToday's own text (keys are the English text).
 // A key ending in |something is the same English word used for something else ("Saved|list" = the saved list, not the button state).
 export const ES:Record<string,string>={
+"Waiting for {app}'s next check": "Esperando la próxima revisión de {app}",
 "Exact location not listed. Check the official event page.": "Ubicación exacta no publicada. Revisa la página oficial del evento.",
 "Illustrative photo": "Foto ilustrativa",
 "updated {when}": "actualizado {when}",
@@ -270,7 +271,7 @@ export const ES:Record<string,string>={
 "Confirm in your calendar app.": "Confirma en tu app de calendario.",
 "This page will say “Connected” as soon as it starts reading your GoToday calendar.": "Esta página dirá «Conectado» en cuanto empiece a leer tu calendario de GoToday.",
 "Already added GoToday to your calendar? This will say “✓ Connected” the next time your calendar app checks for updates (Google Calendar: within about a day).": "¿Ya añadiste GoToday a tu calendario? Aquí dirá «✓ Conectado» la próxima vez que tu app de calendario busque cambios (Google Calendar: en un día aproximadamente).",
-"In the Google Calendar tab that opened, click “Add” to confirm. GoToday then appears on the left under “Other calendars”. Google can take a few minutes to show the events.": "En la pestaña de Google Calendar que se abrió, haz clic en «Añadir» para confirmar. GoToday aparecerá a la izquierda en «Otros calendarios». Google puede tardar unos minutos en mostrar los eventos.",
+"In the Google Calendar tab that opened, click “Add” to confirm. If Google says GoToday is already added, you're all set: it's already in your Google Calendar under “Other calendars”. Google checks for new events every few hours (sometimes up to a day), and this page shows ✓ Connected after its next check.": "En la pestaña de Google Calendar que se abrió, haz clic en «Añadir» para confirmar. Si Google dice que GoToday ya está añadido, todo está listo: ya está en tu Google Calendar en «Otros calendarios». Google busca eventos nuevos cada pocas horas (a veces hasta un día) y esta página mostrará ✓ Conectado después de su próxima revisión.",
 "Your device should ask “Subscribe to this calendar?” — tap Subscribe. GoToday then appears in your Calendars list.": "Tu dispositivo preguntará «¿Suscribirse a este calendario?»: toca Suscribirse. GoToday aparecerá en tu lista de calendarios.",
 "In the Outlook tab that opened, click “Import” to confirm. GoToday then appears under “Other calendars”.": "En la pestaña de Outlook que se abrió, haz clic en «Importar» para confirmar. GoToday aparecerá en «Otros calendarios».",
 "Add to Google Calendar": "Añadir a Google Calendar",
@@ -287,6 +288,7 @@ export const ES:Record<string,string>={
 "Remove": "Quitar"
 };
 export const RU:Record<string,string>={
+"Waiting for {app}'s next check": "Ждём следующей проверки: {app}",
 "Exact location not listed. Check the official event page.": "Точное место не указано. Смотрите официальную страницу события.",
 "Illustrative photo": "Иллюстративное фото",
 "updated {when}": "обновлено {when}",
@@ -556,7 +558,7 @@ export const RU:Record<string,string>={
 "Confirm in your calendar app.": "Подтвердите в приложении календаря.",
 "This page will say “Connected” as soon as it starts reading your GoToday calendar.": "Эта страница покажет «Подключено», как только календарь начнёт читать ваш календарь GoToday.",
 "Already added GoToday to your calendar? This will say “✓ Connected” the next time your calendar app checks for updates (Google Calendar: within about a day).": "Уже добавили GoToday в календарь? Здесь появится «✓ Подключено», когда приложение календаря в следующий раз проверит обновления (Google Календарь — примерно в течение суток).",
-"In the Google Calendar tab that opened, click “Add” to confirm. GoToday then appears on the left under “Other calendars”. Google can take a few minutes to show the events.": "Во вкладке Google Календаря нажмите «Добавить», чтобы подтвердить. GoToday появится слева в разделе «Другие календари». Показ событий может занять несколько минут.",
+"In the Google Calendar tab that opened, click “Add” to confirm. If Google says GoToday is already added, you're all set: it's already in your Google Calendar under “Other calendars”. Google checks for new events every few hours (sometimes up to a day), and this page shows ✓ Connected after its next check.": "Во вкладке Google Календаря нажмите «Добавить», чтобы подтвердить. Если Google пишет, что GoToday уже добавлен, всё в порядке: он уже есть в вашем Google Календаре в разделе «Другие календари». Google проверяет новые события раз в несколько часов (иногда раз в сутки), и после следующей проверки здесь появится ✓ Подключено.",
 "Your device should ask “Subscribe to this calendar?” — tap Subscribe. GoToday then appears in your Calendars list.": "Устройство спросит «Подписаться на этот календарь?» — нажмите «Подписаться». GoToday появится в списке календарей.",
 "In the Outlook tab that opened, click “Import” to confirm. GoToday then appears under “Other calendars”.": "Во вкладке Outlook нажмите «Импорт», чтобы подтвердить. GoToday появится в разделе «Другие календари».",
 "Add to Google Calendar": "Добавить в Google Календарь",
