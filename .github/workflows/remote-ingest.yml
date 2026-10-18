@@ -10,6 +10,9 @@ concurrency:
   group: remote-ingest
   cancel-in-progress: false
 
+permissions:
+  contents: write
+
 jobs:
   ingest:
     runs-on: ubuntu-24.04
@@ -21,7 +24,16 @@ jobs:
           node-version: 22
       - run: npm install --no-audit --no-fund
       - run: npx playwright install --with-deps chromium
-      - run: npx tsx scripts/remote-ingest.ts
+      - run: set -o pipefail; npx tsx scripts/remote-ingest.ts 2>&1 | tee ingest.log
         env:
           GOTODAY_URL: ${{ secrets.GOTODAY_URL }}
           INGESTION_SECRET: ${{ secrets.INGESTION_SECRET }}
+      # If the run fails, keep the end of its log on the probe-results branch so it can be read without the Actions UI.
+      - name: Save log on failure
+        if: failure()
+        run: |
+          mkdir out && tail -n 250 ingest.log | sed -E 's#(Bearer )[A-Za-z0-9._-]+#\1***#g' > out/ingest-failure.log || true
+          cd out && echo '{"git":{"deploymentEnabled":false}}' > vercel.json
+          git init -q -b probe-results && git config user.name probe && git config user.email probe@users.noreply.github.com
+          git add -A && git commit -qm "ingest failure log $(date -u +%FT%TZ)"
+          git push -qf "https://x-access-token:${{ github.token }}@github.com/${{ github.repository }}.git" probe-results
