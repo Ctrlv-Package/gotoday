@@ -73,7 +73,8 @@ function mergeCopy(keep:any,other:any){
  if(keep.paid||other.paid){m.paid=true;m.isFree=false;m.facets=(m.facets||[]).filter((f:string)=>f!=="Free");other={...other,facets:(other.facets||[]).filter((f:string)=>f!=="Free"),isFree:false}}
  if(!m.image&&other.image)m.image=other.image;
  // The card's place: the most specific any copy names (lib/places), same as the event page.
- if(placeScore(other)>placeScore(m)){m.venue=other.venue;m.address=other.address}
+ if(placeScore(other)>placeScore(m)){const was=m.venue;m.venue=other.venue;m.address=other.address;if(/^\s*\d{2,6}\s/.test(m.venue||"")&&placeScore({venue:was,city:m.city,source:keep.source})===2)m.venue=was}
+ else if(/^\s*\d{2,6}\s/.test(m.venue||"")&&other.venue&&!/^\s*\d/.test(other.venue)&&placeScore(other)===2){m.address=m.address||m.venue;m.venue=other.venue}
  m._pics=[...(keep._pics||[]),...(other._pics||[])];
  if(thinDesc(m.desc)&&!thinDesc(other.desc||""))m.desc=other.desc;
  m.facets=[...new Set([...(m.facets||[]),...(other.facets||[])])];

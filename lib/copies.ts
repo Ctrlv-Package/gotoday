@@ -50,6 +50,8 @@ export async function fillFromCopies<T extends Fillable>(e:T):Promise<T>{
  {const mine=placeScore({venue:e.venue,address:e.address,city:e.city,source:e.source});
   const best=copies.map((r:any)=>({r,sc:placeScore({venue:r.venue,address:r.address,city:r.city,source:r.source})})).filter(x=>x.sc>mine).sort((a,b)=>b.sc-a.sc||a.r.id-b.r.id)[0];
   if(best){const r=best.r;out.venue=r.venue;out.address=r.address||null;out.lat=r.lat!=null?Number(r.lat):out.lat;out.lng=r.lng!=null?Number(r.lng):out.lng;out.city=r.city||out.city}}
+ // A street address with no place name ("16290 Griffin Road"): name it from a copy that does ("Sanctuary Park").
+ if(out.venue&&/^\s*\d{2,6}\s/.test(out.venue)){const named=copies.find((r:any)=>placeScore({venue:r.venue,city:r.city,source:r.source})===2&&!/^\s*\d/.test(r.venue||""));if(named){out.address=out.address||out.venue;out.venue=named.venue}}
  if(thin(out.description)){const d=copies.find((r:any)=>!thin(r.description||""));if(d)out.description=d.description}
  if(out.ageMin==null){const a=copies.find((r:any)=>r.age_min!=null);if(a){out.ageMin=a.age_min;out.ageMax=a.age_max}}
  return out;
