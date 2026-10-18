@@ -5,6 +5,7 @@ import {fetchRetry} from "../http";
 import {slug} from "../ingestion/utils";
 import {lookupDetails,thinSummary} from "./eventDetails";
 import {freeLookup,captionSites} from "./freeDetails";
+import {keepImages} from "../images";
 
 // Venue Instagram accounts (town centers, markets, breweries...) announce events that never reach a
 // city calendar. Read them through Instagram's official Business Discovery API:
@@ -49,7 +50,7 @@ class AccountMissing extends Error{}
 async function loadPosts(username:string):Promise<{posts:Post[];website:string}>{
  const token=await accessToken(),me=process.env.IG_USER_ID;
  if(!token||!me)throw new Error("Instagram not connected yet (set IG_USER_ID and IG_ACCESS_TOKEN in Vercel)");
- const fields=`business_discovery.username(${username}){website,media.limit(15){id,caption,media_type,media_url,thumbnail_url,permalink,timestamp,children{media_url,media_type}}}`;
+ const fields=`business_discovery.username(${username}){website,media.limit(30){id,caption,media_type,media_url,thumbnail_url,permalink,timestamp,children{media_url,media_type}}}`;
  const r=await fetchRetry(`${GRAPH}/${me}?fields=${encodeURIComponent(fields)}&access_token=${encodeURIComponent(token)}`,{cache:"no-store"});
  const d:any=await r.json().catch(()=>({}));
  // Meta allows only so many calls per hour. When we hit it, say so plainly; the source is skipped (not failed)
@@ -205,7 +206,12 @@ export async function fetchInstagram(cfg:InstagramConfig,startDate:string,endDat
  const found:(Extracted&{post:Post})[]=[];let errors=0,firstError="";
  // Newest first, so a later "moved to Sunday" post wins over the original announcement.
  // Read up to 3 posts at once (each is an AI call with an image); results are cached, so later runs are instant.
- const recent=posts.filter(p=>p.timestamp>=cutoff).sort((a,b)=>b.timestamp.localeCompare(a.timestamp));
+ // The latest 15 posts are read (new ones by AI, the rest from the saved reading). The 15 before those are used
+ // only when they were read before: that keeps their events' pictures fresh without any new AI reading.
+ const byDate=posts.filter(p=>p.timestamp>=cutoff).sort((a,b)=>b.timestamp.localeCompare(a.timestamp));
+ const older=byDate.slice(15).map(p=>p.id);
+ const known=new Set(older.length?(await db.query("select id from social_posts where id=any($1)",[older]).catch(()=>({rows:[]}))).rows.map((r:any)=>r.id):[]);
+ const recent=byDate.filter((p,i)=>i<15||known.has(p.id));
  const results:Extracted[][]=new Array(recent.length);
  let next=0;
  await Promise.all(Array.from({length:Math.min(3,recent.length)},async()=>{
@@ -275,5 +281,6 @@ export async function fetchInstagram(cfg:InstagramConfig,startDate:string,endDat
  }
  // Nothing upcoming is fine; only report a failure when posts couldn't be read.
  if(!out.length&&errors>0&&errors>=recent.length/2)throw new Error(`@${cfg.username}: ${posts.length} posts read, ${found.length} dated events found, none in ${startDate}..${endDate}${errors?`; ${errors} posts failed (${firstError.slice(0,200)})`:""}${process.env.ANTHROPIC_API_KEY?"":"; ANTHROPIC_API_KEY not set (captions only)"}`);
- return out;
+ // Keep our own copy of each picture: Instagram's links expire after a few days.
+ return keepImages(out);
 }
