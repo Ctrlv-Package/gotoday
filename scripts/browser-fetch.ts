@@ -10,6 +10,7 @@ export async function installBrowserFetch(){
  browser=await chromium.launch({...(exe?{executablePath:exe}:{channel:"chromium"}),headless:true,args:["--disable-blink-features=AutomationControlled"]});
  ctx=await browser.newContext({userAgent:UA,locale:"en-US",timezoneId:"America/New_York",viewport:{width:1366,height:900}});
  await ctx.addInitScript(()=>{Object.defineProperty(navigator,"webdriver",{get:()=>undefined})});
+ guardPages(ctx);
  const nodeFetch=globalThis.fetch;
  globalThis.fetch=(async(input:any,init?:any)=>{
   const url=typeof input==="string"?input:input instanceof URL?input.toString():input.url;
@@ -63,6 +64,16 @@ export async function resetBrowserContext(){
  await ctx?.close().catch(()=>{});
  ctx=await browser.newContext({userAgent:UA,locale:"en-US",timezoneId:"America/New_York",viewport:{width:1366,height:900}});
  await ctx.addInitScript(()=>{Object.defineProperty(navigator,"webdriver",{get:()=>undefined})});
+ guardPages(ctx);
 }
+
+/** City pages sometimes pop up alerts ("Are you sure…", cookie prompts). Dismiss them quietly, and never let a
+ *  dialog that closes along with its page take the whole job down. */
+function guardPages(c:BrowserContext){
+ c.on("page",p=>{p.on("dialog",d=>{d.dismiss().catch(()=>{})});p.on("crash",()=>{})});
+}
+// A browser hiccup on one page (a dialog on a closing page, a crashed tab) is logged, not fatal: the other cities
+// still get updated and the run still reports to the site.
+process.on("unhandledRejection",(e:any)=>{console.log(`   (browser warning, continuing: ${String(e?.message||e).slice(0,160)})`)});
 
 export async function closeBrowserFetch(){await ctx?.close().catch(()=>{});await browser?.close().catch(()=>{})}
