@@ -40,19 +40,20 @@ export async function keepImages<T extends {image?:string}>(list:T[]):Promise<T[
  return list;
 }
 
+export let lastStoreError="";
 /** Save any picture under a given name (stock photos); returns /img/<key>, or undefined if it couldn't be fetched. */
 export async function storeImage(url:string,name:string):Promise<string|undefined>{
  await schema();
  const key=createHash("sha1").update(name).digest("hex").slice(0,24),local=`/img/${key}`;
  if((await db.query("select 1 from images where key=$1",[key]).catch(()=>({rowCount:0}))).rowCount)return local;
  try{
-  const r=await fetch(url,{signal:AbortSignal.timeout(20000)});if(!r.ok)return;
+  const r=await fetch(url,{signal:AbortSignal.timeout(20000),headers:{"user-agent":"Mozilla/5.0 (compatible; GoToday/1.0; +https://www.mygotoday.com)"}});if(!r.ok){lastStoreError=`HTTP ${r.status}`;return}
   const buf=Buffer.from(await r.arrayBuffer());if(buf.length<2000)return;
   const sharp=(await import("sharp")).default;
   const out=await sharp(buf,{failOn:"none"}).rotate().resize({width:900,height:600,fit:"cover",position:"attention"}).webp({quality:70}).toBuffer();
   await db.query("insert into images(key,type,data,bytes,source_url) values($1,'image/webp',$2,$3,$4) on conflict(key) do nothing",[key,out,out.length,url.slice(0,500)]);
   return local;
- }catch(e:any){console.log(`stock image failed: ${e?.message||e}`);return}
+ }catch(e:any){lastStoreError=String(e?.message||e);console.log(`stock image failed: ${lastStoreError}`);return}
 }
 
 export async function getImage(key:string){

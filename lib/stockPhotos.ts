@@ -1,5 +1,6 @@
 import {db} from "./db";
 import {storeImage} from "./images";
+import * as images from "./images";
 
 // Events with no picture of their own (a library program, a city class) get a real photo of that kind of event from
 // Pixabay (free; copies may be kept). A small library is built once: several photos per event type, saved on our side.
@@ -98,18 +99,20 @@ export async function stockPicture(e:{title:string;desc?:string;category?:string
 /** Fill the library: up to `max` topics per call that have fewer than `per` photos. */
 export async function buildLibrary(max=20,per=6){
  const key=process.env.PIXABAY_API_KEY;if(!key)return{ok:false,error:"PIXABAY_API_KEY not set"};
- const by=await library(),done:string[]=[];let added=0;
+ const by=await library(),done:string[]=[],fails:string[]=[];let added=0;
  for(const t of TOPICS.filter(t=>(by.get(t.key)?.length||0)<per).slice(0,max)){
   const u=new URL("https://pixabay.com/api/");
   for(const [k,v] of Object.entries({key,q:t.q,image_type:"photo",orientation:"horizontal",safesearch:"true",per_page:"20",min_width:"1000",order:"popular"}))u.searchParams.set(k,v);
   const d:any=await fetch(u.toString(),{signal:AbortSignal.timeout(20000)}).then(r=>r.json()).catch(()=>null);
   const hits=(d?.hits||[]).filter((h:any)=>h.largeImageURL&&h.imageWidth>=h.imageHeight*1.2).slice(0,per);
   for(const h of hits){
-   const img=await storeImage(h.largeImageURL,`pixabay-${h.id}`);
+   // The 960px version (enough for cards and pages); the full-size link as a fallback.
+   const img=await storeImage(String(h.webformatURL||"").replace("_640","_960"),`pixabay-${h.id}`)||await storeImage(h.largeImageURL,`pixabay-${h.id}`);
+   if(!img)fails.push(images.lastStoreError);
    if(img){await db.query("insert into stock_photos(topic,photo_id,image) values($1,$2,$3) on conflict do nothing",[t.key,h.id,img]);added++}
   }
   done.push(`${t.key}:${hits.length}`);
  }
  cache=null;
- return{ok:true,added,topics:done};
+ return{ok:true,added,failed:fails.length,why:[...new Set(fails)].slice(0,5),topics:done};
 }
