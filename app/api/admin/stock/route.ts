@@ -7,7 +7,7 @@ export const maxDuration=300;
 const auth=(req:NextRequest)=>{const s=process.env.INGESTION_SECRET;return!!s&&req.headers.get("authorization")===`Bearer ${s}`};
 export async function GET(req:NextRequest){
  if(!auth(req))return NextResponse.json({ok:false},{status:401});
- if(req.nextUrl.searchParams.get("plan"))return NextResponse.json(await libraryPlan());
+ if(req.nextUrl.searchParams.get("plan")){const q=req.nextUrl.searchParams;return NextResponse.json(await libraryPlan(60,6,Number(q.get("part"))||0,Number(q.get("of"))||1))}
  // ?sheet=<page>: a contact sheet (JPEG) of the library, 15 event types per page, to look over every photo at once.
  if(req.nextUrl.searchParams.get("sheet")!=null){
   const page=Number(req.nextUrl.searchParams.get("sheet"))||0,keys=TOPICS.map(t=>t.key).slice(page*15,page*15+15);

@@ -91,10 +91,18 @@ async function library(){
 }
 const hash=(s:string)=>{let h=2166136261;for(const c of s.toLowerCase().replace(/[^a-z0-9]+/g,""))h=Math.imul(h^c.charCodeAt(0),16777619);return h>>>0};
 
+// A type that has no photos yet (or lost them) borrows from the closest related type.
+const NEXT:Record<string,string>={soccer:"sports",basketball:"sports",baseball:"sports",tennis:"sports",swim:"sports",golf:"sports",fitness:"sports",sports:"kids",
+ pets:"animals",animals:"nature",cars:"festival",history:"culture",culture:"festival",health:"community",seniors:"community",teens:"community",career:"community",
+ language:"reading",sensory:"baby",festival:"blockparty",kids:"baby",music:"concert",arts:"painting",community:"festival",blockparty:"concert",concert:"festival",
+ dance:"theater",theater:"concert",movie:"theater",yoga:"fitness",artfair:"painting",market:"farmersmarket",food:"market",boat:"beach",beach:"nature",nature:"garden",
+ crafts:"painting",painting:"crafts",tech:"stem",reading:"storytime",games:"chess",videogames:"games",photography:"arts"};
+
 /** The library photo for an event with no picture ("" if the library isn't built yet). */
 export async function stockPicture(e:{title:string;desc?:string;category?:string;tags?:string[]}):Promise<string>{
- const by=await library();const topic=topicFor(e);
- const l=by.get(topic)?.length?by.get(topic)!:by.get("community")||[];
+ const by=await library();let topic=topicFor(e);
+ for(let i=0;i<6&&!by.get(topic)?.length&&NEXT[topic];i++)topic=NEXT[topic];
+ const l=by.get(topic)||[];
  return l.length?l[hash(e.title)%l.length]:"";
 }
 
@@ -129,14 +137,15 @@ export async function buildLibrary(max=20,per=6){
 }
 
 /** For the GitHub job: which photos to fetch next (Pixabay search done here, with our key). */
-export async function libraryPlan(max=60,per=6){
+export async function libraryPlan(max=60,per=6,part=0,of=1){
  const key=process.env.PIXABAY_API_KEY;if(!key)return{ok:false,error:"PIXABAY_API_KEY not set",items:[]};
  await schema();
  const have=new Map<string,Set<number>>();
  for(const r of (await db.query("select topic,photo_id from stock_photos").catch(()=>({rows:[]}))).rows){const x=have.get(r.topic)||new Set();x.add(Number(r.photo_id));have.set(r.topic,x)}
  const items:{topic:string;id:number;url:string;alt:string}[]=[];
  const rejected=new Set((await db.query("select photo_id from stock_rejected").catch(()=>({rows:[]}))).rows.map((r:any)=>Number(r.photo_id)));
- for(const t of TOPICS.filter(t=>(have.get(t.key)?.size||0)<per).slice(0,max)){
+  // Several jobs can split the work (each fetches every of-th missing type).
+ for(const t of TOPICS.filter(t=>(have.get(t.key)?.size||0)<per).filter((_,i)=>i%of===part).slice(0,max)){
   const u=new URL("https://pixabay.com/api/");
   for(const [k,v] of Object.entries({key,q:t.q,image_type:"photo",orientation:"horizontal",safesearch:"true",per_page:"60",min_width:"1000",order:"popular"}))u.searchParams.set(k,v);
   const d:any=await fetch(u.toString(),{signal:AbortSignal.timeout(20000)}).then(r=>r.json()).catch(()=>null);

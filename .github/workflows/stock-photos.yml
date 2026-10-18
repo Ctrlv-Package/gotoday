@@ -5,6 +5,9 @@ on:
   workflow_dispatch: {}
 jobs:
   fill:
+    # Four machines at once: Pixabay limits each one's download pace separately.
+    strategy:
+      matrix: { part: [0, 1, 2, 3] }
     runs-on: ubuntu-latest
     timeout-minutes: 150
     steps:
@@ -14,3 +17,5 @@ jobs:
       - run: npx -y tsx scripts/stock-photos.ts
         env:
           INGESTION_SECRET: ${{ secrets.INGESTION_SECRET }}
+          PART: ${{ matrix.part }}
+          OF: 4

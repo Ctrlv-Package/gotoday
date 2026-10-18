@@ -4,7 +4,7 @@ const base=process.env.SITE_URL||"https://www.mygotoday.com",secret=process.env.
 const H={authorization:`Bearer ${secret}`};
 const sleep=(ms:number)=>new Promise(r=>setTimeout(r,ms));
 async function main(){
- const plan:any=await fetch(`${base}/api/admin/stock?plan=1`,{headers:H}).then(r=>r.json());
+ const plan:any=await fetch(`${base}/api/admin/stock?plan=1&part=${process.env.PART||0}&of=${process.env.OF||1}`,{headers:H}).then(r=>r.json());
  if(!plan.ok){console.log("plan failed:",plan.error);process.exit(1)}
  console.log(`${plan.items.length} photos to fetch`);
  let ok=0,fail=0;
