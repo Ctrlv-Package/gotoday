@@ -7,11 +7,13 @@ import * as images from "./images";
 // Which photo an event gets depends only on its title, so its card and its page (and every date of a recurring
 // event) show the same one, while different events of the same type rotate through different photos.
 // Real event photos always come first; these only replace the plain emoji tiles.
-type Topic={key:string;re:RegExp;q:string};
-const T=(key:string,re:RegExp,q:string):Topic=>({key,re,q});
+// must: the photo's own tags on Pixabay have to name the subject (a train ride's photo must be tagged train).
+type Topic={key:string;re:RegExp;q:string;must:RegExp};
+const MUST:Record<string,string>={"halloween": "halloween|pumpkin|jack-o|costume|spooky|witch|skull", "pumpkin": "pumpkin", "oktoberfest": "beer|oktoberfest|pretzel|bavaria", "christmas": "christmas|xmas|santa", "easter": "easter", "fireworks": "firework", "parade": "parade|carnival|procession|marching", "storytime": "^(?=.*(book|reading|story|read))(?=.*(child|kid|girl|boy|toddler|family|mother|father))", "baby": "baby|toddler|infant", "reading": "book|reading|library|literature", "chess": "chess", "games": "board game|game|dice|playing cards|puzzle|bingo", "videogames": "video game|gaming|controller|console|gamer", "lego": "lego", "stem": "science|experiment|laboratory|chemistry|robot|microscope|test tube", "tech": "computer|laptop|technology|keyboard", "farmersmarket": "market|vegetable|produce|farmers", "market": "market|stall|bazaar|flea|vendor", "train": "train|railway|locomotive|railroad|steam engine", "knitting": "knit|yarn|wool|crochet|sewing|quilt|thread|needle", "crafts": "craft|handmade|diy|origami|scissors|glue|paper", "painting": "paint|brush|canvas|watercolor|easel|drawing", "artfair": "art|gallery|painting|exhibition|artist|sculpture", "photography": "camera|photograph", "garden": "garden|plant|seedling|flower|pot|sprout", "nature": "nature|forest|trail|bird|wildlife|swamp|everglades|wetland|heron", "beach": "beach|ocean|sand|coast", "boat": "kayak|boat|canoe|paddl|sail", "food": "food|meal|dish|cooking|grill|barbecue|brunch|restaurant|breakfast", "blockparty": "party|crowd|street|festival|concert|celebration", "concert": "concert|music|band|guitar|singer|stage|musician|piano|orchestra", "dance": "danc|ballet", "theater": "theater|theatre|stage|curtain|performance|audience", "movie": "movie|cinema|film|popcorn|projector", "yoga": "yoga|meditation", "fitness": "run|marathon|race|fitness|jogging|athlete", "soccer": "soccer|football", "basketball": "basketball", "baseball": "baseball|softball", "tennis": "tennis|pickleball|racket", "swim": "swim|pool", "golf": "golf", "sports": "sport|ball|team|athlet|playing field", "pets": "dog|puppy", "animals": "animal|goat|horse|pony|farm|zoo|sheep|rabbit|alpaca", "cars": "car|automobile|vintage|classic|vehicle|oldtimer", "history": "history|historic|museum|monument|architecture", "culture": "culture|festival|tradition|folk|costume|dance|carnival", "health": "health|doctor|medical|wellness|nurse|stethoscope", "seniors": "senior|elderly|old|grandparent|retire", "teens": "teen|young|friends|students|youth", "career": "business|meeting|office|work|presentation|workshop|conference", "language": "conversation|talk|class|students|language|learning|teacher", "sensory": "child|toy|play|sensory|kid", "festival": "festival|fair|crowd|carnival|celebration|ferris", "kids": "child|kid|children|playground", "music": "music|concert|guitar|musician", "arts": "art|paint|craft", "community": "people|crowd|community|group|volunteer|together"};
+const T=(key:string,re:RegExp,q:string):Topic=>({key,re,q,must:new RegExp(MUST[key]||key,"i")});
 // Most specific first. Matched against the title, then the description, then the category.
 export const TOPICS:Topic[]=[
- T("storytime",/\b(story ?time|storytime|lapsit|lap sit|cuentos|bedtime stories|stories)\b/i,"children reading picture book"),
+ T("storytime",/\b(story ?time|storytime|lapsit|lap sit|cuentos|bedtime stories|stories)\b/i,"child reading book"),
  T("baby",/\b(bab(y|ies)|toddler|infant|little ones|tots)\b/i,"toddler playing toys"),
  T("halloween",/\b(halloween|trick[- ]or[- ]treat|trunk[- ]or[- ]treat|boo bash|spooky|haunted|ghost|ghoul|monster bash|costume)\b/i,"halloween pumpkins decoration"),
  T("pumpkin",/\b(pumpkin|harvest|hay ?ride|corn maze|fall festival|fall fest)\b/i,"pumpkin patch autumn"),
@@ -29,7 +31,7 @@ export const TOPICS:Topic[]=[
  T("tech",/\b(computer|tech help|technology|internet|smartphone|ipad|digital|ai\b|cyber|excel|microsoft)\b/i,"laptop computer class"),
  T("farmersmarket",/\b(farmers'? market|green market|greenmarket|produce|farm stand)\b/i,"farmers market produce"),
  T("market",/\b(market|bazaar|flea|vendors?|pop[- ]up shop|craft fair|swap meet|yard sale|garage sale|makers market)\b/i,"outdoor market stalls"),
- T("train",/\b(train rides?|mini train|trolley|railroad|choo)\b/i,"kids train ride"),
+ T("train",/\b(train rides?|mini train|trolley|railroad|choo)\b/i,"miniature train ride"),
  T("knitting",/\b(knit\w*|crochet|stitch\w*|sewing|quilt\w*|yarn|embroider\w*)\b/i,"knitting yarn needles"),
  T("crafts",/\b(crafts?|craft\w*|diy|make and take|ornament|beading|jewelry making|scrapbook\w*|slime|tie[- ]dye|nails?)\b/i,"arts and crafts table"),
  T("painting",/\b(paint\w*|watercolor|drawing|draw|sketch\w*|canvas|art class|art workshop|art club)\b/i,"painting class easel"),
@@ -40,7 +42,7 @@ export const TOPICS:Topic[]=[
  T("beach",/\b(beach|ocean|sea turtle|snorkel\w*|surf\w*|cleanup|clean[- ]up)\b/i,"florida beach"),
  T("boat",/\b(boat\w*|kayak\w*|paddle\w*|canoe|sail\w*|fishing|marina)\b/i,"kayak paddle water"),
  T("food",/\b(food truck\w*|taste of|tasting|food fest\w*|bbq|barbecue|chili|cook\w*|culinary|chef|brunch|wine|dinner|baking|bake)\b/i,"food festival"),
- T("blockparty",/\b(block party|street party|street fest\w*|sunday funday|nobe)\b/i,"street party crowd music"),
+ T("blockparty",/\b(block party|street party|street fest\w*|sunday funday|nobe)\b/i,"street festival crowd music"),
  T("concert",/\b(concert|live music|band|jazz|orchestra|symphony|choir|chorus|singer|songwriter|acoustic|music in the park|dj|piano|guitar|recital|gershwin|opera)\b/i,"live music concert outdoor"),
  T("dance",/\b(dance\w*|danc\w*|ballet|salsa|zumba|hip hop|line dancing|ballroom|tango|bachata)\b/i,"dance performance"),
  T("theater",/\b(theat(er|re)|musical|play\b|jr\.?|stage|improv|comedy|stand-?up|puppet\w*|magic show|magician|circus|into the woods)\b/i,"theater stage performance"),
@@ -60,11 +62,11 @@ export const TOPICS:Topic[]=[
  T("history",/\b(history|historic\w*|heritage|tour|museum talk|lecture|veterans?|memorial)\b/i,"historic museum tour"),
  T("culture",/\b(hispanic|latin\w*|cultura|caribbean|haitian|black history|asian|diwali|lunar new year|heritage month|international|cultural)\b/i,"cultural festival dancers"),
  T("health",/\b(health\w*|wellness|blood drive|vaccin\w*|screening|medicare|nutrition|fitness fair|cpr|first aid)\b/i,"community health fair"),
- T("seniors",/\b(seniors?|older adults|55\+|60\+|aarp)\b/i,"seniors group activity"),
+ T("seniors",/\b(seniors?|older adults|55\+|60\+|aarp)\b/i,"seniors activity group"),
  T("teens",/\b(teens?|tween\w*|youth|young adults?)\b/i,"teenagers friends activity"),
  T("career",/\b(career|job fair|resume|interview|business|entrepreneur\w*|networking|small business|financial|money|tax\w*)\b/i,"business workshop"),
  T("language",/\b(english|esl|spanish class|language|conversation club|citizenship)\b/i,"language class conversation"),
- T("sensory",/\b(sensory|autism|special needs|calm|quiet hour)\b/i,"calm sensory play kids"),
+ T("sensory",/\b(sensory|autism|special needs|calm|quiet hour)\b/i,"children sensory play"),
  T("festival",/\b(festival|fest|fair|carnival|celebration|jubilee|fiesta)\b/i,"community festival crowd"),
  T("kids",/\b(kids?|children|family|families)\b/i,"kids playing park"),
  T("music",/\bmusic\b/i,"live music"),
@@ -104,10 +106,10 @@ export async function buildLibrary(max=20,per=6){
  for(const t of TOPICS.filter(t=>(by.get(t.key)?.length||0)<per).slice(0,max)){
   if(Date.now()-started>200e3)break;   // stay inside one request's time; the next call continues
   const u=new URL("https://pixabay.com/api/");
-  for(const [k,v] of Object.entries({key,q:t.q,image_type:"photo",orientation:"horizontal",safesearch:"true",per_page:"20",min_width:"1000",order:"popular"}))u.searchParams.set(k,v);
+  for(const [k,v] of Object.entries({key,q:t.q,image_type:"photo",orientation:"horizontal",safesearch:"true",per_page:"60",min_width:"1000",order:"popular"}))u.searchParams.set(k,v);
   const d:any=await fetch(u.toString(),{signal:AbortSignal.timeout(20000)}).then(r=>r.json()).catch(()=>null);
   const have=new Set((by.get(t.key)||[]).length?(await db.query("select photo_id from stock_photos where topic=$1",[t.key])).rows.map((r:any)=>Number(r.photo_id)):[]);
-  const hits=(d?.hits||[]).filter((h:any)=>h.webformatURL&&h.imageWidth>=h.imageHeight*1.2&&!have.has(Number(h.id))).slice(0,per-have.size);
+  const hits=(d?.hits||[]).filter((h:any)=>h.webformatURL&&h.imageWidth>=h.imageHeight*1.2&&t.must.test(String(h.tags||""))&&!have.has(Number(h.id))).slice(0,per-have.size);
   for(const h of hits){
    // The 960px version (enough for cards and pages); the full-size link as a fallback.
    // Pixabay's image server allows a slow pace: one download every ~1.5 s, and a pause when it says "too many".
@@ -135,10 +137,10 @@ export async function libraryPlan(max=60,per=6){
  const items:{topic:string;id:number;url:string;alt:string}[]=[];
  for(const t of TOPICS.filter(t=>(have.get(t.key)?.size||0)<per).slice(0,max)){
   const u=new URL("https://pixabay.com/api/");
-  for(const [k,v] of Object.entries({key,q:t.q,image_type:"photo",orientation:"horizontal",safesearch:"true",per_page:"20",min_width:"1000",order:"popular"}))u.searchParams.set(k,v);
+  for(const [k,v] of Object.entries({key,q:t.q,image_type:"photo",orientation:"horizontal",safesearch:"true",per_page:"60",min_width:"1000",order:"popular"}))u.searchParams.set(k,v);
   const d:any=await fetch(u.toString(),{signal:AbortSignal.timeout(20000)}).then(r=>r.json()).catch(()=>null);
   const got=have.get(t.key)||new Set<number>();
-  for(const h of (d?.hits||[]).filter((h:any)=>h.webformatURL&&h.imageWidth>=h.imageHeight*1.2&&!got.has(Number(h.id))).slice(0,per-got.size))
+  for(const h of (d?.hits||[]).filter((h:any)=>h.webformatURL&&h.imageWidth>=h.imageHeight*1.2&&t.must.test(String(h.tags||""))&&!got.has(Number(h.id))).slice(0,per-got.size))
    items.push({topic:t.key,id:Number(h.id),url:h.largeImageURL||h.webformatURL,alt:h.webformatURL});
  }
  return{ok:true,items};
