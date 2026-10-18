@@ -49,10 +49,10 @@ export async function loadRelated(e:EventDetail){
 }
 
 export function isAllDay(d:Date,tz:string=TZ){const t=new Intl.DateTimeFormat("en-US",{timeZone:tz,hour:"2-digit",minute:"2-digit",hour12:false}).format(d);return t==="00:00"||t==="24:00"}
-export function fmtDate(d:Date,opts:Intl.DateTimeFormatOptions={weekday:"long",month:"long",day:"numeric"},tz:string=TZ){return new Intl.DateTimeFormat("en-US",{timeZone:tz,...opts}).format(d)}
-export function fmtTime(d:Date,tz:string=TZ){return new Intl.DateTimeFormat("en-US",{timeZone:tz,hour:"numeric",minute:"2-digit"}).format(d)}
+export function fmtDate(d:Date,opts:Intl.DateTimeFormatOptions={weekday:"long",month:"long",day:"numeric"},tz:string=TZ,loc="en-US"){const s=new Intl.DateTimeFormat(loc,{timeZone:tz,...opts}).format(d);return s.charAt(0).toUpperCase()+s.slice(1)}
+export function fmtTime(d:Date,tz:string=TZ,loc="en-US"){return new Intl.DateTimeFormat(loc,{timeZone:tz,hour:"numeric",minute:"2-digit"}).format(d)}
 /** "3:00 PM – 4:30 PM"; drops an end time that isn't after the start (overnight/check-out style data). */
-export function timeRange(e:EventDetail){if(isAllDay(e.start,e.tz))return"All day";const end=e.end&&e.end>e.start&&e.end.getTime()-e.start.getTime()<16*3600e3?e.end:null;return fmtTime(e.start,e.tz)+(end?` – ${fmtTime(end,e.tz)}`:"")}
+export function timeRange(e:EventDetail,loc="en-US",allDay="All day"){if(isAllDay(e.start,e.tz))return allDay;const end=e.end&&e.end>e.start&&e.end.getTime()-e.start.getTime()<16*3600e3?e.end:null;return fmtTime(e.start,e.tz,loc)+(end?` – ${fmtTime(end,e.tz,loc)}`:"")}
 
 const ics=(d:Date)=>d.toISOString().replace(/[-:]/g,"").replace(/\.\d{3}/,"");
 function localDay(d:Date,tz:string=TZ){return new Intl.DateTimeFormat("en-CA",{timeZone:tz,year:"numeric",month:"2-digit",day:"2-digit"}).format(d).replace(/-/g,"")}

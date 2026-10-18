@@ -12,13 +12,16 @@ import type {Metadata} from "next";
 import {headers} from "next/headers";
 import {redirect} from "next/navigation";
 import ShareButton from "./ShareButton";
+import {getLang} from "../../../lib/lang-server";
+import {tFor,LOCALE} from "../../../lib/i18n";
+type T=(s:string,v?:Record<string,string|number>)=>string;
 import {loadEvent,loadRelated,fmtDate,fmtTime,timeRange,isAllDay,directionsUrl,mapEmbedUrl,whereText,type EventDetail} from "../../../lib/event-detail";
 
 export const dynamic="force-dynamic";
 
 // Same reading as the cards: a 5–11 guessed from a bare "Kids" label isn't shown as if the event said it.
-function agesText(d:EventDetail){const c=cleanAges({title:d.title,desc:d.description,tags:d.tags,ageMin:d.ageMin,ageMax:d.ageMax});const e={ageMin:c.ageMin??null,ageMax:c.ageMax??null};if(e.ageMin==null||e.ageMax==null)return"";if(e.ageMin===0&&e.ageMax>=99)return"All ages";if(e.ageMax>=99)return`Ages ${e.ageMin}+`;return e.ageMax<=1?"Babies (0–1)":`Ages ${e.ageMin}–${e.ageMax}`}
-function costText(e:EventDetail){if(e.isFree)return"Free";const p=(e.priceText||"").trim();return p&&p.length<=140?p:""}
+function agesText(d:EventDetail,t:T){const c=cleanAges({title:d.title,desc:d.description,tags:d.tags,ageMin:d.ageMin,ageMax:d.ageMax});const e={ageMin:c.ageMin??null,ageMax:c.ageMax??null};if(e.ageMin==null||e.ageMax==null)return"";if(e.ageMin===0&&e.ageMax>=99)return t("All ages");if(e.ageMax>=99)return t("Ages {a}+",{a:e.ageMin});return e.ageMax<=1?t("Babies (0–1)"):t("Ages {a}–{b}",{a:e.ageMin,b:e.ageMax})}
+function costText(e:EventDetail,t:T){if(e.isFree)return t("Free");const p=(e.priceText||"").trim();return p&&p.length<=140?p:""}
 function sourceLabel(e:EventDetail){return e.source==="Ticketmaster"?"Ticketmaster":e.source}
 
 export async function generateMetadata({params}:{params:Promise<{id:string}>}):Promise<Metadata>{
@@ -30,8 +33,9 @@ export async function generateMetadata({params}:{params:Promise<{id:string}>}):P
 
 export default async function EventPage({params}:{params:Promise<{id:string}>}){
  const {id}=await params;
+ const lang=await getLang(),t=tFor(lang),loc=LOCALE[lang];
  const e=await loadEvent(id);
- if(!e)return <main className="detail"><div className="detailWrap"><Link href="/?fresh=1" className="detailLogo">Go<span>Today</span></Link><h1>Event unavailable</h1><p>This event may have ended or been removed.</p><Link href="/">Find something else to do →</Link></div></main>;
+ if(!e)return <main className="detail"><div className="detailWrap"><Link href="/?fresh=1" className="detailLogo">Go<span>Today</span></Link><h1>{t("Event unavailable")}</h1><p>{t("This event may have ended or been removed.")}</p><Link href="/">{t("Find something else to do →")}</Link></div></main>;
  // Events people created on GoToday live on their own page (RSVPs, host details).
  if(e.source==="GoToday Community"&&/\/e\/[\w-]+$/.test(e.officialUrl))redirect(new URL(e.officialUrl).pathname);
  const h=await headers(),origin=`${h.get("x-forwarded-proto")||"https"}://${h.get("host")}`,pageUrl=`${origin}/events/${encodeURIComponent(id)}`;
@@ -41,7 +45,7 @@ export default async function EventPage({params}:{params:Promise<{id:string}>}){
  const lastDay=localParts(e.end&&e.end>e.start?e.end:e.start,e.tz).date,todayLocal=localParts(new Date(),e.tz).date;
  const dayPassed=lastDay<todayLocal,endedToday=!dayPassed&&!!e.end&&e.end>e.start&&e.end.getTime()<Date.now();
  const ended=dayPassed||endedToday;
- const ages=agesText(e),cost=costText(e),map=mapEmbedUrl(e),where=whereText(e);
+ const ages=agesText(e,t),cost=costText(e,t),map=mapEmbedUrl(e),where=whereText(e);
  // Follow (be told when it's back next year) is offered for events that come around now and then, not weekly ones.
  const user=await currentUser().catch(()=>null);
  const series=await seriesOf(e.id).catch(()=>null);
@@ -63,53 +67,53 @@ export default async function EventPage({params}:{params:Promise<{id:string}>}){
     {e.image?<img className="detailHero" src={e.image} alt="" referrerPolicy="no-referrer"/>:null}
     <div className="detailBody">
      <div className="badges">
-      {e.isFree&&<span className="b free">Free</span>}
+      {e.isFree&&<span className="b free">{t("Free")}</span>}
       {ages&&<span className="b age">{ages}</span>}
-      {e.tags.includes("Kids")&&!ages&&<span className="b age">Kids</span>}
-      {e.category&&e.category!=="Local"&&<span className="b">{e.category}</span>}
-      {ended&&<span className="b past">{dayPassed?"This date has passed":"Ended earlier today"}</span>}
+      {e.tags.includes("Kids")&&!ages&&<span className="b age">{t("Kids")}</span>}
+      {e.category&&e.category!=="Local"&&<span className="b">{t(e.category)}</span>}
+      {ended&&<span className="b past">{dayPassed?t("This date has passed"):t("Ended earlier today")}</span>}
      </div>
      <h1>{e.title}</h1>
 
      <div className="facts">
-      <div className="fact"><div className="k">When</div><div className="v">{fmtDate(e.start,undefined,e.tz)}</div><div className="s">{timeRange(e)}{e.recurrence?` · Repeats ${e.recurrence.toLowerCase()}`:""}</div></div>
-      <div className="fact"><div className="k">Where</div><div className="v">{e.venue||e.city}</div><div className="s">{e.address||e.city}</div><a className="inline" href={directionsUrl(e)} target="_blank" rel="noreferrer">Get directions ↗</a></div>
-      {(cost||ages)&&<div className="fact"><div className="k">Cost{ages?" & ages":""}</div><div className="v">{cost||"See event page"}</div>{ages&&<div className="s">{ages}</div>}</div>}
+      <div className="fact"><div className="k">{t("When")}</div><div className="v">{fmtDate(e.start,undefined,e.tz,loc)}</div><div className="s">{timeRange(e,loc,t("All day"))}{e.recurrence?` · ${t("Repeats")} ${t(e.recurrence.toLowerCase())}`:""}</div></div>
+      <div className="fact"><div className="k">{t("Where")}</div><div className="v">{e.venue||e.city}</div><div className="s">{e.address||e.city}</div><a className="inline" href={directionsUrl(e)} target="_blank" rel="noreferrer">{t("Get directions")} ↗</a></div>
+      {(cost||ages)&&<div className="fact"><div className="k">{ages?t("Cost & ages"):t("Cost")}</div><div className="v">{cost||t("See event page")}</div>{ages&&<div className="s">{ages}</div>}</div>}
      </div>
 
      {e.registrationText&&<div className={`reg${regFull?" full":""}`}>
-      <div><b>{e.registrationText.split(" · ")[0]}</b>{e.registrationText.includes(" · ")&&<span> · {e.registrationText.split(" · ").slice(1).join(" · ")}</span>}
-       {!directReg&&e.source!=="Ticketmaster"&&<div className="regHow">Tap <b>Register</b> on the {regWhere} page to sign up.</div>}</div>
-      {directReg&&<a href={e.registrationUrl!} target="_blank" rel="noreferrer">Register ↗</a>}
+      <div><b>{t(e.registrationText.split(" · ")[0])}</b>{e.registrationText.includes(" · ")&&<span> · {e.registrationText.split(" · ").slice(1).map(x=>t(x)).join(" · ")}</span>}
+       {!directReg&&e.source!=="Ticketmaster"&&<div className="regHow">{t(regWhere==="library"?"Tap Register on the library page to sign up.":regWhere==="parks"?"Tap Register on the parks page to sign up.":"Tap Register on the event page to sign up.")}</div>}</div>
+      {directReg&&<a href={e.registrationUrl!} target="_blank" rel="noreferrer">{t("Register")} ↗</a>}
      </div>}
 
      <div className="ctaRow">
-      <a className="btn primary" href={e.officialUrl} target="_blank" rel="noreferrer">{e.source==="Ticketmaster"?"Tickets & details ↗":e.registrationText&&!directReg&&!regFull?`Register on ${regWhere} page ↗`:"Official event page ↗"}</a>
+      <a className="btn primary" href={e.officialUrl} target="_blank" rel="noreferrer">{e.source==="Ticketmaster"?t("Tickets & details")+" ↗":e.registrationText&&!directReg&&!regFull?t(regWhere==="library"?"Register on library page":regWhere==="parks"?"Register on parks page":"Register on event page")+" ↗":t("Official event page")+" ↗"}</a>
      </div>
      <div className="ctaGrid">
       <SaveButton item={{id:`db-${e.id}`,title:e.title,date:new Intl.DateTimeFormat("en-CA",{timeZone:e.tz}).format(e.start),venue:e.venue||e.city}}/>
       {!ended&&<CalendarChoice base={`/events/${encodeURIComponent(id)}`} id={`db-${e.id}`} connected={calConnected}/>}
-      <ShareButton title={e.title} text={`${e.title} — ${fmtDate(e.start,undefined,e.tz)}${isAllDay(e.start,e.tz)?"":`, ${fmtTime(e.start,e.tz)}`} at ${e.venue||e.city}`}/>
+      <ShareButton title={e.title} text={`${e.title} — ${fmtDate(e.start,undefined,e.tz,loc)}${isAllDay(e.start,e.tz)?"":`, ${fmtTime(e.start,e.tz,loc)}`} · ${e.venue||e.city}`}/>
      </div>
      {canFollow&&<div className="ctaFollow">
  {canFollow&&<FollowButton id={`db-${e.id}`} signedIn={!!user} initial={following}/>}
      </div>}
-     <p className="ctaHelp">♡ <b>Save</b> keeps it in My GoToday{calConnected?" and adds it to your GoToday calendar (Google Calendar can take up to a day to show new events)":""}{!ended&&!calConnected?<> · 📅 <b>Calendar</b> adds this date to your calendar</>:null}{canFollow?<> · 🔔 <b>Remind me next year</b> gets you next year's date as soon as it's announced</>:null}</p>
+     <p className="ctaHelp">♡ <b>{t("Save")}</b> {calConnected?t("keeps it in My GoToday and adds it to your GoToday calendar (Google Calendar can take up to a day to show new events)"):t("keeps it in My GoToday")}{!ended&&!calConnected?<> · 📅 <b>{t("Calendar")}</b> {t("adds this date to your calendar")}</>:null}{canFollow?<> · 🔔 <b>{t("Remind me next year")}</b> {t("gets you next year's date as soon as it's announced")}</>:null}</p>
 
-     {paras.length>0&&<section className="about"><h2>About this event</h2>{paras.map((p,i)=><p key={i}>{p}</p>)}</section>}
-     {tags.length>0&&<div className="tagRow">{tags.map(t=><span key={t}>{t}</span>)}</div>}
+     {paras.length>0&&<section className="about"><h2>{t("About this event")}</h2>{paras.map((p,i)=><p key={i}>{p}</p>)}</section>}
+     {tags.length>0&&<div className="tagRow">{tags.map(x=><span key={x}>{t(x)}</span>)}</div>}
 
-     {map&&<section className="mapBox"><h2>Location</h2><p className="muted">{where}</p><iframe title={`Map of ${e.venue||e.city}`} src={map} loading="lazy" referrerPolicy="no-referrer-when-downgrade"/></section>}
+     {map&&<section className="mapBox"><h2>{t("Location")}</h2><p className="muted">{where}</p><iframe title={`${t("Map")}: ${e.venue||e.city}`} src={map} loading="lazy" referrerPolicy="no-referrer-when-downgrade"/></section>}
 
-     {otherDates.length>0&&<section className="related"><h2>{otherDates.some(o=>o.venue!==e.venue)?"Other dates & locations":"Other dates"}</h2>
-      <ul>{otherDates.map(o=><li key={o.id}><Link href={`/events/db-${o.id}`}><b>{fmtDate(o.start,{weekday:"short",month:"short",day:"numeric"},e.tz)}</b><span>{isAllDay(o.start,e.tz)?"All day":fmtTime(o.start,e.tz)}</span>{o.venue!==e.venue&&<span className="muted">{o.venue||o.city}</span>}</Link></li>)}</ul>
+     {otherDates.length>0&&<section className="related"><h2>{otherDates.some(o=>o.venue!==e.venue)?t("Other dates & locations"):t("Other dates")}</h2>
+      <ul>{otherDates.map(o=><li key={o.id}><Link href={`/events/db-${o.id}`}><b>{fmtDate(o.start,{weekday:"short",month:"short",day:"numeric"},e.tz,loc)}</b><span>{isAllDay(o.start,e.tz)?t("All day"):fmtTime(o.start,e.tz,loc)}</span>{o.venue!==e.venue&&<span className="muted">{o.venue||o.city}</span>}</Link></li>)}</ul>
      </section>}
 
-     {atVenue.length>0&&<section className="related"><h2>More at {e.venue}</h2>
-      <ul>{atVenue.map(o=><li key={o.id}><Link href={`/events/db-${o.id}`}><b>{o.title}</b><span>{fmtDate(o.start,{weekday:"short",month:"short",day:"numeric"},e.tz)}{isAllDay(o.start,e.tz)?"":" · "+fmtTime(o.start,e.tz)}</span></Link></li>)}</ul>
+     {atVenue.length>0&&<section className="related"><h2>{t("More at {place}",{place:e.venue||""})}</h2>
+      <ul>{atVenue.map(o=><li key={o.id}><Link href={`/events/db-${o.id}`}><b>{o.title}</b><span>{fmtDate(o.start,{weekday:"short",month:"short",day:"numeric"},e.tz,loc)}{isAllDay(o.start,e.tz)?"":" · "+fmtTime(o.start,e.tz,loc)}</span></Link></li>)}</ul>
      </section>}
 
-     <p className="sourceNote">Listed by <b>{sourceLabel(e)}</b>. Details can change — check the official page before you go.</p>
+     <p className="sourceNote">{t("Listed by")} <b>{sourceLabel(e)}</b>. {t("Details can change — check the official page before you go.")}</p>
     </div>
    </article>
   </div>

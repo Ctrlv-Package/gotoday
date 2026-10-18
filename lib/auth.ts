@@ -13,7 +13,7 @@ import {ensureSchema} from "./schema";
 export const SESSION_COOKIE="gt_session";
 const OAUTH_COOKIE="gt_oauth";
 const SESSION_DAYS=180;
-export type User={id:number;email:string;name:string|null;image:string|null;calendarToken:string|null};
+export type User={id:number;email:string;name:string|null;image:string|null;calendarToken:string|null;lang?:string|null};
 
 const secret=()=>process.env.AUTH_SECRET||process.env.INGESTION_SECRET||"";
 const hashToken=(t:string)=>createHmac("sha256",secret()).update(t).digest("hex");
@@ -25,10 +25,10 @@ export async function currentUser():Promise<User|null>{
  const tok=(await cookies()).get(SESSION_COOKIE)?.value;
  if(!tok||!/^[A-Za-z0-9_-]{30,}$/.test(tok))return null;
  await ensureSchema();
- const {rows}=await db.query(`select u.id,u.email,u.name,u.image,u.calendar_token from sessions s join users u on u.id=s.user_id
+ const {rows}=await db.query(`select u.id,u.email,u.name,u.image,u.calendar_token,u.lang from sessions s join users u on u.id=s.user_id
   where s.token_hash=$1 and s.expires_at>now()`,[hashToken(tok)]);
  const r=rows[0];if(!r)return null;
- return{id:r.id,email:r.email,name:r.name,image:r.image,calendarToken:r.calendar_token};
+ return{id:r.id,email:r.email,name:r.name,image:r.image,calendarToken:r.calendar_token,lang:r.lang};
 }
 
 async function startSession(userId:number){

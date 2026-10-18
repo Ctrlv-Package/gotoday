@@ -458,6 +458,7 @@ a.linkBtn{text-decoration:none}
 
 /* Top bar: "My GoToday" on wide screens, "Saved" on phones (the heart alone wasn't clear). */
 .narrowOnly{display:none}
+@media(max-width:540px){.narrowOnly{display:inline}}
 @media(max-width:540px){.meLink .wideOnly{display:none}.meLink .narrowOnly{display:inline}}
 .backBtn{line-height:1}
 .backBtn svg{display:block;flex:none}
@@ -496,3 +497,39 @@ a.linkBtn{text-decoration:none}
 .meList .stat.live{color:#166534}.meList .stat.pending{color:#92400e}.meList .stat.rejected{color:#b91c1c}
 .meList .btn.small{flex:none}
 .inlineLink{color:var(--accent);font-weight:700;text-decoration:none}
+
+/* Language picker: same pill as the top-bar links; its menu is the site's dropdown. */
+.langBtn{display:inline-flex;align-items:center;gap:5px;height:36px;padding:0 11px;border:1px solid var(--line);border-radius:999px;background:#fff;color:var(--ink);font-weight:800;font-size:13px;letter-spacing:.3px;cursor:pointer;white-space:nowrap}
+.langBtn svg{display:block;flex:none;color:var(--muted)}
+.langBtn:hover,.dd.open .langBtn{border-color:#c4b5fd;color:var(--accent)}
+.dd.open .langBtn svg,.langBtn:hover svg{color:var(--accent)}
+.navRight>.dd{flex:none}
+.navRight .ddMenu{min-width:190px}
+
+
+.langSeg{display:grid;grid-template-columns:repeat(3,1fr);max-width:420px;margin-top:10px}
+.createBtn{display:inline-flex;align-items:center;gap:4px}
+.createBtn>span[aria-hidden]{font-size:16px;line-height:1}
+/* Phones: the language button is just the globe; on the narrowest screens (Fold cover) "Create" is just "+". */
+@media(max-width:480px){.langBtn span{display:none}.langBtn{padding:0;width:36px;justify-content:center}}
+@media(max-width:400px){.createBtn .createTxt{display:none}.createBtn{width:36px;height:36px;padding:0;justify-content:center}.createBtn>span[aria-hidden]{font-size:20px}}
+/* Longer words (Spanish, Russian) still fit the four-across interest chips. */
+.chips.even4 button{min-width:0;overflow:hidden;text-overflow:ellipsis}
+@media(max-width:480px){html[lang=ru] .chips.even4 button,html[lang=es] .chips.even4 button{font-size:13px;padding-left:2px;padding-right:2px;letter-spacing:-.1px}}
+@media(max-width:480px){html[lang=es] .createBtn .createTxt,html[lang=ru] .createBtn .createTxt{display:none}html[lang=es] .createBtn,html[lang=ru] .createBtn{width:36px;height:36px;padding:0;justify-content:center}html[lang=es] .createBtn>span[aria-hidden],html[lang=ru] .createBtn>span[aria-hidden]{font-size:20px}}
+@media(max-width:400px){nav .logo{font-size:23px}nav .meLink{padding:8px 9px;gap:5px;font-size:13px}nav .navRight{gap:6px}
+ html[lang=ru] .chips.even4 button,html[lang=es] .chips.even4 button{font-size:12px;letter-spacing:-.2px}
+ html[lang=ru] .seg.when button,html[lang=ru] .seg.when .pickDay{font-size:12px;letter-spacing:-.2px;padding-left:2px;padding-right:2px}}
+@media(max-width:400px){
+ html[lang=ru] .chips.even4{gap:6px}
+ html[lang=ru] .chips.even4 button{font-weight:600;padding-left:1px;padding-right:1px}
+ html[lang=ru] .filters .ddBtn{font-size:13px;padding:0 7px;gap:3px}
+ html[lang=ru] .filters .ddChev{width:14px;height:14px}
+}
+@media(max-width:400px){.filters .ddBtn{font-size:13px;padding:0 7px;gap:3px}.filters .ddChev{width:14px;height:14px}}
+@media(max-width:480px){html[lang=ru] .chips.even4{gap:6px}html[lang=ru] .chips.even4 button{font-size:12px;font-weight:600;padding-left:1px;padding-right:1px;letter-spacing:-.2px}}
+@media(max-width:400px){html[lang=ru] .filters .ddBtn{font-size:12.5px;padding:0 6px}}
+.siteFoot{flex-wrap:wrap;row-gap:8px}
+.siteFoot a{white-space:nowrap}
+/* Narrow screens: only chips with a long word (Бесплатно, Искусство) get a smaller font. */
+@media(max-width:400px){html .chips.even4 button.long{font-size:11px;letter-spacing:-.4px;padding-left:0;padding-right:0}}

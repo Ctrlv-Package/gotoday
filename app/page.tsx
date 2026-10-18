@@ -5,6 +5,8 @@ import SaveButton from "./components/SaveButton";
 import NavMe from "./components/NavMe";
 import Dropdown from "./components/Dropdown";
 import AddToCalendar from "./components/AddToCalendar";
+import {useT,LangPicker} from "./components/Lang";
+type T=(s:string,v?:Record<string,string|number>)=>string;
 
 type EventItem={id?:string;title:string;city:string;venue?:string;date?:string;time?:string;image?:string;url?:string;category?:string;genre?:string;minPrice?:number|null;desc?:string;tags?:string[];emoji?:string;source?:string;distanceMiles?:number;distanceAccuracy?:string;ageMin?:number;ageMax?:number;registration?:string;moreLocations?:number;otherVenues?:string[];isFree?:boolean;facets?:string[];labels?:string[];live?:boolean};
 
@@ -17,8 +19,8 @@ const RANGES=[["today","Today"],["tomorrow","Tomorrow"],["weekend","Next Weekend
 const TIMES=["Any time","Morning","Afternoon","Evening"];
 const DEFAULT_ZIP="33326";
 
-function ageLabel(e:EventItem){if(e.ageMin==null||e.ageMax==null||e.ageMax>18)return"";return e.ageMax<=1?"Babies":`Ages ${e.ageMin}–${e.ageMax}`}
-function fmt(d?:string,t?:string){if(!d)return"Date TBA";const day=new Intl.DateTimeFormat("en-US",{weekday:"short",month:"short",day:"numeric"}).format(new Date(d+"T12:00:00"));if(!t)return day+" · All day";return day+" · "+new Intl.DateTimeFormat("en-US",{hour:"numeric",minute:"2-digit"}).format(new Date(d+"T"+t))}
+function ageLabel(e:EventItem,t:T){if(e.ageMin==null||e.ageMax==null||e.ageMax>18)return"";return e.ageMax<=1?t("Babies"):t("Ages {a}–{b}",{a:e.ageMin,b:e.ageMax})}
+function fmt(d:string|undefined,t:string|undefined,tr:T,loc:string){if(!d)return tr("Date TBA");const day=new Intl.DateTimeFormat(loc,{weekday:"short",month:"short",day:"numeric"}).format(new Date(d+"T12:00:00"));if(!t)return day+" · "+tr("All day");return day+" · "+new Intl.DateTimeFormat(loc,{hour:"numeric",minute:"2-digit"}).format(new Date(d+"T"+t))}
 // Search text: lowercase, no punctuation, and simple word endings dropped, so "chilling" finds "Chillin'"
 // and "festivals" finds "Festival".
 function norm(t:string){return t.toLowerCase().normalize("NFKD").replace(/[\u0300-\u036f]/g,"").replace(/['’]/g,"").replace(/[^a-z0-9]+/g," ").split(" ").map(w=>w.length>4?w.replace(/ing$/,"in").replace(/(?<!s)s$/,""):w).join(" ").trim()}
@@ -28,14 +30,15 @@ function upcomingDays(){
  const g=(t:string)=>p.find(x=>x.type===t)?.value||"",base=new Date(`${g("year")}-${g("month")}-${g("day")}T12:00:00Z`);
  return Array.from({length:21},(_,i)=>{const d=new Date(base);d.setUTCDate(d.getUTCDate()+i+2);return d.toISOString().slice(0,10)});
 }
-function dayLabel(d:string,kind:"weekday"|"date"|"full"){const x=new Date(d+"T12:00:00Z");
- return kind==="weekday"?x.toLocaleDateString("en-US",{weekday:"short",timeZone:"UTC"}):kind==="date"?x.toLocaleDateString("en-US",{month:"short",day:"numeric",timeZone:"UTC"}):x.toLocaleDateString("en-US",{weekday:"long",month:"short",day:"numeric",timeZone:"UTC"})}
-function nextWeekendLabel(){
+function dayLabel(d:string,kind:"weekday"|"date"|"full",loc:string){const x=new Date(d+"T12:00:00Z");
+ const s=kind==="weekday"?x.toLocaleDateString(loc,{weekday:"short",timeZone:"UTC"}):kind==="date"?x.toLocaleDateString(loc,{month:"short",day:"numeric",timeZone:"UTC"}):x.toLocaleDateString(loc,{weekday:"long",month:"short",day:"numeric",timeZone:"UTC"});
+ return s.charAt(0).toUpperCase()+s.slice(1)}
+function nextWeekendLabel(loc:string){
  const p=new Intl.DateTimeFormat("en-US",{timeZone:"America/New_York",year:"numeric",month:"2-digit",day:"2-digit"}).formatToParts(new Date());
  const g=(t:string)=>p.find(x=>x.type===t)?.value||"",base=new Date(`${g("year")}-${g("month")}-${g("day")}T12:00:00Z`);
  const day=base.getUTCDay(),n=day===6?7:(6-day+7)%7||7,sat=new Date(base);sat.setUTCDate(sat.getUTCDate()+n);const sun=new Date(sat);sun.setUTCDate(sun.getUTCDate()+1);
 
- const m=(d:Date)=>d.toLocaleDateString("en-US",{month:"short",timeZone:"UTC"});
+ const m=(d:Date)=>d.toLocaleDateString(loc,{month:"short",timeZone:"UTC"}).replace(/\.$/,"");
  return m(sat)===m(sun)?`${m(sat)} ${sat.getUTCDate()}–${sun.getUTCDate()}`:`${m(sat)} ${sat.getUTCDate()} – ${m(sun)} ${sun.getUTCDate()}`;
 }
 // Every event opens its GoToday page (Ticketmaster ones too); the card's Tickets button still goes straight to Ticketmaster.
@@ -65,6 +68,7 @@ function artFor(e:EventItem){const t=`${e.title} ${e.category||""} ${e.genre||""
 const store={get:(k:string)=>{try{return localStorage.getItem(k)}catch{return null}},set:(k:string,v:string)=>{try{localStorage.setItem(k,v)}catch{}}};
 
 export default function Home(){
+ const {t,locale}=useT();
  const[zipErr,setZipErr]=useState(""),lastGood=useRef(""),[zip,setZip]=useState(""),[searchedZip,setSearchedZip]=useState(""),[coords,setCoords]=useState<{lat:number;lng:number}|null>(null);
  const[radius,setRadius]=useState("25"),[range,setRange]=useState("today"),[selected,setSelected]=useState<string[]>([]),[ageBands,setAgeBands]=useState<string[]>([]),[moreOpen,setMoreOpen]=useState(false),[setting,setSetting]=useState("Any"),[dropIn,setDropIn]=useState(false),[spanish,setSpanish]=useState(false),[seniors,setSeniors]=useState(false);
  const[timeFilter,setTimeFilter]=useState("Any time"),[sort,setSort]=useState("Nearest"),[query,setQuery]=useState("");
@@ -78,7 +82,7 @@ export default function Home(){
    if(c){q.set("lat",String(c.lat));q.set("lng",String(c.lng))}
    const d=await (await fetch("/api/events?"+q,{cache:"no-store"})).json();
    // A ZIP that doesn't exist: explain it under the search box and keep whatever was showing before.
-   if(d.invalidZip){setZipErr(`We couldn't find ZIP code ${z}. Please check the number and try again.`);setSearchedZip(lastGood.current);return false}
+   if(d.invalidZip){setZipErr(t("We couldn't find ZIP code {zip}. Please check the number and try again.",{zip:z}));setSearchedZip(lastGood.current);return false}
    if(!c&&z)lastGood.current=z;
    setEvents(d.events||[]);
    setSoon(d.coverage&&d.coverage.covered===false?{place:d.coverage.place||null}:null);
@@ -133,20 +137,20 @@ export default function Home(){
   return()=>{clearTimeout(t);window.removeEventListener("scroll",onScroll);window.removeEventListener("pagehide",save);document.removeEventListener("click",onClick,true)};
  },[restored,zip,searchedZip,coords,radius,range,selected,ageBands,moreOpen,setting,dropIn,spanish,seniors,timeFilter,sort,query,events,message,soon]);
 
- function searchZip(z:string){setZipErr("");if(!/^\d{5}$/.test(z)){setZipErr(z?"A ZIP code has 5 digits, like 33326.":"Enter a ZIP code to search.");return}store.set("gotoday:zip",z);setCoords(null);setSearchedZip(z);load(z,range,null,radius).then(ok=>{if(ok!==false)document.getElementById("results")?.scrollIntoView({behavior:"smooth"})})}
+ function searchZip(z:string){setZipErr("");if(!/^\d{5}$/.test(z)){setZipErr(z?t("A ZIP code has 5 digits, like 33326."):t("Enter a ZIP code to search."));return}store.set("gotoday:zip",z);setCoords(null);setSearchedZip(z);load(z,range,null,radius).then(ok=>{if(ok!==false)document.getElementById("results")?.scrollIntoView({behavior:"smooth"})})}
  function submitZip(){searchZip(zip.trim())}
  // "Use my location": the button itself shows progress (finding you → loading events) and can't be pressed twice;
  // problems are explained right under it, where the person is looking.
  const[locating,setLocating]=useState(false),[locErr,setLocErr]=useState("");
  function useLocation(){
   if(locating)return;setLocErr("");
-  if(!navigator.geolocation)return setLocErr("Your browser can't share its location. Enter a ZIP code instead.");
+  if(!navigator.geolocation)return setLocErr(t("Your browser can't share its location. Enter a ZIP code instead."));
   setLocating(true);
   // If the browser's permission prompt is ignored, don't spin forever.
-  const guard=setTimeout(()=>{setLocating(false);setLocErr("Waiting for permission — tap Allow in your browser's location prompt, or enter a ZIP code.")},20000);
+  const guard=setTimeout(()=>{setLocating(false);setLocErr(t("Waiting for permission — tap Allow in your browser's location prompt, or enter a ZIP code."))},20000);
   navigator.geolocation.getCurrentPosition(async p=>{clearTimeout(guard);setLocErr("");const c={lat:p.coords.latitude,lng:p.coords.longitude};setCoords(c);setSearchedZip("");setZip("");setLocating(false);
     setTimeout(()=>document.getElementById("results")?.scrollIntoView({behavior:"smooth"}),50);await load("",range,c,radius)},
-   e=>{clearTimeout(guard);setLocating(false);setLocErr(e.code===1?"Location is turned off for this site. Allow it in your browser settings, or enter a ZIP code.":e.code===3?"Finding your location took too long. Try again, or enter a ZIP code.":"Couldn't find your location. Try again, or enter a ZIP code.")},
+   e=>{clearTimeout(guard);setLocating(false);setLocErr(t(e.code===1?"Location is turned off for this site. Allow it in your browser settings, or enter a ZIP code.":e.code===3?"Finding your location took too long. Try again, or enter a ZIP code.":"Couldn't find your location. Try again, or enter a ZIP code."))},
    {timeout:15000,maximumAge:600000});
  }
  function chooseRange(r:string){setRange(r);load(searchedZip,r,coords,radius)}
@@ -155,9 +159,9 @@ export default function Home(){
 
  async function share(e:EventItem){
   const url=!e.id?(e.url||location.origin):`${location.origin}/events/${encodeURIComponent(e.id||"")}`;
-  const text=`${e.title} — ${fmt(e.date,e.time)} at ${e.venue||e.city}`;
+  const text=`${e.title} — ${fmt(e.date,e.time,t,locale)} · ${e.venue||e.city}`;
   try{if(navigator.share){await navigator.share({title:e.title,text,url});return}}catch(err:any){if(err?.name==="AbortError")return}
-  try{await navigator.clipboard.writeText(`${text}\n${url}`);setToast("Link copied")}catch{setToast("Couldn't copy link")}
+  try{await navigator.clipboard.writeText(`${text}\n${url}`);setToast(t("Link copied"))}catch{setToast(t("Couldn't copy link"))}
   setTimeout(()=>setToast(""),2200);
  }
 
@@ -184,21 +188,21 @@ export default function Home(){
  },[events,selected,timeFilter,sort,query,ageBands,setting,dropIn,spanish,seniors]);
 
  const moreCount=(setting!=="Any"?1:0)+(dropIn?1:0)+(spanish?1:0)+(seniors?1:0);
- const where=coords?"your location":searchedZip||"your area",hasPlace=!!(coords||searchedZip);
+ const where=coords?t("your location"):searchedZip||t("your area"),hasPlace=!!(coords||searchedZip);
  return <main className="page">
   <section className="hero">
-   <nav><a className="logo" href="/?fresh=1">Go<span>Today</span></a><span className="navRight"><NavMe/><a className="createBtn" href="/create">+ Create<span className="hideXs"> event</span></a></span></nav>
+   <nav><a className="logo" href="/?fresh=1">Go<span>Today</span></a><span className="navRight"><LangPicker/><NavMe/><a className="createBtn" href="/create" aria-label={t("Create event")}><span aria-hidden>+</span><span className="createTxt">{t("Create")}</span><span className="hideXs">{t(" event")}</span></a></span></nav>
    <div className="heroContent">
-    <div className="eyebrow">EXPLORE MORE. TODAY.</div>
-    <h1>Find your <span>next thing.</span></h1>
-    <p className="heroLead">Free and local things happening near you&nbsp;— from library storytimes to park concerts.</p>
+    <div className="eyebrow">{t("EXPLORE MORE. TODAY.")}</div>
+    <h1>{t("Find your")} <span>{t("next thing.")}</span></h1>
+    <p className="heroLead">{t("Free and local things happening near you — from library storytimes to park concerts.")}</p>
     <form className="searchRow" onSubmit={ev=>{ev.preventDefault();submitZip()}}>
-     <input inputMode="numeric" autoComplete="postal-code" maxLength={5} aria-label="ZIP code" value={zip} onChange={e=>{setZip(e.target.value.replace(/\D/g,""));if(zipErr)setZipErr("")}} aria-invalid={!!zipErr} aria-describedby="zipErr" placeholder="ZIP code"/>
-     <button type="submit" className="go">{loading?"…":"Search"}</button>
+     <input inputMode="numeric" autoComplete="postal-code" maxLength={5} aria-label={t("ZIP code")} data-zip value={zip} onChange={e=>{setZip(e.target.value.replace(/\D/g,""));if(zipErr)setZipErr("")}} aria-invalid={!!zipErr} aria-describedby="zipErr" placeholder={t("ZIP code")}/>
+     <button type="submit" className="go">{loading?"…":t("Search")}</button>
     </form>
     {zipErr&&<p className="locErr zipErr" id="zipErr" role="alert">{zipErr}</p>}
     <button type="button" className={`locate${locating||(loading&&coords)?" busy":""}`} onClick={useLocation} disabled={locating||(loading&&!!coords)} aria-live="polite">
-     {locating?<><span className="spin" aria-hidden/>Finding your location…</>:loading&&coords?<><span className="spin" aria-hidden/>Finding events near you…</>:"📍 Use my location"}
+     {locating?<><span className="spin" aria-hidden/>{t("Finding your location…")}</>:loading&&coords?<><span className="spin" aria-hidden/>{t("Finding events near you…")}</>:"📍 "+t("Use my location")}
     </button>
     {locErr&&<p className="locErr" role="alert">{locErr}</p>}
    </div>
@@ -206,88 +210,88 @@ export default function Home(){
 
   {!hasPlace&&<section className="content start" id="results">
    <div className="startIcon">📍</div>
-   <h2>Where are you exploring?</h2>
-   <p>Enter a ZIP code above or tap <b>Use my location</b> to see what's happening near you today.</p>
-   <div className="label">OR PICK AN AREA</div>
+   <h2>{t("Where are you exploring?")}</h2>
+   <p>{t("Enter a ZIP code above or tap")} <b>{t("Use my location")}</b> {t("to see what's happening near you today.")}</p>
+   <div className="label">{t("OR PICK AN AREA")}</div>
    <div className="chips startAreas">{AREAS.map(([l,z])=><button key={z} type="button" onClick={()=>{setZip(z);searchZip(z)}}>{l}</button>)}</div>
   </section>}
   {hasPlace&&<section className="content" id="results">
    <div className="toolbar">
-    <div className="where"><b>📍 {where}</b><span className="rangeLabel">within {radius} mi</span></div>
-    <input type="search" placeholder="Search events" value={query} onChange={e=>setQuery(e.target.value)}/>
+    <div className="where"><b>📍 {where}</b><span className="rangeLabel">{t("within {n} mi",{n:radius})}</span></div>
+    <input type="search" placeholder={t("Search events")} value={query} onChange={e=>setQuery(e.target.value)}/>
    </div>
 
    {/* All filters live in one card: when + sort controls, interests, then optional extras. */}
    <div className="filterCard">
     <div className="fcTop">
      <div className="fcWhen">
-      <div className="label">When</div>
-      <div className="seg when four">{RANGES.map(([k,l])=><button key={k} className={range===k?"active":""} onClick={()=>chooseRange(k)}>{k==="weekend"?"Weekend":l}{k==="weekend"&&<small>{nextWeekendLabel()}</small>}</button>)}
+      <div className="label">{t("When")}</div>
+      <div className="seg when four">{RANGES.map(([k,l])=><button key={k} className={range===k?"active":""} onClick={()=>chooseRange(k)}>{k==="weekend"?t("Weekend"):t(l)}{k==="weekend"&&<small>{nextWeekendLabel(locale)}</small>}</button>)}
        {/* Any other day in the next three weeks */}
-       <Dropdown value={/^\d{4}/.test(range)?range:""} ariaLabel="Pick a day" align="right" triggerClass={`pickDay${/^\d{4}/.test(range)?" active":""}`}
-        trigger={<><span>{/^\d{4}/.test(range)?dayLabel(range,"weekday"):"Pick day"}</span><small>{/^\d{4}/.test(range)?dayLabel(range,"date"):"▾"}</small></>}
-        options={upcomingDays().map(d=>({value:d,label:dayLabel(d,"full")}))} onChange={v=>chooseRange(v)}/>
+       <Dropdown value={/^\d{4}/.test(range)?range:""} ariaLabel={t("Pick a day")} align="right" triggerClass={`pickDay${/^\d{4}/.test(range)?" active":""}`}
+        trigger={<><span>{/^\d{4}/.test(range)?dayLabel(range,"weekday",locale):t("Pick day")}</span><small>{/^\d{4}/.test(range)?dayLabel(range,"date",locale):"▾"}</small></>}
+        options={upcomingDays().map(d=>({value:d,label:dayLabel(d,"full",locale)}))} onChange={v=>chooseRange(v)}/>
       </div>
      </div>
      <div className="filters">
-      <Dropdown label="Distance" value={radius} options={["10","15","25","50"].map(r=>({value:r,label:`${r} mi`}))} onChange={chooseRadius}/>
-      <Dropdown label="Time" value={timeFilter} options={TIMES.map(t=>({value:t,label:t==="Any time"?"Any":t}))} onChange={setTimeFilter}/>
-      <Dropdown label="Sort" value={sort} align="right" options={[{value:"Nearest",label:"Nearest"},{value:"Soonest",label:"Soonest"}]} onChange={setSort}/>
+      <Dropdown label={t("Distance")} value={radius} options={["10","15","25","50"].map(r=>({value:r,label:t("{n} mi",{n:r})}))} onChange={chooseRadius}/>
+      <Dropdown label={t("Time")} value={timeFilter} options={TIMES.map(x=>({value:x,label:x==="Any time"?t("Any"):t(x)}))} onChange={setTimeFilter}/>
+      <Dropdown label={t("Sort")} value={sort} align="right" options={[{value:"Nearest",label:t("Nearest")},{value:"Soonest",label:t("Soonest")}]} onChange={setSort}/>
      </div>
     </div>
     <div className="fcSection">
-     <div className="label">What are you into?</div>
-     <div className="chips wrap even4">{CHIPS.map(c=><button key={c} className={(c==="All"?selected.length===0&&moreCount===0:selected.includes(c))?"active":""} onClick={()=>toggleChip(c)}>{c==="Arts & Theatre"?<><span className="lg">Arts & Theatre</span><span className="sm">Arts</span></>:c}</button>)}</div>
+     <div className="label">{t("What are you into?")}</div>
+     <div className="chips wrap even4">{CHIPS.map(c=><button key={c} className={((c==="All"?selected.length===0&&moreCount===0:selected.includes(c))?"active":"")+(t(c==="Arts & Theatre"?"Arts":c).length>=8?" long":"")} onClick={()=>toggleChip(c)}>{c==="Arts & Theatre"?<><span className="lg">{t("Arts & Theatre")}</span><span className="sm">{t("Arts")}</span></>:t(c)}</button>)}</div>
     </div>
     {selected.includes("Kids")&&<div className="fcSection">
-     <div className="label">Kids' ages</div>
-     <div className="chips wrap even6">{AGE_BANDS.map(([l,a,b])=><button key={l} title={l} className={ageBands.includes(l)?"active":""} onClick={()=>setAgeBands(x=>x.includes(l)?x.filter(y=>y!==l):[...x,l])}><span className="lg">{l}</span><span className="sm">{l==="All ages"?"All ages":`${a}–${b}`}</span></button>)}</div>
+     <div className="label">{t("Kids' ages")}</div>
+     <div className="chips wrap even6">{AGE_BANDS.map(([l,a,b])=><button key={l} title={t(l)} className={ageBands.includes(l)?"active":""} onClick={()=>setAgeBands(x=>x.includes(l)?x.filter(y=>y!==l):[...x,l])}><span className="lg">{t(l)}</span><span className="sm">{l==="All ages"?t("All ages|short"):`${a}–${b}`}</span></button>)}</div>
     </div>}
-    <button className={`moreBtn${moreOpen||moreCount?" on":""}`} onClick={()=>setMoreOpen(o=>!o)} aria-expanded={moreOpen}><span>⚙ More filters{moreCount?` (${moreCount})`:""}</span><span aria-hidden>{moreOpen?"▴":"▾"}</span></button>
+    <button className={`moreBtn${moreOpen||moreCount?" on":""}`} onClick={()=>setMoreOpen(o=>!o)} aria-expanded={moreOpen}><span>⚙ {t("More filters")}{moreCount?` (${moreCount})`:""}</span><span aria-hidden>{moreOpen?"▴":"▾"}</span></button>
     {moreOpen&&<div className="morePanel">
-     <div className="moreRow"><span>Setting</span><div className="seg setting">{SETTINGS.map(x=><button key={x} className={setting===x?"active":""} onClick={()=>setSetting(x)}>{x}</button>)}</div></div>
-     <label className="toggle"><input type="checkbox" checked={dropIn} onChange={e=>setDropIn(e.target.checked)}/> Drop-in <small>no registration needed</small></label>
+     <div className="moreRow"><span>{t("Setting")}</span><div className="seg setting">{SETTINGS.map(x=><button key={x} className={setting===x?"active":""} onClick={()=>setSetting(x)}>{t(x)}</button>)}</div></div>
+     <label className="toggle"><input type="checkbox" checked={dropIn} onChange={e=>setDropIn(e.target.checked)}/> {t("Drop-in")} <small>{t("no registration needed")}</small></label>
      <label className="toggle"><input type="checkbox" checked={spanish} onChange={e=>setSpanish(e.target.checked)}/> En Español</label>
-     <label className="toggle"><input type="checkbox" checked={seniors} onChange={e=>setSeniors(e.target.checked)}/> Seniors <small>50+ programs</small></label>
+     <label className="toggle"><input type="checkbox" checked={seniors} onChange={e=>setSeniors(e.target.checked)}/> {t("Seniors")} <small>{t("50+ programs")}</small></label>
     </div>}
    </div>
 
-   {message&&<p className="notice">{message}</p>}
+   {message&&<p className="notice">{t(message)}</p>}
    {soon&&!loading&&<div className="soon">
     <div className="soonIcon">📍</div>
-    <h3>GoToday is coming to {soon.place||"your area"} soon</h3>
-    <p>We're bringing local events to new cities every week: festivals, library programs, park activities, markets and more. We're not showing events here yet, but your area is on our list.</p>
-    <p className="muted">Right now GoToday covers South Florida (Miami-Dade, Broward and Palm Beach), Greater Orlando, Tampa Bay and New York City.</p>
-    <div className="soonActions"><a className="btn primary" href="/create">Post an event in your area</a><button type="button" className="btn ghost" onClick={()=>{setZip("");document.querySelector<HTMLInputElement>('input[aria-label="ZIP code"]')?.focus();window.scrollTo({top:0,behavior:"smooth"})}}>Try another ZIP</button></div>
+    <h3>{t("GoToday is coming to {place} soon",{place:soon.place||t("your area")})}</h3>
+    <p>{t("We're bringing local events to new cities every week: festivals, library programs, park activities, markets and more. We're not showing events here yet, but your area is on our list.")}</p>
+    <p className="muted">{t("Right now GoToday covers South Florida (Miami-Dade, Broward and Palm Beach), Greater Orlando, Tampa Bay and New York City.")}</p>
+    <div className="soonActions"><a className="btn primary" href="/create">{t("Post an event in your area")}</a><button type="button" className="btn ghost" onClick={()=>{setZip("");document.querySelector<HTMLInputElement>('input[data-zip]')?.focus();window.scrollTo({top:0,behavior:"smooth"})}}>{t("Try another ZIP")}</button></div>
    </div>}
-   {!soon&&<div className="resultsHead"><div className="kicker">NEAR {where.toUpperCase()}</div><h2>{loading?"Searching…":`${filtered.length} thing${filtered.length===1?"":"s"} to do`}</h2></div>}
+   {!soon&&<div className="resultsHead"><div className="kicker">{t("NEAR {place}",{place:where}).toUpperCase()}</div><h2>{loading?t("Searching…"):filtered.length===1?t("1 thing to do"):t("{n} things to do",{n:filtered.length})}</h2></div>}
 
    <div className="grid">{filtered.map((e,i)=><article className="card" key={e.id||e.title+i}>
     <a className={e.image?"pic":"pic noimg"} style={e.image?undefined:{background:artFor(e).bg}} href={detailHref(e)} aria-hidden tabIndex={-1}>
      {e.image?<><img className="picBlur" src={e.image} alt="" loading="lazy" referrerPolicy="no-referrer"/>
       <img className="picMain" src={e.image} alt="" loading="lazy" referrerPolicy="no-referrer" onLoad={x=>fitPic(x.currentTarget)} onError={x=>{const a=x.currentTarget.parentElement as HTMLElement;a.classList.add("noimg");a.style.background=artFor(e).bg;a.querySelectorAll("img").forEach(i=>i.remove());const n=a.querySelector("span") as HTMLElement|null;if(n)n.style.display="flex"}}/></>:null}
      <span style={e.image?{display:"none"}:undefined}><i>{artFor(e).icon}</i></span>
-     {(e.isFree||e.facets?.includes("Free"))&&<em className="freeBadge">Free</em>}
+     {(e.isFree||e.facets?.includes("Free"))&&<em className="freeBadge">{t("Free")}</em>}
     </a>
     <div className="cardBody">
      <h3><a href={detailHref(e)}>{e.title}</a></h3>
-     <div className="meta">🗓 {fmt(e.date,e.time)}{e.live&&<b className="liveNow"> · Happening now</b>}</div>
-     <div className="meta locLine"><span className="locV" title={e.venue||e.city}>📍 {e.venue||e.city}</span><span className="locD">{typeof e.distanceMiles==="number"?`\u00a0· ${e.distanceMiles.toFixed(1)} mi`:""}{e.moreLocations?<b title={(e.otherVenues||[]).join(", ")}>{`\u00a0· +${e.moreLocations} more`}</b>:null}</span></div>
+     <div className="meta">🗓 {fmt(e.date,e.time,t,locale)}{e.live&&<b className="liveNow"> · {t("Happening now")}</b>}</div>
+     <div className="meta locLine"><span className="locV" title={e.venue||e.city}>📍 {e.venue||e.city}</span><span className="locD">{typeof e.distanceMiles==="number"?`\u00a0· ${e.distanceMiles.toFixed(1)} mi`:""}{e.moreLocations?<b title={(e.otherVenues||[]).join(", ")}>{`\u00a0· `+t("+{n} more",{n:e.moreLocations})}</b>:null}</span></div>
      {e.desc&&<p className="desc">{e.desc}</p>}
-     {(e.tags||[]).includes("Drop-in")?<div className="hint ok">✓ Drop-in, no registration</div>:e.registration&&e.source!=="Ticketmaster"?<div className="hint">{e.registration}</div>:null}
-     <div className="tags">{ageLabel(e)&&<span className="age">{ageLabel(e)}</span>}{(e.labels||(e.tags||[]).filter(t=>!["Local","Library","Free","Parks","Tickets","Drop-in"].includes(t)&&!/\(/.test(t))).slice(0,3).map(t=><span key={t}>{t}</span>)}</div>
+     {(e.tags||[]).includes("Drop-in")?<div className="hint ok">✓ {t("Drop-in, no registration")}</div>:e.registration&&e.source!=="Ticketmaster"?<div className="hint">{e.registration.split(" · ").map(x=>t(x)).join(" · ")}</div>:null}
+     <div className="tags">{ageLabel(e,t)&&<span className="age">{ageLabel(e,t)}</span>}{(e.labels||(e.tags||[]).filter(t=>!["Local","Library","Free","Parks","Tickets","Drop-in"].includes(t)&&!/\(/.test(t))).slice(0,3).map(x=><span key={x}>{t(x)}</span>)}</div>
      <div className="actions">
-      <a className="primary" href={e.source==="Ticketmaster"&&e.url?e.url:detailHref(e)} target={e.source==="Ticketmaster"&&e.url?"_blank":undefined} rel="noreferrer">{e.source==="Ticketmaster"?"Tickets ↗":"View details"}</a>
+      <a className="primary" href={e.source==="Ticketmaster"&&e.url?e.url:detailHref(e)} target={e.source==="Ticketmaster"&&e.url?"_blank":undefined} rel="noreferrer">{e.source==="Ticketmaster"?t("Tickets")+" ↗":t("View details")}</a>
       {e.id?.startsWith("db-")&&<SaveButton compact item={{id:e.id,title:e.title,date:e.date,venue:e.venue||e.city}}/>}
       {e.id&&<AddToCalendar compact base={`/events/${encodeURIComponent(e.id)}`}/>}
-      <button type="button" className="share" title="Share" onClick={()=>share(e)} aria-label={`Share ${e.title}`}>
-       <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden><path d="M4 12v7a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-7"/><polyline points="16 6 12 2 8 6"/><line x1="12" y1="2" x2="12" y2="15"/></svg><span className="shareTxt">Share</span>
+      <button type="button" className="share" title={t("Share")} onClick={()=>share(e)} aria-label={`${t("Share")}: ${e.title}`}>
+       <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden><path d="M4 12v7a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-7"/><polyline points="16 6 12 2 8 6"/><line x1="12" y1="2" x2="12" y2="15"/></svg><span className="shareTxt">{t("Share")}</span>
       </button>
      </div>
     </div>
    </article>)}</div>
   </section>}
   {toast&&<div className="toast" role="status">{toast}</div>}
-  <footer className="siteFoot"><a href="/me">My GoToday</a><a href="/privacy">Privacy</a><a href="/terms">Terms</a></footer>
+  <footer className="siteFoot"><a href="/me">{t("My GoToday")}</a><a href="/privacy">{t("Privacy")}</a><a href="/terms">{t("Terms")}</a></footer>
  </main>
 }

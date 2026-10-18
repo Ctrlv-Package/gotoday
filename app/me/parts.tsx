@@ -3,17 +3,19 @@ import {useEffect,useState} from "react";
 import {guestSaved,loadMe,onSavedChange,type SavedItem} from "../components/saved";
 import {myEvents,type MyEvent} from "../components/myEvents";
 import SaveButton from "../components/SaveButton";
+import {useT} from "../components/Lang";
 
 /** Guests: the events saved in this browser. */
 export function GuestSaved(){
+ const {t,locale}=useT();
  const [list,setList]=useState<SavedItem[]|null>(null);
  useEffect(()=>{const today=new Date().toLocaleDateString("en-CA",{timeZone:"America/New_York"});const f=()=>setList(guestSaved().filter(x=>!x.date||x.date>=today));f();return onSavedChange(f)},[]);
  if(list===null)return null;
  return <section className="meSection">
-  <h2>Saved on this device <span className="count">{list.length}</span></h2>
-  {list.length===0?<p className="muted">Tap the ♡ on any event to save it here. Saved events stay in this browser; sign in to keep them on all your devices.</p>
+  <h2>{t("Saved on this device")} <span className="count">{list.length}</span></h2>
+  {list.length===0?<p className="muted">{t("Tap the ♡ on any event to save it here. Saved events stay in this browser; sign in to keep them on all your devices.")}</p>
   :<ul className="meList">{list.map(x=><li key={x.id}>
-    <a href={`/events/${x.id}`}><b>{x.title}</b><span>{x.date?new Date(x.date+"T12:00:00").toLocaleDateString("en-US",{weekday:"short",month:"short",day:"numeric"}):""}{x.venue?` · ${x.venue}`:""}</span></a>
+    <a href={`/events/${x.id}`}><b>{x.title}</b><span>{x.date?new Date(x.date+"T12:00:00").toLocaleDateString(locale,{weekday:"short",month:"short",day:"numeric"}):""}{x.venue?` · ${x.venue}`:""}</span></a>
     <SaveButton compact item={x}/>
    </li>)}</ul>}
  </section>;
@@ -21,22 +23,24 @@ export function GuestSaved(){
 
 /** Guests: events created on this device (the create page remembers their links here). */
 export function GuestCreated(){
+ const {t,locale}=useT();
  const [list,setList]=useState<MyEvent[]|null>(null);
  useEffect(()=>{setList(myEvents())},[]);
  if(!list)return null;
  return <section className="meSection">
-  <h2>My events <span className="count">{list.length}</span></h2>
-  {list.length===0?<p className="muted">Events you create show up here. <a href="/create" className="inlineLink">Create an event →</a></p>
+  <h2>{t("My events")} <span className="count">{list.length}</span></h2>
+  {list.length===0?<p className="muted">{t("Events you create show up here.")} <a href="/create" className="inlineLink">{t("Create an event →")}</a></p>
   :<ul className="meList">{list.map(x=><li key={x.manageUrl}>
-    <a href={x.shareUrl}><b>{x.title}</b><span>{x.date?new Date(x.date+"T12:00:00").toLocaleDateString("en-US",{weekday:"short",month:"short",day:"numeric"}):""}{x.visibility==="private"?" · Private":""}</span></a>
-    <a className="btn ghost small" href={x.manageUrl}>Manage</a>
+    <a href={x.shareUrl}><b>{x.title}</b><span>{x.date?new Date(x.date+"T12:00:00").toLocaleDateString(locale,{weekday:"short",month:"short",day:"numeric"}):""}{x.visibility==="private"?" · "+t("Private"):""}</span></a>
+    <a className="btn ghost small" href={x.manageUrl}>{t("Manage")}</a>
    </li>)}</ul>}
-  {list.length>0&&<p className="muted small" style={{marginTop:8}}>Saved on this device only. Sign in to see them on any device.</p>}
+  {list.length>0&&<p className="muted small" style={{marginTop:8}}>{t("Saved on this device only. Sign in to see them on any device.")}</p>}
  </section>;
 }
 
 /** Right after signing in: move this browser's saved events into the account, then show the full list. */
 export function SignedInNote({name}:{name?:string|null}){
+ const {t}=useT();
  const [msg,setMsg]=useState("");
  useEffect(()=>{
   const had=guestSaved().length;
@@ -46,12 +50,12 @@ export function SignedInNote({name}:{name?:string|null}){
   const todo=made.filter(u=>!done.includes(u));
   if(todo.length)fetch("/api/me/events",{method:"POST",headers:{"content-type":"application/json"},body:JSON.stringify({manageUrls:todo})}).then(r=>r.json()).then(d=>{
    try{localStorage.setItem(claimKey,JSON.stringify([...done,...todo].slice(-100)))}catch{}
-   if(d?.claimed>0){setMsg(`Added ${d.claimed} event${d.claimed>1?"s":""} you created on this device to My events.`);setTimeout(()=>location.reload(),1400)}
+   if(d?.claimed>0){setMsg(t("Added events you created on this device to My events: {n}",{n:d.claimed}));setTimeout(()=>location.reload(),1400)}
   }).catch(()=>{});
   loadMe(true).then(()=>{
    const u=new URL(location.href);
-   if(had&&!guestSaved().length){setMsg(`Moved ${had} saved event${had>1?"s":""} from this device into your account.`);setTimeout(()=>location.reload(),1200)}
-   if(u.searchParams.has("signedin")){if(!had)setMsg(`You're signed in${name?`, ${name.split(" ")[0]}`:""}! Your saved events, follows and calendar are now on every device you sign in on.`);u.searchParams.delete("signedin");history.replaceState(null,"",u.pathname+(u.search||""))}
+   if(had&&!guestSaved().length){setMsg(t("Moved saved events from this device into your account: {n}",{n:had}));setTimeout(()=>location.reload(),1200)}
+   if(u.searchParams.has("signedin")){if(!had)setMsg((name?t("You're signed in, {name}!",{name:name.split(" ")[0]}):t("You're signed in!"))+" "+t("Your saved events, follows and calendar are now on every device you sign in on."));u.searchParams.delete("signedin");history.replaceState(null,"",u.pathname+(u.search||""))}
   });
  },[]);
  return msg?<p className="okNote" role="status">{msg}</p>:null;
@@ -64,8 +68,9 @@ const HOW:Record<string,string>={
  "Google Calendar":"In the Google Calendar tab that opened, click “Add” to confirm. GoToday then appears on the left under “Other calendars”. Google can take a few minutes to show the events.",
  "Apple Calendar":"Your device should ask “Subscribe to this calendar?” — tap Subscribe. GoToday then appears in your Calendars list.",
  "Outlook":"In the Outlook tab that opened, click “Import” to confirm. GoToday then appears under “Other calendars”."};
-const ago=(t:string)=>{const m=Math.round((Date.now()-new Date(t).getTime())/60000);return m<1?"just now":m<60?`${m} min ago`:m<1440?`${Math.round(m/60)} h ago`:`${Math.round(m/1440)} days ago`};
+const ago=(x:string,t:(s:string,v?:Record<string,string|number>)=>string)=>{const m=Math.round((Date.now()-new Date(x).getTime())/60000);return m<1?t("just now"):m<60?t("{n} min ago",{n:m}):m<1440?t("{n} h ago",{n:Math.round(m/60)}):t("{n} days ago",{n:Math.round(m/1440)})};
 export function CalendarLinks({feed,initial}:{feed:string;initial:CalStatus}){
+ const {t}=useT();
  const [link,setLink]=useState(feed),[copied,setCopied]=useState(false),[busy,setBusy]=useState(false),[st,setSt]=useState<CalStatus>(initial);
  const https=`https://${link}`,webcal=`webcal://${link}`;
  const google=`https://calendar.google.com/calendar/r?cid=${encodeURIComponent(webcal)}`;
@@ -78,29 +83,30 @@ export function CalendarLinks({feed,initial}:{feed:string;initial:CalStatus}){
   const r=await fetch("/api/me/calendar",{cache:"no-store"}).then(r=>r.json()).catch(()=>null);if(r?.ok)setSt(r);
  },15000);return()=>clearInterval(t)},[waiting]);
  const clicked=(app:string)=>{setSt(s=>({...s,clickedAt:new Date().toISOString(),clicked:app}));fetch("/api/me/calendar",{method:"POST",headers:{"content-type":"application/json"},body:JSON.stringify({clicked:app})}).catch(()=>{})};
- const copy=async()=>{try{await navigator.clipboard.writeText(https);setCopied(true);setTimeout(()=>setCopied(false),2000)}catch{prompt("Copy your calendar link:",https)}};
+ const copy=async()=>{try{await navigator.clipboard.writeText(https);setCopied(true);setTimeout(()=>setCopied(false),2000)}catch{prompt(t("Copy your calendar link:"),https)}};
  const reset=async()=>{
-  if(!confirm("Make a new calendar link? The old one stops working, so calendars subscribed with it stop updating. Use this if you shared the link by mistake."))return;
+  if(!confirm(t("Make a new calendar link? The old one stops working, so calendars subscribed with it stop updating. Use this if you shared the link by mistake.")))return;
   setBusy(true);const r=await fetch("/api/me/calendar",{method:"POST"}).then(r=>r.json()).catch(()=>null);setBusy(false);
   if(r?.token){setLink(link.replace(/\/cal\/[^/]+\.ics$/,`/cal/${r.token}.ics`));setSt({})}
  };
  return <div className="calSub">
-  {connected?<div className="calStatus ok" role="status"><b>✓ Connected to {st.client}</b><span>Last updated {ago(st.fetchedAt!)}. Everything you save or follow will show up there automatically.</span></div>
-  :waiting?<div className="calStatus wait" role="status"><b><span className="spin" aria-hidden/> Waiting for {st.clicked}…</b><span>{HOW[st.clicked||""]||"Confirm in your calendar app."} This page will say “Connected” as soon as it starts reading your GoToday calendar.</span></div>
-  :<p className="calHint">Already added GoToday to your calendar? This will say “✓ Connected” the next time your calendar app checks for updates (Google Calendar: within about a day).</p>}
+  {connected?<div className="calStatus ok" role="status"><b>✓ {t("Connected to {app}",{app:st.client||""})}</b><span>{t("Last updated {when}.",{when:ago(st.fetchedAt!,t)})} {t("Everything you save or follow will show up there automatically.")}</span></div>
+  :waiting?<div className="calStatus wait" role="status"><b><span className="spin" aria-hidden/> {t("Waiting for {app}…",{app:st.clicked||""})}</b><span>{t(HOW[st.clicked||""]||"Confirm in your calendar app.")} {t("This page will say “Connected” as soon as it starts reading your GoToday calendar.")}</span></div>
+  :<p className="calHint">{t("Already added GoToday to your calendar? This will say “✓ Connected” the next time your calendar app checks for updates (Google Calendar: within about a day).")}</p>}
   <div className="calSubBtns">
-   <a className="btn ghost" href={google} target="_blank" rel="noreferrer" onClick={()=>clicked("Google Calendar")}>{connected&&st.client==="Google Calendar"?"✓ ":""}Add to Google Calendar</a>
-   <a className="btn ghost" href={webcal} onClick={()=>clicked("Apple Calendar")}>{connected&&st.client==="Apple Calendar"?"✓ ":""}Add to Apple Calendar</a>
-   <a className="btn ghost" href={outlook} target="_blank" rel="noreferrer" onClick={()=>clicked("Outlook")}>{connected&&st.client==="Outlook"?"✓ ":""}Add to Outlook</a>
+   <a className="btn ghost" href={google} target="_blank" rel="noreferrer" onClick={()=>clicked("Google Calendar")}>{connected&&st.client==="Google Calendar"?"✓ ":""}{t("Add to Google Calendar")}</a>
+   <a className="btn ghost" href={webcal} onClick={()=>clicked("Apple Calendar")}>{connected&&st.client==="Apple Calendar"?"✓ ":""}{t("Add to Apple Calendar")}</a>
+   <a className="btn ghost" href={outlook} target="_blank" rel="noreferrer" onClick={()=>clicked("Outlook")}>{connected&&st.client==="Outlook"?"✓ ":""}{t("Add to Outlook")}</a>
   </div>
-  <div className="calSubLink"><code>{https}</code><button type="button" className="linkBtn" onClick={copy}>{copied?"Copied ✓":"Copy link"}</button></div>
-  <p className="authFine">This link is private to you. Anyone with it can see the events you've saved, so don't post it publicly. <button type="button" className="linkBtn small" disabled={busy} onClick={reset}>Make a new link</button></p>
+  <div className="calSubLink"><code>{https}</code><button type="button" className="linkBtn" onClick={copy}>{copied?t("Copied ✓"):t("Copy link")}</button></div>
+  <p className="authFine">{t("This link is private to you. Anyone with it can see the events you've saved, so don't post it publicly.")} <button type="button" className="linkBtn small" disabled={busy} onClick={reset}>{t("Make a new link")}</button></p>
  </div>;
 }
 
 /** Stop following one event family. */
 export function Unfollow({series}:{series:number}){
+ const {t}=useT();
  const [gone,setGone]=useState(false);
- if(gone)return <span className="muted small">Removed</span>;
- return <button type="button" className="linkBtn small" onClick={async()=>{const r=await fetch("/api/me/follow",{method:"POST",headers:{"content-type":"application/json"},body:JSON.stringify({series,on:false})});if(r.ok)setGone(true)}}>Remove</button>;
+ if(gone)return <span className="muted small">{t("Removed")}</span>;
+ return <button type="button" className="linkBtn small" onClick={async()=>{const r=await fetch("/api/me/follow",{method:"POST",headers:{"content-type":"application/json"},body:JSON.stringify({series,on:false})});if(r.ok)setGone(true)}}>{t("Remove")}</button>;
 }

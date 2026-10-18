@@ -23,7 +23,7 @@ export default function Dropdown({label,value,options,onChange,trigger,triggerCl
   {label&&<span className="ddLabel">{label}</span>}
   <button type="button" className={triggerClass} aria-haspopup="listbox" aria-expanded={open} aria-label={ariaLabel||label}
    onClick={()=>setOpen(o=>!o)}>
-   {trigger??<><span className="ddVal">{current?.label??"Choose"}</span><svg className="ddChev" viewBox="0 0 24 24" width="16" height="16" aria-hidden="true"><path d="m6 9 6 6 6-6" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"/></svg></>}
+   {trigger??<><span className="ddVal">{current?.label??"…"}</span><svg className="ddChev" viewBox="0 0 24 24" width="16" height="16" aria-hidden="true"><path d="m6 9 6 6 6-6" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"/></svg></>}
   </button>
   {open&&<ul className={`ddMenu ${align}`} role="listbox" ref={list}>
    {options.map(o=><li key={o.value}><button type="button" role="option" aria-selected={o.value===value} disabled={o.disabled} onClick={()=>pick(o.value)}>

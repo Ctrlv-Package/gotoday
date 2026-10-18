@@ -67,6 +67,7 @@ const STATEMENTS=[
  `alter table users add column if not exists cal_clicked_at timestamptz,add column if not exists cal_clicked text,
    add column if not exists cal_fetched_at timestamptz,add column if not exists cal_client text`,
  `alter table users add column if not exists cal_ua text`,
+ `alter table users add column if not exists lang text`,
  // Events people create while signed in belong to their account (listed in My GoToday on any device, with the manage
  // link kept for them so they don't have to save it).
  `alter table community_events add column if not exists user_id int,add column if not exists owner_token text`,

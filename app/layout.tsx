@@ -1,6 +1,8 @@
 import "./globals.css";
 import type { Metadata } from "next";
 import Script from "next/script";
+import {getLang} from "../lib/lang-server";
+import {LangProvider} from "./components/Lang";
 
 // Google Analytics (GA4). Only on the live site, so local testing doesn't count as visits.
 const GA_ID = process.env.NEXT_PUBLIC_GA_ID || "G-2DYKZBZFG9";
@@ -17,13 +19,14 @@ export const metadata: Metadata = {
   openGraph: { siteName: "GoToday", type: "website", url: SITE, title: "GoToday", description: "Find something worth doing near you." }
 };
 
-export default function RootLayout({
+export default async function RootLayout({
   children
 }: Readonly<{ children: React.ReactNode }>) {
+  const lang = await getLang();
   return (
-    <html lang="en">
+    <html lang={lang}>
       <body>
-        {children}
+        <LangProvider lang={lang}>{children}</LangProvider>
         {LIVE && GA_ID && <>
           <Script src={`https://www.googletagmanager.com/gtag/js?id=${GA_ID}`} strategy="afterInteractive" />
           <Script id="ga4" strategy="afterInteractive">{`window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}gtag('js',new Date());gtag('config','${GA_ID}');`}</Script>
