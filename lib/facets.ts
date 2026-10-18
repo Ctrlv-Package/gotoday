@@ -106,7 +106,9 @@ export function facetsFor(e:In):Facet[]{
  // The title says so ("FREE Record release show", "Free Family Movie Night") — not "gluten-free" or "kids eat free".
  const freeTitle=/(^|[\s:–-])free\b(?![- ](style|agent|form|lance|dom|range|play\b))/i.test(t)&&!/\b(gluten|sugar|dairy|alcohol|smoke|tax|fee|cruelty|hands)[- ]free\b|\beat(s)? free\b|\bfree (with|for kids with) (purchase|paid|adult)/i.test(t);
  // A listing that shows a price isn't free, whatever a "no price mentioned" guess would say.
- const paid=isPaid(e);
+ // A stated cost that isn't "free" ("Varies", "Fees apply", "See website") means it isn't free, even without a $ amount.
+ const pt=(e.priceText||"").trim(),costNotFree=!!pt&&!/\bfree\b|no (cost|charge)/i.test(pt)&&!/(^|[\s:–-])free\b/i.test(t);
+ const paid=isPaid(e)||costNotFree;
  const freeSaid=/\bfree (admission|entry|to attend|and open to (the|all)|for (all|everyone|the public|families|kids|children))\b|\b(admission|entry) is free\b|\bno (cost|charge|admission)\b|\bat no cost\b/i.test(`${t} ${e.desc||""}`);
  if(!paid&&(e.isFree||tagHas(/^free$/i)||freeTitle||freeSaid)||!paid&&(gov&&e.source!=="Ticketmaster"&&!priced&&!tagHas(/^tickets$/i)))out.add("Free");
  return[...out];

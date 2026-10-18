@@ -118,6 +118,8 @@ export async function GET(request:NextRequest){
   {const st=settingFor(e);e.tags=[...e.tags.filter((t:string)=>t!=="Indoor"&&t!=="Outdoor"),...(st?[st]:[])];
    // A cost the organizer states in its own event page's cost field is the strongest evidence: "$65" or "Free".
    const pt=String(e.priceText||"");e.statedCost=/\$\s?[1-9]/.test(pt)?"paid":/\bfree\b|no (cost|charge)/i.test(pt)?"free":null;
+   // …unless the description names a ticket price ("Tickets are on sale for $13 each"): some feeds fill in "Free" by default.
+   if(e.statedCost==="free"&&/\$\s?[1-9]\d*[^.]{0,30}\b(per (person|child|adult|ticket|family)|each|admission|tickets?|pp)\b|tickets? (are|cost|on sale)[^.]{0,30}\$\s?[1-9]/i.test(`${e.title} ${e.desc||""}`))e.statedCost="paid";
    e.paid=e.statedCost==="free"?false:isPaid(e);if(e.paid)e.isFree=false;if(e.statedCost==="free")e.isFree=true;
    const facets=facetsFor(e).filter(f=>!(f==="Free"&&e.statedCost==="paid")),ages=cleanAges(e);if(e.statedCost==="free"&&!facets.includes("Free"))facets.push("Free");e.facets=facets;e.labels=displayTags(e,facets).slice(0,3);e.ageMin=ages.ageMin;e.ageMax=ages.ageMax}
   // "Today": hide timed events that have already ended (or started over 2 hours ago with no end time).
