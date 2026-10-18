@@ -15,6 +15,7 @@ const oc=(name:string,listUrl:string,city:string,idPrefix:string,region:string):
 // A handle that doesn't resolve pauses itself on its first run. Name suffix keeps them apart from calendar sources.
 const ig=(name:string,city:string,username:string,region:string):SourceConfig=>({name:`${name} · Instagram`,platform:"instagram",params:{username,city,venue:name,idPrefix:`ig-${username.replace(/[^a-z0-9]/gi,"").toLowerCase()}`},source_type:"venue",url:`https://www.instagram.com/${username}/`,priority:80,region});
 const INSTAGRAM_ACCOUNTS:SourceConfig[]=[
+ ig("NoBe Sunday","Fort Lauderdale, FL","nobesunday","broward"),
  ig("City of Weston","Weston, FL","cityofwestonfl","broward"),
  ig("City of Sunrise","Sunrise, FL","cityofsunrise","broward"),
  ig("City of Plantation","Plantation, FL","cityofplantation","broward"),
