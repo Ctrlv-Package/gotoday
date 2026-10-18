@@ -5,6 +5,7 @@ import { ensureSchema } from "../../../lib/schema";
 import { cityCoords } from "../../../lib/ingestion/geocode";
 import { discoveryRejection } from "../../../lib/ingestion/utils";
 import { bestPicture } from "../../../lib/pictures";
+import { sameEvent } from "../../../lib/copies";
 import { localParts, todayIn, DEFAULT_TZ } from "../../../lib/time";
 
 function decodeHtml(s:string){return s.replace(/&#(\d+);/g,(_,n)=>String.fromCharCode(Number(n))).replace(/&#x([0-9a-f]+);/gi,(_,n)=>String.fromCharCode(parseInt(n,16))).replace(/&amp;/g,"&").replace(/&quot;/g,'"').replace(/&apos;|&#39;/g,"'")}
@@ -93,7 +94,8 @@ export async function GET(request:NextRequest){
  await ensureSchema();
  // Bounding box first (uses the lat/lng index), exact distance second; rows without coordinates
  // (saved before coordinates existed) fall back to their city center below.
- const dLat=radius/69,dLng=radius/(69*Math.cos(lat*Math.PI/180));
+ // 10 extra miles: copies of an event just outside the search distance still help pick its picture (not shown).
+ const dLat=(radius+10)/69,dLng=(radius+10)/(69*Math.cos(lat*Math.PI/180));
  const {rows}=await db.query(`select e.id,e.title,e.description,e.start_at,e.end_at,e.local_date::text as local_date,e.timezone,e.city,e.category,e.genre,e.tags,e.is_free,e.price_text,e.image_url,
    e.official_url,e.age_min,e.age_max,e.registration_text,e.latitude,e.longitude,s.name as source,v.name as venue
   from events e join sources s on s.id=e.source_id left join venues v on v.id=e.venue_id
@@ -101,17 +103,18 @@ export async function GET(request:NextRequest){
    and ((e.latitude between $3 and $4 and e.longitude between $5 and $6) or e.latitude is null)
   order by e.start_at limit 4000`,[w.startDate,w.endDate,lat-dLat,lat+dLat,lng-dLng,lng+dLng]);
  const now=Date.now();
- let events:any[]=[];const cancelledList:any[]=[];
+ let events:any[]=[];const cancelledList:any[]=[],outside:any[]=[];
  for(const r of rows){
   const tz=r.timezone||DEFAULT_TZ,start=new Date(r.start_at),lp=localParts(start,tz);
   let la=r.latitude==null?NaN:Number(r.latitude),lo=r.longitude==null?NaN:Number(r.longitude),acc="venue";
   if(!Number.isFinite(la)){const k=String(r.city||"").trim();let c=CITY_COORDS[k];if(!c){const p=await cityCoords(k);if(p)c=[p.latitude,p.longitude]}if(!c)continue;[la,lo]=c;acc="city"}
-  const d=miles(lat,lng,la,lo);if(d>radius)continue;
+  const d=miles(lat,lng,la,lo);
+  if(d>radius){if(d<=radius+10&&r.image_url)outside.push({id:r.id,title:decodeHtml(r.title||""),date:r.local_date||lp.date,city:r.city||"",source:r.source,image:r.image_url,time:lp.time==="00:00:00"?"":lp.time,lat:la,lng:lo});continue}
   const allDay=lp.time==="00:00:00";
   const e:any={id:"db-"+r.id,title:decodeHtml(r.title||""),city:r.city||"",venue:decodeHtml(r.venue||""),date:r.local_date||lp.date,time:allDay?"":lp.time,
    image:r.image_url||"",url:r.official_url||"",category:r.category||"Local",genre:r.genre||"",desc:decodeHtml(r.description||""),tags:Array.isArray(r.tags)?r.tags:[],
    source:/^Ticketmaster/.test(r.source)?"Ticketmaster":r.source,priceText:r.price_text||undefined,isFree:Boolean(r.is_free),ageMin:r.age_min??undefined,ageMax:r.age_max??undefined,registration:r.registration_text||undefined,
-   distanceMiles:Math.round(d*10)/10,distanceAccuracy:acc};
+   distanceMiles:Math.round(d*10)/10,distanceAccuracy:acc,lat:la,lng:lo};
   if(e.source==="Ticketmaster"&&TM_JUNK.test(e.title))continue;
   if(/^\W*(cancel+ed|postponed)\b/i.test(e.title)){cancelledList.push(e);continue}   // "CANCELED: Kids in Motion" etc.
   if(discoveryRejection({...e,isDiscoveryEligible:e.source==="Ticketmaster"?true:undefined}))continue;
@@ -189,7 +192,18 @@ export async function GET(request:NextRequest){
   wc.set(m,words(m.title));kept[i]=m;
  }
  // The picture: one rule for every card and event page (lib/pictures), whichever copy leads.
- for(const e of kept){e.image=bestPicture(e.title,e._pics||[]);delete e._pics}
+ // Copies just outside the search distance join the picture choice (same matching as lib/copies, which the event page uses).
+ if(outside.length){
+  const now2=Date.now(),okPic=(u:string)=>{const oe=/cdninstagram\.com|fbcdn\.net/.test(u)&&u.match(/[?&]oe=([0-9A-Fa-f]{8})/);return!(oe&&parseInt(oe[1],16)*1000<now2)&&!/ticketm\.net\/dam\/c\//.test(u)};
+  const extra=outside.filter(o=>okPic(o.image));
+  const shared=extra.length?new Set((await db.query("select image_url from events where image_url=any($1) group by image_url having count(distinct lower(title))>=3",[[...new Set(extra.map(o=>o.image))]]).catch(()=>({rows:[]}))).rows.map((r:any)=>r.image_url)):new Set();
+  for(const e of kept){
+   const ig=/ · Instagram$/.test(e.source||"");
+   for(const o of extra)if(o.date===e.date&&!shared.has(o.image)&&sameEvent(e.title,o.title)&&(town(o.city)===town(e.city)||(e.lat!=null&&Math.hypot((o.lat-e.lat)*69,(o.lng-e.lng)*69*Math.cos(e.lat*Math.PI/180))<4))&&(ig||/ · Instagram$/.test(o.source)||(!!e.time&&o.time===e.time)))
+    (e._pics||=[]).push({id:o.id,image:o.image,source:o.source,title:o.title});
+  }
+ }
+ for(const e of kept){e.image=bestPicture(e.title,e._pics||[]);delete e._pics;delete e.lat;delete e.lng}
  events=kept.sort((a:any,b:any)=>(a.date+(a.time||"")).localeCompare(b.date+(b.time||""))||((a.source==="Ticketmaster"?1:0)-(b.source==="Ticketmaster"?1:0)));
  // A listing marked cancelled ("CANCELLED: Downtown Hollywood ArtWalk") also hides other sources' copies of that event
  // and its parts ("POP-UP at ArtWalk"): same day, same town, and the title carries its distinctive name.

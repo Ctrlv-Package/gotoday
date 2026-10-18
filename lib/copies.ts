@@ -31,7 +31,9 @@ export async function fillFromCopies<T extends Fillable>(e:T):Promise<T>{
  // The organizer's own copies first, round-ups last.
  // Same matching as the cards: posts match by title nearby; two calendar listings only when they also start together.
  const ig=(x:string)=>/ · Instagram$/.test(x||"");
- const copies=rows.filter((r:any)=>near(r)&&sameEvent(e.title,r.title)&&(ig(e.source)||ig(r.source)||new Date(r.start_at).getTime()===e.start.getTime())).sort((a:any,b:any)=>(roundup(a.source)?1:0)-(roundup(b.source)?1:0));
+ const hm=(d:Date)=>new Intl.DateTimeFormat("en-GB",{timeZone:e.tz,hour:"2-digit",minute:"2-digit",hour12:false}).format(d);
+ const timesOk=(r:any)=>{const a=hm(e.start),b=hm(new Date(r.start_at));return a==="00:00"||b==="00:00"||a===b};
+ const copies=rows.filter((r:any)=>near(r)&&sameEvent(e.title,r.title)&&(ig(e.source)||ig(r.source)?timesOk(r):new Date(r.start_at).getTime()===e.start.getTime())).sort((a:any,b:any)=>(roundup(a.source)?1:0)-(roundup(b.source)?1:0));
  const out={...e};
  // The picture: the same rule the card uses (lib/pictures), over this listing and all its copies.
  const all=[{id:e.id,image:e.image||"",source:e.source,title:e.title},...copies.map((r:any)=>({id:r.id,image:r.image_url||"",source:r.source,title:r.title}))]
