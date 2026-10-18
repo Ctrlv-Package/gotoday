@@ -118,6 +118,8 @@ export async function GET(request:NextRequest){
   {const st=settingFor(e);e.tags=[...e.tags.filter((t:string)=>t!=="Indoor"&&t!=="Outdoor"),...(st?[st]:[])];
    // A cost the organizer states in its own event page's cost field is the strongest evidence: "$65" or "Free".
    const pt=String(e.priceText||"");e.statedCost=/\$\s?[1-9]/.test(pt)?"paid":/\bfree\b|no (cost|charge)/i.test(pt)?"free":null;
+   // A title that says FREE outweighs a ticketing site's fee field (Ticketmaster lists small fees on free shows).
+   if(e.statedCost==="paid"&&/(^|[\s:–-])free\b/i.test(e.title)&&!/\$\s?[1-9]/.test(`${e.title} ${e.desc||""}`))e.statedCost=null;
    // …unless the description names a ticket price ("Tickets are on sale for $13 each"): some feeds fill in "Free" by default.
    if(e.statedCost==="free"&&/\$\s?[1-9]\d*[^.]{0,30}\b(per (person|child|adult|ticket|family)|each|admission|tickets?|pp)\b|tickets? (are|cost|on sale)[^.]{0,30}\$\s?[1-9]/i.test(`${e.title} ${e.desc||""}`))e.statedCost="paid";
    e.paid=e.statedCost==="free"?false:isPaid(e);if(e.paid)e.isFree=false;if(e.statedCost==="free")e.isFree=true;
