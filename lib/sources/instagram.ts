@@ -230,8 +230,14 @@ export async function fetchInstagram(cfg:InstagramConfig,startDate:string,endDat
  // A post that lists several events (a weekly round-up) usually has one cover photo: that photo belongs to none
  // of them. An event gets a picture only when the reading found its own slide (one no other event uses);
  // otherwise the card shows its category art instead of someone else's photo.
- const perPost=new Map<string,number>(),perSlide=new Map<string,number>();
- for(const e of found){perPost.set(e.post.id,(perPost.get(e.post.id)||0)+1);if(e.slide)perSlide.set(`${e.post.id}#${e.slide}`,(perSlide.get(`${e.post.id}#${e.slide}`)||0)+1)}
+ // Counted by different events, not dates: a 3-day festival is one event and keeps its flyer.
+ const sameEvent=(t:string)=>slug(t.replace(/\b(day|night) ?\d\b|\b(fri|sat|sun|mon|tue|wed|thu)\w*\b|\(.*?\)/gi," ")).split("-").filter(w=>w.length>2).slice(0,3).join("-");
+ const titlesPer=new Map<string,Set<string>>(),slideTitles=new Map<string,Set<string>>();
+ for(const e of found){
+  titlesPer.set(e.post.id,(titlesPer.get(e.post.id)||new Set()).add(sameEvent(e.title)));
+  if(e.slide){const k=`${e.post.id}#${e.slide}`;slideTitles.set(k,(slideTitles.get(k)||new Set()).add(sameEvent(e.title)))}
+ }
+ const perPost=new Map([...titlesPer].map(([k,v])=>[k,v.size])),perSlide=new Map([...slideTitles].map(([k,v])=>[k,v.size]));
  const pictureFor=(e:any)=>{
   const many=(perPost.get(e.post.id)||0)>=3||ROUNDUPS.has(cfg.username)&&(perPost.get(e.post.id)||0)>=2;
   const own=e.slide&&e.post.media_type==="CAROUSEL_ALBUM"&&(perSlide.get(`${e.post.id}#${e.slide}`)||0)===1&&!(many&&e.slide===1)?slides(e.post)[e.slide-1]:undefined;
