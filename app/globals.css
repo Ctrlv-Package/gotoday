@@ -20,7 +20,7 @@ nav{display:flex;justify-content:space-between;align-items:center;max-width:1180
 .searchRow input{flex:1;min-width:0;border:0;padding:12px 12px;outline:0;font-size:18px;background:transparent;letter-spacing:1px}
 .searchRow .go{border:0;background:var(--ink);color:#fff;padding:0 20px;border-radius:11px;font-weight:800}
 .locate{margin-top:10px;border:0;background:transparent;color:var(--accent);font-weight:700;padding:8px 12px;border-radius:10px}
-.locate:hover{background:var(--accent-soft)}
+@media(hover:hover){.locate:hover{background:var(--accent-soft)}}
 
 /* ---------- Content ---------- */
 .content{max-width:1180px;margin:-22px auto 0;padding:0 16px 64px;position:relative;z-index:2}
@@ -35,7 +35,7 @@ nav{display:flex;justify-content:space-between;align-items:center;max-width:1180
 .chips{display:flex;gap:8px;overflow-x:auto;-webkit-overflow-scrolling:touch;scrollbar-width:none;margin:0 -16px;padding:2px 16px}
 .chips::-webkit-scrollbar{display:none}
 .chips button{flex:0 0 auto;border:1px solid var(--line);background:#fff;padding:9px 14px;border-radius:999px;color:#3f3f46;font-size:14px;font-weight:600;white-space:nowrap}
-.chips button:hover{border-color:#c4b5fd}
+@media(hover:hover){.chips button:hover{border-color:#c4b5fd}}
 .chips .active{background:var(--ink);border-color:var(--ink);color:#fff}
 
 .filters{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin-top:16px}
@@ -70,7 +70,7 @@ nav{display:flex;justify-content:space-between;align-items:center;max-width:1180
 .actions{display:flex;gap:8px;margin-top:auto;padding-top:10px}
 .actions .primary{flex:1;text-align:center;background:var(--ink);color:#fff;padding:11px 14px;border-radius:11px;font-weight:800;text-decoration:none;font-size:15px}
 .share{display:inline-flex;align-items:center;justify-content:center;gap:6px;border:1px solid var(--line);background:#fff;padding:0 14px;border-radius:11px;font-weight:700;font-size:15px}
-.share:hover{border-color:#c4b5fd;background:#faf5ff}
+@media(hover:hover){.share:hover{border-color:#c4b5fd;background:#faf5ff}}
 
 .toast{position:fixed;left:50%;bottom:24px;transform:translateX(-50%);background:var(--ink);color:#fff;padding:10px 16px;border-radius:999px;font-size:14px;font-weight:700;box-shadow:0 10px 30px rgba(0,0,0,.2);z-index:50}
 
@@ -89,7 +89,7 @@ nav{display:flex;justify-content:space-between;align-items:center;max-width:1180
  .filters{grid-template-columns:repeat(3,200px)}
  .resultsHead h2{font-size:32px}
  .grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:20px}
- .card:hover{box-shadow:0 16px 40px rgba(39,39,42,.10)}
+@media(hover:hover){ .card:hover{box-shadow:0 16px 40px rgba(39,39,42,.10)}}
 }
 @media(min-width:1080px){.grid{grid-template-columns:repeat(3,minmax(0,1fr))}}
 
@@ -130,7 +130,7 @@ nav{display:flex;justify-content:space-between;align-items:center;max-width:1180
 .related ul{list-style:none;margin:0;padding:0;border:1px solid var(--line);border-radius:14px;overflow:hidden}
 .related li+li{border-top:1px solid var(--line)}
 .related a{display:flex;gap:10px;flex-wrap:wrap;align-items:baseline;padding:11px 14px;text-decoration:none;font-size:15px}
-.related a:hover{background:#faf5ff}
+@media(hover:hover){.related a:hover{background:#faf5ff}}
 .related a span{color:var(--body)}
 .sourceNote{margin:26px 0 0;padding-top:14px;border-top:1px solid var(--line);color:var(--muted);font-size:13px}
 @media(min-width:720px){
@@ -166,7 +166,7 @@ nav{display:flex;justify-content:space-between;align-items:center;max-width:1180
 .calMenu{position:absolute;z-index:30;top:calc(100% + 6px);left:0;min-width:240px;background:#fff;border:1px solid var(--line);border-radius:14px;box-shadow:0 18px 40px rgba(24,24,27,.16);padding:6px;display:flex;flex-direction:column}
 .cal.compact .calMenu{left:auto;right:0}
 .calMenu a{display:flex;flex-direction:column;padding:10px 12px;border-radius:10px;text-decoration:none;color:var(--ink)}
-.calMenu a:hover,.calMenu a:focus{background:var(--soft)}
+@media(hover:hover){.calMenu a:hover,.calMenu a:focus{background:var(--soft)}}
 .calMenu b{font-size:15px;display:flex;align-items:center;gap:8px}
 .calMenu em{font-style:normal;font-size:11px;font-weight:800;color:var(--accent);background:var(--accent-soft);padding:2px 7px;border-radius:99px}
 .calMenu span{font-size:13px;color:var(--muted)}
@@ -375,12 +375,12 @@ a.logo{text-decoration:none;color:inherit}
 /* ---------- Accounts: save, follow, sign-in, My GoToday ---------- */
 .navRight{display:flex;align-items:center;gap:8px}
 .meLink{display:inline-flex;align-items:center;gap:6px;color:var(--ink);text-decoration:none;font-weight:800;font-size:14px;padding:8px 12px;border:1px solid var(--line);border-radius:999px;background:#fff;white-space:nowrap}
-.meLink:hover{border-color:#c4b5fd;color:var(--accent)}
+@media(hover:hover){.meLink:hover{border-color:#c4b5fd;color:var(--accent)}}
 
 .saveBtn{display:inline-flex;align-items:center;justify-content:center;gap:8px;border:1px solid var(--line);background:#fff;padding:13px 18px;border-radius:12px;font-weight:700;font-size:15px;cursor:pointer;color:var(--ink)}
 .saveBtn.compact{padding:0;width:44px;height:44px;flex:none}
 .saveBtn.on{color:#e11d48;border-color:#fecdd3;background:#fff1f2}
-.saveBtn:hover{border-color:#fda4af}
+@media(hover:hover){.saveBtn:hover{border-color:#fda4af}}
 .followBtn{gap:8px;cursor:pointer;font-weight:700}
 .followBtn.on{color:var(--accent);border-color:#c4b5fd;background:#f5f3ff}
 .followNote{flex-basis:100%;margin:2px 0 0;font-size:14px;color:var(--accent);font-weight:600}
@@ -389,7 +389,7 @@ a.logo{text-decoration:none;color:inherit}
 .lead{font-size:16px;line-height:1.6;color:var(--body);margin:0 0 18px}
 .authCard h1{margin-bottom:10px}
 .googleBtn{display:flex;align-items:center;justify-content:center;gap:12px;width:100%;padding:14px 18px;border:1px solid #d4d4d8;border-radius:12px;background:#fff;color:#1f1f1f;font-weight:700;font-size:16px;text-decoration:none;box-shadow:0 1px 2px rgba(0,0,0,.05)}
-.googleBtn:hover{background:#fafafa;border-color:#a1a1aa}
+@media(hover:hover){.googleBtn:hover{background:#fafafa;border-color:#a1a1aa}}
 .authErr{background:#fef2f2;border:1px solid #fecaca;color:#991b1b;border-radius:12px;padding:10px 14px;font-size:14px;margin:0 0 14px}
 .authFine{font-size:13px;line-height:1.55;color:var(--muted);margin:14px 0 0}
 .authFine a{color:var(--accent);font-weight:700}
@@ -435,7 +435,7 @@ a.linkBtn{text-decoration:none}
 .detailHeader .navRight{gap:14px}
 @media(max-width:540px){.meLink.signed span:not(.initial){display:none}.meLink.signed{padding:4px}.detailHeader .navRight{gap:10px}}
 .backBtn{display:inline-flex;align-items:center;gap:6px;border:1px solid var(--line);background:#fff;color:var(--ink);font-weight:700;font-size:14px;padding:8px 14px;border-radius:999px;cursor:pointer;white-space:nowrap}
-.backBtn:hover{border-color:#c4b5fd;color:var(--accent)}
+@media(hover:hover){.backBtn:hover{border-color:#c4b5fd;color:var(--accent)}}
 .navLink.small{font-size:14px}
 .meFoot{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-top:28px;padding-top:16px;border-top:1px solid var(--line);font-size:14px;color:var(--body)}
 .btn.small{padding:8px 14px;font-size:14px;cursor:pointer}
@@ -479,7 +479,7 @@ a.linkBtn{text-decoration:none}
 .ddMenu.left{left:0}.ddMenu.right{right:0}
 .ddMenu button{display:flex;align-items:center;gap:10px;width:100%;min-height:42px;padding:8px 10px;border:0;background:none;border-radius:9px;font-size:14px;font-weight:600;color:var(--ink);text-align:left;cursor:pointer;white-space:nowrap}
 .ddMenu button span{flex:1}.ddMenu button small{color:var(--muted);font-weight:500}
-.ddMenu button:hover{background:#faf5ff}
+@media(hover:hover){.ddMenu button:hover{background:#faf5ff}}
 .ddMenu button[aria-selected=true]{background:#f5f3ff;color:var(--accent)}
 .ddMenu button svg{flex:none;color:var(--accent)}
 /* Pick day sits inside the When switch: let its list show outside the switch, keep the rounded ends. */
@@ -492,7 +492,7 @@ a.linkBtn{text-decoration:none}
 @media(min-width:1100px){.filterCard .ddBtn{height:50px}.filterCard .dd{gap:8px}}
 .seg .ddMenu button{flex-direction:row;align-items:center;justify-content:flex-start;min-height:42px;padding:8px 10px;gap:10px;line-height:1.3;background:none;color:var(--ink);border:0;font-size:14px}
 .seg .ddMenu button[aria-selected=true]{background:#f5f3ff;color:var(--accent)}
-.seg .ddMenu button:hover{background:#faf5ff}
+@media(hover:hover){.seg .ddMenu button:hover{background:#faf5ff}}
 .meList .stat{font-size:12px;font-weight:700;margin-top:2px}
 .meList .stat.live{color:#166534}.meList .stat.pending{color:#92400e}.meList .stat.rejected{color:#b91c1c}
 .meList .btn.small{flex:none}
@@ -501,8 +501,8 @@ a.linkBtn{text-decoration:none}
 /* Language picker: same pill as the top-bar links; its menu is the site's dropdown. */
 .langBtn{display:inline-flex;align-items:center;gap:5px;height:36px;padding:0 11px;border:1px solid var(--line);border-radius:999px;background:#fff;color:var(--ink);font-weight:800;font-size:13px;letter-spacing:.3px;cursor:pointer;white-space:nowrap}
 .langBtn svg{display:block;flex:none;color:var(--muted)}
-.langBtn:hover,.dd.open .langBtn{border-color:#c4b5fd;color:var(--accent)}
-.dd.open .langBtn svg,.langBtn:hover svg{color:var(--accent)}
+@media(hover:hover){.langBtn:hover,.dd.open .langBtn{border-color:#c4b5fd;color:var(--accent)}}
+@media(hover:hover){.dd.open .langBtn svg,.langBtn:hover svg{color:var(--accent)}}
 .navRight>.dd{flex:none}
 .navRight .ddMenu{min-width:190px}
 
