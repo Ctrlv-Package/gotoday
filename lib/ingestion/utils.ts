@@ -70,6 +70,8 @@ export function discoveryRejection(e:EventRecord):DiscoveryReason|null{
  if(e.isDiscoveryEligible===false)return"marked-ineligible";
  const title=e.title.replace(/\bboard[- ]?games?\b/gi,"games");
  const tagText=(e.tags||[]).join(" | ");
+ // A title that is only a status message (the organizer renamed a full program "Event Full. No longer accepting…").
+ if(/^\W*(event (is )?full|(this )?(event|program|class) is full|no longer accepting|registration (is )?(closed|full)|sold out|waitlist (only|full)|full\b)\W*([.!]|$|no longer|\s*-)/i.test(title.trim()))return"announcement";
  if(ANNOUNCEMENT.test(title.trim())||CAPTION.test(title.trim()))return"announcement";
  if(MEETING.test(title))return"meeting";
  if(e.isDiscoveryEligible===true)return null; // curated sources (Ticketmaster) skip the rest
