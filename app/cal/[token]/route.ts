@@ -26,9 +26,12 @@ async function feed(req:NextRequest,{params}:{params:Promise<{token:string}>},he
  }
  const headers={"content-type":"text/calendar; charset=utf-8","content-disposition":'inline; filename="gotoday.ics"',"cache-control":"no-store"};
  // Apple Calendar checks the link before subscribing; answer that check like the real thing.
- if(head)return new Response(null,{headers});
- const body=icsFeed("GoToday",await calendarEvents(u.id));
- return new Response(body,{headers});
+
+ const evs=head?[]:await calendarEvents(u.id);
+ await db.query("insert into calendar_fetches(user_id,client,ua,method,events) values($1,$2,$3,$4,$5)",[u.id,client||"browser",ua.slice(0,200),head?"HEAD":"GET",evs.length]).catch(()=>{});
+ await db.query("delete from calendar_fetches where at<now()-interval '30 days'").catch(()=>{});
+ const body=icsFeed("GoToday",evs);
+ return new Response(head?null:body,{headers});
 }
 export function GET(req:NextRequest,ctx:{params:Promise<{token:string}>}){return feed(req,ctx)}
 export function HEAD(req:NextRequest,ctx:{params:Promise<{token:string}>}){return feed(req,ctx,true)}
