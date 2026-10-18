@@ -11,7 +11,7 @@ const STOP=new Set(["the","and","of","a","at","in","on","for","with","to","annua
 const words=(t:string)=>new Set(t.toLowerCase().replace(/&/g," and ").replace(/[^a-z0-9]+/g," ").split(" ").filter(w=>w.length>2&&!STOP.has(w)));
 const flat=(t:string)=>t.toLowerCase().replace(/[^a-z0-9]+/g,"");
 const town=(x:string)=>String(x||"").toLowerCase().replace(/^ft\.?\s/,"fort ").replace(/,.*$/,"").trim();
-const partOf=(t:string)=>/^(opening|closing) reception|^vip\b|\bpreview\b|after ?party|pre-?show|meet (and|&) greet/i.test(t);
+const partOf=(t:string)=>/^(opening|closing) reception|^vip\b|\bpreview\b|after ?party|pre-?show|meet (and|&) greet|costume contest/i.test(t);
 const roundup=(s:string)=>/^(Miami Residents|Weekend Broward|The Broward Scene|To Do with Kids (Broward|Miami)) · Instagram$/.test(s);
 export function sameEvent(a:string,b:string){
  if(partOf(a)!==partOf(b))return false;

@@ -38,7 +38,7 @@ export async function GET(req:NextRequest){
    // Same town (or the very same spot); a festival in Plantation and one in Boynton Beach are different events.
    const near=town(a.city)===town(b.city)||(a.venue&&a.venue===b.venue);if(!near)continue;
    // A part of an event listed on its own (its opening reception, a VIP preview) is its own listing, not a copy.
-   const partOf=(t:string)=>/^(opening|closing) reception|^vip\b|\bpreview\b|after ?party|pre-?show|meet (and|&) greet/i.test(t);
+   const partOf=(t:string)=>/^(opening|closing) reception|^vip\b|\bpreview\b|after ?party|pre-?show|meet (and|&) greet|costume contest/i.test(t);
    if(partOf(a.title)!==partOf(b.title))continue;
    const wa=words(a.title),wb=words(b.title);let hit=0;for(const x of wa)if(wb.has(x))hit++;
    const fa=a.title.toLowerCase().replace(/[^a-z0-9]+/g,""),fb=b.title.toLowerCase().replace(/[^a-z0-9]+/g,"");
@@ -55,7 +55,8 @@ export async function GET(req:NextRequest){
   for(const e of events){
    const key=`${e.id}|${day}`;if(seen.has(key))continue;seen.add(key);
    const t=e.title||"",f:string[]=e.facets||[],h={area,date:day,title:t,source:e.source,id:e.id};
-   if(e.image&&!/static\.libnet\.info/.test(e.image)){const k=String(e.image).split("?")[0];pics.set(k,[...(pics.get(k)||[]),t])}
+   // Library photos are shared on purpose (one per kind of event); only events' own photos count here.
+   if(e.image&&!e.stockImage&&!/static\.libnet\.info/.test(e.image)){const k=String(e.image).split("?")[0];pics.set(k,[...(pics.get(k)||[]),t])}
    if(/\b(kids?|children'?s?|toddlers?|bab(y|ies)|preschool|storytime|tweens?|teens?|youth|family|families)\b/i.test(t)&&!f.includes("Kids")&&!f.includes("Family")&&!((e.ageMin??0)>=18))add("kidsTitleNotKids",h);
    if(/\bfree\b/i.test(t)&&!/\b(gluten|sugar|alcohol|dairy)[- ]free|free ?style|\beats? free\b/i.test(t)&&!f.includes("Free"))add("freeTitleNotFree",h);
    // Labeled Free while the listing names a ticket price ("$5 per person", "$10 admission").
