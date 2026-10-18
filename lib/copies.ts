@@ -45,10 +45,11 @@ export async function fillFromCopies<T extends Fillable>(e:T):Promise<T>{
  out.image=bestPicture(e.title,all.filter(p=>!shared.has(p.image)))||null;
  if(!out.image)out.image=(await familyPictures([{title:e.title,city:e.city}])).get(familyKey(e.title,e.city))||null;
  if(!out.image){const p=await stockPicture({title:e.title,desc:e.description,category:e.category||undefined,tags:e.tags});if(p){out.image=p;out.stockImage=true}}
- if(!copies.length)return out;
  // The place: the shared choice (lib/places) over this listing and all its copies.
  {const pl=choosePlace([{id:e.id,venue:e.venue,address:e.address,city:e.city,source:e.source,lat:e.lat,lng:e.lng},...copies.map((r:any)=>({id:r.id,venue:r.venue,address:r.address,city:r.city,source:r.source,lat:r.lat!=null?Number(r.lat):null,lng:r.lng!=null?Number(r.lng):null}))]);
   if(pl&&pl.id!==e.id||pl&&pl.venue!==e.venue){out.venue=pl.venue||null;out.address=pl.address||null;if(pl.lat!=null){out.lat=pl.lat;out.lng=pl.lng??out.lng}if(pl.city)out.city=pl.city}}
+ if(!copies.length)return out;
+
  if(thin(out.description)){const d=copies.find((r:any)=>!thin(r.description||""));if(d)out.description=d.description}
  if(out.ageMin==null){const a=copies.find((r:any)=>r.age_min!=null);if(a){out.ageMin=a.age_min;out.ageMax=a.age_max}}
  return out;
