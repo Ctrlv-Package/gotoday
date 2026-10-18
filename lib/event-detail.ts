@@ -4,6 +4,7 @@ import {ensureSchema} from "./schema";
 
 import {DEFAULT_TZ} from "./time";
 import {googleCalendarLink,icsText,type CalEvent} from "./calendar";
+import {fillFromCopies} from "./copies";
 export const TZ=DEFAULT_TZ;
 export function decodeHtml(s:string){return String(s||"").replace(/&#(\d+);/g,(_,n)=>String.fromCharCode(Number(n))).replace(/&#x([0-9a-f]+);/gi,(_,n)=>String.fromCharCode(parseInt(n,16))).replace(/&amp;/g,"&").replace(/&quot;/g,'"').replace(/&apos;|&#39;/g,"'")}
 
@@ -28,10 +29,12 @@ export async function loadEvent(id:string):Promise<EventDetail|null>{
   const sh=await db.query("select count(distinct lower(title))::int as n from events where image_url=$1",[r.image_url]).catch(()=>({rows:[{n:0}]}));
   if(Number(sh.rows[0]?.n)>=3)r.image_url=null;
  }
- return{id:r.id,title:decodeHtml(r.title),description:decodeHtml(r.description||""),start:new Date(r.start_at),end:r.end_at?new Date(r.end_at):null,city:r.city||"",
+ const ev:EventDetail={id:r.id,title:decodeHtml(r.title),description:decodeHtml(r.description||""),start:new Date(r.start_at),end:r.end_at?new Date(r.end_at):null,city:r.city||"",
   image:r.image_url,officialUrl:r.official_url,priceText:r.price_text?decodeHtml(r.price_text):null,isFree:!!r.is_free,category:r.category,tags:(()=>{const t:string[]=Array.isArray(r.tags)?r.tags.filter((x:string)=>x!=="Indoor"&&x!=="Outdoor"):[];const st=settingFor({title:r.title,venue:r.venue,source:r.source,desc:r.description});return st?[...t,st]:t})(),
   ageMin:r.age_min,ageMax:r.age_max,registrationUrl:r.registration_url,registrationText:r.registration_text,recurrence:r.recurrence,source:/^Ticketmaster/.test(r.source)?"Ticketmaster":r.source,sourceId:r.source_id,tz:r.timezone||DEFAULT_TZ,
   venue:r.venue?decodeHtml(r.venue):null,venueId:r.venue_id,address:r.address,lat:r.latitude==null?null:Number(r.latitude),lng:r.longitude==null?null:Number(r.longitude)};
+ // Fill what this listing lacks (photo, description, ages) from the other copies of the same event, like the cards do.
+ return fillFromCopies(ev).catch(()=>ev);
 }
 
 export type Related={id:number;title:string;start:Date;venue:string|null;city:string};
