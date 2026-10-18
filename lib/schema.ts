@@ -68,6 +68,9 @@ const STATEMENTS=[
    add column if not exists cal_fetched_at timestamptz,add column if not exists cal_client text`,
  `alter table users add column if not exists cal_ua text`,
  `alter table users add column if not exists lang text`,
+ // Every calendar app that reads someone's GoToday calendar (a person can use Google and Apple at the same time).
+ `create table if not exists calendar_clients(user_id int not null references users(id) on delete cascade,client text not null,first_seen timestamptz default now(),last_seen timestamptz default now(),ua text,primary key(user_id,client))`,
+ `insert into calendar_clients(user_id,client,first_seen,last_seen,ua) select id,cal_client,cal_fetched_at,cal_fetched_at,cal_ua from users where cal_client is not null and cal_fetched_at is not null on conflict do nothing`,
  // Events people create while signed in belong to their account (listed in My GoToday on any device, with the manage
  // link kept for them so they don't have to save it).
  `alter table community_events add column if not exists user_id int,add column if not exists owner_token text`,

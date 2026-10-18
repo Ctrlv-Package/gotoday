@@ -1,6 +1,11 @@
 // Spanish and Russian for every piece of GoToday's own text (keys are the English text).
 // A key ending in |something is the same English word used for something else ("Saved|list" = the saved list, not the button state).
 export const ES:Record<string,string>={
+"updated {when}": "actualizado {when}",
+"Google Calendar": "Google Calendar",
+"Apple Calendar": "Apple Calendar",
+"Outlook": "Outlook",
+"your calendar app": "tu app de calendario",
 " event": " evento",
 "+ Create": "+ Crear",
 "Create": "Crear",
@@ -280,6 +285,11 @@ export const ES:Record<string,string>={
 "Remove": "Quitar"
 };
 export const RU:Record<string,string>={
+"updated {when}": "обновлено {when}",
+"Google Calendar": "Google Календарь",
+"Apple Calendar": "Apple Календарь",
+"Outlook": "Outlook",
+"your calendar app": "ваше приложение календаря",
 " event": " событие",
 "+ Create": "+ Создать",
 "Create": "Создать",

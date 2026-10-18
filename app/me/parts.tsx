@@ -63,7 +63,7 @@ export function SignedInNote({name}:{name?:string|null}){
 
 /** Subscribe buttons for the personal calendar feed, with a clear status: nothing yet → waiting for the calendar app
  *  (with what to do there) → "Connected to Google Calendar" once that app actually reads the calendar. */
-type CalStatus={clickedAt?:string|null;clicked?:string|null;fetchedAt?:string|null;client?:string|null};
+type CalStatus={clickedAt?:string|null;clicked?:string|null;apps?:{client:string;lastSeen:string}[]};
 const HOW:Record<string,string>={
  "Google Calendar":"In the Google Calendar tab that opened, click “Add” to confirm. GoToday then appears on the left under “Other calendars”. Google can take a few minutes to show the events.",
  "Apple Calendar":"Your device should ask “Subscribe to this calendar?” — tap Subscribe. GoToday then appears in your Calendars list.",
@@ -75,28 +75,31 @@ export function CalendarLinks({feed,initial}:{feed:string;initial:CalStatus}){
  const https=`https://${link}`,webcal=`webcal://${link}`;
  const google=`https://calendar.google.com/calendar/r?cid=${encodeURIComponent(webcal)}`;
  const outlook=`https://outlook.live.com/calendar/0/addfromweb?url=${encodeURIComponent(https)}&name=GoToday`;
- const connected=!!st.fetchedAt&&(!st.clickedAt||new Date(st.fetchedAt)>=new Date(new Date(st.clickedAt).getTime()-60000)||st.client===st.clicked);
- const waiting=!!st.clickedAt&&!connected&&Date.now()-new Date(st.clickedAt).getTime()<6*3600e3;
+ // Each calendar app is tracked on its own: someone can have GoToday in Google Calendar and Apple Calendar at once.
+ const apps=st.apps||[],isOn=(app:string)=>apps.some(a=>a.client===app);
+ const waiting=!!st.clickedAt&&!!st.clicked&&!isOn(st.clicked)&&Date.now()-new Date(st.clickedAt).getTime()<6*3600e3;
  // While waiting, check every 15 seconds (for up to 15 minutes) whether the calendar app has started reading it.
  useEffect(()=>{if(!waiting)return;const start=Date.now();const t=setInterval(async()=>{
   if(Date.now()-start>15*60e3){clearInterval(t);return}
   const r=await fetch("/api/me/calendar",{cache:"no-store"}).then(r=>r.json()).catch(()=>null);if(r?.ok)setSt(r);
  },15000);return()=>clearInterval(t)},[waiting]);
- const clicked=(app:string)=>{setSt(s=>({...s,clickedAt:new Date().toISOString(),clicked:app}));fetch("/api/me/calendar",{method:"POST",headers:{"content-type":"application/json"},body:JSON.stringify({clicked:app})}).catch(()=>{})};
+ const clicked=(app:string)=>{if(isOn(app))return;setSt(s=>({...s,clickedAt:new Date().toISOString(),clicked:app}));fetch("/api/me/calendar",{method:"POST",headers:{"content-type":"application/json"},body:JSON.stringify({clicked:app})}).catch(()=>{})};
  const copy=async()=>{try{await navigator.clipboard.writeText(https);setCopied(true);setTimeout(()=>setCopied(false),2000)}catch{prompt(t("Copy your calendar link:"),https)}};
  const reset=async()=>{
   if(!confirm(t("Make a new calendar link? The old one stops working, so calendars subscribed with it stop updating. Use this if you shared the link by mistake.")))return;
   setBusy(true);const r=await fetch("/api/me/calendar",{method:"POST"}).then(r=>r.json()).catch(()=>null);setBusy(false);
-  if(r?.token){setLink(link.replace(/\/cal\/[^/]+\.ics$/,`/cal/${r.token}.ics`));setSt({})}
+  if(r?.token){setLink(link.replace(/\/cal\/[^/]+\.ics$/,`/cal/${r.token}.ics`));setSt({apps:[]})}
  };
  return <div className="calSub">
-  {connected?<div className="calStatus ok" role="status"><b>✓ {t("Connected to {app}",{app:st.client||""})}</b><span>{t("Last updated {when}.",{when:ago(st.fetchedAt!,t)})} {t("Everything you save or follow will show up there automatically.")}</span></div>
-  :waiting?<div className="calStatus wait" role="status"><b><span className="spin" aria-hidden/> {t("Waiting for {app}…",{app:st.clicked||""})}</b><span>{t(HOW[st.clicked||""]||"Confirm in your calendar app.")} {t("This page will say “Connected” as soon as it starts reading your GoToday calendar.")}</span></div>
-  :<p className="calHint">{t("Already added GoToday to your calendar? This will say “✓ Connected” the next time your calendar app checks for updates (Google Calendar: within about a day).")}</p>}
+  {apps.length>0&&<div className="calStatus ok" role="status">
+   {apps.map(a=><b key={a.client}>✓ {t("Connected to {app}",{app:t(a.client)})} <small>· {t("updated {when}",{when:ago(a.lastSeen,t)})}</small></b>)}
+   <span>{t("Everything you save or follow will show up there automatically.")}</span></div>}
+  {waiting&&<div className="calStatus wait" role="status"><b><span className="spin" aria-hidden/> {t("Waiting for {app}…",{app:t(st.clicked||"")})}</b><span>{t(HOW[st.clicked||""]||"Confirm in your calendar app.")} {t("This page will say “Connected” as soon as it starts reading your GoToday calendar.")}</span></div>}
+  {!apps.length&&!waiting&&<p className="calHint">{t("Already added GoToday to your calendar? This will say “✓ Connected” the next time your calendar app checks for updates (Google Calendar: within about a day).")}</p>}
   <div className="calSubBtns">
-   <a className="btn ghost" href={google} target="_blank" rel="noreferrer" onClick={()=>clicked("Google Calendar")}>{connected&&st.client==="Google Calendar"?"✓ ":""}{t("Add to Google Calendar")}</a>
-   <a className="btn ghost" href={webcal} onClick={()=>clicked("Apple Calendar")}>{connected&&st.client==="Apple Calendar"?"✓ ":""}{t("Add to Apple Calendar")}</a>
-   <a className="btn ghost" href={outlook} target="_blank" rel="noreferrer" onClick={()=>clicked("Outlook")}>{connected&&st.client==="Outlook"?"✓ ":""}{t("Add to Outlook")}</a>
+   <a className="btn ghost" href={google} target="_blank" rel="noreferrer" onClick={()=>clicked("Google Calendar")}>{isOn("Google Calendar")?"✓ ":""}{t("Add to Google Calendar")}</a>
+   <a className="btn ghost" href={webcal} onClick={()=>clicked("Apple Calendar")}>{isOn("Apple Calendar")?"✓ ":""}{t("Add to Apple Calendar")}</a>
+   <a className="btn ghost" href={outlook} target="_blank" rel="noreferrer" onClick={()=>clicked("Outlook")}>{isOn("Outlook")?"✓ ":""}{t("Add to Outlook")}</a>
   </div>
   <div className="calSubLink"><code>{https}</code><button type="button" className="linkBtn" onClick={copy}>{copied?t("Copied ✓"):t("Copy link")}</button></div>
   <p className="authFine">{t("This link is private to you. Anyone with it can see the events you've saved, so don't post it publicly.")} <button type="button" className="linkBtn small" disabled={busy} onClick={reset}>{t("Make a new link")}</button></p>

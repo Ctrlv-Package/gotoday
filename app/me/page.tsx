@@ -3,7 +3,7 @@ import SiteHeader from "../components/SiteHeader";
 import type {Metadata} from "next";
 import {currentUser,calendarToken} from "../../lib/auth";
 import {db} from "../../lib/db";
-import {savedEvents,followedSeries,type MyEventRow} from "../../lib/me";
+import {savedEvents,followedSeries,calendarStatus,type MyEventRow} from "../../lib/me";
 import {fmtDate,fmtTime,isAllDay} from "../../lib/event-detail";
 import SaveButton from "../components/SaveButton";
 import {GuestSaved,GuestCreated,CalendarLinks,Unfollow,SignedInNote} from "./parts";
@@ -44,8 +44,7 @@ export default async function Me(){
   </div></main>;
 
  const [saved,following,token,created]=await Promise.all([savedEvents(user.id,30),followedSeries(user.id),calendarToken(user),eventsOfUser(user.id)]);
- const c=(await db.query("select cal_clicked_at,cal_clicked,cal_fetched_at,cal_client from users where id=$1",[user.id])).rows[0]||{};
- const cal={clickedAt:c.cal_clicked_at?.toISOString?.()||null,clicked:c.cal_clicked,fetchedAt:c.cal_fetched_at?.toISOString?.()||null,client:c.cal_client};
+ const cal=await calendarStatus(user.id).catch(()=>({clickedAt:null,clicked:null,apps:[]}));
  const today=new Intl.DateTimeFormat("en-CA",{timeZone:"America/New_York"}).format(new Date());
  const upcoming=saved.filter(r=>r.date>=today),past=saved.filter(r=>r.date<today).reverse();
  const feed=`${SITE.replace(/^https?:\/\//,"")}/cal/${token}.ics`;

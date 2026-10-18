@@ -55,10 +55,17 @@ export function icsText(e:CalEvent){
 }
 
 /** A subscribed calendar (someone's "My GoToday" calendar): many events; calendars re-check it now and then. */
+const EASTERN=["BEGIN:VTIMEZONE","TZID:America/New_York",
+ "BEGIN:DAYLIGHT","TZOFFSETFROM:-0500","TZOFFSETTO:-0400","TZNAME:EDT","DTSTART:19700308T020000","RRULE:FREQ=YEARLY;BYMONTH=3;BYDAY=2SU","END:DAYLIGHT",
+ "BEGIN:STANDARD","TZOFFSETFROM:-0400","TZOFFSETTO:-0500","TZNAME:EST","DTSTART:19701101T020000","RRULE:FREQ=YEARLY;BYMONTH=11;BYDAY=1SU","END:STANDARD",
+ "END:VTIMEZONE"];
 export function icsFeed(name:string,events:{e:CalEvent;cancelled?:boolean}[]){
  const lines=["BEGIN:VCALENDAR","VERSION:2.0","PRODID:-//GoToday//mygotoday.com//EN","CALSCALE:GREGORIAN","METHOD:PUBLISH",
   `X-WR-CALNAME:${esc(name)}`,"X-WR-CALDESC:Events you saved or follow on GoToday (mygotoday.com)","X-WR-TIMEZONE:America/New_York",
   "REFRESH-INTERVAL;VALUE=DURATION:PT4H","X-PUBLISHED-TTL:PT4H",
+  // A calendar must contain at least one component: with nothing saved yet, Apple Calendar refuses the subscription
+  // ("Add" stays grey). The time zone definition is always there, so the feed is valid even when it has no events.
+  ...EASTERN,
   ...events.flatMap(x=>vevent(x.e,{cancelled:x.cancelled})),"END:VCALENDAR"];
  return lines.map(fold).join("\r\n")+"\r\n";
 }

@@ -533,3 +533,4 @@ a.linkBtn{text-decoration:none}
 .siteFoot a{white-space:nowrap}
 /* Narrow screens: only chips with a long word (Бесплатно, Искусство) get a smaller font. */
 @media(max-width:400px){html .chips.even4 button.long{font-size:11px;letter-spacing:-.4px;padding-left:0;padding-right:0}}
+.calStatus.ok b{display:block}.calStatus.ok b small{font-weight:500;opacity:.8}

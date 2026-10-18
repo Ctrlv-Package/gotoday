@@ -47,3 +47,10 @@ export async function calendarEvents(userId:number){
  }
  return out;
 }
+
+/** Which calendar apps read this person's GoToday calendar (each one separately), and which "Add to…" they tapped last. */
+export async function calendarStatus(userId:number){
+ const r=(await db.query("select cal_clicked_at,cal_clicked from users where id=$1",[userId])).rows[0]||{};
+ const apps=(await db.query("select client,last_seen from calendar_clients where user_id=$1 and last_seen>now()-interval '30 days' order by first_seen",[userId]).catch(()=>({rows:[]}))).rows;
+ return{clickedAt:r.cal_clicked_at?.toISOString?.()||r.cal_clicked_at||null,clicked:r.cal_clicked||null,apps:apps.map((a:any)=>({client:a.client,lastSeen:a.last_seen?.toISOString?.()||a.last_seen}))};
+}
