@@ -1,4 +1,5 @@
 import {db} from "./db";
+import {bestPicture,isGenericPicture} from "./pictures";
 
 // The same event often reaches us several times (the city's calendar, the city's Instagram, a round-up account,
 // Ticketmaster). The cards merge those copies into one; an event page opens just one of them. So the page looks up the
@@ -19,25 +20,26 @@ export function sameEvent(a:string,b:string){
 const thin=(d:string)=>!d||/^Official .* event\.$/.test(d)||/^Posted by @/.test(d)||d.length<40;
 const expired=(u:string)=>{const oe=/cdninstagram\.com|fbcdn\.net/.test(u)&&u.match(/[?&]oe=([0-9A-Fa-f]{8})/);return!!oe&&parseInt(oe[1],16)*1000<Date.now()};
 
-type Fillable={id:number;title:string;description:string;image:string|null;city:string;lat:number|null;lng:number|null;ageMin:number|null;ageMax:number|null;start:Date;tz:string};
+type Fillable={id:number;source:string;title:string;description:string;image:string|null;city:string;lat:number|null;lng:number|null;ageMin:number|null;ageMax:number|null;start:Date;tz:string};
 export async function fillFromCopies<T extends Fillable>(e:T):Promise<T>{
- if(e.image&&!thin(e.description)&&e.ageMin!=null)return e;
  const day=new Intl.DateTimeFormat("en-CA",{timeZone:e.tz,year:"numeric",month:"2-digit",day:"2-digit"}).format(e.start);
- const {rows}=await db.query(`select e.id,e.title,e.description,e.image_url,e.city,e.age_min,e.age_max,s.name as source,
+ const {rows}=await db.query(`select e.id,e.title,e.description,e.image_url,e.city,e.age_min,e.age_max,e.start_at,s.name as source,
    coalesce(v.latitude,e.latitude) as lat,coalesce(v.longitude,e.longitude) as lng
   from events e join sources s on s.id=e.source_id left join venues v on v.id=e.venue_id
   where e.local_date=$1::date and e.status='active' and e.id<>$2 limit 3000`,[day,e.id]).catch(()=>({rows:[] as any[]}));
  const near=(r:any)=>(e.lat!=null&&e.lng!=null&&r.lat!=null&&Math.hypot((Number(r.lat)-e.lat)*69,(Number(r.lng)-e.lng!)*69*Math.cos(e.lat*Math.PI/180))<4)||(!!town(e.city)&&town(e.city)===town(r.city));
  // The organizer's own copies first, round-ups last.
- const copies=rows.filter((r:any)=>near(r)&&sameEvent(e.title,r.title)).sort((a:any,b:any)=>(roundup(a.source)?1:0)-(roundup(b.source)?1:0));
- if(!copies.length)return e;
+ // Same matching as the cards: posts match by title nearby; two calendar listings only when they also start together.
+ const ig=(x:string)=>/ · Instagram$/.test(x||"");
+ const copies=rows.filter((r:any)=>near(r)&&sameEvent(e.title,r.title)&&(ig(e.source)||ig(r.source)||new Date(r.start_at).getTime()===e.start.getTime())).sort((a:any,b:any)=>(roundup(a.source)?1:0)-(roundup(b.source)?1:0));
  const out={...e};
- if(!out.image){
-  const pics=[...new Set(copies.map((r:any)=>r.image_url).filter((u:string)=>u&&!expired(u)&&!/ticketm\.net\/dam\/c\//.test(u)))] as string[];
-  // Same rule as the cards: a photo shared by 3+ differently named events is a cover, not this event's.
-  const shared=pics.length?new Set((await db.query("select image_url from events where image_url=any($1) group by image_url having count(distinct lower(title))>=3",[pics]).catch(()=>({rows:[]}))).rows.map((r:any)=>r.image_url)):new Set();
-  out.image=pics.find(u=>!shared.has(u)||/static\.libnet\.info|ticketm\.net/.test(u))||null;
- }
+ // The picture: the same rule the card uses (lib/pictures), over this listing and all its copies.
+ const all=[{id:e.id,image:e.image||"",source:e.source,title:e.title},...copies.map((r:any)=>({id:r.id,image:r.image_url||"",source:r.source,title:r.title}))]
+  .filter(p=>p.image&&!expired(p.image)&&!/ticketm\.net\/dam\/c\//.test(p.image)&&!isGenericPicture(p.image));
+ const urls=[...new Set(all.map(p=>p.image).filter(u=>!/static\.libnet\.info|ticketm\.net/.test(u)))];
+ const shared=urls.length?new Set((await db.query("select image_url from events where image_url=any($1) group by image_url having count(distinct lower(title))>=3",[urls]).catch(()=>({rows:[]}))).rows.map((r:any)=>r.image_url)):new Set();
+ out.image=bestPicture(e.title,all.filter(p=>!shared.has(p.image)))||null;
+ if(!copies.length)return out;
  if(thin(out.description)){const d=copies.find((r:any)=>!thin(r.description||""));if(d)out.description=d.description}
  if(out.ageMin==null){const a=copies.find((r:any)=>r.age_min!=null);if(a){out.ageMin=a.age_min;out.ageMax=a.age_max}}
  return out;

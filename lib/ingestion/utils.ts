@@ -1,4 +1,5 @@
 import {settingFor} from "../facets";
+import {isGenericPicture} from "../pictures";
 import type { EventRecord } from "./types";
 export const slug=(s:string)=>s.toLowerCase().replace(/[^a-z0-9]+/g,"-").replace(/^-|-$/g,"");
 export const stripHtml=(s:string)=>s.replace(new RegExp("<script[^>]*>[\\s\\S]*?</script>","gi")," ").replace(new RegExp("<style[^>]*>[\\s\\S]*?</style>","gi")," ").replace(new RegExp("<[^>]+>","g")," ").replace(/&nbsp;|&#160;/g," ").replace(/&amp;/g,"&").replace(/&#39;|&apos;/g,"'").replace(/&quot;/g,'\"').replace(/\s+/g," ").trim();
@@ -121,7 +122,7 @@ export function pictureFromPage(html:string,pageUrl:string):string|undefined{
  const m=html.match(/<meta[^>]+(?:property|name)=["'](?:og:image|twitter:image)["'][^>]*content=["']([^"']+)["']/i)||html.match(/<meta[^>]+content=["']([^"']+)["'][^>]*(?:property|name)=["'](?:og:image|twitter:image)["']/i);
  const raw=m?.[1]?.replace(/&amp;/g,"&").trim();if(!raw)return;
  let u:string;try{u=new URL(raw,pageUrl).toString()}catch{return}
- if(!/^https?:/.test(u)||/logo|favicon|icon|default|placeholder|share[-_]?image|social[-_]?share|seal|banner[-_]?default|\.svg(\?|$)/i.test(u))return;
+ if(!/^https?:/.test(u)||/icon|banner[-_]?default/i.test(u)||isGenericPicture(u))return;
  return u;
 }
 export function costFromPage(html:string):string|undefined{

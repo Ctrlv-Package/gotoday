@@ -1,6 +1,7 @@
 import type {EventRecord} from "../ingestion/types";
 import {fetchRetry} from "../http";
 import {slug,stripHtml,costFromPage} from "../ingestion/utils";
+import {isGenericPicture} from "../pictures";
 
 // Shared parser for Granicus OpenCities event calendars (Fort Lauderdale, Sunrise, Plantation).
 // It keys off links to event detail pages instead of exact CSS classes, so small template
@@ -177,14 +178,16 @@ export async function fetchOpenCities(cfg:OpenCitiesConfig,startDate:string,endD
 async function expandFromDetails(events:EventRecord[],startDate:string,endDate:string,limit:number):Promise<EventRecord[]>{
  const out:EventRecord[]=[],byUrl=new Map<string,EventRecord>();
  for(const e of events)if(!byUrl.has(e.url))byUrl.set(e.url,e);
- let opened=0;
+ let opened=0;const siteImg=new Map<string,Set<string>>(),listImg=new Map<string,string|undefined>();
  for(const [url,e] of byUrl){
-  let occ:Occurrence[]=[],img:string|undefined,desc:string|undefined,cost:string|undefined;
+  let occ:Occurrence[]=[],img:string|undefined,desc:string|undefined,cost:string|undefined;listImg.set(url,e.image);
   if(opened<limit){
    opened++;
    try{const r=await fetchRetry(url,{headers:BROWSER_HEADERS,cache:"no-store"});
     if(r.ok){const h=await r.text();occ=detailOccurrences(h);
      img=h.match(/<meta property=["']og:image["'] content=["']([^"']+)["']/i)?.[1]?.replace(/&amp;/g,"&");
+     if(img&&isGenericPicture(img))img=undefined;
+     if(img)siteImg.set(img,(siteImg.get(img)||new Set()).add(e.title.toLowerCase()));
      desc=h.match(/<meta name=["']description["'] content=["']([^"']+)["']/i)?.[1];
      cost=costFromPage(h)}}catch{}
   }
@@ -197,5 +200,7 @@ async function expandFromDetails(events:EventRecord[],startDate:string,endDate:s
    date:o.date,time:o.time||e.time,endTime:o.time?o.endTime:e.endTime,image:img||e.image,
    desc:e.desc.length<60&&desc&&desc.length>e.desc.length?stripHtml(desc):e.desc});
  }
+ // A page picture that several different events' pages show is the site's banner: keep the list's own picture instead.
+ for(const o of out)if(o.image&&(siteImg.get(o.image)?.size||0)>1)o.image=listImg.get(o.url);
  return out;
 }

@@ -19,8 +19,11 @@ export async function addCostsFromPages(events:EventRecord[],limit=40,days=14):P
  await Promise.all(Array.from({length:4},async()=>{while(next<urls.length){const u=urls[next++];
   try{const r=await fetchRetry(u,{headers:HEADERS,cache:"no-store"},1);if(r.ok){const h=await r.text(),c=costFromPage(h),p=pictureFromPage(h,u);if(c)cost.set(u,c);if(p)pic.set(u,p)}}catch{}
  }}));
+ // The same picture on several different event pages of a site is the site's banner, not an event photo.
+ const uses=new Map<string,number>();for(const p of pic.values())uses.set(p,(uses.get(p)||0)+1);
  return events.map(e=>{
-  if(!e.image&&pic.get(e.url))e={...e,image:pic.get(e.url)};
+  const p=pic.get(e.url);
+  if(!e.image&&p&&(uses.get(p)||0)<2)e={...e,image:p};
   const c=e.priceText?undefined:cost.get(e.url);if(!c)return e;
   const paid=/\$\s?[1-9]/.test(c),free=!paid&&/\bfree\b|no (cost|charge)/i.test(c);
   return{...e,priceText:c,isFree:free,tags:[...(e.tags||[]).filter(t=>t!=="Free"&&t!=="Paid"),...(free?["Free"]:paid?["Paid"]:[])]};

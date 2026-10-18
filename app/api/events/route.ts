@@ -4,6 +4,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { ensureSchema } from "../../../lib/schema";
 import { cityCoords } from "../../../lib/ingestion/geocode";
 import { discoveryRejection } from "../../../lib/ingestion/utils";
+import { bestPicture } from "../../../lib/pictures";
 import { localParts, todayIn, DEFAULT_TZ } from "../../../lib/time";
 
 function decodeHtml(s:string){return s.replace(/&#(\d+);/g,(_,n)=>String.fromCharCode(Number(n))).replace(/&#x([0-9a-f]+);/gi,(_,n)=>String.fromCharCode(parseInt(n,16))).replace(/&amp;/g,"&").replace(/&quot;/g,'"').replace(/&apos;|&#39;/g,"'")}
@@ -68,6 +69,7 @@ function mergeCopy(keep:any,other:any){
  // mention the $5 doesn't make it free).
  if(keep.paid||other.paid){m.paid=true;m.isFree=false;m.facets=(m.facets||[]).filter((f:string)=>f!=="Free");other={...other,facets:(other.facets||[]).filter((f:string)=>f!=="Free"),isFree:false}}
  if(!m.image&&other.image)m.image=other.image;
+ m._pics=[...(keep._pics||[]),...(other._pics||[])];
  if(thinDesc(m.desc)&&!thinDesc(other.desc||""))m.desc=other.desc;
  m.facets=[...new Set([...(m.facets||[]),...(other.facets||[])])];
  if(!(m.labels||[]).length&&(other.labels||[]).length)m.labels=other.labels;
@@ -115,6 +117,9 @@ export async function GET(request:NextRequest){
   if(discoveryRejection({...e,isDiscoveryEligible:e.source==="Ticketmaster"?true:undefined}))continue;
   // Instagram photo links are signed and stop working after a few days (the "oe" value is the expiry).
   {const oe=/cdninstagram\.com|fbcdn\.net/.test(e.image)&&e.image.match(/[?&]oe=([0-9A-Fa-f]{8})/);if(oe&&parseInt(oe[1],16)*1000<now+3600e3)e.image=""}
+  if(/ticketm\.net\/dam\/c\//.test(e.image))e.image="";   // Ticketmaster stock picture
+  // Every copy's picture travels with the card; the one shown is chosen at the end by the shared rule (lib/pictures).
+  e._pics=e.image?[{id:r.id,image:e.image,source:e.source,title:e.title}]:[];
   {const st=settingFor(e);e.tags=[...e.tags.filter((t:string)=>t!=="Indoor"&&t!=="Outdoor"),...(st?[st]:[])];
    // A cost the organizer states in its own event page's cost field is the strongest evidence: "$65" or "Free".
    const pt=String(e.priceText||"");e.statedCost=/\$\s?[1-9]/.test(pt)?"paid":/\bfree\b|no (cost|charge)/i.test(pt)?"free":null;
@@ -155,11 +160,10 @@ export async function GET(request:NextRequest){
  const rank=(e:any)=>isRoundup(e)?3:isIg(e)?2:e.source==="Ticketmaster"?1:0;
  // The same photo on 3+ differently named events is a cover or a placeholder (a round-up post's cover, a city's
  // generic banner), not any one event's picture. Library category pictures (a storytime photo on storytimes) are fine.
- for(const e of events as any[])if(e.image&&/ticketm\.net\/dam\/c\//.test(e.image))e.image="";   // Ticketmaster stock picture
- const igPics=[...new Set((events as any[]).filter(e=>e.image&&!/static\.libnet\.info|ticketm\.net/.test(e.image)).map(e=>e.image as string))];
+ const igPics=[...new Set((events as any[]).flatMap(e=>(e._pics||[]).map((p:any)=>p.image as string)).filter(u=>!/static\.libnet\.info|ticketm\.net/.test(u)))];
  if(igPics.length){
   const shared=new Set((await db.query("select image_url from events where image_url=any($1) group by image_url having count(distinct lower(title))>=3",[igPics]).catch(()=>({rows:[]}))).rows.map((r:any)=>r.image_url));
-  for(const e of events as any[])if(shared.has(e.image))e.image="";
+  for(const e of events as any[]){if(shared.has(e.image))e.image="";e._pics=(e._pics||[]).filter((p:any)=>!shared.has(p.image))}
  }
  const wc=new Map<any,Set<string>>(),W=(e:any)=>{let w=wc.get(e);if(!w){w=words(e.title);wc.set(e,w)}return w};
  const partOf=(t:string)=>/^(opening|closing) reception|^vip\b|\bpreview\b|after ?party|pre-?show|meet (and|&) greet/i.test(t);
@@ -184,6 +188,8 @@ export async function GET(request:NextRequest){
   const c=kept[i],m=better(c,e)?mergeCopy(c,e):mergeCopy(e,c);   // the leading copy takes the other's photo/details if it lacks them
   wc.set(m,words(m.title));kept[i]=m;
  }
+ // The picture: one rule for every card and event page (lib/pictures), whichever copy leads.
+ for(const e of kept){e.image=bestPicture(e.title,e._pics||[]);delete e._pics}
  events=kept.sort((a:any,b:any)=>(a.date+(a.time||"")).localeCompare(b.date+(b.time||""))||((a.source==="Ticketmaster"?1:0)-(b.source==="Ticketmaster"?1:0)));
  // A listing marked cancelled ("CANCELLED: Downtown Hollywood ArtWalk") also hides other sources' copies of that event
  // and its parts ("POP-UP at ArtWalk"): same day, same town, and the title carries its distinctive name.
