@@ -1,7 +1,7 @@
 import {db} from "./db";
 import {bestPicture,isGenericPicture} from "./pictures";
 import {stockPicture} from "./stockPhotos";
-import {placeScore} from "./places";
+import {choosePlace} from "./places";
 
 // The same event often reaches us several times (the city's calendar, the city's Instagram, a round-up account,
 // Ticketmaster). The cards merge those copies into one; an event page opens just one of them. So the page looks up the
@@ -46,12 +46,9 @@ export async function fillFromCopies<T extends Fillable>(e:T):Promise<T>{
  if(!out.image)out.image=(await familyPictures([{title:e.title,city:e.city}])).get(familyKey(e.title,e.city))||null;
  if(!out.image){const p=await stockPicture({title:e.title,desc:e.description,category:e.category||undefined,tags:e.tags});if(p){out.image=p;out.stockImage=true}}
  if(!copies.length)return out;
- // The place: the most specific any copy gives (street address > named place > the town or the account's default).
- {const mine=placeScore({venue:e.venue,address:e.address,city:e.city,source:e.source});
-  const best=copies.map((r:any)=>({r,sc:placeScore({venue:r.venue,address:r.address,city:r.city,source:r.source})})).filter(x=>x.sc>mine).sort((a,b)=>b.sc-a.sc||a.r.id-b.r.id)[0];
-  if(best){const r=best.r;out.venue=r.venue;out.address=r.address||null;out.lat=r.lat!=null?Number(r.lat):out.lat;out.lng=r.lng!=null?Number(r.lng):out.lng;out.city=r.city||out.city}}
- // A street address with no place name ("16290 Griffin Road"): name it from a copy that does ("Sanctuary Park").
- if(out.venue&&/^\s*\d{2,6}\s/.test(out.venue)){const named=copies.find((r:any)=>placeScore({venue:r.venue,city:r.city,source:r.source})===2&&!/^\s*\d/.test(r.venue||""));if(named){out.address=out.address||out.venue;out.venue=named.venue}}
+ // The place: the shared choice (lib/places) over this listing and all its copies.
+ {const pl=choosePlace([{id:e.id,venue:e.venue,address:e.address,city:e.city,source:e.source,lat:e.lat,lng:e.lng},...copies.map((r:any)=>({id:r.id,venue:r.venue,address:r.address,city:r.city,source:r.source,lat:r.lat!=null?Number(r.lat):null,lng:r.lng!=null?Number(r.lng):null}))]);
+  if(pl&&pl.id!==e.id||pl&&pl.venue!==e.venue){out.venue=pl.venue||null;out.address=pl.address||null;if(pl.lat!=null){out.lat=pl.lat;out.lng=pl.lng??out.lng}if(pl.city)out.city=pl.city}}
  if(thin(out.description)){const d=copies.find((r:any)=>!thin(r.description||""));if(d)out.description=d.description}
  if(out.ageMin==null){const a=copies.find((r:any)=>r.age_min!=null);if(a){out.ageMin=a.age_min;out.ageMax=a.age_max}}
  return out;

@@ -16,3 +16,18 @@ export function placeScore(p:{venue?:string|null;address?:string|null;city?:stri
  if(hasStreet(p.address)||hasStreet(p.venue))return 3;
  return isGenericVenue(p.venue,p.city,p.source)?0:2;
 }
+
+export type Place={id:number;venue?:string|null;address?:string|null;city?:string|null;source?:string|null;lat?:number|null;lng?:number|null};
+/** The place an event shows, from all its listings (cards and event pages use this same choice): the most specific
+ *  (street address > named place > town only), ties to the oldest listing; a bare street address takes the place name
+ *  another listing gives ("Sanctuary Park" + "16290 Griffin Road"). */
+export function choosePlace(list:Place[]):Place|null{
+ const scored=list.filter(Boolean).map(p=>({p,sc:placeScore(p)})).sort((a,b)=>b.sc-a.sc||a.p.id-b.p.id);
+ if(!scored.length)return null;
+ const best={...scored[0].p};
+ if(/^\s*\d{2,6}\s/.test(best.venue||"")){
+  const named=scored.find(x=>x.sc===2&&!/^\s*\d/.test(x.p.venue||""));
+  if(named){best.address=best.address||best.venue;best.venue=named.p.venue}
+ }
+ return best;
+}

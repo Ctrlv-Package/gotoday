@@ -5,7 +5,7 @@ import { ensureSchema } from "../../../lib/schema";
 import { cityCoords } from "../../../lib/ingestion/geocode";
 import { discoveryRejection } from "../../../lib/ingestion/utils";
 import { bestPicture } from "../../../lib/pictures";
-import { placeScore } from "../../../lib/places";
+import { choosePlace } from "../../../lib/places";
 import { sameEvent, familyPictures, familyKey } from "../../../lib/copies";
 import { stockPicture } from "../../../lib/stockPhotos";
 import { localParts, todayIn, DEFAULT_TZ } from "../../../lib/time";
@@ -72,9 +72,7 @@ function mergeCopy(keep:any,other:any){
  // mention the $5 doesn't make it free).
  if(keep.paid||other.paid){m.paid=true;m.isFree=false;m.facets=(m.facets||[]).filter((f:string)=>f!=="Free");other={...other,facets:(other.facets||[]).filter((f:string)=>f!=="Free"),isFree:false}}
  if(!m.image&&other.image)m.image=other.image;
- // The card's place: the most specific any copy names (lib/places), same as the event page.
- if(placeScore(other)>placeScore(m)){const was=m.venue;m.venue=other.venue;m.address=other.address;if(/^\s*\d{2,6}\s/.test(m.venue||"")&&placeScore({venue:was,city:m.city,source:keep.source})===2)m.venue=was}
- else if(/^\s*\d{2,6}\s/.test(m.venue||"")&&other.venue&&!/^\s*\d/.test(other.venue)&&placeScore(other)===2){m.address=m.address||m.venue;m.venue=other.venue}
+ m._places=[...(keep._places||[]),...(other._places||[])];
  m._pics=[...(keep._pics||[]),...(other._pics||[])];
  if(thinDesc(m.desc)&&!thinDesc(other.desc||""))m.desc=other.desc;
  m.facets=[...new Set([...(m.facets||[]),...(other.facets||[])])];
@@ -114,7 +112,7 @@ export async function GET(request:NextRequest){
   let la=r.latitude==null?NaN:Number(r.latitude),lo=r.longitude==null?NaN:Number(r.longitude),acc="venue";
   if(!Number.isFinite(la)){const k=String(r.city||"").trim();let c=CITY_COORDS[k];if(!c){const p=await cityCoords(k);if(p)c=[p.latitude,p.longitude]}if(!c)continue;[la,lo]=c;acc="city"}
   const d=miles(lat,lng,la,lo);
-  if(d>radius){if(d<=radius+10&&r.image_url)outside.push({id:r.id,title:decodeHtml(r.title||""),date:r.local_date||lp.date,city:r.city||"",source:r.source,image:r.image_url,time:lp.time==="00:00:00"?"":lp.time,lat:la,lng:lo});continue}
+  if(d>radius){if(d<=radius+10)outside.push({id:r.id,title:decodeHtml(r.title||""),date:r.local_date||lp.date,city:r.city||"",source:r.source,image:r.image_url||"",venue:decodeHtml(r.venue||""),address:r.venue_address||"",time:lp.time==="00:00:00"?"":lp.time,lat:la,lng:lo});continue}
   const allDay=lp.time==="00:00:00";
   const e:any={id:"db-"+r.id,title:decodeHtml(r.title||""),city:r.city||"",venue:decodeHtml(r.venue||""),address:r.venue_address||"",date:r.local_date||lp.date,time:allDay?"":lp.time,
    image:r.image_url||"",url:r.official_url||"",category:r.category||"Local",genre:r.genre||"",desc:decodeHtml(r.description||""),tags:Array.isArray(r.tags)?r.tags:[],
@@ -128,6 +126,7 @@ export async function GET(request:NextRequest){
   if(/ticketm\.net\/dam\/c\//.test(e.image))e.image="";   // Ticketmaster stock picture
   // Every copy's picture travels with the card; the one shown is chosen at the end by the shared rule (lib/pictures).
   e._pics=e.image?[{id:r.id,image:e.image,source:e.source,title:e.title}]:[];
+  e._places=[{id:r.id,venue:e.venue,address:e.address,city:e.city,source:e.source}];
   {const st=settingFor(e);e.tags=[...e.tags.filter((t:string)=>t!=="Indoor"&&t!=="Outdoor"),...(st?[st]:[])];
    // A cost the organizer states in its own event page's cost field is the strongest evidence: "$65" or "Free".
    const pt=String(e.priceText||"");e.statedCost=/\$\s?[1-9]/.test(pt)?"paid":/\bfree\b|no (cost|charge)/i.test(pt)?"free":null;
@@ -200,15 +199,17 @@ export async function GET(request:NextRequest){
  // Copies just outside the search distance join the picture choice (same matching as lib/copies, which the event page uses).
  if(outside.length){
   const now2=Date.now(),okPic=(u:string)=>{const oe=/cdninstagram\.com|fbcdn\.net/.test(u)&&u.match(/[?&]oe=([0-9A-Fa-f]{8})/);return!(oe&&parseInt(oe[1],16)*1000<now2)&&!/ticketm\.net\/dam\/c\//.test(u)};
-  const extra=outside.filter(o=>okPic(o.image));
-  const shared=extra.length?new Set((await db.query("select image_url from events where image_url=any($1) group by image_url having count(distinct lower(title))>=3",[[...new Set(extra.map(o=>o.image))]]).catch(()=>({rows:[]}))).rows.map((r:any)=>r.image_url)):new Set();
+  const extra=outside.map(o=>okPic(o.image)?o:{...o,image:""});
+  const shared=extra.length?new Set((await db.query("select image_url from events where image_url=any($1) group by image_url having count(distinct lower(title))>=3",[[...new Set(extra.map(o=>o.image).filter(Boolean))]]).catch(()=>({rows:[]}))).rows.map((r:any)=>r.image_url)):new Set();
   for(const e of kept){
    const ig=/ · Instagram$/.test(e.source||"");
-   for(const o of extra)if(o.date===e.date&&!shared.has(o.image)&&sameEvent(e.title,o.title)&&(town(o.city)===town(e.city)||(e.lat!=null&&Math.hypot((o.lat-e.lat)*69,(o.lng-e.lng)*69*Math.cos(e.lat*Math.PI/180))<4))&&(ig||/ · Instagram$/.test(o.source)||(!!e.time&&o.time===e.time)))
-    (e._pics||=[]).push({id:o.id,image:o.image,source:o.source,title:o.title});
+   for(const o of extra)if(o.date===e.date&&!(o.image&&shared.has(o.image))&&sameEvent(e.title,o.title)&&(town(o.city)===town(e.city)||(e.lat!=null&&Math.hypot((o.lat-e.lat)*69,(o.lng-e.lng)*69*Math.cos(e.lat*Math.PI/180))<4))&&(ig||/ · Instagram$/.test(o.source)||(!!e.time&&o.time===e.time)))
+    {if(o.image)(e._pics||=[]).push({id:o.id,image:o.image,source:o.source,title:o.title});(e._places||=[]).push({id:o.id,venue:o.venue,address:o.address,city:o.city,source:o.source})}
   }
  }
- for(const e of kept){e.image=bestPicture(e.title,e._pics||[]);delete e._pics;delete e.lat;delete e.lng}
+ for(const e of kept){e.image=bestPicture(e.title,e._pics||[]);delete e._pics;delete e.lat;delete e.lng
+  // The place: same shared choice as the event page (lib/places).
+  const pl=choosePlace(e._places||[]);if(pl){e.venue=pl.venue||"";e.address=pl.address||""}delete e._places}
  // No picture from any copy: the same event's picture from another date (recurring events), same rule as event pages.
  {const need=kept.filter((e:any)=>!e.image&&e.id?.startsWith("db-"));
   if(need.length){const fam=await familyPictures(need.map((e:any)=>({title:e.title,city:e.city})));for(const e of need)e.image=fam.get(familyKey(e.title,e.city))||""}}

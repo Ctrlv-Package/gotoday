@@ -1,6 +1,7 @@
 // Spanish and Russian for every piece of GoToday's own text (keys are the English text).
 // A key ending in |something is the same English word used for something else ("Saved|list" = the saved list, not the button state).
 export const ES:Record<string,string>={
+"Exact location not listed. Check the official event page.": "Ubicación exacta no publicada. Revisa la página oficial del evento.",
 "Illustrative photo": "Foto ilustrativa",
 "updated {when}": "actualizado {when}",
 "Google Calendar": "Google Calendar",
@@ -286,6 +287,7 @@ export const ES:Record<string,string>={
 "Remove": "Quitar"
 };
 export const RU:Record<string,string>={
+"Exact location not listed. Check the official event page.": "Точное место не указано. Смотрите официальную страницу события.",
 "Illustrative photo": "Иллюстративное фото",
 "updated {when}": "обновлено {when}",
 "Google Calendar": "Google Календарь",

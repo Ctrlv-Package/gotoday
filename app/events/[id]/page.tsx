@@ -12,6 +12,7 @@ import type {Metadata} from "next";
 import {headers} from "next/headers";
 import {redirect} from "next/navigation";
 import ShareButton from "./ShareButton";
+import {placeScore} from "../../../lib/places";
 import {getLang} from "../../../lib/lang-server";
 import {tFor,LOCALE} from "../../../lib/i18n";
 type T=(s:string,v?:Record<string,string|number>)=>string;
@@ -45,7 +46,9 @@ export default async function EventPage({params}:{params:Promise<{id:string}>}){
  const lastDay=localParts(e.end&&e.end>e.start?e.end:e.start,e.tz).date,todayLocal=localParts(new Date(),e.tz).date;
  const dayPassed=lastDay<todayLocal,endedToday=!dayPassed&&!!e.end&&e.end>e.start&&e.end.getTime()<Date.now();
  const ended=dayPassed||endedToday;
- const ages=agesText(e,t),cost=costText(e,t),map=mapEmbedUrl(e),where=whereText(e);
+ // Only the town (or the organizer's own default, like its city hall) is known: don't send people there.
+ const exactPlace=placeScore({venue:e.venue,address:e.address,city:e.city,source:e.source})>0||(!!e.address&&/\d/.test(e.address));
+ const ages=agesText(e,t),cost=costText(e,t),map=exactPlace?mapEmbedUrl(e):null,where=whereText(e);
  // Follow (be told when it's back next year) is offered for events that come around now and then, not weekly ones.
  const user=await currentUser().catch(()=>null);
  const series=await seriesOf(e.id).catch(()=>null);
@@ -77,7 +80,9 @@ export default async function EventPage({params}:{params:Promise<{id:string}>}){
 
      <div className="facts">
       <div className="fact"><div className="k">{t("When")}</div><div className="v">{fmtDate(e.start,undefined,e.tz,loc)}</div><div className="s">{timeRange(e,loc,t("All day"))}{e.recurrence?` · ${t("Repeats")} ${t(e.recurrence.toLowerCase())}`:""}</div></div>
-      <div className="fact"><div className="k">{t("Where")}</div><div className="v">{e.venue||e.city}</div><div className="s">{e.address||e.city}</div><a className="inline" href={directionsUrl(e)} target="_blank" rel="noreferrer">{t("Get directions")} ↗</a></div>
+      <div className="fact"><div className="k">{t("Where")}</div>{exactPlace
+       ?<><div className="v">{e.venue||e.city}</div><div className="s">{e.address||e.city}</div><a className="inline" href={directionsUrl(e)} target="_blank" rel="noreferrer">{t("Get directions")} ↗</a></>
+       :<><div className="v">{e.city.replace(/,\s*[A-Z]{2}$/,"")||e.venue}</div><div className="s">{t("Exact location not listed. Check the official event page.")}</div></>}</div>
       {(cost||ages)&&<div className="fact"><div className="k">{ages?t("Cost & ages"):t("Cost")}</div><div className="v">{cost||t("See event page")}</div>{ages&&<div className="s">{ages}</div>}</div>}
      </div>
 
