@@ -29,6 +29,16 @@ export async function GET(req:NextRequest){
 export async function POST(req:NextRequest){
  if(!auth(req))return NextResponse.json({ok:false},{status:401});
  const p=req.nextUrl.searchParams;
+ // ?drop=topic:2,4;topic2:1 — reject photos by their position on the contact sheet (1 = first); never fetched again.
+ if(p.get("drop")){
+  await db.query("create table if not exists stock_rejected(photo_id bigint primary key)");
+  const out:string[]=[];
+  for(const part of p.get("drop")!.split(";")){const [topic,pos]=part.split(":");if(!topic||!pos)continue;
+   const ids=(await db.query("select photo_id from stock_photos where topic=$1 order by photo_id",[topic])).rows.map((r:any)=>r.photo_id);
+   for(const n of pos.split(",").map(Number)){const id=ids[n-1];if(id==null)continue;
+    await db.query("insert into stock_rejected values($1) on conflict do nothing",[id]);await db.query("delete from stock_photos where topic=$1 and photo_id=$2",[topic,id]);out.push(`${topic}#${n}`)}}
+  return NextResponse.json({ok:true,dropped:out});
+ }
  if(p.get("reset")){await db.query("delete from stock_photos");return NextResponse.json({ok:true,reset:true})}
  // ?put=<topic>&id=<pixabay id> with the image bytes as the body (sent by the GitHub job).
  if(p.get("put"))return NextResponse.json(await libraryPut(p.get("put")!,Number(p.get("id")),Buffer.from(await req.arrayBuffer())));

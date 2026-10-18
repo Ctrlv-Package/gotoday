@@ -135,12 +135,13 @@ export async function libraryPlan(max=60,per=6){
  const have=new Map<string,Set<number>>();
  for(const r of (await db.query("select topic,photo_id from stock_photos").catch(()=>({rows:[]}))).rows){const x=have.get(r.topic)||new Set();x.add(Number(r.photo_id));have.set(r.topic,x)}
  const items:{topic:string;id:number;url:string;alt:string}[]=[];
+ const rejected=new Set((await db.query("select photo_id from stock_rejected").catch(()=>({rows:[]}))).rows.map((r:any)=>Number(r.photo_id)));
  for(const t of TOPICS.filter(t=>(have.get(t.key)?.size||0)<per).slice(0,max)){
   const u=new URL("https://pixabay.com/api/");
   for(const [k,v] of Object.entries({key,q:t.q,image_type:"photo",orientation:"horizontal",safesearch:"true",per_page:"60",min_width:"1000",order:"popular"}))u.searchParams.set(k,v);
   const d:any=await fetch(u.toString(),{signal:AbortSignal.timeout(20000)}).then(r=>r.json()).catch(()=>null);
   const got=have.get(t.key)||new Set<number>();
-  for(const h of (d?.hits||[]).filter((h:any)=>h.webformatURL&&h.imageWidth>=h.imageHeight*1.2&&t.must.test(String(h.tags||""))&&!got.has(Number(h.id))).slice(0,per-got.size))
+  for(const h of (d?.hits||[]).filter((h:any)=>h.webformatURL&&h.imageWidth>=h.imageHeight*1.2&&t.must.test(String(h.tags||""))&&!got.has(Number(h.id))&&!rejected.has(Number(h.id))).slice(0,per-got.size))
    items.push({topic:t.key,id:Number(h.id),url:h.largeImageURL||h.webformatURL,alt:h.webformatURL});
  }
  return{ok:true,items};
