@@ -25,6 +25,8 @@ export function choosePlace(list:Place[]):Place|null{
  const scored=list.filter(Boolean).map(p=>({p,sc:placeScore(p)})).sort((a,b)=>b.sc-a.sc||a.p.id-b.p.id);
  if(!scored.length)return null;
  const best={...scored[0].p};
+ // "City of Boca Raton" + "1801 North Ocean Blvd": the street is the place; the city's own name isn't.
+ if(isGenericVenue(best.venue,best.city,best.source)&&hasStreet(best.address))best.venue=String(best.address).split(",")[0].trim();
  if(/^\s*\d{2,6}\s/.test(best.venue||"")){
   const named=scored.find(x=>x.sc===2&&!/^\s*\d/.test(x.p.venue||""));
   if(named){best.address=best.address||best.venue;best.venue=named.p.venue}
