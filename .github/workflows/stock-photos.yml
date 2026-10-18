@@ -1,0 +1,16 @@
+name: stock-photos
+# Fills GoToday's stock photo library (photos for events that have none of their own). Run by hand; the daily
+# update also tops it up.
+on:
+  workflow_dispatch: {}
+jobs:
+  fill:
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: 22 }
+      - run: npx -y tsx scripts/stock-photos.ts
+        env:
+          INGESTION_SECRET: ${{ secrets.INGESTION_SECRET }}

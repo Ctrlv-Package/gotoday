@@ -125,3 +125,32 @@ export async function buildLibrary(max=20,per=6){
  cache=null;
  return{ok:true,added,failed:fails.length,why:[...new Set(fails)].slice(0,5),topics:done};
 }
+
+/** For the GitHub job: which photos to fetch next (Pixabay search done here, with our key). */
+export async function libraryPlan(max=60,per=6){
+ const key=process.env.PIXABAY_API_KEY;if(!key)return{ok:false,error:"PIXABAY_API_KEY not set",items:[]};
+ await schema();
+ const have=new Map<string,Set<number>>();
+ for(const r of (await db.query("select topic,photo_id from stock_photos").catch(()=>({rows:[]}))).rows){const x=have.get(r.topic)||new Set();x.add(Number(r.photo_id));have.set(r.topic,x)}
+ const items:{topic:string;id:number;url:string;alt:string}[]=[];
+ for(const t of TOPICS.filter(t=>(have.get(t.key)?.size||0)<per).slice(0,max)){
+  const u=new URL("https://pixabay.com/api/");
+  for(const [k,v] of Object.entries({key,q:t.q,image_type:"photo",orientation:"horizontal",safesearch:"true",per_page:"20",min_width:"1000",order:"popular"}))u.searchParams.set(k,v);
+  const d:any=await fetch(u.toString(),{signal:AbortSignal.timeout(20000)}).then(r=>r.json()).catch(()=>null);
+  const got=have.get(t.key)||new Set<number>();
+  for(const h of (d?.hits||[]).filter((h:any)=>h.webformatURL&&h.imageWidth>=h.imageHeight*1.2&&!got.has(Number(h.id))).slice(0,per-got.size))
+   items.push({topic:t.key,id:Number(h.id),url:h.largeImageURL||h.webformatURL,alt:h.webformatURL});
+ }
+ return{ok:true,items};
+}
+
+/** For the GitHub job: save one downloaded photo into the library. */
+export async function libraryPut(topic:string,id:number,data:Buffer){
+ if(!TOPICS.some(t=>t.key===topic)||!Number.isFinite(id)||data.length<2000)return{ok:false};
+ const {saveImageData}=await import("./images");
+ const img=await saveImageData(data,`pixabay-${id}`,`pixabay:${id}`);
+ if(!img)return{ok:false};
+ await schema();
+ await db.query("insert into stock_photos(topic,photo_id,image) values($1,$2,$3) on conflict do nothing",[topic,id,img]);
+ cache=null;return{ok:true,image:img};
+}

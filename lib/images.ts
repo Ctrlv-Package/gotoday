@@ -41,6 +41,17 @@ export async function keepImages<T extends {image?:string}>(list:T[]):Promise<T[
 }
 
 export let lastStoreError="";
+/** Save picture bytes we already have (shrunk to 900×600 WebP) under a given name; returns /img/<key>. */
+export async function saveImageData(buf:Buffer,name:string,source:string):Promise<string|undefined>{
+ await schema();
+ const key=createHash("sha1").update(name).digest("hex").slice(0,24),local=`/img/${key}`;
+ try{
+  const sharp=(await import("sharp")).default;
+  const out=await sharp(buf,{failOn:"none"}).rotate().resize({width:900,height:600,fit:"cover",position:"attention"}).webp({quality:70}).toBuffer();
+  await db.query("insert into images(key,type,data,bytes,source_url) values($1,'image/webp',$2,$3,$4) on conflict(key) do nothing",[key,out,out.length,source.slice(0,500)]);
+  return local;
+ }catch{return}
+}
 /** Save any picture under a given name (stock photos); returns /img/<key>, or undefined if it couldn't be fetched. */
 export async function storeImage(url:string,name:string):Promise<string|undefined>{
  await schema();
