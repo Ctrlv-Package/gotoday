@@ -115,6 +115,15 @@ export function normalize(e:EventRecord):EventRecord{
 /** The cost an event page states in a labeled field ("Cost: $5 (pre-purchase) $8 (day of event)", "Admission: Free",
  *  a sidebar "Event Snapshot → Cost"). City sites often keep the price there and not in the description, so a missing
  *  price in the text must not be read as "free". Returns the stated cost text, or undefined if the page has none. */
+/** The event's own photo from its page (og:image / twitter:image), as a full link. Site logos, icons and stock
+ *  "share" images are skipped; a picture many different events share is hidden later anyway (shared-photo rule). */
+export function pictureFromPage(html:string,pageUrl:string):string|undefined{
+ const m=html.match(/<meta[^>]+(?:property|name)=["'](?:og:image|twitter:image)["'][^>]*content=["']([^"']+)["']/i)||html.match(/<meta[^>]+content=["']([^"']+)["'][^>]*(?:property|name)=["'](?:og:image|twitter:image)["']/i);
+ const raw=m?.[1]?.replace(/&amp;/g,"&").trim();if(!raw)return;
+ let u:string;try{u=new URL(raw,pageUrl).toString()}catch{return}
+ if(!/^https?:/.test(u)||/logo|favicon|icon|default|placeholder|share[-_]?image|social[-_]?share|seal|banner[-_]?default|\.svg(\?|$)/i.test(u))return;
+ return u;
+}
 export function costFromPage(html:string):string|undefined{
  const text=html.replace(/<(script|style)[^>]*>[\s\S]*?<\/\1>/gi," ")
   .replace(/<\/(h\d|dt|th|strong|b|label|span|div|p|li|td|dd)>/gi,"$&\n").replace(/<br\s*\/?>/gi,"\n");
