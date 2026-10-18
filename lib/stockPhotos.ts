@@ -100,14 +100,23 @@ export async function stockPicture(e:{title:string;desc?:string;category?:string
 export async function buildLibrary(max=20,per=6){
  const key=process.env.PIXABAY_API_KEY;if(!key)return{ok:false,error:"PIXABAY_API_KEY not set"};
  const by=await library(),done:string[]=[],fails:string[]=[];let added=0;
+ const started=Date.now();
  for(const t of TOPICS.filter(t=>(by.get(t.key)?.length||0)<per).slice(0,max)){
+  if(Date.now()-started>200e3)break;   // stay inside one request's time; the next call continues
   const u=new URL("https://pixabay.com/api/");
   for(const [k,v] of Object.entries({key,q:t.q,image_type:"photo",orientation:"horizontal",safesearch:"true",per_page:"20",min_width:"1000",order:"popular"}))u.searchParams.set(k,v);
   const d:any=await fetch(u.toString(),{signal:AbortSignal.timeout(20000)}).then(r=>r.json()).catch(()=>null);
-  const hits=(d?.hits||[]).filter((h:any)=>h.largeImageURL&&h.imageWidth>=h.imageHeight*1.2).slice(0,per);
+  const have=new Set((by.get(t.key)||[]).length?(await db.query("select photo_id from stock_photos where topic=$1",[t.key])).rows.map((r:any)=>Number(r.photo_id)):[]);
+  const hits=(d?.hits||[]).filter((h:any)=>h.webformatURL&&h.imageWidth>=h.imageHeight*1.2&&!have.has(Number(h.id))).slice(0,per-have.size);
   for(const h of hits){
    // The 960px version (enough for cards and pages); the full-size link as a fallback.
-   const img=await storeImage(String(h.webformatURL||"").replace("_640","_960"),`pixabay-${h.id}`)||await storeImage(h.largeImageURL,`pixabay-${h.id}`);
+   // Pixabay's image server allows a slow pace: one download every ~1.5 s, and a pause when it says "too many".
+   let img:string|undefined;
+   for(let attempt=0;attempt<3&&!img;attempt++){
+    await new Promise(r=>setTimeout(r,attempt?8000:1500));
+    img=await storeImage(String(h.webformatURL||"").replace("_640","_960"),`pixabay-${h.id}`);
+    if(!img&&!/429/.test(images.lastStoreError))break;
+   }
    if(!img)fails.push(images.lastStoreError);
    if(img){await db.query("insert into stock_photos(topic,photo_id,image) values($1,$2,$3) on conflict do nothing",[t.key,h.id,img]);added++}
   }
