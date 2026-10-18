@@ -1,6 +1,7 @@
 import {db} from "./db";
 import {bestPicture,isGenericPicture} from "./pictures";
 import {stockPicture} from "./stockPhotos";
+import {placeScore} from "./places";
 
 // The same event often reaches us several times (the city's calendar, the city's Instagram, a round-up account,
 // Ticketmaster). The cards merge those copies into one; an event page opens just one of them. So the page looks up the
@@ -21,10 +22,10 @@ export function sameEvent(a:string,b:string){
 const thin=(d:string)=>!d||/^Official .* event\.$/.test(d)||/^Posted by @/.test(d)||d.length<40;
 const expired=(u:string)=>{const oe=/cdninstagram\.com|fbcdn\.net/.test(u)&&u.match(/[?&]oe=([0-9A-Fa-f]{8})/);return!!oe&&parseInt(oe[1],16)*1000<Date.now()};
 
-type Fillable={id:number;source:string;title:string;category?:string|null;tags?:string[];stockImage?:boolean;description:string;image:string|null;city:string;lat:number|null;lng:number|null;ageMin:number|null;ageMax:number|null;start:Date;tz:string};
+type Fillable={id:number;source:string;title:string;venue?:string|null;address?:string|null;category?:string|null;tags?:string[];stockImage?:boolean;description:string;image:string|null;city:string;lat:number|null;lng:number|null;ageMin:number|null;ageMax:number|null;start:Date;tz:string};
 export async function fillFromCopies<T extends Fillable>(e:T):Promise<T>{
  const day=new Intl.DateTimeFormat("en-CA",{timeZone:e.tz,year:"numeric",month:"2-digit",day:"2-digit"}).format(e.start);
- const {rows}=await db.query(`select e.id,e.title,e.description,e.image_url,e.city,e.age_min,e.age_max,e.start_at,s.name as source,
+ const {rows}=await db.query(`select e.id,e.title,e.description,e.image_url,e.city,e.age_min,e.age_max,e.start_at,s.name as source,v.name as venue,v.address,
    coalesce(v.latitude,e.latitude) as lat,coalesce(v.longitude,e.longitude) as lng
   from events e join sources s on s.id=e.source_id left join venues v on v.id=e.venue_id
   where e.local_date=$1::date and e.status='active' and e.id<>$2 limit 3000`,[day,e.id]).catch(()=>({rows:[] as any[]}));
@@ -45,6 +46,10 @@ export async function fillFromCopies<T extends Fillable>(e:T):Promise<T>{
  if(!out.image)out.image=(await familyPictures([{title:e.title,city:e.city}])).get(familyKey(e.title,e.city))||null;
  if(!out.image){const p=await stockPicture({title:e.title,desc:e.description,category:e.category||undefined,tags:e.tags});if(p){out.image=p;out.stockImage=true}}
  if(!copies.length)return out;
+ // The place: the most specific any copy gives (street address > named place > the town or the account's default).
+ {const mine=placeScore({venue:e.venue,address:e.address,city:e.city,source:e.source});
+  const best=copies.map((r:any)=>({r,sc:placeScore({venue:r.venue,address:r.address,city:r.city,source:r.source})})).filter(x=>x.sc>mine).sort((a,b)=>b.sc-a.sc||a.r.id-b.r.id)[0];
+  if(best){const r=best.r;out.venue=r.venue;out.address=r.address||null;out.lat=r.lat!=null?Number(r.lat):out.lat;out.lng=r.lng!=null?Number(r.lng):out.lng;out.city=r.city||out.city}}
  if(thin(out.description)){const d=copies.find((r:any)=>!thin(r.description||""));if(d)out.description=d.description}
  if(out.ageMin==null){const a=copies.find((r:any)=>r.age_min!=null);if(a){out.ageMin=a.age_min;out.ageMax=a.age_max}}
  return out;

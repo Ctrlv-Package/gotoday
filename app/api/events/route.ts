@@ -5,6 +5,7 @@ import { ensureSchema } from "../../../lib/schema";
 import { cityCoords } from "../../../lib/ingestion/geocode";
 import { discoveryRejection } from "../../../lib/ingestion/utils";
 import { bestPicture } from "../../../lib/pictures";
+import { placeScore } from "../../../lib/places";
 import { sameEvent, familyPictures, familyKey } from "../../../lib/copies";
 import { stockPicture } from "../../../lib/stockPhotos";
 import { localParts, todayIn, DEFAULT_TZ } from "../../../lib/time";
@@ -71,6 +72,8 @@ function mergeCopy(keep:any,other:any){
  // mention the $5 doesn't make it free).
  if(keep.paid||other.paid){m.paid=true;m.isFree=false;m.facets=(m.facets||[]).filter((f:string)=>f!=="Free");other={...other,facets:(other.facets||[]).filter((f:string)=>f!=="Free"),isFree:false}}
  if(!m.image&&other.image)m.image=other.image;
+ // The card's place: the most specific any copy names (lib/places), same as the event page.
+ if(placeScore(other)>placeScore(m)){m.venue=other.venue;m.address=other.address}
  m._pics=[...(keep._pics||[]),...(other._pics||[])];
  if(thinDesc(m.desc)&&!thinDesc(other.desc||""))m.desc=other.desc;
  m.facets=[...new Set([...(m.facets||[]),...(other.facets||[])])];
@@ -98,7 +101,7 @@ export async function GET(request:NextRequest){
  // 10 extra miles: copies of an event just outside the search distance still help pick its picture (not shown).
  const dLat=(radius+10)/69,dLng=(radius+10)/(69*Math.cos(lat*Math.PI/180));
  const {rows}=await db.query(`select e.id,e.title,e.description,e.start_at,e.end_at,e.local_date::text as local_date,e.timezone,e.city,e.category,e.genre,e.tags,e.is_free,e.price_text,e.image_url,
-   e.official_url,e.age_min,e.age_max,e.registration_text,e.latitude,e.longitude,s.name as source,v.name as venue
+   e.official_url,e.age_min,e.age_max,e.registration_text,e.latitude,e.longitude,s.name as source,v.name as venue,v.address as venue_address
   from events e join sources s on s.id=e.source_id left join venues v on v.id=e.venue_id
   where e.status='active' and e.local_date between $1::date and $2::date
    and ((e.latitude between $3 and $4 and e.longitude between $5 and $6) or e.latitude is null)
@@ -112,7 +115,7 @@ export async function GET(request:NextRequest){
   const d=miles(lat,lng,la,lo);
   if(d>radius){if(d<=radius+10&&r.image_url)outside.push({id:r.id,title:decodeHtml(r.title||""),date:r.local_date||lp.date,city:r.city||"",source:r.source,image:r.image_url,time:lp.time==="00:00:00"?"":lp.time,lat:la,lng:lo});continue}
   const allDay=lp.time==="00:00:00";
-  const e:any={id:"db-"+r.id,title:decodeHtml(r.title||""),city:r.city||"",venue:decodeHtml(r.venue||""),date:r.local_date||lp.date,time:allDay?"":lp.time,
+  const e:any={id:"db-"+r.id,title:decodeHtml(r.title||""),city:r.city||"",venue:decodeHtml(r.venue||""),address:r.venue_address||"",date:r.local_date||lp.date,time:allDay?"":lp.time,
    image:r.image_url||"",url:r.official_url||"",category:r.category||"Local",genre:r.genre||"",desc:decodeHtml(r.description||""),tags:Array.isArray(r.tags)?r.tags:[],
    source:/^Ticketmaster/.test(r.source)?"Ticketmaster":r.source,priceText:r.price_text||undefined,isFree:Boolean(r.is_free),ageMin:r.age_min??undefined,ageMax:r.age_max??undefined,registration:r.registration_text||undefined,
    distanceMiles:Math.round(d*10)/10,distanceAccuracy:acc,lat:la,lng:lo};

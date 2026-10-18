@@ -5,6 +5,7 @@ import {ensureSchema} from "./schema";
 import {DEFAULT_TZ} from "./time";
 import {googleCalendarLink,icsText,type CalEvent} from "./calendar";
 import {fillFromCopies} from "./copies";
+import {placeScore} from "./places";
 export const TZ=DEFAULT_TZ;
 export function decodeHtml(s:string){return String(s||"").replace(/&#(\d+);/g,(_,n)=>String.fromCharCode(Number(n))).replace(/&#x([0-9a-f]+);/gi,(_,n)=>String.fromCharCode(parseInt(n,16))).replace(/&amp;/g,"&").replace(/&quot;/g,'"').replace(/&apos;|&#39;/g,"'")}
 
@@ -65,19 +66,25 @@ export function calendarTimes(e:EventDetail){
  const end=e.end&&e.end>e.start?e.end:new Date(e.start.getTime()+3600e3);
  return{allDay:false,start:ics(e.start),end:ics(end)};
 }
-export function whereText(e:EventDetail){return[e.venue,e.address||e.city].filter(Boolean).join(", ")}
+export function whereText(e:EventDetail){const a=e.address&&e.venue&&e.address.toLowerCase().includes(e.venue.toLowerCase())?e.address:null;return(a?[a,e.city]:[e.venue,e.address||e.city]).filter(Boolean).join(", ")}
 /** Calendar-ready shape of an event (see lib/calendar.ts for the Google/Outlook/Apple formats). */
 export function toCalEvent(e:EventDetail,pageUrl:string):CalEvent{
  return{uid:`gotoday-${e.id}`,title:e.title,description:e.description,location:whereText(e),start:e.start,end:e.end,allDay:isAllDay(e.start,e.tz),tz:e.tz,url:pageUrl};
 }
 export function googleCalendarUrl(e:EventDetail,pageUrl:string){return googleCalendarLink(toCalEvent(e,pageUrl))}
+// Directions and the map go by the place's name and address (Google finds "Sanctuary Park, Southwest Ranches"
+// exactly); map points are used only when the listing names no place, since many are just the town's center.
+function placeQuery(e:EventDetail){
+ if(placeScore({venue:e.venue,address:e.address,city:e.city,source:e.source})>0)return whereText(e);
+ return e.lat!=null&&e.lng!=null?`${e.lat},${e.lng}`:whereText(e);
+}
 export function directionsUrl(e:EventDetail){
- const q=e.lat!=null&&e.lng!=null&&!e.address?`${e.lat},${e.lng}`:whereText(e);
+ const q=placeQuery(e);
  return `https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(q)}`;
 }
 /** Keyless Google Maps embed; uses coordinates when known, otherwise the venue + address/city text. */
 export function mapEmbedUrl(e:EventDetail){
- const q=e.lat!=null&&e.lng!=null?`${e.lat},${e.lng}`:whereText(e);
+ const q=placeQuery(e);
  return q?`https://maps.google.com/maps?q=${encodeURIComponent(q)}&z=15&output=embed`:null;
 }
 export function icsFile(e:EventDetail,pageUrl:string){return icsText(toCalEvent(e,pageUrl))}
