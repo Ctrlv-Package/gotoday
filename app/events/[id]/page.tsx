@@ -64,7 +64,7 @@ export default async function EventPage({params}:{params:Promise<{id:string}>}){
   <SiteHeader/>
   <div className="detailWrap">
    <article className="detailCard">
-    {e.image?<img className="detailHero" src={e.image} alt="" referrerPolicy="no-referrer"/>:null}
+    {e.image?<div className="heroWrap"><img className="detailHero" src={e.image} alt="" referrerPolicy="no-referrer"/>{e.stockImage&&<span className="stockNote">{t("Illustrative photo")}</span>}</div>:null}
     <div className="detailBody">
      <div className="badges">
       {e.isFree&&<span className="b free">{t("Free")}</span>}

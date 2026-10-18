@@ -5,6 +5,7 @@ import {db} from "../../../lib/db";
 import {cityCoords} from "../../../lib/ingestion/geocode";
 import {assignSeries} from "../../../lib/series";
 import {purgeImages} from "../../../lib/images";
+import {buildLibrary} from "../../../lib/stockPhotos";
 import {ensureSchema} from "../../../lib/schema";
 // Call the site by its public address: a scheduled run may arrive on an internal Vercel URL that
 // deployment protection blocks for the per-source calls below.
@@ -47,6 +48,7 @@ async function run(req:NextRequest){
   await db.query("delete from rejected_events where ingestion_run_id in (select id from ingestion_runs where started_at<now()-interval '7 days')").catch(()=>{});
   await db.query("delete from ingestion_runs where started_at<now()-interval '30 days'").catch(()=>{});
   await purgeImages().catch(()=>{});   // saved pictures of events that are over
+  await buildLibrary(10).catch(()=>{});   // stock photo library: fill any event type still missing photos
   await assignSeries().catch(()=>{});   // annual-event families for listings added since the last run
   // Upcoming events saved without a map position get their town's center, so searches can find them.
   try{const {rows}=await db.query("select distinct city from events where latitude is null and status='active' and local_date>=current_date and city is not null limit 40");

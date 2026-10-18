@@ -6,6 +6,7 @@ import { cityCoords } from "../../../lib/ingestion/geocode";
 import { discoveryRejection } from "../../../lib/ingestion/utils";
 import { bestPicture } from "../../../lib/pictures";
 import { sameEvent, familyPictures, familyKey } from "../../../lib/copies";
+import { stockPicture } from "../../../lib/stockPhotos";
 import { localParts, todayIn, DEFAULT_TZ } from "../../../lib/time";
 
 function decodeHtml(s:string){return s.replace(/&#(\d+);/g,(_,n)=>String.fromCharCode(Number(n))).replace(/&#x([0-9a-f]+);/gi,(_,n)=>String.fromCharCode(parseInt(n,16))).replace(/&amp;/g,"&").replace(/&quot;/g,'"').replace(/&apos;|&#39;/g,"'")}
@@ -207,6 +208,8 @@ export async function GET(request:NextRequest){
  // No picture from any copy: the same event's picture from another date (recurring events), same rule as event pages.
  {const need=kept.filter((e:any)=>!e.image&&e.id?.startsWith("db-"));
   if(need.length){const fam=await familyPictures(need.map((e:any)=>({title:e.title,city:e.city})));for(const e of need)e.image=fam.get(familyKey(e.title,e.city))||""}}
+ // Still nothing: a library photo of that kind of event (lib/stockPhotos), the same one its event page shows.
+ for(const e of kept as any[])if(!e.image){const p=await stockPicture(e);if(p){e.image=p;e.stockImage=true}}
  events=kept.sort((a:any,b:any)=>(a.date+(a.time||"")).localeCompare(b.date+(b.time||""))||((a.source==="Ticketmaster"?1:0)-(b.source==="Ticketmaster"?1:0)));
  // A listing marked cancelled ("CANCELLED: Downtown Hollywood ArtWalk") also hides other sources' copies of that event
  // and its parts ("POP-UP at ArtWalk"): same day, same town, and the title carries its distinctive name.

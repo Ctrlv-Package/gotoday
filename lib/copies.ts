@@ -1,5 +1,6 @@
 import {db} from "./db";
 import {bestPicture,isGenericPicture} from "./pictures";
+import {stockPicture} from "./stockPhotos";
 
 // The same event often reaches us several times (the city's calendar, the city's Instagram, a round-up account,
 // Ticketmaster). The cards merge those copies into one; an event page opens just one of them. So the page looks up the
@@ -20,7 +21,7 @@ export function sameEvent(a:string,b:string){
 const thin=(d:string)=>!d||/^Official .* event\.$/.test(d)||/^Posted by @/.test(d)||d.length<40;
 const expired=(u:string)=>{const oe=/cdninstagram\.com|fbcdn\.net/.test(u)&&u.match(/[?&]oe=([0-9A-Fa-f]{8})/);return!!oe&&parseInt(oe[1],16)*1000<Date.now()};
 
-type Fillable={id:number;source:string;title:string;description:string;image:string|null;city:string;lat:number|null;lng:number|null;ageMin:number|null;ageMax:number|null;start:Date;tz:string};
+type Fillable={id:number;source:string;title:string;category?:string|null;tags?:string[];stockImage?:boolean;description:string;image:string|null;city:string;lat:number|null;lng:number|null;ageMin:number|null;ageMax:number|null;start:Date;tz:string};
 export async function fillFromCopies<T extends Fillable>(e:T):Promise<T>{
  const day=new Intl.DateTimeFormat("en-CA",{timeZone:e.tz,year:"numeric",month:"2-digit",day:"2-digit"}).format(e.start);
  const {rows}=await db.query(`select e.id,e.title,e.description,e.image_url,e.city,e.age_min,e.age_max,e.start_at,s.name as source,
@@ -42,6 +43,7 @@ export async function fillFromCopies<T extends Fillable>(e:T):Promise<T>{
  const shared=urls.length?new Set((await db.query("select image_url from events where image_url=any($1) group by image_url having count(distinct lower(title))>=3",[urls]).catch(()=>({rows:[]}))).rows.map((r:any)=>r.image_url)):new Set();
  out.image=bestPicture(e.title,all.filter(p=>!shared.has(p.image)))||null;
  if(!out.image)out.image=(await familyPictures([{title:e.title,city:e.city}])).get(familyKey(e.title,e.city))||null;
+ if(!out.image){const p=await stockPicture({title:e.title,desc:e.description,category:e.category||undefined,tags:e.tags});if(p){out.image=p;out.stockImage=true}}
  if(!copies.length)return out;
  if(thin(out.description)){const d=copies.find((r:any)=>!thin(r.description||""));if(d)out.description=d.description}
  if(out.ageMin==null){const a=copies.find((r:any)=>r.age_min!=null);if(a){out.ageMin=a.age_min;out.ageMax=a.age_max}}
