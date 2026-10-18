@@ -10,6 +10,9 @@ const HEADERS={"User-Agent":"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebK
  *  list isn't read as "free". Events whose page names no cost are left as they were. Events without a picture
  *  take the photo their page shows, when it has its own. */
 export async function addCostsFromPages(events:EventRecord[],limit=40,days=14):Promise<EventRecord[]>{
+ // Opening event pages is the slow part of the GitHub update job (free minutes are limited). Prices and photos rarely
+ // change within a day, so only the morning run (before 14:00 UTC) reads them; the later runs only pick up new events.
+ if(process.env.GITHUB_ACTIONS&&new Date().getUTCHours()>=14&&!process.env.READ_EVENT_PAGES)return events;
  // Soonest events first, within the next two weeks: those are the ones people are deciding on now. (Later events
  // get their turn on later runs as they come closer.)
  const until=new Date(Date.now()+days*864e5).toISOString().slice(0,10);
