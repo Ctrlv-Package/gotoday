@@ -48,16 +48,22 @@ const mi=(a:{latitude:number;longitude:number},b:{latitude:number;longitude:numb
  *  of the town's ZIP codes, lands miles off for towns whose mail area sprawls (Hollywood's ZIPs reach Pembroke Pines). */
 export async function townCenter(key:string):Promise<{latitude:number;longitude:number}|null>{
  const m=key.match(/^(.+?),\s*([a-z]{2})$/i);if(!m||!US_STATES[m[2].toUpperCase()])return null;
- const d=await osm({city:m[1],state:m[2].toUpperCase(),limit:"1"});
- const la=Number(d?.[0]?.lat),lo=Number(d?.[0]?.lon);
- if(Number.isFinite(la)&&Number.isFinite(lo))return{latitude:la,longitude:lo};
- // Not on the map as a town: the average of its ZIP codes, as before.
+ // The ZIP-code average is only a rough guide (it sprawls), but it says which of several same-named places is meant:
+ // Miramar in Broward, not Miramar Beach in the Panhandle. The town point nearest to it (within 15 miles) wins.
+ let zip:{latitude:number;longitude:number}|null=null;
  try{
   const r=await fetch(`https://api.zippopotam.us/us/${US_STATES[m[2].toUpperCase()]}/${encodeURIComponent(m[1])}`,{signal:AbortSignal.timeout(10000)});
   if(r.ok){const j:any=await r.json(),pts=(j?.places||[]).map((x:any)=>[Number(x.latitude),Number(x.longitude)]).filter(([a,b]:number[])=>Number.isFinite(a)&&Number.isFinite(b));
-   if(pts.length)return{latitude:pts.reduce((s:number,x:number[])=>s+x[0],0)/pts.length,longitude:pts.reduce((s:number,x:number[])=>s+x[1],0)/pts.length}}
+   if(pts.length)zip={latitude:pts.reduce((s:number,x:number[])=>s+x[0],0)/pts.length,longitude:pts.reduce((s:number,x:number[])=>s+x[1],0)/pts.length}}
  }catch{}
- return null;
+ const d=await osm({city:m[1],state:m[2].toUpperCase(),limit:"5"});
+ const cands=(d||[]).filter((x:any)=>x?.class==="place"||x?.class==="boundary").map((x:any)=>({latitude:Number(x.lat),longitude:Number(x.lon),name:String(x.display_name||"")}))
+  .filter((p:any)=>Number.isFinite(p.latitude)&&Number.isFinite(p.longitude)&&p.name.toLowerCase().startsWith(m[1].toLowerCase()));
+ if(zip){
+  const best=cands.map((p:any)=>({p,d:mi(p,zip!)})).filter((x:any)=>x.d<=15).sort((a:any,b:any)=>a.d-b.d)[0];
+  return best?{latitude:best.p.latitude,longitude:best.p.longitude}:zip;
+ }
+ return cands[0]?{latitude:cands[0].latitude,longitude:cands[0].longitude}:null;
 }
 
 /** A named place ("ArtsPark at Young Circle", Hollywood, FL) looked up on OpenStreetMap; kept only if it's in or near

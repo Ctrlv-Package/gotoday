@@ -13,11 +13,12 @@ export async function POST(req:NextRequest){
  const step=req.nextUrl.searchParams.get("step"),started=Date.now(),out:string[]=[];let moved=0;
  if(step==="towns"){
   await db.query("alter table places add column if not exists method text").catch(()=>{});
-  const {rows}=await db.query("select key,latitude,longitude from places where key not like 'venue:%' and coalesce(method,'')<>'osm' order by key limit 150");
+  if(req.nextUrl.searchParams.get("redo")){await db.query("update places set method=null where key not like 'venue:%'");await db.query("delete from places where key like 'venue:%'")}
+  const {rows}=await db.query("select key,latitude,longitude from places where key not like 'venue:%' and coalesce(method,'')<>'osm2' order by key limit 150");
   for(const r of rows){
    if(Date.now()-started>240e3)break;
    const c=await townCenter(r.key);
-   await db.query("update places set latitude=coalesce($2,latitude),longitude=coalesce($3,longitude),method='osm',updated_at=now() where key=$1",[r.key,c?.latitude??null,c?.longitude??null]);
+   await db.query("update places set latitude=coalesce($2,latitude),longitude=coalesce($3,longitude),method='osm2',updated_at=now() where key=$1",[r.key,c?.latitude??null,c?.longitude??null]);
    if(c&&r.latitude!=null){
     const shift=Math.hypot((c.latitude-r.latitude)*69,(c.longitude-r.longitude)*69*Math.cos(c.latitude*Math.PI/180));
     if(shift>0.3){
@@ -27,7 +28,7 @@ export async function POST(req:NextRequest){
     }
    }
   }
-  const left=(await db.query("select count(*)::int n from places where key not like 'venue:%' and coalesce(method,'')<>'osm'")).rows[0].n;
+  const left=(await db.query("select count(*)::int n from places where key not like 'venue:%' and coalesce(method,'')<>'osm2'")).rows[0].n;
   return NextResponse.json({ok:true,step,moved,left,changed:out.slice(0,60)});
  }
  if(step==="venues"){
