@@ -74,6 +74,11 @@ export function discoveryRejection(e:EventRecord):DiscoveryReason|null{
  if(/^\W*(event (is )?full|(this )?(event|program|class) is full|no longer accepting|registration (is )?(closed|full)|sold out|waitlist (only|full)|full\b)\W*([.!]|$|no longer|\s*-)/i.test(title.trim()))return"announcement";
  if(ANNOUNCEMENT.test(title.trim())||CAPTION.test(title.trim()))return"announcement";
  if(MEETING.test(title))return"meeting";
+ // Election notices ("West Regional Library serves as a general election site") aren't events.
+ if(/\b(general|primary|special|municipal|presidential|midterm|run-?off) election\b|\bearly voting\b|\bpolling (place|site|location)\b|\belection day\b|\bvote here\b/i.test(`${title} ${String(e.desc||"").slice(0,200)}`)&&!/\b(watch party|forum|debate|candidate|registration drive)\b/i.test(title))return"announcement";
+ // A "meeting" is administrative (negotiation, staff, general meeting) unless it's a club or group people join.
+ if(/\bmeetings?\b/i.test(title)&&!/\b(club|group|circle|society|guild|support|social|meetup|families|parents|kids|teens|knitters|writers|readers|gardeners|chess|anime|lego)\b/i.test(title))return"meeting";
+ if(/\bnegotiat\w*|\bcollective bargaining\b|\bunion (meeting|session)\b/i.test(title))return"meeting";
  if(e.isDiscoveryEligible===true)return null; // curated sources (Ticketmaster) skip the rest
  const strong=STRONG_TAG.test(tagText);
  const classTag=/(^|\|)\s*(class|workshop|technology)\s*(\||$)/i.test(tagText);

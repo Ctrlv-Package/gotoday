@@ -9,13 +9,13 @@ import * as images from "./images";
 // Real event photos always come first; these only replace the plain emoji tiles.
 // must: the photo's own tags on Pixabay have to name the subject (a train ride's photo must be tagged train).
 type Topic={key:string;re:RegExp;q:string;must:RegExp};
-const MUST:Record<string,string>={"kidsmusic":"^(?=.*(child|kid|toddler|little|baby|preschool|kindergarten))(?=.*(music|instrument|drum|xylophone|sing|guitar|piano|ukulele))","kidsdance":"^(?=.*(child|kid|toddler|little|baby|preschool|kindergarten))(?=.*(danc|ballet))","kidsart":"^(?=.*(child|kid|toddler|little|baby|preschool|kindergarten))(?=.*(paint|draw|art|craft|color))","kidstheater":"^(?=.*(child|kid|toddler|little|baby|preschool|kindergarten))(?=.*(theater|theatre|stage|perform|costume|puppet))","kidsyoga":"^(?=.*(child|kid|toddler|little|baby|preschool|kindergarten))(?=.*(yoga|meditat|stretch))","kidssports":"^(?=.*(child|kid|toddler|little|baby|preschool|kindergarten))(?=.*(sport|ball|soccer|play|run))","kidsgames":"^(?=.*(child|kid|toddler|little|baby|preschool|kindergarten))(?=.*(game|puzzle|dice|cards|chess))","halloween": "halloween|pumpkin|jack-o|costume|spooky|witch|skull", "pumpkin": "pumpkin", "oktoberfest": "beer|oktoberfest|pretzel|bavaria", "christmas": "christmas|xmas|santa", "easter": "easter", "fireworks": "firework", "parade": "parade|carnival|procession|marching", "storytime": "^(?=.*(book|reading|story|read))(?=.*(child|kid|girl|boy|toddler|family|mother|father))", "baby": "baby|toddler|infant", "reading": "book|reading|library|literature", "chess": "chess", "games": "board game|game|dice|playing cards|puzzle|bingo", "videogames": "video game|gaming|controller|console|gamer", "lego": "lego", "stem": "science|experiment|laboratory|chemistry|robot|microscope|test tube", "tech": "computer|laptop", "farmersmarket": "market|vegetable|produce|farmers", "market": "market|stall|bazaar|flea", "train": "train|railway|locomotive|railroad|steam engine", "knitting": "knit|yarn|wool|crochet|sewing|quilt|thread|needle", "crafts": "craft|handmade|diy|origami|scissors|glue|paper", "painting": "paint|brush|canvas|watercolor|easel|drawing", "artfair": "gallery|exhibition|painting|artwork", "photography": "camera|photograph", "garden": "garden|plant|seedling|flower|pot|sprout", "nature": "nature|forest|trail|bird|wildlife|swamp|everglades|wetland|heron", "beach": "beach|ocean|sand|coast|shore", "boat": "kayak|boat|canoe|paddl|sail", "food": "food|eating|street food|festival|barbecue|grill|meal", "blockparty": "party|crowd|street|festival|concert|celebration", "concert": "concert|music|band|guitar|singer|stage|musician|piano|orchestra", "dance": "danc|ballet", "theater": "theater|theatre|stage|curtain|performance|audience", "movie": "movie|cinema|film|popcorn|projector", "yoga": "yoga|meditation", "fitness": "marathon|jogging|runner|fitness|workout|exercise", "soccer": "soccer|football", "basketball": "basketball", "baseball": "baseball|softball", "tennis": "tennis|pickleball|racket", "swim": "swim|pool", "golf": "golf", "sports": "sport|ball|team|athlet|playing field", "pets": "dog|puppy", "animals": "animal|goat|horse|pony|farm|zoo|sheep|rabbit|alpaca", "cars": "car|automobile|vintage|classic|vehicle|oldtimer", "history": "historic|history|museum|monument|architecture|ancient", "culture": "culture|festival|tradition|folk|costume|dance|carnival", "health": "doctor|medical|health|stethoscope|nurse", "seniors": "senior|elderly|old|grandparent|retire", "teens": "teen|teenager|friends|young|youth|students|adolescent", "career": "business|meeting|office|work|presentation|workshop|conference", "language": "conversation|talk|class|students|language|learning|teacher", "sensory": "child|toy|play|sensory|kid", "festival": "festival|fair|crowd|carnival|ferris|fairground|celebration", "kids": "child|kid|children|playground", "music": "music|concert|guitar|musician", "arts": "art|paint|craft", "community": "people|community|volunteer|group|together|team|neighbors"};
+const MUST:Record<string,string>={"library":"library|books|bookshelf|bookcase|reading","workshop":"class|workshop|seminar|meeting|group|education|students|learning|discussion","kidsmusic":"^(?=.*(child|kid|toddler|little|baby|preschool|kindergarten))(?=.*(music|instrument|drum|xylophone|sing|guitar|piano|ukulele))","kidsdance":"^(?=.*(child|kid|toddler|little|baby|preschool|kindergarten))(?=.*(danc|ballet))","kidsart":"^(?=.*(child|kid|toddler|little|baby|preschool|kindergarten))(?=.*(paint|draw|art|craft|color))","kidstheater":"^(?=.*(child|kid|toddler|little|baby|preschool|kindergarten))(?=.*(theater|theatre|stage|perform|costume|puppet))","kidsyoga":"^(?=.*(child|kid|toddler|little|baby|preschool|kindergarten))(?=.*(yoga|meditat|stretch))","kidssports":"^(?=.*(child|kid|toddler|little|baby|preschool|kindergarten))(?=.*(sport|ball|soccer|play|run))","kidsgames":"^(?=.*(child|kid|toddler|little|baby|preschool|kindergarten))(?=.*(game|puzzle|dice|cards|chess))","halloween": "halloween|pumpkin|jack-o|costume|spooky|witch|skull", "pumpkin": "pumpkin", "oktoberfest": "beer|oktoberfest|pretzel|bavaria", "christmas": "christmas|xmas|santa", "easter": "easter", "fireworks": "firework", "parade": "parade|carnival|procession|marching", "storytime": "^(?=.*(book|reading|story|read))(?=.*(child|kid|girl|boy|toddler|family|mother|father))", "baby": "baby|toddler|infant", "reading": "book|reading|library|literature", "chess": "chess", "games": "board game|game|dice|playing cards|puzzle|bingo", "videogames": "video game|gaming|controller|console|gamer", "lego": "lego", "stem": "science|experiment|laboratory|chemistry|robot|microscope|test tube", "tech": "computer|laptop", "farmersmarket": "market|vegetable|produce|farmers", "market": "market|stall|bazaar|flea", "train": "train|railway|locomotive|railroad|steam engine", "knitting": "knit|yarn|wool|crochet|sewing|quilt|thread|needle", "crafts": "craft|handmade|diy|origami|scissors|glue|paper", "painting": "paint|brush|canvas|watercolor|easel|drawing", "artfair": "gallery|exhibition|painting|artwork", "photography": "camera|photograph", "garden": "garden|plant|seedling|flower|pot|sprout", "nature": "nature|forest|trail|bird|wildlife|swamp|everglades|wetland|heron", "beach": "beach|ocean|sand|coast|shore", "boat": "kayak|boat|canoe|paddl|sail", "food": "food|eating|street food|festival|barbecue|grill|meal", "blockparty": "party|crowd|street|festival|concert|celebration", "concert": "concert|music|band|guitar|singer|stage|musician|piano|orchestra", "dance": "danc|ballet", "theater": "theater|theatre|stage|curtain|performance|audience", "movie": "movie|cinema|film|popcorn|projector", "yoga": "yoga|meditation", "fitness": "marathon|jogging|runner|fitness|workout|exercise", "soccer": "soccer|football", "basketball": "basketball", "baseball": "baseball|softball", "tennis": "tennis|pickleball|racket", "swim": "swim|pool", "golf": "golf", "sports": "sport|ball|team|athlet|playing field", "pets": "dog|puppy", "animals": "animal|goat|horse|pony|farm|zoo|sheep|rabbit|alpaca", "cars": "car|automobile|vintage|classic|vehicle|oldtimer", "history": "historic|history|museum|monument|architecture|ancient", "culture": "culture|festival|tradition|folk|costume|dance|carnival", "health": "doctor|medical|health|stethoscope|nurse", "seniors": "senior|elderly|old|grandparent|retire", "teens": "teen|teenager|friends|young|youth|students|adolescent", "career": "business|meeting|office|work|presentation|workshop|conference", "language": "conversation|talk|class|students|language|learning|teacher", "sensory": "child|toy|play|sensory|kid", "festival": "festival|fair|crowd|carnival|ferris|fairground|celebration", "kids": "child|kid|children|playground", "music": "music|concert|guitar|musician", "arts": "art|paint|craft", "community": "people|community|volunteer|group|together|team|neighbors"};
 // Never for any event type: protests, politics, war, religion symbols, masks/illness.
 const NEVER=/protest|demonstrat|politic|rally|election|vote|lgbt|pride|solidarity|strike|war\b|army|military|gun|weapon|religio|church|mosque|covid|corona|virus|mask|nude|bikini|cigarette|smoking/i;
 const T=(key:string,re:RegExp,q:string):Topic=>({key,re,q,must:new RegExp(MUST[key]||key,"i")});
 // Most specific first. Matched against the title, then the description, then the category.
 export const TOPICS:Topic[]=[
- T("storytime",/\b(story ?time|storytime|lapsit|lap sit|cuentos|bedtime stories|stories)\b/i,"child reading book"),
+ T("storytime",/\b(story ?time|storytime|lapsit|lap sit|cuentos|bedtime stories)\b/i,"child reading book"),
  T("baby",/\b(bab(y|ies)|toddler|infant|little ones|tots)\b/i,"toddler playing toys"),
  T("halloween",/\b(halloween|trick[- ]or[- ]treat|trunk[- ]or[- ]treat|boo bash|spooky|haunted|ghost|ghoul|monster bash|costume)\b/i,"halloween pumpkins decoration"),
  T("pumpkin",/\b(pumpkin|harvest|hay ?ride|corn maze|fall festival|fall fest)\b/i,"pumpkin patch autumn"),
@@ -26,7 +26,7 @@ export const TOPICS:Topic[]=[
  T("parade",/\bparade\b/i,"street parade celebration"),
  T("reading",/\b(book club|reading buddies|book discussion|author talk|author visit|poetry|writers?|writing group|book sale)\b/i,"books reading library"),
  T("chess",/\b(chess)\b/i,"chess board game"),
- T("games",/\b(game night|board games?|bingo|trivia|mahjong|dungeons|card games?|scrabble|puzzle)\b/i,"board games friends table"),
+ T("games",/\b(game night|game time|game day|games? club|board games?|bingo|trivia|mahjong|dungeons|card games?|scrabble|puzzle)\b/i,"board games friends table"),
  T("videogames",/\b(video games?|gaming|esports|minecraft|nintendo|switch)\b/i,"video game controller"),
  T("lego",/\b(lego|duplo|building blocks)\b/i,"lego bricks colorful"),
  T("stem",/\b(stem|steam|science|robot\w*|coding|code club|engineer\w*|experiment|3d print\w*|maker\w*|lab\b|chemistry|physics)\b/i,"science experiment kids"),
@@ -45,7 +45,7 @@ export const TOPICS:Topic[]=[
  T("concert",/\b(concert|live music|band|jazz|orchestra|symphony|choir|chorus|singer|songwriter|acoustic|music in the park|dj|piano|guitar|recital|gershwin|opera)\b/i,"live music concert outdoor"),
  T("dance",/\b(dance\w*|danc\w*|ballet|salsa|zumba|hip hop|line dancing|ballroom|tango|bachata)\b/i,"dance performance"),
  T("theater",/\b(theat(er|re)|musical|play\b|jr\.?|stage|improv|comedy|stand-?up|puppet\w*|magic show|magician|circus|into the woods)\b/i,"theater stage performance"),
- T("movie",/\b(movie\w*|film\w*|cinema|screening)\b/i,"outdoor movie night"),
+ T("movie",/\b(movie\w*|film\w*|cinema|screening|anime|manga|star wars|marvel|comic\w*|cosplay)\b/i,"outdoor movie night"),
  T("nature",/\b(nature|wildlife|bird\w*|butterfl\w*|hike|hiking|trail|eco|environment\w*|conservation|preserve|wetland\w*|manatee|turtle)\b/i,"nature trail florida"),
  T("beach",/\b(beach|ocean|sea turtle|snorkel\w*|surf\w*|cleanup|clean[- ]up)\b/i,"florida beach"),
  T("boat",/\b(boat\w*|kayak\w*|paddle\w*|canoe|sail\w*|fishing|marina)\b/i,"kayak paddle water"),
@@ -81,11 +81,23 @@ export const TOPICS:Topic[]=[
  T("kidsyoga",/$^/,"children yoga"),
  T("kidssports",/$^/,"children playing sports outdoors"),
  T("kidsgames",/$^/,"children playing board game"),
+ // Fallbacks with a sense of place: an unmatched library program gets a library photo; an adult class or series a class photo.
+ T("library",/$^/,"public library interior bright"),
+ T("workshop",/\b(workshop|seminar|lecture|class|course|series|training|support group|info(rmation)? session)\b/i,"adult education class small group"),
  T("community",/./,"community event people"),
 ];
-export function topicFor(e:{title?:string;desc?:string;category?:string;tags?:string[]}):string{
- const t=String(e.title||""),d=String(e.desc||"").slice(0,300),c=`${e.category||""} ${(e.tags||[]).join(" ")}`;
- for(const x of [t,d,c]){if(!x.trim())continue;const hit=TOPICS.find(p=>p.key!=="community"&&p.re.test(x));if(hit)return hit.key}
+// Only very specific subjects are taken from a description ("pumpkin", "chess"); a passing "exercise your right to vote"
+// or "stories set in the Star Wars universe" must not pick the photo.
+const DESC_OK=new Set(["halloween","pumpkin","oktoberfest","christmas","easter","fireworks","chess","lego","videogames","knitting","train","garden","cars","pets","farmersmarket","yoga","soccer","basketball","baseball","tennis","swim","golf","dance","concert","theater","movie","painting","stem"]);
+const CULTURE_DANCE=/\b(african|caribbean|latin\w*|salsa|bachata|merengue|cumbia|flamenco|folkl\w*|haitian|bollywood|hula|samba|capoeira|bomba|polynesian|hispanic|mariachi|indian|chinese|lion dance)\b/i;
+export function topicFor(e:{title?:string;desc?:string;category?:string;tags?:string[];source?:string;venue?:string}):string{
+ const t=String(e.title||""),d=String(e.desc||"").slice(0,300),tags=(e.tags||[]).filter(x=>!/^(local|free|paid|indoor|outdoor|tickets|drop-in|family|kids|adults?|teens?|seniors)$/i.test(x.trim())).join(" | ");
+ const pick=(x:string,allowed?:Set<string>)=>x.trim()?TOPICS.find(p=>p.key!=="community"&&(!allowed||allowed.has(p.key))&&p.re.test(x))?.key:undefined;
+ let k=pick(t)||pick(tags)||pick(d,DESC_OK);
+ // Cultural dance and drumming get cultural dancers, not ballet.
+ if((k==="dance"||k==="concert")&&CULTURE_DANCE.test(`${t} ${d}`)&&/\b(danc\w*|drum\w*)\b/i.test(t))k="culture";
+ if(k)return k;
+ if(/library|branch/i.test(`${e.source||""} ${e.venue||""}`))return "library";
  return "community";
 }
 
@@ -102,22 +114,22 @@ async function library(){
 const hash=(s:string)=>{let h=2166136261;for(const c of s.toLowerCase().replace(/[^a-z0-9]+/g,""))h=Math.imul(h^c.charCodeAt(0),16777619);return h>>>0};
 
 // A type that has no photos yet (or lost them) borrows from the closest related type.
-const NEXT:Record<string,string>={kidsmusic:"kids",kidsdance:"kids",kidsart:"crafts",kidstheater:"kids",kidsyoga:"kids",kidssports:"kids",kidsgames:"kids",soccer:"sports",basketball:"sports",baseball:"sports",tennis:"sports",swim:"sports",golf:"sports",fitness:"sports",sports:"kids",
+const NEXT:Record<string,string>={library:"reading",workshop:"career",kidsmusic:"kids",kidsdance:"kids",kidsart:"crafts",kidstheater:"kids",kidsyoga:"kids",kidssports:"kids",kidsgames:"kids",soccer:"sports",basketball:"sports",baseball:"sports",tennis:"sports",swim:"sports",golf:"sports",fitness:"sports",sports:"kids",
  pets:"animals",animals:"nature",cars:"festival",history:"culture",culture:"festival",health:"community",seniors:"community",teens:"community",career:"community",
  language:"reading",sensory:"baby",festival:"blockparty",kids:"baby",music:"concert",arts:"painting",community:"festival",blockparty:"concert",concert:"festival",
  dance:"theater",theater:"concert",movie:"theater",yoga:"fitness",artfair:"painting",market:"farmersmarket",food:"market",boat:"beach",beach:"nature",nature:"garden",
  crafts:"painting",painting:"crafts",tech:"stem",reading:"storytime",games:"chess",videogames:"games",photography:"arts"};
 
 // Who it's for matters: a toddler "Music & Movement" gets a children's music class, not a rock concert.
-const KID_VERSION:Record<string,string>={concert:"kidsmusic",music:"kidsmusic",dance:"kidsdance",theater:"kidstheater",painting:"kidsart",arts:"kidsart",crafts:"kidsart",
+const KID_VERSION:Record<string,string>={library:"storytime",workshop:"kids",concert:"kidsmusic",music:"kidsmusic",dance:"kidsdance",theater:"kidstheater",painting:"kidsart",arts:"kidsart",crafts:"kidsart",
  artfair:"kidsart",yoga:"kidsyoga",fitness:"kidssports",sports:"kidssports",games:"kidsgames",reading:"storytime",tech:"stem",community:"kids",festival:"kids",teens:"kids",
  career:"kids",language:"kids",health:"kids",seniors:"kids",history:"kids",culture:"kids",movie:"kids"};
 export const forKids=(e:{title?:string;desc?:string;tags?:string[];ageMax?:number|null})=>
  (e.ageMax!=null&&e.ageMax<=12)||/\b(toddlers?|preschool\w*|pre-?k|kids?|children'?s?|child|bab(y|ies)|infants?|story ?time|tots|little ones|tweens?|kinder\w*|ages? [0-9])\b/i.test(`${e.title||""} ${String(e.desc||"").slice(0,300)} ${(e.tags||[]).join(" ")}`);
 
 /** The library photo for an event with no picture ("" if the library isn't built yet). */
-export async function stockPicture(e:{title:string;desc?:string;category?:string;tags?:string[];ageMax?:number|null}):Promise<string>{
- const by=await library();let topic=topicFor(e);
+export async function stockPicture(e:{title:string;desc?:string;category?:string;tags?:string[];ageMax?:number|null;source?:string;venue?:string|null}):Promise<string>{
+ const by=await library();let topic=topicFor({...e,venue:e.venue||undefined});
  if(forKids(e)&&KID_VERSION[topic])topic=KID_VERSION[topic];
  for(let i=0;i<6&&!by.get(topic)?.length&&NEXT[topic];i++)topic=NEXT[topic];
  const l=by.get(topic)||[];
