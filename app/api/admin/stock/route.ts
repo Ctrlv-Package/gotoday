@@ -12,7 +12,7 @@ export async function GET(req:NextRequest){
  if(req.nextUrl.searchParams.get("sheet")!=null){
   const page=Number(req.nextUrl.searchParams.get("sheet"))||0,keys=TOPICS.map(t=>t.key).slice(page*15,page*15+15);
   const {rows}=await db.query("select p.topic,i.data from stock_photos p join images i on '/img/'||i.key=p.image where p.topic=any($1) order by p.topic,p.photo_id",[keys]);
-  const sharp=(await import("sharp")).default,W=150,H=100,L=110,cols=6;
+  const sharp=(await import("sharp")).default,W=150,H=100,L=110,cols=12;
   const comps:any[]=[];
   for(const [r,k] of keys.entries()){
    comps.push({input:Buffer.from(`<svg width="${L}" height="${H}"><text x="4" y="55" font-size="15" font-family="sans-serif" font-weight="bold">${k}</text></svg>`),left:0,top:r*H});

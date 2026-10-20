@@ -143,12 +143,15 @@ export async function stockPicture(e:{title:string;desc?:string;category?:string
  return l.length?l[hash(e.title)%l.length]:"";
 }
 
+// Busy event types (many storytimes on one day) get more photos so neighboring cards don't repeat.
+const BIG=new Set(["storytime","baby","library","kids","workshop","crafts","kidsart","discussion","reading","tech","stem","games","seniors","language","community"]);
+const want=(k:string,per:number)=>BIG.has(k)?per*2:per;
 /** Fill the library: up to `max` topics per call that have fewer than `per` photos. */
 export async function buildLibrary(max=20,per=6){
  const key=process.env.PIXABAY_API_KEY;if(!key)return{ok:false,error:"PIXABAY_API_KEY not set"};
  const by=await library(),done:string[]=[],fails:string[]=[];let added=0;
  const started=Date.now();
- for(const t of TOPICS.filter(t=>(by.get(t.key)?.length||0)<per).slice(0,max)){
+ for(const t of TOPICS.filter(t=>(by.get(t.key)?.length||0)<want(t.key,per)).slice(0,max)){
   if(Date.now()-started>200e3)break;   // stay inside one request's time; the next call continues
   const u=new URL("https://pixabay.com/api/");
   for(const [k,v] of Object.entries({key,q:t.q,image_type:"photo",orientation:"horizontal",safesearch:"true",per_page:"60",min_width:"1000",order:"popular"}))u.searchParams.set(k,v);
@@ -182,12 +185,12 @@ export async function libraryPlan(max=60,per=6,part=0,of=1){
  const items:{topic:string;id:number;url:string;alt:string}[]=[];
  const rejected=new Set((await db.query("select photo_id from stock_rejected").catch(()=>({rows:[]}))).rows.map((r:any)=>Number(r.photo_id)));
   // Several jobs can split the work (each fetches every of-th missing type).
- for(const t of TOPICS.filter(t=>(have.get(t.key)?.size||0)<per).filter((_,i)=>i%of===part).slice(0,max)){
+ for(const t of TOPICS.filter(t=>(have.get(t.key)?.size||0)<want(t.key,per)).filter((_,i)=>i%of===part).slice(0,max)){
   const u=new URL("https://pixabay.com/api/");
   for(const [k,v] of Object.entries({key,q:t.q,image_type:"photo",orientation:"horizontal",safesearch:"true",per_page:"60",min_width:"1000",order:"popular"}))u.searchParams.set(k,v);
   const d:any=await fetch(u.toString(),{signal:AbortSignal.timeout(20000)}).then(r=>r.json()).catch(()=>null);
   const got=have.get(t.key)||new Set<number>();
-  for(const h of (d?.hits||[]).filter((h:any)=>h.webformatURL&&h.imageWidth>=h.imageHeight*1.2&&t.must.test(String(h.tags||""))&&!NEVER.test(String(h.tags||""))&&!got.has(Number(h.id))&&!rejected.has(Number(h.id))).slice(0,per-got.size))
+  for(const h of (d?.hits||[]).filter((h:any)=>h.webformatURL&&h.imageWidth>=h.imageHeight*1.2&&t.must.test(String(h.tags||""))&&!NEVER.test(String(h.tags||""))&&!got.has(Number(h.id))&&!rejected.has(Number(h.id))).slice(0,want(t.key,per)-got.size))
    items.push({topic:t.key,id:Number(h.id),url:h.largeImageURL||h.webformatURL,alt:h.webformatURL});
  }
  return{ok:true,items};
