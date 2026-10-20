@@ -15,7 +15,7 @@ const NEVER=/protest|demonstrat|politic|rally|election|vote|lgbt|pride|solidarit
 const T=(key:string,re:RegExp,q:string):Topic=>({key,re,q,must:new RegExp(MUST[key]||key,"i")});
 // Most specific first. Matched against the title, then the description, then the category.
 export const TOPICS:Topic[]=[
- T("storytime",/\b(story ?time|storytime|lapsit|lap sit|cuentos|bedtime stories)\b/i,"child reading book"),
+ T("storytime",/\b(story ?time|storytime|lapsit|lap sit|cuentos|bedtime stories|(?<!wags (&|and) )tales)\b/i,"child reading book"),
  T("baby",/\b(bab(y|ies)|toddler|infant|little ones|tots)\b/i,"toddler playing toys"),
  T("halloween",/\b(halloween|trick[- ]or[- ]treat|trunk[- ]or[- ]treat|boo bash|spooky|haunted|ghost\w*|ghoul\w*|monster bash|costume|bump in the night|scary|zombie|witch\w*)\b/i,"halloween pumpkins decoration"),
  T("pumpkin",/\b(pumpkin|harvest|hay ?ride|corn maze|fall festival|fall fest)\b/i,"pumpkin patch autumn"),
@@ -26,11 +26,11 @@ export const TOPICS:Topic[]=[
  T("parade",/\bparade\b/i,"street parade celebration"),
  T("reading",/\b(book club|reading buddies|book discussion|author talk|author visit|poetry|writers?|writing group|book sale)\b/i,"books reading library"),
  T("chess",/\b(chess)\b/i,"chess board game"),
- T("games",/\b(game night|game time|game day|games? club|board games?|bingo|trivia|mahjong|dungeons|card games?|scrabble|puzzle)\b/i,"board games friends table"),
+ T("games",/\b(game night|game time|game day|games? club|board games?|bingo|trivia|mahjong|dungeons|card games?|scrabble|puzzle|tabletop|juegos de mesa|dominoes?|domino)\b/i,"board games friends table"),
  T("videogames",/\b(video games?|gaming|esports|minecraft|nintendo|switch)\b/i,"video game controller"),
  T("lego",/\b(lego|duplo|building blocks)\b/i,"lego bricks colorful"),
  T("stem",/\b(stem|steam|science|robot\w*|bots?|beakers?|coding|code club|engineer\w*|experiment|3d print\w*|3d model\w*|maker\w*|lab\b|chemistry|physics|veterinar\w*)\b/i,"science experiment kids"),
- T("tech",/\b(computer\w*|tech help|technology|internet|smartphone|ipad|digital|ai\b|cyber|excel|microsoft|audio|video editing|logic pro|garageband|podcast\w*|photoshop|canva)\b/i,"laptop computer class"),
+ T("tech",/\b(computer\w*|tech help|technology|internet|smartphone|ipad|digital|ai\b|cyber|excel|microsoft|audio|video editing|logic pro|garageband|bandlab|songwriting|podcast\w*|photoshop|canva|after effects|premiere pro|video production|green screen|tinkercad|3d design|keyboard skills|online safety|be safe online)\b/i,"laptop computer class"),
  T("farmersmarket",/\b(farmers'? market|green market|greenmarket|produce|farm stand)\b/i,"farmers market produce"),
  T("market",/\b(market|bazaar|flea|vendors?|pop[- ]up shop|craft fair|swap meet|yard sale|garage sale|makers market)\b/i,"outdoor market stalls shoppers"),
  T("train",/\b(train rides?|mini train|trolley|railroad|choo)\b/i,"miniature train ride"),
@@ -40,11 +40,11 @@ export const TOPICS:Topic[]=[
  T("artfair",/\b(art fair|art festival|art walk|artwalk|art show|art market|artisan|gallery|exhibit\w*|museum)\b/i,"art gallery exhibition visitors"),
  T("photography",/\b(photo\w*|camera)\b/i,"photography camera"),
  T("garden",/\b(garden\w*|plant\w*|seed\w*|cutting swap|master gardeners|orchid|botanical|horticulture|composting)\b/i,"gardening plants pots"),
- T("food",/\b(food truck\w*|taste of|tasting|tasty|food fest\w*|bbq|barbecue|chili|cook\w*|culinary|chef|brunch|wine|dinner|baking|bake|spaghetti|pancake\w*|recipe\w*)\b/i,"street food festival people"),
+ T("food",/\b(food truck\w*|taste of|tasting|tasty|food fest\w*|bbq|barbecue|chili|cook\w*|culinary|chef|brunch|wine|dinner|baking|bake|spaghetti|pancake\w*|recipe\w*|fresh food|healthy eating|nutrition)\b/i,"street food festival people"),
  T("blockparty",/\b(block party|street party|street fest\w*|sunday funday|nobe)\b/i,"street festival crowd music"),
  T("concert",/\b(concert|live music|band|jazz|orchestra|symphony|choir|chorus|singer|songwriter|acoustic|music in the park|dj|piano|guitar|recital|gershwin|opera)\b/i,"live music concert outdoor"),
  T("dance",/\b(dance\w*|danc\w*|ballet|salsa|zumba|hip hop|line dancing|ballroom|tango|bachata)\b/i,"dance performance"),
- T("theater",/\b(theat(er|re)|musical|play\b|jr\.?|stage|improv|comedy|stand-?up|puppet\w*|magic show|magician|circus|into the woods)\b/i,"theater stage performance"),
+ T("theater",/\b(theat(er|re)|musical|(?<!(&|and)\s)play\b(?!\s*(&|and)\s|\s*(group|time|date|dough))|jr\.?|stage|improv|comedy|stand-?up|puppet\w*|magic show|magician|circus|into the woods)\b/i,"theater stage performance"),
  T("movie",/\b(movie\w*|film\w*|cinema|screening|anime|manga|star wars|marvel|comic\w*|cosplay)\b/i,"outdoor movie night"),
  T("nature",/\b(nature|wildlife|bird\w*|butterfl\w*|hike|hiking|trail|eco|environment\w*|conservation|preserve|wetland\w*|manatee|turtle)\b/i,"nature trail florida"),
  T("beach",/\b(beach|ocean|sea turtle|snorkel\w*|surf\w*|cleanup|clean[- ]up)\b/i,"florida beach"),
@@ -65,10 +65,10 @@ export const TOPICS:Topic[]=[
  T("history",/\b(history|historic\w*|heritage|tour|museum talk|lecture|veterans?|memorial)\b/i,"historic building museum"),
  T("culture",/\b(hispanic|latin\w*|cultura|caribbean|haitian|black history|asian|diwali|lunar new year|heritage month|cultural)\b/i,"cultural festival dancers"),
  T("health",/\b(blood drive|vaccin\w*|screening|medicare|medicaid|cpr|first aid|health fair|clinic|doctor|nurse|dental|diabetes|blood pressure)\b/i,"doctor checkup health"),
- T("seniors",/\b(seniors?|older adults|55\+|60\+|aarp)\b/i,"seniors activity group"),
+ T("seniors",/\b(seniors?|older adults|55\+|60\+|aarp)\b/i,"senior citizens friends smiling together"),
  T("teens",/\b(teens?|tween\w*|youth|young adults?)\b/i,"teenagers friends"),
  T("career",/\b(career|job fair|resume|interview|business|entrepreneur\w*|networking|small business|financial|money|tax\w*)\b/i,"business workshop"),
- T("language",/\b(english|esl|spanish class|language|conversation club|citizenship)\b/i,"language class conversation"),
+ T("language",/\b(english|esl|esol|spanish class|language|conversation club|citizenship)\b/i,"language class conversation"),
  T("sensory",/\b(sensory|autism|special needs|calm|quiet hour)\b/i,"children sensory play"),
  T("festival",/\b(festival|fest|fair|carnival|celebration|jubilee|fiesta)\b/i,"festival fairground crowd"),
  T("kids",/\b(kids?|children|family|families)\b/i,"kids playing park"),
@@ -124,7 +124,7 @@ const NEXT:Record<string,string>={discussion:"language",library:"reading",worksh
  crafts:"painting",painting:"crafts",tech:"stem",reading:"storytime",games:"chess",videogames:"games",photography:"arts"};
 
 // Seniors programs (55+, chair exercise) get seniors photos rather than a dance troupe or a gym.
-const SENIOR_SWAP=new Set(["dance","fitness","yoga","sports","concert","music","games","community","workshop","library","discussion"]);
+const SENIOR_SWAP=new Set(["dance","fitness","yoga","sports","concert","music","community"]);
 const forSeniors=(e:{title?:string;desc?:string;tags?:string[]})=>/(\b(seniors?|older adults|chair (dance|yoga|volleyball|exercise\w*)|silver club|golden years)\b|\b[5-6]\d\+)/i.test(`${e.title||""} ${(e.tags||[]).join(" ")}`);
 // Who it's for matters: a toddler "Music & Movement" gets a children's music class, not a rock concert.
 const KID_VERSION:Record<string,string>={library:"storytime",workshop:"kids",concert:"kidsmusic",music:"kidsmusic",dance:"kidsdance",theater:"kidstheater",painting:"kidsart",arts:"kidsart",crafts:"kidsart",
