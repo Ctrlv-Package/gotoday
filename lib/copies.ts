@@ -22,7 +22,7 @@ export function sameEvent(a:string,b:string){
 const thin=(d:string)=>!d||/^Official .* event\.$/.test(d)||/^Posted by @/.test(d)||d.length<40;
 const expired=(u:string)=>{const oe=/cdninstagram\.com|fbcdn\.net/.test(u)&&u.match(/[?&]oe=([0-9A-Fa-f]{8})/);return!!oe&&parseInt(oe[1],16)*1000<Date.now()};
 
-type Fillable={id:number;source:string;title:string;venue?:string|null;address?:string|null;category?:string|null;tags?:string[];stockImage?:boolean;description:string;image:string|null;city:string;lat:number|null;lng:number|null;ageMin:number|null;ageMax:number|null;start:Date;tz:string};
+type Fillable={id:number;source:string;title:string;venue?:string|null;address?:string|null;category?:string|null;tags?:string[];stockImage?:boolean;backupImage?:string;description:string;image:string|null;city:string;lat:number|null;lng:number|null;ageMin:number|null;ageMax:number|null;start:Date;tz:string};
 export async function fillFromCopies<T extends Fillable>(e:T):Promise<T>{
  const day=new Intl.DateTimeFormat("en-CA",{timeZone:e.tz,year:"numeric",month:"2-digit",day:"2-digit"}).format(e.start);
  const {rows}=await db.query(`select e.id,e.title,e.description,e.image_url,e.city,e.age_min,e.age_max,e.start_at,s.name as source,v.name as venue,v.address,
@@ -44,7 +44,8 @@ export async function fillFromCopies<T extends Fillable>(e:T):Promise<T>{
  const shared=urls.length?new Set((await db.query("select image_url from events where image_url=any($1) group by image_url having count(distinct lower(title))>=3",[urls]).catch(()=>({rows:[]}))).rows.map((r:any)=>r.image_url)):new Set();
  out.image=bestPicture(e.title,all.filter(p=>!shared.has(p.image)))||null;
  if(!out.image)out.image=(await familyPictures([{title:e.title,city:e.city}])).get(familyKey(e.title,e.city))||null;
- if(!out.image){const p=await stockPicture({title:e.title,desc:e.description,category:e.category||undefined,tags:e.tags,ageMax:e.ageMax,source:e.source,venue:e.venue});if(p){out.image=p;out.stockImage=true}}
+ {const p=!out.image||/^https?:/.test(out.image)?await stockPicture({title:e.title,desc:e.description,category:e.category||undefined,tags:e.tags,ageMax:e.ageMax,source:e.source,venue:e.venue}):"";
+  if(p&&!out.image){out.image=p;out.stockImage=true}else if(p)out.backupImage=p}
  // The place: the shared choice (lib/places) over this listing and all its copies.
  {const pl=choosePlace([{id:e.id,venue:e.venue,address:e.address,city:e.city,source:e.source,lat:e.lat,lng:e.lng},...copies.map((r:any)=>({id:r.id,venue:r.venue,address:r.address,city:r.city,source:r.source,lat:r.lat!=null?Number(r.lat):null,lng:r.lng!=null?Number(r.lng):null}))]);
   if(pl&&pl.id!==e.id||pl&&pl.venue!==e.venue){out.venue=pl.venue||null;out.address=pl.address||null;if(pl.lat!=null){out.lat=pl.lat;out.lng=pl.lng??out.lng}if(pl.city)out.city=pl.city}}

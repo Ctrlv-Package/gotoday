@@ -12,7 +12,7 @@ export function decodeHtml(s:string){return String(s||"").replace(/&#(\d+);/g,(_
 export type EventDetail={
  id:number;title:string;description:string;start:Date;end:Date|null;city:string;image:string|null;officialUrl:string;priceText:string|null;isFree:boolean;
  category:string|null;tags:string[];ageMin:number|null;ageMax:number|null;registrationUrl:string|null;registrationText:string|null;recurrence:string|null;
- source:string;sourceId:number;tz:string;stockImage?:boolean;venue:string|null;venueId:number|null;address:string|null;lat:number|null;lng:number|null;
+ source:string;sourceId:number;tz:string;stockImage?:boolean;backupImage?:string;venue:string|null;venueId:number|null;address:string|null;lat:number|null;lng:number|null;
 };
 
 export function parseId(id:string){const raw=decodeURIComponent(id);if(!raw.startsWith("db-"))return null;const n=Number(raw.slice(3));return Number.isInteger(n)&&n>0?n:null}

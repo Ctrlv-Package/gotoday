@@ -269,7 +269,7 @@ export default function Home(){
    <div className="grid">{filtered.map((e,i)=><article className="card" key={e.id||e.title+i}>
     <a className={e.image?"pic":"pic noimg"} style={e.image?undefined:{background:artFor(e).bg}} href={detailHref(e)} aria-hidden tabIndex={-1}>
      {e.image?<><img className="picBlur" src={e.image} alt="" loading="lazy" referrerPolicy="no-referrer"/>
-      <img className="picMain" src={e.image} alt="" loading="lazy" referrerPolicy="no-referrer" onLoad={x=>fitPic(x.currentTarget)} onError={x=>{const a=x.currentTarget.parentElement as HTMLElement;a.classList.add("noimg");a.style.background=artFor(e).bg;a.querySelectorAll("img").forEach(i=>i.remove());const n=a.querySelector("span") as HTMLElement|null;if(n)n.style.display="flex"}}/></>:null}
+      <img className="picMain" src={e.image} alt="" loading="lazy" referrerPolicy="no-referrer" onLoad={x=>fitPic(x.currentTarget)} onError={x=>{const a=x.currentTarget.parentElement as HTMLElement;const b=(e as any).backupImage as string|undefined;if(b&&!x.currentTarget.src.endsWith(b)){a.querySelectorAll("img").forEach(i=>{i.src=b});return}a.classList.add("noimg");a.style.background=artFor(e).bg;a.querySelectorAll("img").forEach(i=>i.remove());const n=a.querySelector("span") as HTMLElement|null;if(n)n.style.display="flex"}}/></>:null}
      <span style={e.image?{display:"none"}:undefined}><i>{artFor(e).icon}</i></span>
      {(e.isFree||e.facets?.includes("Free"))&&<em className="freeBadge">{t("Free")}</em>}
     </a>

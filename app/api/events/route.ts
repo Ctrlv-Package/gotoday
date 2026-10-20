@@ -217,7 +217,11 @@ export async function GET(request:NextRequest){
  {const need=kept.filter((e:any)=>!e.image&&e.id?.startsWith("db-"));
   if(need.length){const fam=await familyPictures(need.map((e:any)=>({title:e.title,city:e.city})));for(const e of need)e.image=fam.get(familyKey(e.title,e.city))||""}}
  // Still nothing: a library photo of that kind of event (lib/stockPhotos), the same one its event page shows.
- for(const e of kept as any[])if(!e.image){const p=await stockPicture(e);if(p){e.image=p;e.stockImage=true}}
+ for(const e of kept as any[]){
+  if(!e.image){const p=await stockPicture(e);if(p){e.image=p;e.stockImage=true}}
+  // A picture on someone else's site can be blocked or taken down; the card switches to the library photo then.
+  else if(/^https?:/.test(e.image)){const p=await stockPicture(e);if(p)e.backupImage=p}
+ }
  events=kept.sort((a:any,b:any)=>(a.date+(a.time||"")).localeCompare(b.date+(b.time||""))||((a.source==="Ticketmaster"?1:0)-(b.source==="Ticketmaster"?1:0)));
  // A listing marked cancelled ("CANCELLED: Downtown Hollywood ArtWalk") also hides other sources' copies of that event
  // and its parts ("POP-UP at ArtWalk"): same day, same town, and the title carries its distinctive name.

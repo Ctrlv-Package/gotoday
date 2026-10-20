@@ -1,5 +1,6 @@
 import Link from "next/link";
 import SiteHeader from "../../components/SiteHeader";
+import HeroImage from "../../components/HeroImage";
 import SaveButton from "../../components/SaveButton";
 import CalendarChoice from "../../components/CalendarChoice";
 import FollowButton from "../../components/FollowButton";
@@ -67,7 +68,7 @@ export default async function EventPage({params}:{params:Promise<{id:string}>}){
   <SiteHeader/>
   <div className="detailWrap">
    <article className="detailCard">
-    {e.image?<div className="heroWrap"><img className="detailHero" src={e.image} alt="" referrerPolicy="no-referrer"/>{e.stockImage&&<span className="stockNote">{t("Illustrative photo")}</span>}</div>:null}
+    {e.image?<HeroImage src={e.image} backup={e.backupImage} stock={!!e.stockImage} note={t("Illustrative photo")}/>:null}
     <div className="detailBody">
      <div className="badges">
       {e.isFree&&<span className="b free">{t("Free")}</span>}
