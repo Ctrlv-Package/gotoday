@@ -140,6 +140,9 @@ export async function GET(request:NextRequest){
   // "Today": hide events that are over. Many listings give only a start time (open houses, festivals),
   // so without an end time we assume 4 hours. Events in progress are marked "Happening now".
   let live=false,over=false;   // over: finished earlier today (kept until duplicates are matched, then removed)
+  // "All day" listings (exhibits, scavenger hunts, class series) are really open-hours things: libraries, studios and
+  // offices close by evening, so after 8 PM local time they're done for today.
+  if(range==="today"&&allDay&&Number(localParts(new Date(now),tz).time.slice(0,2))>=20)over=true;
   if(range==="today"&&!allDay){const end=r.end_at&&new Date(r.end_at).getTime()>start.getTime()?new Date(r.end_at).getTime():start.getTime()+4*3600e3;if(end<now)over=true;else live=start.getTime()<=now}
   if(live)e.live=true;if(over)e.over=true;
   events.push(e);
