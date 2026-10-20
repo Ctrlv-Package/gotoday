@@ -79,6 +79,9 @@ export function discoveryRejection(e:EventRecord):DiscoveryReason|null{
  // A "meeting" is administrative (negotiation, staff, general meeting) unless it's a club or group people join.
  if(/\bmeetings?\b/i.test(title)&&!/\b(club|group|circle|society|guild|support|social|meetup|families|parents|kids|teens|knitters|writers|readers|gardeners|chess|anime|lego)\b/i.test(title))return"meeting";
  if(/\bnegotiat\w*|\bcollective bargaining\b|\bunion (meeting|session)\b/i.test(title))return"meeting";
+ // Not things to go to: bar drink specials, health services and information tables, constituent office hours.
+ if(/\b(half[- ]price|happy hour|drink specials?|bogo|\$\d+ (drinks|margaritas|beers|wings|tacos))\b/i.test(title)&&!/\b(festival|crawl|party|tasting|music|trivia)\b/i.test(title))return"announcement";
+ if(/\b(mammogra\w*|mobile (clinic|health|mammography)|flu shots?|vaccination clinic|blood pressure check|information table|info table|resource table|outreach table|rape treatment|constituent (tuesdays?|hours|meetings?|services))\b/i.test(title))return"announcement";
  if(e.isDiscoveryEligible===true)return null; // curated sources (Ticketmaster) skip the rest
  const strong=STRONG_TAG.test(tagText);
  const classTag=/(^|\|)\s*(class|workshop|technology)\s*(\||$)/i.test(tagText);
