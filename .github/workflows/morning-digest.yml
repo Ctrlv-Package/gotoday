@@ -1,0 +1,20 @@
+name: Morning digest
+
+# #4 retention loop: ask the site to build (and, when DIGEST_WEBHOOK_URL is
+# configured on the site, send) the morning digest. 11:00 UTC ≈ 6-7 AM Eastern.
+on:
+  schedule:
+    - cron: "0 11 * * *"
+  workflow_dispatch: {}
+jobs:
+  digest:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - name: Trigger the digest endpoint
+        env:
+          GOTODAY_URL: ${{ secrets.GOTODAY_URL }}
+          INGESTION_SECRET: ${{ secrets.INGESTION_SECRET }}
+        run: |
+          BASE="${GOTODAY_URL:-https://www.mygotoday.com}"
+          curl -sS -m 280 -H "Authorization: Bearer $INGESTION_SECRET" "$BASE/api/digest"

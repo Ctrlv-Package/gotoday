@@ -1,0 +1,36 @@
+name: Event density check
+
+# Weekly density report (#3), and on demand. Writes its report to the
+# probe-results branch like the other diagnostic jobs, so it can be read
+# without opening the Actions UI. Never fails the build: thin areas are
+# information, not an error.
+on:
+  schedule:
+    - cron: "15 11 * * 1"   # Mondays ~6:15 AM Eastern
+  workflow_dispatch: {}
+permissions:
+  contents: write
+jobs:
+  density:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 22
+      - run: npm install --no-audit --no-fund
+      - name: Probe the live site
+        env:
+          GOTODAY_URL: ${{ secrets.GOTODAY_URL }}
+        run: |
+          mkdir -p out
+          npx tsx scripts/density-check.ts --days 14 | tee out/density.txt
+          npx tsx scripts/density-check.ts --days 14 --json > out/density.json
+      - name: Save report to probe-results branch
+        if: always()
+        run: |
+          cd out && echo '{"git":{"deploymentEnabled":false}}' > vercel.json
+          git init -q -b probe-results && git config user.name probe && git config user.email probe@users.noreply.github.com
+          git add -A && git commit -qm "density check $(date -u +%FT%TZ)"
+          git push -qf "https://x-access-token:${{ github.token }}@github.com/${{ github.repository }}.git" probe-results
