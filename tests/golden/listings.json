@@ -1,0 +1,16 @@
+[
+  {"keep": true,  "note": "Core product: a library program a family can go to today.", "title": "Family Storytime", "tags": ["Kids"], "desc": "Stories, songs and rhymes for children and their caregivers."},
+  {"keep": true,  "note": "Core product: a park concert.", "title": "Concert in the Park: Jazz Under the Stars", "tags": ["Music"], "desc": "Bring a blanket for an evening of live jazz."},
+  {"keep": true,  "note": "A book club meeting is a group people join, not an administrative meeting (kept by the club exception in discoveryRejection).", "title": "Evening Book Club Meeting", "tags": ["Books"], "desc": "This month's pick, discussed over coffee."},
+  {"keep": true,  "note": "A board games night must survive the meeting/instruction rules (the title is normalised before the rules run).", "title": "Board Games Night", "tags": ["Games"], "desc": "Drop in and play; games provided."},
+  {"keep": true,  "note": "A farmers market is a thing to go to, not a passive display.", "title": "Saturday Farmers Market", "tags": [], "desc": "Local produce, food trucks and live music."},
+  {"keep": true,  "note": "A festival with a costume contest is one event, not a copy or a drop (see the 2026-10-18 audit commit).", "title": "Fall Festival & Costume Contest", "tags": ["Family"], "desc": "Pumpkin patch, games and a kids costume contest at noon."},
+  {"keep": false, "reason": "meeting", "note": "From the 2026-10-20 commit: code enforcement hearings are not events.", "title": "Code Enforcement Hearing", "tags": [], "desc": "Special magistrate hearing."},
+  {"keep": false, "reason": "announcement", "note": "From the 2026-10-19 commit: election-site notices are not events.", "title": "West Regional Library serves as a general election site", "tags": [], "desc": "Early voting information."},
+  {"keep": false, "reason": "announcement", "note": "From the 2026-10-20 commit: health services are not events.", "title": "Mobile Mammography Unit", "tags": [], "desc": "Free screenings by appointment."},
+  {"keep": false, "reason": "announcement", "note": "From the 2026-10-20 commit: constituent office hours are not events.", "title": "Constituent Hours with Commissioner Smith", "tags": [], "desc": "Meet with district staff."},
+  {"keep": false, "reason": "announcement", "note": "From the 2026-10-18 commit: a listing whose title is only a status message is dropped.", "title": "Event Full. No longer accepting registrations", "tags": [], "desc": ""},
+  {"keep": false, "reason": "announcement", "note": "From the 2026-10-20 commit: bar drink promos are not events unless they are a festival/party/tasting.", "title": "Half-Price Margaritas All Day", "tags": [], "desc": "$5 drinks at the bar."},
+  {"keep": false, "reason": "meeting", "note": "Labour negotiation sessions are administrative meetings.", "title": "Collective Bargaining Negotiation Session", "tags": [], "desc": "Union contract negotiation."},
+  {"keep": false, "reason": "announcement", "note": "Adjusted-hours notices are announcements, not events (2026-10-20 commit).", "title": "Adjusted Hours of Operation", "tags": [], "desc": "The library closes early today."}
+]
