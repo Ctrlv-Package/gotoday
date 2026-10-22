@@ -118,9 +118,11 @@ function parseEvents(text:string,who:string):Extracted[]{
 }
 
 /** Google Gemini's free tier (GEMINI_API_KEY from aistudio.google.com) reads flyers at no cost.
- *  Same prompt and images as Claude; if Gemini is busy or out of free requests, Claude (within the daily
- *  budget) or the free caption reading takes over. */
-const GEMINI_MODEL=process.env.GEMINI_MODEL||"gemini-flash-latest";   // alias that always points at the current Flash model
+ *  Same prompt and images as Claude. Once a Gemini key is set, a Gemini failure no longer falls
+ *  back to paid Claude by default: the post is left uncached, read from its caption for now, and
+ *  re-read by Gemini on a later run. Set AI_PAID_FALLBACK=on in Vercel to restore the old
+ *  Claude-within-the-daily-budget fallback. Without a Gemini key, Claude is still the reader. */
+const GEMINI_MODEL=process.env.GEMINI_MODEL||"gemini-2.5-flash";   // pinned: the "gemini-flash-latest" alias points at the newest Flash, whose free quota can be far smaller; 2.5 Flash is the generous-quota model. Override with GEMINI_MODEL in Vercel.
 async function askGemini(content:any[]):Promise<Extracted[]>{
  const parts=content.map((c:any)=>c.type==="image"?{inline_data:{mime_type:c.source.media_type,data:c.source.data}}:{text:c.text});
  const r=await fetchRetry(`https://generativelanguage.googleapis.com/v1beta/models/${GEMINI_MODEL}:generateContent`,{method:"POST",
@@ -142,7 +144,10 @@ async function extractWithClaude(p:Post,venue:string,city:string,roundup=false,a
  const text={type:"text",text:PROMPT(p,venue,city)};
  if(process.env.GEMINI_API_KEY){
   try{return await askGemini([...imgs,text])}
-  catch(e:any){console.log(`gemini: ${e?.message||e}`)}
+  catch(e:any){console.log(`gemini: ${e?.message||e}`);
+   // A free key is set, so a Gemini failure (quota, busy, bad key) must not silently bill Claude.
+   // NoCredit leaves the post uncached: it is caption-read for now and retried on a later run.
+   if(process.env.AI_PAID_FALLBACK!=="on")throw new NoCredit(`Gemini reading failed (${e?.message||e}); paid Claude fallback is off — set AI_PAID_FALLBACK=on in Vercel to allow it`)}
  }
  if(!process.env.ANTHROPIC_API_KEY||!allowClaude)throw new NoCredit("no paid reading available");
  try{return await askClaude([...imgs,text])}
