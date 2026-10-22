@@ -4,7 +4,7 @@ import {useEffect,useMemo,useRef,useState} from "react";
 import SaveButton from "./components/SaveButton";
 import NavMe from "./components/NavMe";
 import Dropdown from "./components/Dropdown";
-import AddToCalendar from "./components/AddToCalendar";
+import CalendarChoice from "./components/CalendarChoice";
 import {useT,LangPicker} from "./components/Lang";
 import {type T, type EventItem, AGE_BANDS, CHIPS, SETTINGS, AREAS, RANGES, TIMES, DEFAULT_ZIP, ageLabel, fmt, norm, upcomingDays, dayLabel, nextWeekendLabel, detailHref, fitPic, artFor, store} from "./components/homeShared";
 export default function Home(){
@@ -223,7 +223,7 @@ export default function Home(){
      <div className="actions">
       <a className="primary" href={e.source==="Ticketmaster"&&e.url?e.url:detailHref(e)} target={e.source==="Ticketmaster"&&e.url?"_blank":undefined} rel="noreferrer">{e.source==="Ticketmaster"?t("Tickets")+" ↗":t("View details")}</a>
       {e.id?.startsWith("db-")&&<SaveButton compact item={{id:e.id,title:e.title,date:e.date,venue:e.venue||e.city}}/>}
-      {e.id&&<AddToCalendar compact base={`/events/${encodeURIComponent(e.id)}`}/>}
+      {e.id&&<CalendarChoice compact id={e.id} base={`/events/${encodeURIComponent(e.id)}`}/>}
       <button type="button" className="share" title={t("Share")} onClick={()=>share(e)} aria-label={`${t("Share")}: ${e.title}`}>
        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden><path d="M4 12v7a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-7"/><polyline points="16 6 12 2 8 6"/><line x1="12" y1="2" x2="12" y2="15"/></svg><span className="shareTxt">{t("Share")}</span>
       </button>

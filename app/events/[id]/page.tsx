@@ -1,6 +1,7 @@
 import Link from "next/link";
 import SiteHeader from "../../components/SiteHeader";
 import HeroImage from "../../components/HeroImage";
+import {calendarConnected} from "../../../lib/me";
 import SaveButton from "../../components/SaveButton";
 import CalendarChoice from "../../components/CalendarChoice";
 import FollowButton from "../../components/FollowButton";
@@ -55,7 +56,7 @@ export default async function EventPage({params}:{params:Promise<{id:string}>}){
  const series=await seriesOf(e.id).catch(()=>null);
  const canFollow=!!series&&e.source!=="Ticketmaster"&&await followable(series).catch(()=>false);
  // Their GoToday calendar is connected (a calendar app reads it, or they just added it): saved = already in their calendar.
- const calConnected=!!user&&!!(await db.query("select 1 from users where id=$1 and (cal_fetched_at is not null or cal_clicked_at>now()-interval '7 days')",[user.id]).catch(()=>({rowCount:0}))).rowCount;
+ const calConnected=!!user&&await calendarConnected(user.id);
  const following=!!(user&&series&&(await db.query("select 1 from follows where user_id=$1 and series_id=$2",[user.id,series]).catch(()=>({rowCount:0}))).rowCount);
  const regFull=/full/i.test(e.registrationText||"");
  // A separate sign-up link (Eventbrite etc.) gets its own button; otherwise registration happens on the event page itself.

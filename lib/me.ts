@@ -54,3 +54,11 @@ export async function calendarStatus(userId:number){
  const apps=(await db.query("select client,last_seen from calendar_clients where user_id=$1 and last_seen>now()-interval '30 days' order by first_seen",[userId]).catch(()=>({rows:[]}))).rows;
  return{clickedAt:r.cal_clicked_at?.toISOString?.()||r.cal_clicked_at||null,clicked:r.cal_clicked||null,apps:apps.map((a:any)=>({client:a.client,lastSeen:a.last_seen?.toISOString?.()||a.last_seen}))};
 }
+
+/** Is a calendar app reading this person's GoToday calendar (or did they just tap "Add to …")? Then saved events
+ *  are already in their calendar, and the calendar buttons say so. */
+export async function calendarConnected(userId:number|string):Promise<boolean>{
+ const r=await db.query(`select 1 from users where id=$1 and (cal_fetched_at is not null or cal_clicked_at>now()-interval '7 days')
+  union all select 1 from calendar_clients where user_id=$1 limit 1`,[userId]).catch(()=>({rowCount:0}));
+ return !!r.rowCount;
+}
