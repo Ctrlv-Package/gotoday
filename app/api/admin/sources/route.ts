@@ -12,12 +12,27 @@ const authed=(req:NextRequest)=>{const s=process.env.INGESTION_SECRET;return!!s&
 export async function GET(req:NextRequest){
  if(!authed(req))return NextResponse.json({ok:false,error:"Unauthorized"},{status:401});
  const configs=await loadSourceConfigs();
- if(req.nextUrl.searchParams.get("remote")==="1")return NextResponse.json({ok:true,sources:configs.filter(c=>c.enabled!==false&&c.remote)});
+ if(req.nextUrl.searchParams.get("remote")==="1"){
+  const remote=configs.filter(c=>c.enabled!==false&&c.remote);
+  // Instagram accounts share one hourly Meta budget: offer the stalest accounts first, so when the budget
+  // runs out mid-run it's the recently-updated accounts that wait — not the same tail of the list every time.
+  try{const {rows}=await db.query("select name,last_success_at from sources");
+   const succ=new Map(rows.map((r:any)=>[r.name,r.last_success_at?new Date(r.last_success_at).getTime():0]));
+   const slots=remote.map((c,i)=>c.platform==="instagram"?i:-1).filter(i=>i>=0);
+   const igs=slots.map(i=>remote[i]).sort((a,b)=>(succ.get(a.name)??0)-(succ.get(b.name)??0));
+   slots.forEach((slot,j)=>{remote[slot]=igs[j]});
+  }catch{}
+  return NextResponse.json({ok:true,sources:remote});
+ }
  const names=req.nextUrl.searchParams.get("names");
  if(names){const want=new Set(names.split("|"));return NextResponse.json({ok:true,sources:configs.filter(c=>want.has(c.name))})}
  const {rows}=await db.query(`select s.name,s.last_success_at,s.last_error_at,s.last_error,count(e.id) filter (where e.status='active')::int as active_events
   from sources s left join events e on e.source_id=s.id group by s.id`);
  const status=new Map(rows.map((r:any)=>[r.name,r]));
+ // Each source's most recent run (success / error / skipped), so the status page can show a rate-limit
+ // deferral as its own state instead of the source silently going "Late".
+ const lastRuns=(await db.query(`select distinct on (ir.source_id) s.name as name,ir.status as run_status,coalesce(ir.finished_at,ir.started_at) as run_at from ingestion_runs ir join sources s on s.id=ir.source_id order by ir.source_id,ir.id desc`).catch(()=>({rows:[]}))).rows;
+ for(const r of lastRuns){const st=status.get(r.name);if(st){st.last_run_status=r.run_status;st.last_run_at=r.run_at}}
  const lastRun=(await db.query("select * from ingest_log where trigger<>'github' order by id desc limit 1").catch(()=>({rows:[]}))).rows[0]||null;
  const details=(await db.query(`select count(*) filter (where key<>'__error')::int as tried,count(*) filter (where (data->>'found')='true')::int as found,
    max(case when key='__error' then data->>'msg' end) as error from event_details`).catch(()=>({rows:[]}))).rows[0]||null;

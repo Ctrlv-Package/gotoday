@@ -19,6 +19,8 @@ const STATEMENTS=[
    enabled boolean not null default true,remote boolean not null default false,created_at timestamptz default now(),updated_at timestamptz default now())`,
  // API keys that renew themselves (Instagram's 60-day token); seed = tail of the Vercel value it came from.
  `create table if not exists app_tokens(name text primary key,value text not null,expires_at timestamptz,seed text,updated_at timestamptz default now())`,
+ // Meta's hourly app-usage meter (from the x-app-usage header), shared across runners so Instagram fetching can pace itself.
+ `create table if not exists meta_app_usage(id int primary key,usage int not null,at timestamptz not null default now())`,
  // Events people create on GoToday (public ones are also mirrored into events). manage_hash = sha256 of the creator's secret link.
  `create table if not exists community_events(id serial primary key,share_token text unique not null,manage_hash text unique not null,visibility text not null,status text not null,
    review_reason text,title text not null,description text,start_date date not null,start_time text,end_time text,all_day boolean not null default false,timezone text not null,

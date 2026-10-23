@@ -2,16 +2,18 @@
 import {useEffect,useMemo,useState} from "react";
 import Link from "next/link";
 // Health of every event source: when it last updated, how many events it has, and any error.
-type S={name:string;platform:string;region?:string;enabled?:boolean;remote?:boolean;status:{last_success_at:string|null;last_error_at:string|null;last_error:string|null;active_events:number}|null};
+type S={name:string;platform:string;region?:string;enabled?:boolean;remote?:boolean;status:{last_success_at:string|null;last_error_at:string|null;last_error:string|null;active_events:number;last_run_status?:string|null;last_run_at?:string|null}|null};
 const ago=(t:string|null)=>{if(!t)return"never";const h=(Date.now()-new Date(t).getTime())/36e5;return h<1?`${Math.max(1,Math.round(h*60))} min ago`:h<48?`${Math.round(h)} h ago`:`${Math.round(h/24)} days ago`};
 function state(s:S){
  if(s.enabled===false)return"paused";
  const ok=s.status?.last_success_at?new Date(s.status.last_success_at).getTime():0,err=s.status?.last_error_at?new Date(s.status.last_error_at).getTime():0;
+ const lra=s.status?.last_run_at?new Date(s.status.last_run_at).getTime():0;
+ if(s.status?.last_run_status==="skipped"&&lra>ok)return"skipped";   // Meta's hourly limit deferred it — not a failure
  if(!ok&&!err)return"new";
  if(err>ok)return"failing";
  return Date.now()-ok>36*36e5?"late":"ok";
 }
-const LABEL:Record<string,string>={ok:"✅ Updated",late:"⏰ Late",failing:"❌ Failing",paused:"⏸ Paused",new:"🆕 Not run yet"};
+const LABEL:Record<string,string>={ok:"✅ Updated",late:"⏰ Late",failing:"❌ Failing",paused:"⏸ Paused",new:"🆕 Not run yet",skipped:"⏸ Skipped — rate limit"};
 export default function Status(){
  const [secret,setSecret]=useState(""),[run,setRun]=useState<any>(null),[gh,setGh]=useState<any>(null),[det,setDet]=useState<any>(null),[qa,setQa]=useState<any>(null),[list,setList]=useState<S[]|null>(null),[err,setErr]=useState(""),[filter,setFilter]=useState("problems"),[q,setQ]=useState("");
  useEffect(()=>{try{const s=sessionStorage.getItem("gotoday:admin");if(s){setSecret(s);load(s)}}catch{}},[]);
@@ -21,11 +23,11 @@ export default function Status(){
  async function load(s=secret){setErr("");const r=await fetch("/api/admin/sources",{headers:{authorization:`Bearer ${s}`},cache:"no-store"});const d=await r.json().catch(()=>({}));
   if(!d.ok){setErr(d.error||"Couldn't load");setList(null);return}try{sessionStorage.setItem("gotoday:admin",s)}catch{}setList(d.sources);setRun(d.lastRun);setGh(d.lastGithub||null);setDet(d.details||null);setQa(d.quality||null);setLoadedAt(Date.now())}
  const rows=useMemo(()=>(list||[]).map(s=>({...s,st:state(s)})),[list]);
- const counts=useMemo(()=>{const c:Record<string,number>={ok:0,late:0,failing:0,paused:0,new:0};for(const r of rows)c[r.st]++;return c},[rows]);
+ const counts=useMemo(()=>{const c:Record<string,number>={ok:0,late:0,failing:0,paused:0,new:0,skipped:0};for(const r of rows)c[r.st]++;return c},[rows]);
  const lastRun=useMemo(()=>rows.map(r=>r.status?.last_success_at).filter(Boolean).sort().pop()||null,[rows]);
  const events=rows.reduce((n,r)=>n+(r.status?.active_events||0),0);
- const shown=rows.filter(r=>(filter==="all"||(filter==="problems"?["failing","late"].includes(r.st):filter==="instagram"?r.platform==="instagram":r.st===filter))&&(!q||r.name.toLowerCase().includes(q.toLowerCase())))
-  .sort((a,b)=>["failing","late","new","paused","ok"].indexOf(a.st)-["failing","late","new","paused","ok"].indexOf(b.st)||a.name.localeCompare(b.name));
+ const shown=rows.filter(r=>(filter==="all"||(filter==="problems"?["failing","late","skipped"].includes(r.st):filter==="instagram"?r.platform==="instagram":r.st===filter))&&(!q||r.name.toLowerCase().includes(q.toLowerCase())))
+  .sort((a,b)=>["failing","skipped","late","new","paused","ok"].indexOf(a.st)-["failing","skipped","late","new","paused","ok"].indexOf(b.st)||a.name.localeCompare(b.name));
  return <main className="detail"><header className="detailHeader"><div className="detailWrap row"><Link href="/?fresh=1" className="detailLogo">Go<span>Today</span></Link><Link href="/admin" className="navLink">Review queue</Link></div></header>
   <div className="detailWrap"><article className="detailCard"><div className="detailBody">
    <h1>Source status</h1>
@@ -35,7 +37,7 @@ export default function Status(){
      <div className="fact"><div className="k">Last update</div><div className="v">{ago(lastRun)}</div><div className="s">{events.toLocaleString()} upcoming events</div></div>
      <div className="fact"><div className="k">Last full website update</div><div className="v">{run?ago(run.started_at):"not logged yet"}</div><div className="s">{run?`${run.trigger==="schedule"?"Automatic (6 AM)":"Run by hand"} · ${run.finished_at?`${run.succeeded} ok, ${run.failed} failed`:"still running or cut off"}`:"Logged from the next run on"}</div></div>
      <div className="fact"><div className="k">Last GitHub job</div><div className="v">{gh?ago(gh.finished_at||gh.started_at):"not logged yet"}</div><div className="s">{gh?`City sites + Instagram · ${gh.succeeded} ok, ${gh.failed} failed`:"Logged from the next run on"}</div></div>
-     <div className="fact"><div className="k">Sources</div><div className="v">{counts.ok} updated</div><div className="s">{counts.failing} failing · {counts.late} late · {counts.paused} paused · {counts.new} not run yet</div></div>
+     <div className="fact"><div className="k">Sources</div><div className="v">{counts.ok} updated</div><div className="s">{counts.failing} failing · {counts.skipped} skipped (rate limit) · {counts.late} late · {counts.paused} paused · {counts.new} not run yet</div></div>
     </div>
     {gh?.failed>0&&gh.notes&&<details className="ghNotes"><summary>What failed in the last GitHub job ({gh.failed})</summary><pre>{gh.notes}</pre></details>}
     {qa&&(()=>{const L:Record<string,string>={freeButPriced:"Marked Free but shows a price",duplicates:"Same event shown twice",sharedPhoto:"Photo shared by different events",kidsTitleNotKids:"Kids/family title but no Kids label",freeTitleNotFree:"\"Free\" in title but no Free label",adultTitleFamily:"Adult title labeled Family",outdoorTitleIndoor:"Outdoor event labeled Indoor",captionTitle:"Post text shown as an event"};
@@ -51,6 +53,7 @@ export default function Status(){
       <div><b>{r.name}</b><span className="muted"> · {r.platform}{r.remote?" (GitHub job)":""}</span></div>
       <div className="row2"><span>{LABEL[r.st]}</span><span>last success {ago(r.status?.last_success_at||null)}</span><span>{r.status?.active_events??0} events</span></div>
       {(r.st==="failing"||r.st==="paused")&&r.status?.last_error&&<div className="errText">{r.status.last_error.slice(0,300)}</div>}
+      {r.st==="skipped"&&<div className="errText">Meta's hourly Instagram limit was full, so this account was deferred — not failed. Last try {ago(r.status?.last_run_at||null)}; stalest accounts go first on the next run.</div>}
      </li>)}</ul>}
    </>}
   </div></article></div></main>;
