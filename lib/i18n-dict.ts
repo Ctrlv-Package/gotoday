@@ -146,7 +146,6 @@ export const ES:Record<string,string>={
 "Signed in as {email}": "Sesión iniciada como {email}",
 "My GoToday — saved events, following, your calendar": "Mi GoToday: eventos guardados, recordatorios y tu calendario",
 "Saved|list": "Guardados",
-"Sign in|nav": "Entrar",
 "Save": "Guardar",
 "Saved": "Guardado",
 "Remove from saved": "Quitar de guardados",
@@ -293,7 +292,8 @@ export const ES:Record<string,string>={
 "Install GoToday": "Instalar GoToday",
 "GoToday, one tap away": "GoToday, a un toque de distancia",
 "Put GoToday on your home screen — no app store, no download.": "Pon GoToday en tu pantalla de inicio: sin tienda de apps, sin descargas.",
-"Tap the Share button, then \"Add to Home Screen\".": "Toca el botón Compartir y luego «Agregar a pantalla de inicio».",
+"Get GoToday on your home screen": "GoToday en tu pantalla de inicio",
+"Tap Share ⬆, then \"Add to Home Screen\".": "Toca Compartir ⬆ y luego «Agregar a pantalla de inicio».",
 "Add it": "Agregar",
 "Not now": "Ahora no"
 };
@@ -443,7 +443,6 @@ export const RU:Record<string,string>={
 "Signed in as {email}": "Вы вошли как {email}",
 "My GoToday — saved events, following, your calendar": "Мой GoToday — сохранённые события, напоминания и ваш календарь",
 "Saved|list": "Избранное",
-"Sign in|nav": "Войти",
 "Save": "Сохранить",
 "Saved": "Сохранено",
 "Remove from saved": "Убрать из избранного",
@@ -590,7 +589,8 @@ export const RU:Record<string,string>={
 "Install GoToday": "Установить GoToday",
 "GoToday, one tap away": "GoToday — в одно касание",
 "Put GoToday on your home screen — no app store, no download.": "Добавьте GoToday на главный экран — без магазина приложений и загрузок.",
-"Tap the Share button, then \"Add to Home Screen\".": "Нажмите «Поделиться», а затем «На экран „Домой“».",
+"Get GoToday on your home screen": "GoToday на главном экране",
+"Tap Share ⬆, then \"Add to Home Screen\".": "Нажмите «Поделиться» ⬆, а затем «На экран „Домой“».",
 "Add it": "Добавить",
 "Not now": "Не сейчас"
 };

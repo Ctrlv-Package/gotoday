@@ -76,9 +76,9 @@ export default function InstallPrompt() {
     <div className="installCard" role="dialog" aria-label={t("Install GoToday")}>
       <img src="/icons/icon-192.png" alt="" width={44} height={44} />
       <div className="installTxt">
-        <b>{t("GoToday, one tap away")}</b>
+        <b>{mode === "ios" ? t("Get GoToday on your home screen") : t("GoToday, one tap away")}</b>
         <span>{mode === "ios"
-          ? t("Tap the Share button, then \"Add to Home Screen\".")
+          ? t("Tap Share ⬆, then \"Add to Home Screen\".")
           : t("Put GoToday on your home screen — no app store, no download.")}</span>
       </div>
       {mode === "prompt" && <button type="button" className="installBtn" onClick={install}>{t("Add it")}</button>}
