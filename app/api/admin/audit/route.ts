@@ -76,8 +76,8 @@ export async function GET(req:NextRequest){
   for(const [u,titles] of pics){const t=[...new Set(titles)];if(t.some((a,i)=>t.some((b,j)=>j>i&&!related(a,b))))add("sharedPhoto",{area,date:day,title:t.join("  |  "),source:u.slice(0,80)})}
  }
  const summary=Object.fromEntries(Object.entries(found).map(([k,v])=>[k,v.length]));
- // Counted as problems; noSetting / kidsNoAgesNarrowed / venueIsAccount are shown for information only.
- const problems=["freeButPriced","duplicates","sharedPhoto","kidsTitleNotKids","kidsButGeneral","freeTitleNotFree","adultTitleFamily","outdoorTitleIndoor","captionTitle"].reduce((n,k)=>n+(summary[k]||0),0);
+ // Counted as problems; noSetting / kidsNoAgesNarrowed / venueIsAccount / kidsButGeneral (mostly library teen programs) are shown for information only.
+ const problems=["freeButPriced","duplicates","sharedPhoto","kidsTitleNotKids","freeTitleNotFree","adultTitleFamily","outdoorTitleIndoor","captionTitle"].reduce((n,k)=>n+(summary[k]||0),0);
  const out={ok:true,checkedAt:new Date().toISOString(),areas:AREAS.length,days:days.length,cards:total,problems,summary,examples:Object.fromEntries(Object.entries(found).map(([k,v])=>[k,v.slice(0,40)]))};
  if(req.nextUrl.searchParams.get("save")){
   await ensureSchema();
