@@ -5,6 +5,7 @@ import {getLang} from "../lib/lang-server";
 import {LangProvider} from "./components/Lang";
 import NavTracker from "./components/NavTracker";
 import PwaRegister from "./components/PwaRegister";
+import InstallPrompt from "./components/InstallPrompt";
 
 // Google Analytics (GA4). Only on the live site, so local testing doesn't count as visits.
 const GA_ID = process.env.NEXT_PUBLIC_GA_ID || "G-2DYKZBZFG9";
@@ -42,6 +43,7 @@ export default async function RootLayout({
         <LangProvider lang={lang}>{children}</LangProvider>
         <NavTracker/>
         <PwaRegister/>
+        <InstallPrompt/>
         {LIVE && GA_ID && <>
           <Script src={`https://www.googletagmanager.com/gtag/js?id=${GA_ID}`} strategy="afterInteractive" />
           <Script id="ga4" strategy="afterInteractive">{`window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}gtag('js',new Date());gtag('config','${GA_ID}');`}</Script>
