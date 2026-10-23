@@ -79,6 +79,8 @@ export function discoveryRejection(e:EventRecord):DiscoveryReason|null{
  // A "meeting" is administrative (negotiation, staff, general meeting) unless it's a club or group people join.
  if(/\bmeetings?\b/i.test(title)&&!/\b(club|group|circle|society|guild|support|social|meetup|families|parents|kids|teens|knitters|writers|readers|gardeners|chess|anime|lego)\b/i.test(title))return"meeting";
  if(/\bnegotiat\w*|\bcollective bargaining\b|\bunion (meeting|session)\b/i.test(title))return"meeting";
+ // Regular religious services (from church and temple accounts): their festivals, trunk-or-treats and trivia nights stay.
+ if(/\b(worship( service)?|sunday service|church service|holy (mass|communion|eucharist)|mass\b|sermon|bible (study|class)|prayer (service|meeting|group|night)|vespers|rosary|devotional|chapel( service)?|confirmation class|sunday school|youth group meeting|choir rehearsal)\b/i.test(title)&&!/\b(festival|fair|concert|carnival|trunk|trivia|fiesta|market|movie|picnic|block party)\b/i.test(title))return"announcement";
  // Not things to go to: bar drink specials, health services and information tables, constituent office hours.
  if(/\b(half[- ]price|happy hour|drink specials?|bogo|\$\d+ (drinks|margaritas|beers|wings|tacos))\b/i.test(title)&&!/\b(festival|crawl|party|tasting|music|trivia)\b/i.test(title))return"announcement";
  if(/\b(mammogra\w*|mobile (clinic|health|mammography)|flu shots?|vaccination clinic|blood pressure check|information table|info table|resource table|outreach table|rape treatment|constituent (tuesdays?|hours|meetings?|services)|hours of operation|adjusted hours|social worker|book[- ]a[- ]librarian)\b/i.test(title))return"announcement";
