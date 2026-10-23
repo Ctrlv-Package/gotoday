@@ -121,7 +121,9 @@ export async function GET(request:NextRequest){
   // "All day" listings (exhibits, scavenger hunts, class series) are really open-hours things: libraries, studios and
   // offices close by evening, so after 8 PM local time they're done for today.
   if(range==="today"&&allDay&&Number(localParts(new Date(now),tz).time.slice(0,2))>=20)over=true;
-  if(range==="today"&&!allDay){const end=r.end_at&&new Date(r.end_at).getTime()>start.getTime()?new Date(r.end_at).getTime():start.getTime()+4*3600e3;if(end<now)over=true;else live=start.getTime()<=now}
+  if(range==="today"&&!allDay){// No end time, or an "end" that's really the end of the day (a 9:30 AM walk "ending" at midnight): assume 4 hours.
+   const endAt=r.end_at?new Date(r.end_at).getTime():0,span=endAt-start.getTime();
+   const end=span>0&&span<=12*3600e3?endAt:start.getTime()+4*3600e3;if(end<now)over=true;else live=start.getTime()<=now}
   if(live)e.live=true;if(over)e.over=true;
   events.push(e);
  }

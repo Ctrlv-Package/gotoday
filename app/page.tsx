@@ -221,7 +221,7 @@ export default function Home(){
      {(e.tags||[]).includes("Drop-in")?<div className="hint ok">✓ {t("Drop-in, no registration")}</div>:e.registration&&e.source!=="Ticketmaster"?<div className="hint">{e.registration.split(" · ").map(x=>t(x)).join(" · ")}</div>:null}
      <div className="tags">{ageLabel(e,t)&&<span className="age">{ageLabel(e,t)}</span>}{(e.labels||(e.tags||[]).filter(t=>!["Local","Library","Free","Parks","Tickets","Drop-in"].includes(t)&&!/\(/.test(t))).slice(0,3).map(x=><span key={x}>{t(x)}</span>)}</div>
      <div className="actions">
-      <a className="primary" href={e.source==="Ticketmaster"&&e.url?e.url:detailHref(e)} target={e.source==="Ticketmaster"&&e.url?"_blank":undefined} rel="noreferrer">{e.source==="Ticketmaster"?t("Tickets")+" ↗":t("View details")}</a>
+      <a className="primary" href={detailHref(e)}>{t("View details")}</a>
       {e.id?.startsWith("db-")&&<SaveButton compact item={{id:e.id,title:e.title,date:e.date,venue:e.venue||e.city}}/>}
       {e.id&&<CalendarChoice compact id={e.id} base={`/events/${encodeURIComponent(e.id)}`}/>}
       <button type="button" className="share" title={t("Share")} onClick={()=>share(e)} aria-label={`${t("Share")}: ${e.title}`}>
