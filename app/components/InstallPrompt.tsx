@@ -78,7 +78,7 @@ export default function InstallPrompt() {
       <div className="installTxt">
         <b>{mode === "ios" ? t("Get GoToday on your home screen") : t("GoToday, one tap away")}</b>
         <span>{mode === "ios"
-          ? t("Tap Share ⬆, then \"Add to Home Screen\".")
+          ? t("Tap Share ⬆, scroll down, then \"Add to Home Screen\".")
           : t("Put GoToday on your home screen — no app store, no download.")}</span>
       </div>
       {mode === "prompt" && <button type="button" className="installBtn" onClick={install}>{t("Add it")}</button>}
