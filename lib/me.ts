@@ -3,6 +3,7 @@ import {db} from "./db";
 import {decodeHtml,isAllDay} from "./event-detail";
 import type {CalEvent} from "./calendar";
 import {DEFAULT_TZ} from "./time";
+import {rowToEvent,startOf,endOf} from "./community";
 
 const SITE=process.env.NEXT_PUBLIC_SITE_URL||"https://www.mygotoday.com";
 export type MyEventRow={id:number;title:string;start:Date;end:Date|null;tz:string;venue:string|null;city:string;image:string|null;description:string;cancelled:boolean;source:string;date:string};
@@ -34,12 +35,18 @@ export async function followedSeries(userId:number):Promise<Followed[]>{
 /** Everything for the personal calendar: saved events plus every listed date of followed events (one per day). */
 export async function calendarEvents(userId:number){
  const saved=await savedEvents(userId,60);
+ // Events this person created on GoToday (public or private, also while a public one waits for review).
+ const mine=(await db.query(`select * from community_events where user_id=$1 and status in ('live','pending') and start_date>=current_date-60`,[userId]).catch(()=>({rows:[]}))).rows.map(rowToEvent);
  const fol=(await db.query(`select distinct on (e.series_id,e.local_date) ${COLS} from follows f join events e on e.series_id=f.series_id
    join sources s on s.id=e.source_id left join venues v on v.id=e.venue_id
    where f.user_id=$1 and e.start_at>now()-interval '60 days' and (e.status='active' or e.title ~* '^\\W*(cancel+ed|postponed)')
    order by e.series_id,e.local_date,(e.title ~* '^\\W*cancel') desc,(s.name like '% · Instagram'),e.start_at`,[userId])).rows.map(row);
  // A date that's cancelled anywhere is shown as cancelled; the same date from two sources is one entry.
  const seen=new Set<string>(),out:{e:CalEvent;cancelled?:boolean}[]=[];
+ for(const c of mine){
+  seen.add(`${c.title.toLowerCase()}|${c.date}`);
+  out.push({e:{uid:`gotoday-c${c.id}`,title:c.title,description:c.description,location:[c.venue,c.address,c.city].filter(Boolean).join(", "),start:startOf(c),end:endOf(c),allDay:c.allDay,tz:c.tz,url:`${SITE}/e/${c.shareToken}`}});
+ }
  for(const r of [...fol,...saved]){
   const k=`${r.title.toLowerCase()}|${r.date}`;if(seen.has(k))continue;seen.add(k);
   out.push({cancelled:r.cancelled,e:{uid:`gotoday-${r.id}`,title:r.title,description:r.description,location:[r.venue,r.city].filter(Boolean).join(", "),

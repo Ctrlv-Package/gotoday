@@ -2,9 +2,9 @@
 import {useState} from "react";
 
 export type FormValues={title:string;description:string;date:string;startTime:string;endTime:string;allDay:boolean;venue:string;address:string;city:string;
- visibility:"public"|"private";isFree:boolean;priceText:string;ageMin:number|null;ageMax:number|null;category:string;link:string;hostName:string;image?:string};
+ visibility:"public"|"private";isFree:boolean;priceText:string;ageMin:number|null;ageMax:number|null;category:string;categories?:string[];link:string;hostName:string;image?:string};
 export const EMPTY:FormValues={title:"",description:"",date:"",startTime:"",endTime:"",allDay:false,venue:"",address:"",city:"",visibility:"public",isFree:true,priceText:"",
- ageMin:null,ageMax:null,category:"Community",link:"",hostName:"",image:""};
+ ageMin:null,ageMax:null,category:"Community",categories:["Community"],link:"",hostName:"",image:""};
 const CATEGORIES=["Community","Family","Kids","Music","Arts & Theatre","Sports","Food & Drink","Market","Party","Outdoors","Other"];
 const AGES:[string,number|null,number|null][]=[["All ages",null,null],["Kids (0–12)",0,12],["Teens (13–17)",13,17],["Adults 18+",18,null],["21+",21,null]];
 
@@ -45,8 +45,12 @@ export default function EventForm({initial,submitLabel,onSubmit,busy}:{initial:F
 
   <label className="efField">What's happening?<textarea rows={5} maxLength={4000} value={v.description} onChange={e=>set("description",e.target.value)} placeholder={v.visibility==="private"?"Pizza, cake and a bounce house! Bring a swimsuit.":"Local artisans, live music and food trucks by the bell tower."}/></label>
 
+  <fieldset className="efField efCats"><legend>Categories <small>(pick up to 4)</small></legend>
+   <div className="efCatChips">{CATEGORIES.map(c=>{const cats=v.categories?.length?v.categories:[v.category],on=cats.includes(c);
+    return <button type="button" key={c} className={on?"on":""} aria-pressed={on} onClick={()=>{let n=on?cats.filter(x=>x!==c):[...cats,c].slice(-4);if(!n.length)n=["Community"];setV(o=>({...o,categories:n,category:n[0]}))}}>{on?"✓ ":""}{c}</button>})}</div>
+  </fieldset>
+
   <div className="efRow">
-   <label className="efField">Category<select value={v.category} onChange={e=>set("category",e.target.value)}>{CATEGORIES.map(c=><option key={c}>{c}</option>)}</select></label>
    <label className="efField">Ages<select value={ageKey} onChange={e=>{const a=AGES.find(x=>x[0]===e.target.value);if(a){set("ageMin",a[1]);set("ageMax",a[2])}}}>{AGES.map(([l])=><option key={l}>{l}</option>)}{ageKey==="custom"&&<option value="custom">Ages {v.ageMin??0}–{v.ageMax??"+"}</option>}</select></label>
   </div>
 

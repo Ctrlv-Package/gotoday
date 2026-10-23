@@ -6,6 +6,7 @@ import {fmtDate,fmtTime} from "../../../lib/event-detail";
 import ShareButton from "../../events/[id]/ShareButton";
 import AddToCalendar from "../../components/AddToCalendar";
 import Rsvp from "./Rsvp";
+import {stockPicture} from "../../../lib/stockPhotos";
 export const dynamic="force-dynamic";
 
 const when=(e:CommunityEvent)=>{const s=startOf(e),en=endOf(e);return{date:fmtDate(s,undefined,e.tz),time:e.allDay?"All day":fmtTime(s,e.tz)+(en?` – ${fmtTime(en,e.tz)}`:"")}};
@@ -24,14 +25,16 @@ export default async function CommunityEventPage({params}:{params:Promise<{token
  const shell=(body:React.ReactNode)=><main className="detail"><SiteHeader extra={<Link href="/create" className="createPill" aria-label="Create event" title="Create event">+<span className="wideOnly"> Create event</span></Link>}/><div className="detailWrap">{body}</div></main>;
  if(!e||e.status==="rejected")return shell(<article className="detailCard"><div className="detailBody"><h1>Event unavailable</h1><p>This link doesn't match an event, or the host removed it.</p><Link href="/">Find something to do →</Link></div></article>);
  const w=when(e),a=ages(e),where=[e.venue,e.address,e.city].filter(Boolean).join(", "),ended=(endOf(e)||new Date(startOf(e).getTime()+(e.allDay?24:3)*3600e3)).getTime()<Date.now();
+ // No photo from the host: a library photo of that kind of event (marked as illustrative).
+ const photo=e.image||await stockPicture({title:e.title,desc:e.description,category:e.categories.join(" "),tags:e.categories,ageMax:e.ageMax}).catch(()=>""),stock=!e.image&&!!photo;
  const counts=e.visibility==="private"?await rsvpCounts(e.id):null;
  const map=`https://maps.google.com/maps?q=${encodeURIComponent(e.latitude!=null&&e.longitude!=null&&!e.address?`${e.latitude},${e.longitude}`:where)}&z=15&output=embed`;
  const dir=`https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(where)}`;
- return shell(<article className="detailCard">{e.image&&<div className="heroWrap"><img className="detailHero" src={e.image} alt=""/></div>}<div className="detailBody">
+ return shell(<article className="detailCard">{photo&&<div className="heroWrap"><img className="detailHero" src={photo} alt=""/>{stock&&<span className="stockNote">Illustrative photo</span>}</div>}<div className="detailBody">
   <div className="badges">
    {e.visibility==="private"?<span className="b private">🔒 Private event</span>:<span className="b">🌎 Public event</span>}
    {e.isFree&&<span className="b free">Free</span>}{a&&<span className="b age">{a}</span>}
-   {e.category&&e.category!=="Community"&&<span className="b">{e.category}</span>}
+   {e.categories.filter(c=>c!=="Community").map(c=><span key={c} className="b">{c}</span>)}
    {ended&&<span className="b past">This date has passed</span>}
   </div>
   <h1>{e.title}</h1>
