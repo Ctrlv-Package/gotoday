@@ -288,7 +288,13 @@ export const ES:Record<string,string>={
 "{n} h ago": "hace {n} h",
 "{n} days ago": "hace {n} días",
 "Removed": "Quitado",
-"Remove": "Quitar"
+"Remove": "Quitar",
+"Install GoToday": "Instalar GoToday",
+"GoToday, one tap away": "GoToday, a un toque de distancia",
+"Put GoToday on your home screen — no app store, no download.": "Pon GoToday en tu pantalla de inicio: sin tienda de apps, sin descargas.",
+"Tap the Share button, then \"Add to Home Screen\".": "Toca el botón Compartir y luego «Agregar a pantalla de inicio».",
+"Add it": "Agregar",
+"Not now": "Ahora no"
 };
 export const RU:Record<string,string>={
 "Waiting for {app}'s next check": "Ждём следующей проверки: {app}",
@@ -578,5 +584,11 @@ export const RU:Record<string,string>={
 "{n} h ago": "{n} ч назад",
 "{n} days ago": "{n} дн. назад",
 "Removed": "Удалено",
-"Remove": "Убрать"
+"Remove": "Убрать",
+"Install GoToday": "Установить GoToday",
+"GoToday, one tap away": "GoToday — в одно касание",
+"Put GoToday on your home screen — no app store, no download.": "Добавьте GoToday на главный экран — без магазина приложений и загрузок.",
+"Tap the Share button, then \"Add to Home Screen\".": "Нажмите «Поделиться», а затем «На экран „Домой“».",
+"Add it": "Добавить",
+"Not now": "Не сейчас"
 };

@@ -557,3 +557,11 @@ a.linkBtn{text-decoration:none}
 .efCatChips{display:flex;flex-wrap:wrap;gap:8px}
 .efCatChips button{border:1px solid var(--line);background:#fff;border-radius:999px;padding:9px 14px;font-weight:700;font-size:14px;cursor:pointer;color:var(--ink)}
 .efCatChips button.on{background:#f5f3ff;border-color:#a78bfa;color:#5b21b6}
+
+/* Install prompt (PWA): a small card at the bottom inviting visitors to add GoToday to their home screen */
+.installCard{position:fixed;left:12px;right:12px;bottom:calc(12px + env(safe-area-inset-bottom));z-index:55;display:flex;align-items:center;gap:12px;background:#fff;border:1px solid var(--line);border-radius:16px;box-shadow:0 16px 40px rgba(24,24,27,.18);padding:12px 14px;max-width:520px;margin:0 auto}
+.installCard img{border-radius:10px;flex:0 0 auto}
+.installTxt{display:flex;flex-direction:column;gap:2px;font-size:13px;color:var(--body);line-height:1.35;flex:1;min-width:0}
+.installTxt b{color:var(--ink);font-size:14px}
+.installBtn{flex:0 0 auto;background:var(--accent);color:#fff;border:0;border-radius:11px;padding:10px 16px;font-weight:800;font-size:14px;cursor:pointer}
+.installX{flex:0 0 auto;background:transparent;border:0;color:var(--muted);font-size:15px;padding:6px;line-height:1;cursor:pointer}
