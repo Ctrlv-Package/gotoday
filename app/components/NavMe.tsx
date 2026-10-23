@@ -4,7 +4,7 @@ import {useT} from "./Lang";
 import {loadMe} from "./saved";
 
 /** Top-bar link to My GoToday. Signed in: their Google photo and first name, so it's obvious they're logged in.
- *  Signed out: a heart and "My GoToday" (saved events on this device + sign in). */
+ *  Signed out: a person icon and "Sign in" (goes to sign-in, then My GoToday). */
 export default function NavMe(){
  const {t}=useT();
  const [me,setMe]=useState<{signedIn:boolean;name?:string|null;image?:string|null;email?:string}|null>(null);
@@ -16,8 +16,8 @@ export default function NavMe(){
    <span>{first}</span>
   </a>;
  }
- return <a className="meLink" href="/me" title={t("My GoToday — saved events, following, your calendar")}>
-  <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><path d="M12 20.5s-7.5-4.6-9.3-9.2C1.5 8.1 3.4 4.5 7 4.5c2 0 3.6 1.1 5 2.9 1.4-1.8 3-2.9 5-2.9 3.6 0 5.5 3.6 4.3 6.8-1.8 4.6-9.3 9.2-9.3 9.2z" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinejoin="round"/></svg>
-  <span className="wideOnly">{t("My GoToday")}</span><span className="narrowOnly">{t("Saved|list")}</span>
+ return <a className="meLink" href="/signin?next=/me" title={t("Sign in or create an account")}>
+  <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><circle cx="12" cy="8" r="4" fill="none" stroke="currentColor" strokeWidth="1.8"/><path d="M4.5 20.5c1.2-3.7 4.1-5.5 7.5-5.5s6.3 1.8 7.5 5.5" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round"/></svg>
+  <span className="wideOnly">{t("Sign in|nav")}</span><span className="narrowOnly">{t("Sign in|nav")}</span>
  </a>;
 }
