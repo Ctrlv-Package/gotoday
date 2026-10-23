@@ -72,11 +72,32 @@ export async function getImage(key:string){
  return (await db.query("select type,data from images where key=$1",[key])).rows[0] as {type:string;data:Buffer}|undefined;
 }
 
+/** A photo someone uploaded for their event: whole picture kept (no crop), at most 1600px, WebP. Re-encoding drops
+ *  the camera's hidden data (GPS location, device). Returns /img/<key>, or undefined if it isn't a readable image. */
+export async function saveUpload(buf:Buffer,uploader:string):Promise<string|undefined>{
+ await schema();
+ try{
+  const sharp=(await import("sharp")).default;
+  const meta=await sharp(buf,{failOn:"error"}).metadata();
+  if(!meta.width||!meta.height||meta.width<200||meta.height<150)return;
+  const out=await sharp(buf,{failOn:"none"}).rotate().resize({width:1600,height:1600,fit:"inside",withoutEnlargement:true}).webp({quality:80}).toBuffer();
+  const key=createHash("sha1").update(out).digest("hex").slice(0,24);
+  await db.query("insert into images(key,type,data,bytes,source_url) values($1,'image/webp',$2,$3,$4) on conflict(key) do nothing",[key,out,out.length,`upload:${uploader}`]);
+  return `/img/${key}`;
+ }catch{return}
+}
+/** Uploads from this person (by hashed address) in the last day, to stop someone filling the database. */
+export async function uploadsToday(uploader:string){
+ await schema();
+ return Number((await db.query("select count(*)::int as n from images where source_url=$1 and created_at>now()-interval '1 day'",[`upload:${uploader}`])).rows[0].n);
+}
+
 /** Drop copies no event from the last few days or the future still shows. */
 export async function purgeImages(){
  await schema();
  const r=await db.query(`delete from images i where created_at<now()-interval '2 days' and not exists
   (select 1 from events e where e.image_url='/img/'||i.key and e.local_date>=current_date-3)
-  and not exists (select 1 from stock_photos p where p.image='/img/'||i.key)`).catch(()=>({rowCount:0}));
+  and not exists (select 1 from stock_photos p where p.image='/img/'||i.key)
+  and not exists (select 1 from community_events c where c.image='/img/'||i.key and c.status<>'deleted' and c.start_date>=current_date-3)`).catch(()=>({rowCount:0}));
  return r.rowCount||0;
 }

@@ -24,8 +24,9 @@ jobs:
             i=$((i+1))
             AUTH=""; METHOD=GET
             case "$u" in POST:*) u="${u#POST:}"; METHOD=POST;; esac
+            BODY=""; case "$u" in POSTIMG:*) u="${u#POSTIMG:}"; METHOD=POST; python3 -c "import zlib,struct;w,h=900,600;raw=b''.join(b'\\x00'+bytes([70,130,180])*w for _ in range(h));c=lambda t,d:struct.pack('>I',len(d))+t+d+struct.pack('>I',zlib.crc32(t+d));open('t.png','wb').write(b'\\x89PNG\\r\\n\\x1a\\n'+c(b'IHDR',struct.pack('>IIBBBBB',w,h,8,2,0,0,0))+c(b'IDAT',zlib.compress(raw))+c(b'IEND',b''))"; BODY="--data-binary @t.png -H content-type:image/png";; esac
             case "$u" in *mygotoday.com/api/admin/*|*mygotoday.com/api/ingest*) AUTH="Authorization: Bearer $SECRET";; esac
-            curl -sSL -X $METHOD -m 300 ${AUTH:+-H "$AUTH"} -A "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0 Safari/537.36" \
+            curl -sSL -X $METHOD -m 300 $BODY ${AUTH:+-H "$AUTH"} -A "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0 Safari/537.36" \
               -D "out/$i.headers" -o "out/$i.body" "$u" || echo "curl failed" > "out/$i.error"
             head -c 400000 "out/$i.body" > "out/$i.txt" 2>/dev/null; rm -f "out/$i.body"
             echo "$i $u" >> out/index.txt

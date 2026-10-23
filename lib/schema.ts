@@ -77,6 +77,7 @@ const STATEMENTS=[
  // link kept for them so they don't have to save it).
  `alter table community_events add column if not exists user_id int,add column if not exists owner_token text`,
  `create index if not exists community_events_user_idx on community_events(user_id)`,
+ `alter table community_events add column if not exists image text`,
  `create table if not exists follows(user_id int not null references users(id) on delete cascade,series_id int not null references event_series(id) on delete cascade,
    created_at timestamptz default now(),primary key(user_id,series_id))`,
 ];

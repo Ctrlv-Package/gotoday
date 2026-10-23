@@ -27,7 +27,7 @@ export default async function CommunityEventPage({params}:{params:Promise<{token
  const counts=e.visibility==="private"?await rsvpCounts(e.id):null;
  const map=`https://maps.google.com/maps?q=${encodeURIComponent(e.latitude!=null&&e.longitude!=null&&!e.address?`${e.latitude},${e.longitude}`:where)}&z=15&output=embed`;
  const dir=`https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(where)}`;
- return shell(<article className="detailCard"><div className="detailBody">
+ return shell(<article className="detailCard">{e.image&&<div className="heroWrap"><img className="detailHero" src={e.image} alt=""/></div>}<div className="detailBody">
   <div className="badges">
    {e.visibility==="private"?<span className="b private">🔒 Private event</span>:<span className="b">🌎 Public event</span>}
    {e.isFree&&<span className="b free">Free</span>}{a&&<span className="b age">{a}</span>}

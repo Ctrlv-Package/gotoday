@@ -4,6 +4,7 @@ import {ensureSchema} from "./schema";
 import {zonedToUtc,DEFAULT_TZ} from "./time";
 import {geocodeEvent,cityCoords} from "./ingestion/geocode";
 import {fetchRetry} from "./http";
+import {getImage} from "./images";
 
 // Events people create on GoToday (no account needed).
 //  - public: screened automatically, then listed in search for their area (mirrored into `events`).
@@ -13,7 +14,7 @@ import {fetchRetry} from "./http";
 export const COMMUNITY_SOURCE="GoToday Community";
 export type Visibility="public"|"private";
 export type CommunityInput={title:string;description:string;date:string;startTime:string;endTime:string;allDay:boolean;venue:string;address:string;city:string;
- visibility:Visibility;isFree:boolean;priceText:string;ageMin:number|null;ageMax:number|null;category:string;link:string;hostName:string};
+ visibility:Visibility;isFree:boolean;priceText:string;ageMin:number|null;ageMax:number|null;category:string;link:string;hostName:string;image:string};
 export type CommunityEvent=CommunityInput&{id:number;shareToken:string;status:"live"|"pending"|"rejected"|"deleted";reviewReason:string|null;tz:string;
  latitude:number|null;longitude:number|null;eventId:number|null;createdAt:Date};
 export type Rsvp={id:number;name:string;status:"going"|"maybe"|"no";guests:number;note:string;createdAt:Date};
@@ -40,7 +41,8 @@ export function validate(raw:any):{ok:true;v:CommunityInput}|{ok:false;errors:st
  const v:CommunityInput={title:s(raw.title,120),description:String(raw.description??"").replace(/\r/g,"").trim().slice(0,4000),date:s(raw.date,10),
   startTime:time(raw.startTime),endTime:time(raw.endTime),allDay:!!raw.allDay,venue:s(raw.venue,120),address:s(raw.address,200),city,
   visibility:raw.visibility==="private"?"private":"public",isFree:raw.isFree!==false,priceText:s(raw.priceText,120),ageMin:age(raw.ageMin),ageMax:age(raw.ageMax),
-  category:CATEGORIES.includes(raw.category)?raw.category:"Community",link:/^https?:\/\/\S+$/i.test(link)?link:"",hostName:s(raw.hostName,80)};
+  category:CATEGORIES.includes(raw.category)?raw.category:"Community",link:/^https?:\/\/\S+$/i.test(link)?link:"",hostName:s(raw.hostName,80),
+  image:/^\/img\/[0-9a-f]{24}$/.test(String(raw.image||""))?String(raw.image):""};
  const errors:string[]=[];
  if(v.title.length<3)errors.push("Add a title.");
  if(!/^\d{4}-\d{2}-\d{2}$/.test(v.date))errors.push("Pick a date.");
@@ -57,6 +59,13 @@ export function validate(raw:any):{ok:true;v:CommunityInput}|{ok:false;errors:st
 
 // ---------- Automatic screening for public events ----------
 type Screen={decision:"approve"|"review"|"reject";reason:string};
+// The event's photo goes to the check too (a public listing shows it to everyone).
+async function withPhoto(prompt:string,image:string):Promise<any>{
+ if(!image)return prompt;
+ const img=await getImage(image.slice(5)).catch(()=>undefined);
+ if(!img)return prompt;
+ return[{type:"image",source:{type:"base64",media_type:img.type,data:Buffer.from(img.data).toString("base64")}},{type:"text",text:prompt+"\nThe event's photo is attached: reject if it is sexual, violent, hateful or shows private information."}];
+}
 export async function screen(v:CommunityInput):Promise<Screen>{
  const key=process.env.ANTHROPIC_API_KEY;
  if(!key)return{decision:"review",reason:"Automatic check unavailable (no ANTHROPIC_API_KEY)"};
@@ -69,7 +78,7 @@ ${JSON.stringify({title:v.title,description:v.description,date:v.date,time:v.all
 Reply with JSON only: {"decision":"approve"|"review"|"reject","reason":"short reason"}`;
  try{
   const r=await fetchRetry("https://api.anthropic.com/v1/messages",{method:"POST",headers:{"content-type":"application/json","x-api-key":key,"anthropic-version":"2023-06-01"},
-   body:JSON.stringify({model:process.env.EVENT_EXTRACT_MODEL||"claude-haiku-4-5-20251001",max_tokens:200,messages:[{role:"user",content:prompt}]})});
+   body:JSON.stringify({model:process.env.EVENT_EXTRACT_MODEL||"claude-haiku-4-5-20251001",max_tokens:200,messages:[{role:"user",content:await withPhoto(prompt,v.image)}]})});
   const d:any=await r.json().catch(()=>({}));
   if(!r.ok)return{decision:"review",reason:`Automatic check failed: ${d?.error?.message||r.status}`};
   const j=JSON.parse(((d.content||[]).map((c:any)=>c.text||"").join("").match(/\{[\s\S]*\}/)||["{}"])[0]);
@@ -88,7 +97,7 @@ async function locate(v:CommunityInput){
 function rowToEvent(r:any):CommunityEvent{
  return{id:r.id,shareToken:r.share_token,status:r.status,reviewReason:r.review_reason,tz:r.timezone,latitude:r.latitude,longitude:r.longitude,eventId:r.event_id,createdAt:new Date(r.created_at),
   title:r.title,description:r.description||"",date:r.start_date instanceof Date?r.start_date.toISOString().slice(0,10):String(r.start_date).slice(0,10),startTime:r.start_time||"",endTime:r.end_time||"",allDay:r.all_day,
-  venue:r.venue||"",address:r.address||"",city:r.city||"",visibility:r.visibility,isFree:r.is_free,priceText:r.price_text||"",ageMin:r.age_min,ageMax:r.age_max,category:r.category||"Community",link:r.link||"",hostName:r.host_name||""};
+  venue:r.venue||"",address:r.address||"",city:r.city||"",visibility:r.visibility,isFree:r.is_free,priceText:r.price_text||"",ageMin:r.age_min,ageMax:r.age_max,category:r.category||"Community",link:r.link||"",hostName:r.host_name||"",image:r.image||""};
 }
 
 export async function eventByShare(shareToken:string){await ensureSchema();const {rows}=await db.query("select * from community_events where share_token=$1 and status<>'deleted'",[shareToken]);return rows[0]?rowToEvent(rows[0]):null}
@@ -110,13 +119,13 @@ async function syncListing(e:CommunityEvent,origin:string){
  const tags=[...new Set([e.category,...(e.isFree?["Free"]:[]),...(e.ageMax!=null&&e.ageMax<=18?["Kids"]:[]),...(e.category==="Family"||e.category==="Kids"?["Family"]:[]),"Community"])];
  const url=`${origin}/e/${e.shareToken}`,start=startOf(e),end=endOf(e);
  const vals=[sourceId,`community-${e.id}`,e.title,e.description||null,start,end,venueId,e.city,e.category,"Community Event","event",tags,e.isFree,tags.includes("Family"),tags.includes("Kids"),
-  e.isFree?"Free":e.priceText||null,url,url,`community|${e.id}`,e.ageMin,e.ageMax,e.tz,e.date,e.latitude,e.longitude];
+  e.isFree?"Free":e.priceText||null,url,url,`community|${e.id}`,e.ageMin,e.ageMax,e.tz,e.date,e.latitude,e.longitude,e.image||null];
  const r=await db.query(`insert into events(source_id,external_id,title,description,start_at,end_at,venue_id,city,category,genre,event_type,tags,is_free,is_family_friendly,is_kids_activity,
-   price_text,official_url,source_url,fingerprint,age_min,age_max,timezone,local_date,latitude,longitude,status,confidence,last_verified_at,updated_at)
-  values($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18,$19,$20,$21,$22,$23,$24,$25,'active',100,now(),now())
+   price_text,official_url,source_url,fingerprint,age_min,age_max,timezone,local_date,latitude,longitude,image_url,status,confidence,last_verified_at,updated_at)
+  values($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18,$19,$20,$21,$22,$23,$24,$25,$26,'active',100,now(),now())
   on conflict(fingerprint) do update set title=excluded.title,description=excluded.description,start_at=excluded.start_at,end_at=excluded.end_at,venue_id=excluded.venue_id,city=excluded.city,
    category=excluded.category,tags=excluded.tags,is_free=excluded.is_free,is_family_friendly=excluded.is_family_friendly,is_kids_activity=excluded.is_kids_activity,price_text=excluded.price_text,
-   official_url=excluded.official_url,age_min=excluded.age_min,age_max=excluded.age_max,timezone=excluded.timezone,local_date=excluded.local_date,latitude=excluded.latitude,longitude=excluded.longitude,
+   official_url=excluded.official_url,age_min=excluded.age_min,age_max=excluded.age_max,timezone=excluded.timezone,local_date=excluded.local_date,latitude=excluded.latitude,longitude=excluded.longitude,image_url=excluded.image_url,
    status='active',last_verified_at=now(),updated_at=now() returning id`,vals);
  const id=Number(r.rows[0].id);
  if(id!==e.eventId)await db.query("update community_events set event_id=$1 where id=$2",[id,e.id]);
@@ -132,9 +141,9 @@ export async function createEvent(v:CommunityInput,ip:string,origin:string,userI
  const status=sc.decision==="approve"?"live":"pending";
  const share=token(9),manage=token(24),pt=await locate(v),tz=tzForCity(v.city);
  const {rows}=await db.query(`insert into community_events(share_token,manage_hash,visibility,status,review_reason,title,description,start_date,start_time,end_time,all_day,timezone,venue,address,city,
-   latitude,longitude,is_free,price_text,age_min,age_max,category,link,host_name,ip_hash) values($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18,$19,$20,$21,$22,$23,$24,$25) returning *`,
+   latitude,longitude,is_free,price_text,age_min,age_max,category,link,host_name,ip_hash,image) values($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18,$19,$20,$21,$22,$23,$24,$25,$26) returning *`,
   [share,hashToken(manage),v.visibility,status,sc.reason,v.title,v.description,v.date,v.startTime||null,v.endTime||null,v.allDay,tz,v.venue||null,v.address||null,v.city,
-   pt?.latitude??null,pt?.longitude??null,v.isFree,v.priceText||null,v.ageMin,v.ageMax,v.category,v.link||null,v.hostName||null,ipHash]);
+   pt?.latitude??null,pt?.longitude??null,v.isFree,v.priceText||null,v.ageMin,v.ageMax,v.category,v.link||null,v.hostName||null,ipHash,v.image||null]);
  if(userId)await db.query("update community_events set user_id=$1,owner_token=$2 where id=$3",[userId,manage,rows[0].id]);
  const e=rowToEvent(rows[0]);
  await syncListing(e,origin);
@@ -150,9 +159,9 @@ export async function updateEvent(manageToken:string,v:CommunityInput,origin:str
  const moved=v.address!==cur.address||v.venue!==cur.venue||v.city!==cur.city;
  const pt=moved?await locate(v):{latitude:cur.latitude,longitude:cur.longitude};
  const {rows}=await db.query(`update community_events set visibility=$2,status=$3,review_reason=$4,title=$5,description=$6,start_date=$7,start_time=$8,end_time=$9,all_day=$10,timezone=$11,venue=$12,address=$13,
-   city=$14,latitude=$15,longitude=$16,is_free=$17,price_text=$18,age_min=$19,age_max=$20,category=$21,link=$22,host_name=$23,updated_at=now() where id=$1 returning *`,
+   city=$14,latitude=$15,longitude=$16,is_free=$17,price_text=$18,age_min=$19,age_max=$20,category=$21,link=$22,host_name=$23,image=$24,updated_at=now() where id=$1 returning *`,
   [cur.id,v.visibility,status,reason,v.title,v.description,v.date,v.startTime||null,v.endTime||null,v.allDay,tzForCity(v.city),v.venue||null,v.address||null,v.city,pt?.latitude??null,pt?.longitude??null,
-   v.isFree,v.priceText||null,v.ageMin,v.ageMax,v.category,v.link||null,v.hostName||null]);
+   v.isFree,v.priceText||null,v.ageMin,v.ageMax,v.category,v.link||null,v.hostName||null,v.image||null]);
  const e=rowToEvent(rows[0]);await syncListing(e,origin);return{event:e};
 }
 

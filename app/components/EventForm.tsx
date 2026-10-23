@@ -2,9 +2,9 @@
 import {useState} from "react";
 
 export type FormValues={title:string;description:string;date:string;startTime:string;endTime:string;allDay:boolean;venue:string;address:string;city:string;
- visibility:"public"|"private";isFree:boolean;priceText:string;ageMin:number|null;ageMax:number|null;category:string;link:string;hostName:string};
+ visibility:"public"|"private";isFree:boolean;priceText:string;ageMin:number|null;ageMax:number|null;category:string;link:string;hostName:string;image?:string};
 export const EMPTY:FormValues={title:"",description:"",date:"",startTime:"",endTime:"",allDay:false,venue:"",address:"",city:"",visibility:"public",isFree:true,priceText:"",
- ageMin:null,ageMax:null,category:"Community",link:"",hostName:""};
+ ageMin:null,ageMax:null,category:"Community",link:"",hostName:"",image:""};
 const CATEGORIES=["Community","Family","Kids","Music","Arts & Theatre","Sports","Food & Drink","Market","Party","Outdoors","Other"];
 const AGES:[string,number|null,number|null][]=[["All ages",null,null],["Kids (0–12)",0,12],["Teens (13–17)",13,17],["Adults 18+",18,null],["21+",21,null]];
 
@@ -41,6 +41,8 @@ export default function EventForm({initial,submitLabel,onSubmit,busy}:{initial:F
    <label className="efField">City<input required maxLength={80} value={v.city} onChange={e=>set("city",e.target.value)} placeholder="Weston, FL"/></label>
   </div>
 
+  <PhotoField value={v.image||""} onChange={x=>set("image",x)}/>
+
   <label className="efField">What's happening?<textarea rows={5} maxLength={4000} value={v.description} onChange={e=>set("description",e.target.value)} placeholder={v.visibility==="private"?"Pizza, cake and a bounce house! Bring a swimsuit.":"Local artisans, live music and food trucks by the bell tower."}/></label>
 
   <div className="efRow">
@@ -62,4 +64,42 @@ export default function EventForm({initial,submitLabel,onSubmit,busy}:{initial:F
   <button className="btn primary efSubmit" type="submit" disabled={busy}>{busy?"Saving…":submitLabel}</button>
   {v.visibility==="public"&&<p className="efNote">Public events get a quick automatic check before they're listed. Please only post real, in-person events.</p>}
  </form>;
+}
+
+/** Shrinks a phone photo in the browser (max 1600px, JPEG) so uploads are quick and small. */
+async function shrink(f:File):Promise<Blob>{
+ const url=URL.createObjectURL(f);
+ try{
+  const img=await new Promise<HTMLImageElement>((ok,bad)=>{const i=new Image();i.onload=()=>ok(i);i.onerror=bad;i.src=url});
+  const k=Math.min(1,1600/Math.max(img.naturalWidth,img.naturalHeight));
+  const c=document.createElement("canvas");c.width=Math.round(img.naturalWidth*k);c.height=Math.round(img.naturalHeight*k);
+  c.getContext("2d")!.drawImage(img,0,0,c.width,c.height);
+  return await new Promise<Blob>((ok,bad)=>c.toBlob(b=>b?ok(b):bad(new Error("encode")),"image/jpeg",0.85));
+ }finally{URL.revokeObjectURL(url)}
+}
+
+/** Optional event photo or flyer: pick, preview, replace, remove. Shown on the event page and its card. */
+function PhotoField({value,onChange}:{value:string;onChange:(url:string)=>void}){
+ const [busy,setBusy]=useState(false),[err,setErr]=useState("");
+ async function pick(f?:File|null){
+  if(!f)return;setErr("");
+  if(!/^image\//.test(f.type)){setErr("Please choose a photo (JPG, PNG or WebP).");return}
+  setBusy(true);
+  try{
+   const body=await shrink(f).catch(()=>f);
+   const r=await fetch("/api/community/photo",{method:"POST",headers:{"content-type":body.type||"image/jpeg"},body});
+   const d=await r.json().catch(()=>({}));
+   if(d.ok)onChange(d.url);else setErr(d.error||"Couldn't upload that photo. Please try another.");
+  }catch{setErr("Couldn't upload the photo. Check your connection and try again.")}finally{setBusy(false)}
+ }
+ return <div className="efField efPhoto">
+  <span>Photo or flyer <small>(optional)</small></span>
+  {value?<div className="efPhotoPrev"><img src={value} alt=""/>
+    <div className="efPhotoBtns"><label className="btn ghost">{busy?"Uploading…":"Replace"}<input type="file" accept="image/*" hidden disabled={busy} onChange={e=>pick(e.target.files?.[0])}/></label>
+     <button type="button" className="btn ghost" onClick={()=>onChange("")}>Remove</button></div></div>
+   :<label className={`efPhotoDrop${busy?" busy":""}`} onDragOver={e=>e.preventDefault()} onDrop={e=>{e.preventDefault();pick(e.dataTransfer.files?.[0])}}>
+    <input type="file" accept="image/*" hidden disabled={busy} onChange={e=>pick(e.target.files?.[0])}/>
+    <b>{busy?"Uploading…":"📷 Add a photo"}</b><small>A picture of the place, last year's event, or your flyer. Events with a photo get noticed.</small></label>}
+  {err&&<small className="efPhotoErr" role="alert">{err}</small>}
+ </div>;
 }
