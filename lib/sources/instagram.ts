@@ -15,7 +15,7 @@ import {keepImages} from "../images";
 // results are cached in social_posts so reruns cost nothing. Without ANTHROPIC_API_KEY, captions only.
 
 export type InstagramConfig={username:string;source:string;idPrefix:string;city:string;venue:string;address?:string;tz?:string;maxAgeDays?:number};
-type Extracted={slide?:number;place?:string;town?:string;title:string;date:string;start?:string;end?:string;summary?:string;free?:boolean;kids?:boolean;cancelled?:boolean};
+type Extracted={slide?:number;place?:string;town?:string;title:string;date:string;start?:string;end?:string;summary?:string;free?:boolean;kids?:boolean;forKids?:boolean;cancelled?:boolean};
 type Post={id:string;caption?:string;media_type:string;media_url?:string;thumbnail_url?:string;permalink:string;timestamp:string;children?:{data:{media_url?:string;media_type:string}[]}};
 
 const GRAPH="https://graph.facebook.com/v26.0";
@@ -84,8 +84,9 @@ Rules:
 - If the post says an event is cancelled or moved, list the original date with "cancelled": true and the new date as a normal event.
 - Use a short, stable title (e.g. "Artisan Market", not "Fall Artisan Market is back!").
 - "kids": true when children are welcome and it suits them: family/community events, all-ages festivals, open houses, kids in the photo or flyer, kid activities. false only for adult events (21+, bars, wine/beer, business networking). null if you truly cannot tell.
+- "forKids": true only when the event is made FOR children or teens (story time, kids' class or camp, children's show, kids' party, trick-or-treating, egg hunt, teen night). A plant sale, market, festival or concert that families can attend is NOT forKids. Judge each event on its own, even when one post lists several.
 - "slide": if several images are attached, the number (1 = first) of the image that shows THIS event best (its own flyer or photo); omit if none does.
-Reply with JSON only: {"events":[{"title":"","date":"YYYY-MM-DD","start":"HH:MM","end":"HH:MM","slide":1,"place":"","town":"","summary":"one or two sentences","free":true|false|null,"kids":true|false|null,"cancelled":false}]} — omit start/end when not stated.`;
+Reply with JSON only: {"events":[{"title":"","date":"YYYY-MM-DD","start":"HH:MM","end":"HH:MM","slide":1,"place":"","town":"","summary":"one or two sentences","free":true|false|null,"kids":true|false|null,"forKids":true|false,"cancelled":false}]} — omit start/end when not stated.`;
 
 /** Instagram's image links are signed CDN URLs that outside services may not be allowed to open, so download
  *  the flyer here and send the bytes. */
@@ -135,6 +136,7 @@ async function askGemini(content:any[]):Promise<Extracted[]>{
 
 // Round-up accounts post one event per slide in carousels, so they get every slide read (up to 6), and
 // their posts are re-read once with the newer reading (each event's own town).
+const KIDS_TITLE=/\b(kids?|children'?s?|child|toddlers?|preschool\w*|story ?time|tots?|teens?|tweens?|youth|trick[- ]or[- ]treat\w*|trunk[- ]or[- ]treat|egg hunt|kids'? camp|baby|babies|little ones|junior)\b/i;
 const ROUNDUPS=new Set(["miami_residents","weekendbroward","todowithkidsbroward","todowithkidsmiami","thebrowardscene"]);
 async function extractWithClaude(p:Post,venue:string,city:string,roundup=false,allowClaude=true):Promise<Extracted[]>{
  // Carousels: every slide is read (up to 6, or 4 for ordinary accounts) so each event can use its own slide as its picture.
@@ -253,7 +255,10 @@ export async function fetchInstagram(cfg:InstagramConfig,startDate:string,endDat
   // Round-up accounts aren't a place: an event from them must name where it is, and the round-up itself isn't an event.
   if(ROUNDUPS.has(cfg.username)&&(!(e.place||"").trim()||/^(fun plans|things to do|what to do|weekend (guide|plans|events)|(this|the) weekend|events? (this|for the) weekend|freebies|.*\bround-?up\b|.*\bguide\b)/i.test(e.title.trim())))continue;
   const blob=`${e.title} ${e.summary||""}`.toLowerCase();
-  const family=e.kids===true||/\b(kids?|family|children|festival|halloween|trick|santa|egg hunt|parade)\b/.test(blob);
+  // Kids = made for children (the Kids filter); Family = children welcome. "kids" from the reading means only
+  // "welcome", and one post can list a kids' event next to a plant sale, so Kids needs forKids or a kids' title.
+  const forKids=e.forKids===true||KIDS_TITLE.test(e.title);
+  const family=forKids||e.kids===true||/\b(kids?|family|children|festival|halloween|trick|santa|egg hunt|parade)\b/.test(blob);
   const arts=/\b(music|concert|band|dj|art|artisan|craft|theat(er|re)|dance|film|movie)\b/.test(blob);
   const time=e.start&&/^\d{2}:\d{2}$/.test(e.start)?e.start+":00":"";
   const end=e.end&&/^\d{2}:\d{2}$/.test(e.end)?e.end+":00":undefined;
@@ -263,7 +268,7 @@ export async function fetchInstagram(cfg:InstagramConfig,startDate:string,endDat
    venue:(e.place||"").split(",")[0].trim().slice(0,120)||cfg.venue,address:e.place&&/\d/.test(e.place)?e.place.split(",").slice(1).join(",").trim()||e.place:e.place?undefined:cfg.address,date:e.date,time,endTime:end&&time&&end>time?end:undefined,
    url:e.post.permalink,sourceUrl:`https://www.instagram.com/${cfg.username}/`,image:pictureFor(e),
    category:family?"Family":arts?"Arts & Theatre":"Local",genre:"Venue Event",desc:(e.summary||"").trim()||`Posted by @${cfg.username}.`,
-   tags:[...(family?["Family"]:[]),...(e.kids?["Kids"]:[]),...(arts?["Arts & Theatre"]:[]),...(e.free?["Free"]:e.free===false?["Paid"]:[]),"Local"],
+   tags:[...(family?["Family"]:[]),...(forKids?["Kids"]:[]),...(arts?["Arts & Theatre"]:[]),...(e.free?["Free"]:e.free===false?["Paid"]:[]),"Local"],
    emoji:family?"🎉":arts?"🎨":"📍",source:cfg.source,isFree:e.free===true||undefined,eventType:"event"});
  }
  // Flyers that only name the event: look it up on the web for the official page and a real description.
@@ -287,7 +292,7 @@ export async function fetchInstagram(cfg:InstagramConfig,startDate:string,endDat
    if(d.place&&(e.venue===cfg.venue||!e.venue)&&d.place.trim()!==cfg.venue){e.venue=d.place.trim().slice(0,120);e.address=d.address||undefined}
    else if(d.address&&!e.address)e.address=d.address;
    if(d.free===true){e.isFree=true;if(!e.tags.includes("Free"))e.tags.push("Free")}
-   if(d.kids===true&&!e.tags.includes("Kids"))e.tags.push("Kids");
+   if(d.kids===true&&!e.tags.includes("Family"))e.tags.push("Family");   // children welcome, not a kids' event
   }catch(err:any){console.log(`event details ${e.title}: ${err?.message||err}`)}
  }
  // Nothing upcoming is fine; only report a failure when posts couldn't be read.

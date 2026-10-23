@@ -27,7 +27,7 @@ export async function GET(req:NextRequest){
  await Promise.all(Array.from({length:6},async()=>{while(next<jobs.length){const j=jobs[next++];
   try{const r=await fetch(`${origin}/api/events?postalCode=${j.zip}&radius=25&range=${j.day}&today=${days[0]}`,{cache:"no-store"});const d:any=await r.json();results.push({area:j.area,day:j.day,events:d.events||[]})}catch{results.push({area:j.area,day:j.day,events:[]})}}}));
 
- const found:Record<string,Hit[]>={freeButPriced:[],duplicates:[],sharedPhoto:[],kidsTitleNotKids:[],freeTitleNotFree:[],adultTitleFamily:[],outdoorTitleIndoor:[],captionTitle:[],venueIsAccount:[],noSetting:[],kidsNoAgesNarrowed:[]};
+ const found:Record<string,Hit[]>={freeButPriced:[],duplicates:[],sharedPhoto:[],kidsTitleNotKids:[],kidsButGeneral:[],freeTitleNotFree:[],adultTitleFamily:[],outdoorTitleIndoor:[],captionTitle:[],venueIsAccount:[],noSetting:[],kidsNoAgesNarrowed:[]};
  const add=(k:string,h:Hit)=>{if(found[k].length<400)found[k].push(h)};
  let total=0;const seen=new Set<string>();
  for(const {area,day,events} of results){
@@ -67,6 +67,8 @@ export async function GET(req:NextRequest){
    if(!st)add("noSetting",{...h,note:e.venue});
    if(/^(dear |we hope|join us (tomorrow|today|this)|don'?t (miss|forget)|have you|did you know|reminder|save the date|thank you|mark your|calling all|just \d+ days?|maintenance alert|why i love)/i.test(t)||(/ · Instagram$/.test(e.source||"")&&(t.length>80||/\?\s*$/.test(t))))add("captionTitle",h);
    if(/ · Instagram$/.test(e.source||"")&&String(e.venue||"").toLowerCase()===String(e.source).replace(/ · Instagram$/,"").toLowerCase())add("venueIsAccount",{...h,note:e.venue});
+   // In the Kids filter but nothing says it's for children (no kids' words, no child age range): e.g. a plant sale.
+   if(f.includes("Kids")&&!/\b(kids?|children'?s?|child|toddlers?|bab(y|ies)|preschool\w*|pre-?k|story ?time|storytelling|tots?|tweens?|teens?|youth|junior|jr|little ones|camp|trick[- ]or[- ]treat\w*|trunk[- ]or[- ]treat|egg hunt|santa|puppet\w*|lego|homework|grades?|ages? \d|\d+\s*(months|mos|yrs))\b/i.test(`${t} ${e.desc||""} ${(e.labels||[]).join(" ")}`)&&!((e.ageMax??99)<=18&&e.ageMin!=null))add("kidsButGeneral",{...h,note:(e.desc||"").slice(0,100)});
    if(f.includes("Kids")){const r=kidAgeRange(e);if(r&&r[1]-r[0]<3&&!e.ageMin)add("kidsNoAgesNarrowed",{...h,note:`${r[0]}–${r[1]}`})}
   }
   // A shared photo is only a problem between different events (the same show at two times rightly shares its photo).
@@ -75,7 +77,7 @@ export async function GET(req:NextRequest){
  }
  const summary=Object.fromEntries(Object.entries(found).map(([k,v])=>[k,v.length]));
  // Counted as problems; noSetting / kidsNoAgesNarrowed / venueIsAccount are shown for information only.
- const problems=["freeButPriced","duplicates","sharedPhoto","kidsTitleNotKids","freeTitleNotFree","adultTitleFamily","outdoorTitleIndoor","captionTitle"].reduce((n,k)=>n+(summary[k]||0),0);
+ const problems=["freeButPriced","duplicates","sharedPhoto","kidsTitleNotKids","kidsButGeneral","freeTitleNotFree","adultTitleFamily","outdoorTitleIndoor","captionTitle"].reduce((n,k)=>n+(summary[k]||0),0);
  const out={ok:true,checkedAt:new Date().toISOString(),areas:AREAS.length,days:days.length,cards:total,problems,summary,examples:Object.fromEntries(Object.entries(found).map(([k,v])=>[k,v.slice(0,40)]))};
  if(req.nextUrl.searchParams.get("save")){
   await ensureSchema();
