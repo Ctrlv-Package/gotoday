@@ -293,7 +293,7 @@ export const ES:Record<string,string>={
 "GoToday, one tap away": "GoToday, a un toque de distancia",
 "Put GoToday on your home screen — no app store, no download.": "Pon GoToday en tu pantalla de inicio: sin tienda de apps, sin descargas.",
 "Get GoToday on your home screen": "GoToday en tu pantalla de inicio",
-"Tap Share ⬆, then \"Add to Home Screen\".": "Toca Compartir ⬆ y luego «Agregar a pantalla de inicio».",
+"Tap Share ⬆, scroll down, then \"Add to Home Screen\".": "Toca Compartir ⬆, baja y elige «Agregar a pantalla de inicio».",
 "Add it": "Agregar",
 "Not now": "Ahora no"
 };
@@ -590,7 +590,7 @@ export const RU:Record<string,string>={
 "GoToday, one tap away": "GoToday — в одно касание",
 "Put GoToday on your home screen — no app store, no download.": "Добавьте GoToday на главный экран — без магазина приложений и загрузок.",
 "Get GoToday on your home screen": "GoToday на главном экране",
-"Tap Share ⬆, then \"Add to Home Screen\".": "Нажмите «Поделиться» ⬆, а затем «На экран „Домой“».",
+"Tap Share ⬆, scroll down, then \"Add to Home Screen\".": "Нажмите «Поделиться» ⬆, прокрутите вниз и выберите «На экран „Домой“».",
 "Add it": "Добавить",
 "Not now": "Не сейчас"
 };
