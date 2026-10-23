@@ -547,3 +547,7 @@ a.linkBtn{text-decoration:none}
 
 /* Phones: the top bar always fits — "← Back" short label; signed-out "Saved" shows just the heart on small phones */
 @media(max-width:400px){.detailHeader .meLink:not(.signed) .narrowOnly{display:none}.detailHeader .meLink:not(.signed){padding:8px 10px}}
+/* "+ Create event" in the top bar of event and manage pages: one line; just "+" on phones, hidden on small phones */
+.createPill{display:inline-flex;align-items:center;justify-content:center;white-space:nowrap;font-weight:800;font-size:14px;color:var(--accent);text-decoration:none;border:1px solid #ddd6fe;background:#faf5ff;border-radius:999px;padding:8px 14px;min-width:38px;line-height:1}
+@media(max-width:540px){.createPill{padding:8px 12px;font-size:18px}}
+@media(max-width:400px){.createPill{display:none}}

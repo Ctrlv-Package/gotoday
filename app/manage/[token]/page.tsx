@@ -25,7 +25,7 @@ export default function ManagePage(){
 
  const e=data?.event;
  return <main className="detail">
-  <SiteHeader extra={<Link href="/create" className="navLink small">+ Create event</Link>}/>
+  <SiteHeader extra={<Link href="/create" className="createPill" aria-label="Create event" title="Create event">+<span className="wideOnly"> Create event</span></Link>}/>
   <div className="detailWrap"><article className="detailCard"><div className="detailBody">
    {deleted?<><h1>Event deleted</h1><p>The event page and its link no longer work.</p><Link href="/create">Create another event →</Link></>
    :err?<><h1>Manage link not found</h1><p>{err}</p><Link href="/">Back to GoToday →</Link></>
