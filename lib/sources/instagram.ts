@@ -47,15 +47,27 @@ async function accessToken():Promise<string|undefined>{
 }
 
 class AccountMissing extends Error{}
+
+/** Meta meters this app's Graph calls per hour (the x-app-usage header on every reply). The newest reading is
+ *  kept in the database so every runner (Vercel and the GitHub job run this same code) can see it: when a recent
+ *  reading says the bucket is nearly full, loadPosts defers BEFORE spending another call. The source is then
+ *  recorded as a rate-limit skip and retried on a later run, instead of a whole burst being refused at once. */
+async function recordAppUsage(usage:number){if(!(usage>0))return;try{await db.query(`insert into meta_app_usage(id,usage,at) values(1,$1,now()) on conflict(id) do update set usage=excluded.usage,at=excluded.at`,[usage])}catch{}}
+async function recentAppUsage():Promise<{usage:number;ageMin:number}|null>{try{const {rows}=await db.query("select usage,extract(epoch from now()-at)/60 as age_min from meta_app_usage where id=1");if(!rows[0])return null;return{usage:Number(rows[0].usage),ageMin:Number(rows[0].age_min)}}catch{return null}}
+
 async function loadPosts(username:string):Promise<{posts:Post[];website:string}>{
  const token=await accessToken(),me=process.env.IG_USER_ID;
  if(!token||!me)throw new Error("Instagram not connected yet (set IG_USER_ID and IG_ACCESS_TOKEN in Vercel)");
+ // Pace ourselves: a recent reading near the hourly cap means this call would likely be refused anyway.
+ const gate=await recentAppUsage();
+ if(gate&&gate.usage>=85&&gate.ageMin<50)throw new Error(`Instagram rate limit: app usage at ${gate.usage}% of the hourly limit (recorded ${Math.max(1,Math.round(gate.ageMin))} min ago) — deferred without calling Meta, will retry next run`);
  const fields=`business_discovery.username(${username}){website,media.limit(30){id,caption,media_type,media_url,thumbnail_url,permalink,timestamp,children{media_url,media_type}}}`;
  const r=await fetchRetry(`${GRAPH}/${me}?fields=${encodeURIComponent(fields)}&access_token=${encodeURIComponent(token)}`,{cache:"no-store"});
  const d:any=await r.json().catch(()=>({}));
  // Meta allows only so many calls per hour. When we hit it, say so plainly; the source is skipped (not failed)
  // and picked up on the next run. Also stop early when Meta reports we're nearly at the limit.
  const usage=(()=>{try{const u=JSON.parse(r.headers.get("x-app-usage")||"{}");return Math.max(u.call_count||0,u.total_time||0,u.total_cputime||0)}catch{return 0}})();
+ await recordAppUsage(usage);
  if([4,17,32,613].includes(d?.error?.code)||/request limit reached|rate limit/i.test(d?.error?.message||""))throw new Error(`Instagram rate limit: ${d?.error?.message||"too many requests"} — will retry next run`);
  if(r.ok&&usage>=95)console.log(`instagram app usage at ${usage}% of the hourly limit`);
  if(!r.ok){if(d?.error?.code===190)tokenCache=null;

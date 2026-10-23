@@ -50,8 +50,12 @@ console.log(`Remote sources: ${configs.map(c=>c.name).join(", ")||"(none)"}`);
 const isBlock=(m:string)=>/HTTP (403|429)\b/.test(m);
 const deferred:{s:ReturnType<typeof sourceFromConfig>;error:string}[]=[];
 const queue:{s:ReturnType<typeof sourceFromConfig>;retry:boolean}[]=configs.map(c=>({s:sourceFromConfig(c),retry:false}));
+// Instagram's hourly Meta budget: once accounts start being rate-limit skipped, stop feeding the full
+// bucket — the remaining accounts keep their place at the front of the next run (stalest first).
+let igSkips=0,igStopped=false;
 for(let i=0;i<queue.length;i++){
  const {s,retry}=queue[i];
+ if(igStopped&&s.platform==="instagram"){console.log(`${s.name}: deferred to the next run (Instagram rate limit hit earlier in this run)`);continue}
  if(retry&&!queue[i-1]?.retry){console.log(`Retrying ${deferred.length} blocked source(s) after a pause…`);await new Promise(r=>setTimeout(r,90000));await resetBrowserContext()}
  await new Promise(r=>setTimeout(r,retry?10000:3000));
  let payload:any;
@@ -63,6 +67,10 @@ for(let i=0;i<queue.length;i++){
  const {r,out}=await push(payload);
  console.log(`  -> ${r.status} ${JSON.stringify(out.summary||out)}`);
  const ok=r.ok&&out.summary?.status==="success";if(!ok){failures++;problems.push(`${s.name}: ${String(out.summary?.error||out.error||"failed").slice(0,140)}`)}
+ if(s.platform==="instagram"){
+  if(out.summary?.status==="skipped"&&/Instagram rate limit/i.test(String(out.summary?.error||""))){igSkips++;if(igSkips>=3&&!igStopped){igStopped=true;console.log("Instagram rate limit: 3 accounts skipped in a row — stopping Instagram fetches for this run; the rest go first next run")}}
+  else if(ok)igSkips=0;
+ }
  const sm=out.summary||{};rows.push(`| ${s.name} | ${ok?"✅":"❌"} | ${sm.found??0} | ${sm.accepted??0} | ${sm.rejected??0} | ${String(sm.error||out.error||"").replace(/\|/g,"/").slice(0,160)} |`);
 }
 console.log(failures?`${failures} source(s) did not succeed`:"All remote sources succeeded");
