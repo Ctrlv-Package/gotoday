@@ -49,7 +49,7 @@ const SENIOR_SWAP=new Set(["dance","fitness","yoga","sports","concert","music","
 const forSeniors=(e:{title?:string;desc?:string;tags?:string[]})=>/(\b(seniors?|older adults|chair (dance|yoga|volleyball|exercise\w*)|silver club|golden years)\b|\b[5-6]\d\+)/i.test(`${e.title||""} ${(e.tags||[]).join(" ")}`);
 // Who it's for matters: a toddler "Music & Movement" gets a children's music class, not a rock concert.
 const KID_VERSION:Record<string,string>={library:"storytime",workshop:"kids",concert:"kidsmusic",music:"kidsmusic",dance:"kidsdance",theater:"kidstheater",painting:"kidsart",arts:"kidsart",crafts:"kidsart",
- artfair:"kidsart",yoga:"kidsyoga",fitness:"kidssports",sports:"kidssports",games:"kidsgames",reading:"storytime",tech:"stem",community:"kids",festival:"kids",teens:"kids",
+ artfair:"kidsart",yoga:"kids",fitness:"kidssports",sports:"kidssports",games:"kidsgames",reading:"storytime",tech:"stem",community:"kids",festival:"kids",teens:"kids",
  career:"kids",language:"kids",health:"kids",seniors:"kids",history:"kids",culture:"kids",movie:"kids"};
 export const forKids=(e:{title?:string;desc?:string;tags?:string[];ageMax?:number|null})=>
  (e.ageMax!=null&&e.ageMax<=12)||/\b(toddlers?|preschool\w*|pre-?k|kids?|children'?s?|child|bab(y|ies)|infants?|story ?time|tots|little ones|tweens?|kinder\w*|ages? [0-9])\b/i.test(`${e.title||""} ${String(e.desc||"").slice(0,300)} ${(e.tags||[]).join(" ")}`);
