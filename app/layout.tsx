@@ -1,9 +1,10 @@
 import "./globals.css";
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import Script from "next/script";
 import {getLang} from "../lib/lang-server";
 import {LangProvider} from "./components/Lang";
 import NavTracker from "./components/NavTracker";
+import PwaRegister from "./components/PwaRegister";
 
 // Google Analytics (GA4). Only on the live site, so local testing doesn't count as visits.
 const GA_ID = process.env.NEXT_PUBLIC_GA_ID || "G-2DYKZBZFG9";
@@ -17,8 +18,19 @@ export const metadata: Metadata = {
   title: "GoToday — Find something worth doing near you",
   description: "Free and local things happening near you — library storytimes, park concerts, festivals, markets and more.",
   alternates: { canonical: "/" },
-  openGraph: { siteName: "GoToday", type: "website", url: SITE, title: "GoToday", description: "Find something worth doing near you." }
+  openGraph: { siteName: "GoToday", type: "website", url: SITE, title: "GoToday", description: "Find something worth doing near you." },
+  // Installed-app presentation (the manifest itself is served by app/manifest.ts).
+  appleWebApp: { capable: true, title: "GoToday", statusBarStyle: "default" },
+  icons: {
+    icon: [
+      { url: "/icons/icon-192.png", sizes: "192x192", type: "image/png" },
+      { url: "/icons/icon-512.png", sizes: "512x512", type: "image/png" }
+    ],
+    apple: [{ url: "/icons/apple-touch-icon.png", sizes: "180x180", type: "image/png" }]
+  }
 };
+
+export const viewport: Viewport = { themeColor: "#7c3aed" };
 
 export default async function RootLayout({
   children
@@ -29,6 +41,7 @@ export default async function RootLayout({
       <body>
         <LangProvider lang={lang}>{children}</LangProvider>
         <NavTracker/>
+        <PwaRegister/>
         {LIVE && GA_ID && <>
           <Script src={`https://www.googletagmanager.com/gtag/js?id=${GA_ID}`} strategy="afterInteractive" />
           <Script id="ga4" strategy="afterInteractive">{`window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}gtag('js',new Date());gtag('config','${GA_ID}');`}</Script>
