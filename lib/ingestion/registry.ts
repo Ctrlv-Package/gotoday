@@ -216,8 +216,15 @@ export const SEED_SOURCES:SourceConfig[]=[
  {name:"Ticketmaster Gainesville & Ocala",platform:"ticketmaster",params:{latlong:"29.4,-82.2",radius:35,label:"Gainesville & Ocala"},source_type:"ticketing",url:"https://www.ticketmaster.com",priority:60,region:"gainesville"},
  {name:"Ticketmaster Tallahassee",platform:"ticketmaster",params:{latlong:"30.4383,-84.2807",radius:30,label:"Tallahassee"},source_type:"ticketing",url:"https://www.ticketmaster.com",priority:60,region:"tallahassee"},
  {name:"Ticketmaster Pensacola & Emerald Coast",platform:"ticketmaster",params:{latlong:"30.45,-86.9",radius:45,label:"Pensacola & Emerald Coast"},source_type:"ticketing",url:"https://www.ticketmaster.com",priority:60,region:"panhandle",timezone:"America/Chicago"},
- {name:"Ticketmaster Panama City",platform:"ticketmaster",params:{latlong:"30.1588,-85.6602",radius:30,label:"Panama City"},source_type:"ticketing",url:"https://www.ticketmaster.com",priority:60,region:"panhandle",timezone:"America/Chicago"},
+ {name:"Ticketmaster Panama City",platform:"ticketmaster",params:{latlong:"30.1588,-85.6602",radius:50,label:"Panama City"},source_type:"ticketing",url:"https://www.ticketmaster.com",priority:60,region:"panhandle",timezone:"America/Chicago"},
  {name:"Ticketmaster Key West",platform:"ticketmaster",params:{latlong:"24.5551,-81.78",radius:60,label:"Key West"},source_type:"ticketing",url:"https://www.ticketmaster.com",priority:60,region:"keys"},
+ // ---- Georgia ----
+ {name:"Ticketmaster Atlanta",platform:"ticketmaster",params:{latlong:"33.749,-84.388",radius:35,label:"Atlanta"},source_type:"ticketing",url:"https://www.ticketmaster.com",priority:60,region:"atlanta"},
+ {name:"Ticketmaster Savannah",platform:"ticketmaster",params:{latlong:"32.0809,-81.0912",radius:35,label:"Savannah"},source_type:"ticketing",url:"https://www.ticketmaster.com",priority:60,region:"savannah"},
+ {name:"Ticketmaster Augusta",platform:"ticketmaster",params:{latlong:"33.4735,-82.0105",radius:30,label:"Augusta"},source_type:"ticketing",url:"https://www.ticketmaster.com",priority:60,region:"augusta"},
+ {name:"Ticketmaster Athens GA",platform:"ticketmaster",params:{latlong:"33.9519,-83.3576",radius:25,label:"Athens GA"},source_type:"ticketing",url:"https://www.ticketmaster.com",priority:60,region:"athens"},
+ {name:"Ticketmaster Macon",platform:"ticketmaster",params:{latlong:"32.8407,-83.6324",radius:30,label:"Macon"},source_type:"ticketing",url:"https://www.ticketmaster.com",priority:60,region:"macon"},
+ {name:"Ticketmaster Columbus GA",platform:"ticketmaster",params:{latlong:"32.461,-84.9877",radius:30,label:"Columbus GA"},source_type:"ticketing",url:"https://www.ticketmaster.com",priority:60,region:"columbus"},
 
  ...INSTAGRAM_ACCOUNTS,
 ];

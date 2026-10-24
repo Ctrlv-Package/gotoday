@@ -234,3 +234,83 @@ City of Key Colony Beach | Key Colony Beach, FL | https://www.keycolonybeach.net
 St. Johns County Public Library | St. Augustine, FL | https://sjcpls.librarycalendar.com | jacksonville
 Marion County Public Library | Ocala, FL | https://marioncountyfl.libcal.com/calendar | gainesville
 West Florida Public Libraries | Pensacola, FL | https://wfpl.libcal.com/calendar | panhandle | America/Chicago
+
+# ==== GEORGIA ====
+# ---- Atlanta metro ----
+City of Atlanta | Atlanta, GA | https://www.atlantaga.gov | atlanta
+Atlanta-Fulton Public Library | Atlanta, GA | https://www.fulcolibrary.org | atlanta
+Fulton County | Atlanta, GA | https://www.fultoncountyga.gov | atlanta
+DeKalb County Public Library | Decatur, GA | https://dekalblibrary.org | atlanta
+DeKalb County | Decatur, GA | https://www.dekalbcountyga.gov | atlanta
+Gwinnett County Public Library | Lawrenceville, GA | https://www.gwinnettpl.org | atlanta
+Gwinnett County | Lawrenceville, GA | https://www.gwinnettcounty.com | atlanta
+Cobb County Public Library | Marietta, GA | https://www.cobbcounty.org/library | atlanta
+Cobb County | Marietta, GA | https://www.cobbcounty.org | atlanta
+Forsyth County Public Library | Cumming, GA | https://www.forsythpl.org | atlanta
+Sequoyah Regional Library | Canton, GA | https://www.sequoyahregionallibrary.org | atlanta
+Henry County Library System | McDonough, GA | https://www.henrylibraries.org | atlanta
+Clayton County Library System | Jonesboro, GA | https://www.claytonpl.org | atlanta
+Fayette County Public Library | Fayetteville, GA | https://www.fayettecountyga.gov/public_library | atlanta
+Peachtree City Library | Peachtree City, GA | https://www.peachtree-city.org/library | atlanta
+City of Sandy Springs | Sandy Springs, GA | https://www.sandyspringsga.gov | atlanta
+City of Roswell | Roswell, GA | https://www.roswellgov.com | atlanta
+City of Johns Creek | Johns Creek, GA | https://johnscreekga.gov | atlanta
+City of Alpharetta | Alpharetta, GA | https://www.alpharetta.ga.us | atlanta
+City of Milton | Milton, GA | https://www.miltonga.gov | atlanta
+City of Marietta | Marietta, GA | https://www.mariettaga.gov | atlanta
+City of Smyrna | Smyrna, GA | https://www.smyrnaga.gov | atlanta
+City of Kennesaw | Kennesaw, GA | https://www.kennesaw-ga.gov | atlanta
+City of Acworth | Acworth, GA | https://www.acworth.org | atlanta
+City of Woodstock | Woodstock, GA | https://www.woodstockga.gov | atlanta
+City of Canton | Canton, GA | https://www.cantonga.gov | atlanta
+City of Dunwoody | Dunwoody, GA | https://www.dunwoodyga.gov | atlanta
+City of Brookhaven | Brookhaven, GA | https://www.brookhavenga.gov | atlanta
+City of Chamblee | Chamblee, GA | https://www.chambleega.com | atlanta
+City of Decatur | Decatur, GA | https://www.decaturga.com | atlanta
+City of Tucker | Tucker, GA | https://www.tuckerga.gov | atlanta
+City of Stonecrest | Stonecrest, GA | https://www.stonecrestga.gov | atlanta
+City of Peachtree Corners | Peachtree Corners, GA | https://www.peachtreecornersga.gov | atlanta
+City of Duluth | Duluth, GA | https://www.duluthga.net | atlanta
+City of Suwanee | Suwanee, GA | https://www.suwanee.com | atlanta
+City of Lawrenceville | Lawrenceville, GA | https://www.lawrencevillega.org | atlanta
+City of Snellville | Snellville, GA | https://www.snellville.org | atlanta
+City of Buford | Buford, GA | https://www.cityofbuford.com | atlanta
+City of Sugar Hill | Sugar Hill, GA | https://www.cityofsugarhill.com | atlanta
+City of Cumming | Cumming, GA | https://www.cityofcumming.net | atlanta
+City of Peachtree City | Peachtree City, GA | https://www.peachtree-city.org | atlanta
+City of Newnan | Newnan, GA | https://www.newnanga.gov | atlanta
+City of McDonough | McDonough, GA | https://www.mcdonoughga.org | atlanta
+City of East Point | East Point, GA | https://www.eastpointcity.org | atlanta
+City of College Park | College Park, GA | https://www.collegeparkga.com | atlanta
+City of Douglasville | Douglasville, GA | https://www.douglasvillega.gov | atlanta
+City of Gainesville | Gainesville, GA | https://www.gainesville.org | atlanta
+Atlanta BeltLine | Atlanta, GA | https://beltline.org | atlanta
+Atlanta Botanical Garden | Atlanta, GA | https://atlantabg.org | atlanta
+Fernbank Museum | Atlanta, GA | https://www.fernbankmuseum.org | atlanta
+Atlanta History Center | Atlanta, GA | https://www.atlantahistorycenter.com | atlanta
+Emory University | Atlanta, GA | https://www.emory.edu/home/events | atlanta
+Georgia Tech | Atlanta, GA | https://calendar.gatech.edu | atlanta
+
+# ---- Savannah / Coastal Georgia ----
+City of Savannah | Savannah, GA | https://www.savannahga.gov | savannah
+Chatham County | Savannah, GA | https://www.chathamcountyga.gov | savannah
+Live Oak Public Libraries | Savannah, GA | https://www.liveoakpl.org | savannah
+City of Tybee Island | Tybee Island, GA | https://www.cityoftybee.org | savannah
+City of Pooler | Pooler, GA | https://www.pooler-ga.gov | savannah
+City of Richmond Hill | Richmond Hill, GA | https://www.richmondhill-ga.gov | savannah
+City of Brunswick | Brunswick, GA | https://www.brunswickga.gov | savannah
+Glynn County | Brunswick, GA | https://www.glynncounty.org | savannah
+Three Rivers Regional Library | Brunswick, GA | https://www.threeriverslibraries.org | savannah
+
+# ---- Augusta / Athens / Macon / Columbus ----
+Augusta-Richmond County | Augusta, GA | https://www.augustaga.gov | augusta
+Augusta-Richmond County Public Library | Augusta, GA | https://www.arcpls.org | augusta
+Columbia County | Evans, GA | https://www.columbiacountyga.gov | augusta
+Athens-Clarke County | Athens, GA | https://www.accgov.com | athens
+Athens Regional Library System | Athens, GA | https://www.athenslibrary.org | athens
+University of Georgia | Athens, GA | https://calendar.uga.edu | athens
+Macon-Bibb County | Macon, GA | https://www.maconbibb.us | macon
+Middle Georgia Regional Library | Macon, GA | https://www.bibblib.org | macon
+City of Warner Robins | Warner Robins, GA | https://www.wrga.gov | macon
+Columbus Consolidated Government | Columbus, GA | https://www.columbusga.gov | columbus
+Chattahoochee Valley Libraries | Columbus, GA | https://www.cvlga.org | columbus
