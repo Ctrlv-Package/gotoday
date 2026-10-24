@@ -18,6 +18,8 @@ export async function installBrowserFetch(){
   // Calls that carry credentials (our own GoToday API) go direct: a page load can't send an Authorization header.
   const hasAuth=!!new Headers(init?.headers||{}).get("authorization");
   if(hasAuth||!/^https?:/.test(url))return nodeFetch(input,init);
+  // Calendar files (.ics / iCal feeds) download instead of showing in a page: read those directly.
+  if(/\.ics\b|\/ical\b|feed\/ical|[?&]ical=|iCalendar\.aspx/i.test(url))return nodeFetch(input,init);
   // Data requests other than GET (broward.org's calendar is a POST) are sent from inside the site's own page, so they
   // carry the browser's cookies and fingerprint like a visitor's would.
   if(method!=="GET"){

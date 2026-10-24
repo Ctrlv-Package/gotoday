@@ -25,13 +25,17 @@ async function probe(c:Cand):Promise<Found[]>{
  const name=c.name||titleName(html,host);
 
  // Communico (libraries)
- const comm=html.match(/https?:\/\/([a-z0-9-]+)\.libnet\.info/i)?.[1];
- if(comm){const t=await get(`https://${comm}.libnet.info/eeventcaldata?event_type=0&req=${encodeURIComponent(JSON.stringify({private:false,date:new Date().toISOString().slice(0,10),days:3,locations:[],ages:[],types:[]}))}`);
+ // On a library's own domain (events.dekalblibrary.org) the page names its Communico client instead of linking libnet.info.
+ const commOwn=/libnet\.info|communico/i.test(html)?(html.match(/<meta[^>]+name="client"[^>]+content="([a-z0-9_-]+)"/i)?.[1]||html.match(/\bclient\s*:\s*['"]([a-z0-9_-]+)['"]/i)?.[1]):undefined;
+ const comm=html.match(/https?:\/\/([a-z0-9-]+)\.libnet\.info/i)?.[1]&&!commOwn?html.match(/https?:\/\/([a-z0-9-]+)\.libnet\.info/i)?.[1]:commOwn;
+ const commBase=commOwn&&!/libnet\.info$/.test(host)?origin:comm?`https://${comm}.libnet.info`:"";
+ if(comm){const t=await get(`${commBase}/eeventcaldata?event_type=0&req=${encodeURIComponent(JSON.stringify({private:false,date:new Date().toISOString().slice(0,10),days:3,locations:[],ages:[],types:[]}))}`);
   const n=(()=>{try{return JSON.parse(t.text).length}catch{return 0}})();
-  out.push({input:arg,platform:"communico",confidence:n?"confirmed":"likely",note:`${n} events in next 3 days`,config:{name,platform:"communico",params:{client:comm,defaultVenue:name,defaultCity:city||undefined},source_type:"official-county",url:`https://${comm}.libnet.info/events`}})}
+  out.push({input:arg,platform:"communico",confidence:n?"confirmed":"likely",note:`${n} events in next 3 days`,config:{name,platform:"communico",params:{client:comm,...(commBase.endsWith("libnet.info")?{}:{baseUrl:commBase}),defaultVenue:name,defaultCity:city||undefined},source_type:"official-county",url:`${commBase}/events`}})}
 
  // BiblioCommons (libraries)
- const bib=html.match(/https?:\/\/([a-z0-9-]+)\.bibliocommons\.com/i)?.[1];
+ // The library's own BiblioCommons name, not a shared CDN host (cdn-nerf, cor-liv-cdn-static, gateway…).
+ const bib=(host.endsWith(".bibliocommons.com")?host.split(".")[0]:"")||[...html.matchAll(/https?:\/\/([a-z0-9-]+)\.bibliocommons\.com/gi)].map(m=>m[1].toLowerCase()).find(x=>!/^(cdn|cor-|static|gateway|www|api|assets?|media|images?)/.test(x)&&!/cdn|static/.test(x));
  if(bib){const t=await get(`https://gateway.bibliocommons.com/v2/libraries/${bib}/events?limit=1`);
   const n=(()=>{try{return JSON.parse(t.text)?.events?.pagination?.count||0}catch{return 0}})();
   out.push({input:arg,platform:"bibliocommons",confidence:n?"confirmed":"likely",note:`${n} upcoming events`,config:{name,platform:"bibliocommons",params:{library:bib,defaultCity:city||"",state:city.split(",")[1]?.trim()},source_type:"official-county",url:`https://${bib}.bibliocommons.com/v2/events`}})}
