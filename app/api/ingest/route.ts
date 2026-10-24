@@ -1,4 +1,5 @@
 import {refreshRepeating} from "../../../lib/community";
+import {decidePending} from "../../../lib/photoTopic";
 import {NextRequest,NextResponse} from "next/server";
 import {persistIngestion} from "../../../lib/ingestion/persist";
 import {activeSources} from "../../../lib/ingestion/registry";
@@ -57,6 +58,7 @@ async function run(req:NextRequest){
   await purgeImages().catch(()=>{});   // saved pictures of events that are over
   await buildLibrary(10).catch(()=>{});   // stock photo library: fill any event type still missing photos
   await refreshRepeating(SITE).catch(()=>{});   // repeating community events: list the next dates
+  await decidePending(6).catch(()=>{});   // photo types for new event titles (AI, free tier)
   await assignSeries().catch(()=>{});   // annual-event families for listings added since the last run
   // Upcoming events saved without a map position get their town's center, so searches can find them.
   try{const {rows}=await db.query("select distinct city from events where latitude is null and status='active' and local_date>=current_date and city is not null limit 40");

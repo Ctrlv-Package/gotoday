@@ -3,6 +3,7 @@ import {storeImage} from "./images";
 import * as images from "./images";
 import {TOPICS, NEVER, type Topic} from "./stockPhotoData";
 export {TOPICS};
+import {decidedTopics,titleKey} from "./photoTopic";
 
 // Events with no picture of their own (a library program, a city class) get a real photo of that kind of event from
 // Pixabay (free; copies may be kept). A small library is built once: several photos per event type, saved on our side.
@@ -38,7 +39,7 @@ async function library(){
 const hash=(s:string)=>{let h=2166136261;for(const c of s.toLowerCase().replace(/[^a-z0-9]+/g,""))h=Math.imul(h^c.charCodeAt(0),16777619);return h>>>0};
 
 // A type that has no photos yet (or lost them) borrows from the closest related type.
-const NEXT:Record<string,string>={discussion:"language",library:"reading",workshop:"career",kidsmusic:"kids",kidsdance:"kids",kidsart:"crafts",kidstheater:"kids",kidsyoga:"kids",kidssports:"kids",kidsgames:"kids",soccer:"sports",basketball:"sports",baseball:"sports",tennis:"sports",swim:"sports",golf:"sports",fitness:"sports",sports:"kids",
+const NEXT:Record<string,string>={kidshalloween:"halloween",halloweenparty:"halloween",fallfestival:"festival",kidschristmas:"christmas",holidaylights:"christmas",kidscooking:"food",winetasting:"food",dayofdead:"culture",diwali:"culture",discussion:"language",library:"reading",workshop:"career",kidsmusic:"kids",kidsdance:"kids",kidsart:"crafts",kidstheater:"kids",kidsyoga:"kids",kidssports:"kids",kidsgames:"kids",soccer:"sports",basketball:"sports",baseball:"sports",tennis:"sports",swim:"sports",golf:"sports",fitness:"sports",sports:"kids",
  pets:"animals",animals:"nature",cars:"festival",history:"culture",culture:"festival",health:"community",seniors:"community",teens:"community",career:"community",
  language:"reading",sensory:"baby",festival:"blockparty",kids:"baby",music:"concert",arts:"painting",community:"festival",blockparty:"concert",concert:"festival",
  dance:"theater",theater:"concert",movie:"theater",yoga:"fitness",artfair:"painting",market:"farmersmarket",food:"market",boat:"beach",beach:"nature",nature:"garden",
@@ -48,7 +49,7 @@ const NEXT:Record<string,string>={discussion:"language",library:"reading",worksh
 const SENIOR_SWAP=new Set(["dance","fitness","yoga","sports","concert","music","community"]);
 const forSeniors=(e:{title?:string;desc?:string;tags?:string[]})=>/(\b(seniors?|older adults|chair (dance|yoga|volleyball|exercise\w*)|silver club|golden years)\b|\b[5-6]\d\+)/i.test(`${e.title||""} ${(e.tags||[]).join(" ")}`);
 // Who it's for matters: a toddler "Music & Movement" gets a children's music class, not a rock concert.
-const KID_VERSION:Record<string,string>={library:"storytime",workshop:"kids",concert:"kidsmusic",music:"kidsmusic",dance:"kidsdance",theater:"kidstheater",painting:"kidsart",arts:"kidsart",crafts:"kidsart",
+const KID_VERSION:Record<string,string>={halloween:"kidshalloween",christmas:"kidschristmas",food:"kidscooking",library:"storytime",workshop:"kids",concert:"kidsmusic",music:"kidsmusic",dance:"kidsdance",theater:"kidstheater",painting:"kidsart",arts:"kidsart",crafts:"kidsart",
  artfair:"kidsart",yoga:"kids",fitness:"kidssports",sports:"kidssports",games:"kidsgames",reading:"storytime",tech:"stem",community:"kids",festival:"kids",teens:"kids",
  career:"kids",language:"kids",health:"kids",seniors:"kids",history:"kids",culture:"kids",movie:"kids"};
 export const forKids=(e:{title?:string;desc?:string;tags?:string[];ageMax?:number|null})=>
@@ -56,9 +57,14 @@ export const forKids=(e:{title?:string;desc?:string;tags?:string[];ageMax?:numbe
 
 /** The library photo for an event with no picture ("" if the library isn't built yet). */
 export async function stockPicture(e:{title:string;desc?:string;category?:string;tags?:string[];ageMax?:number|null;source?:string;venue?:string|null}):Promise<string>{
- const by=await library();let topic=topicFor({...e,venue:e.venue||undefined});
- if(forSeniors(e)&&SENIOR_SWAP.has(topic))topic="seniors";
- else if(forKids(e)&&KID_VERSION[topic])topic=KID_VERSION[topic];
+ const by=await library();
+ // The AI reader's choice for this title (lib/photoTopic) wins; keyword rules are the fallback until it's read.
+ const ai=(await decidedTopics().catch(()=>new Map<string,string>())).get(titleKey(e.title));
+ let topic=ai&&ai!=="none"?ai:topicFor({...e,venue:e.venue||undefined});
+ if(!ai||ai==="none"){
+  if(forSeniors(e)&&SENIOR_SWAP.has(topic))topic="seniors";
+  else if(forKids(e)&&KID_VERSION[topic])topic=KID_VERSION[topic];
+ }
  for(let i=0;i<6&&!by.get(topic)?.length&&NEXT[topic];i++)topic=NEXT[topic];
  const l=by.get(topic)||[];
  return l.length?l[hash(e.title)%l.length]:"";
