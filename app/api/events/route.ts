@@ -50,6 +50,8 @@ function mergeCopy(keep:any,other:any){
  // mention the $5 doesn't make it free).
  if(keep.paid||other.paid){m.paid=true;m.isFree=false;m.facets=(m.facets||[]).filter((f:string)=>f!=="Free");other={...other,facets:(other.facets||[]).filter((f:string)=>f!=="Free"),isFree:false}}
  if(!m.image&&other.image)m.image=other.image;
+ // A calendar listing without a time ("all day") takes the time another copy states (the city's post: 6–8 PM).
+ if(!m.time&&other.time){m.time=other.time;m.live=other.live;m.over=other.over}
  m._places=[...(keep._places||[]),...(other._places||[])];
  m._pics=[...(keep._pics||[]),...(other._pics||[])];
  if(thinDesc(m.desc)&&!thinDesc(other.desc||""))m.desc=other.desc;

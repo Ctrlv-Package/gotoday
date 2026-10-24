@@ -22,10 +22,10 @@ export function sameEvent(a:string,b:string){
 const thin=(d:string)=>!d||/^Official .* event\.$/.test(d)||/^Posted by @/.test(d)||d.length<40;
 const expired=(u:string)=>{const oe=/cdninstagram\.com|fbcdn\.net/.test(u)&&u.match(/[?&]oe=([0-9A-Fa-f]{8})/);return!!oe&&parseInt(oe[1],16)*1000<Date.now()};
 
-type Fillable={id:number;source:string;title:string;venue?:string|null;address?:string|null;category?:string|null;tags?:string[];stockImage?:boolean;backupImage?:string;description:string;image:string|null;city:string;lat:number|null;lng:number|null;ageMin:number|null;ageMax:number|null;start:Date;tz:string};
+type Fillable={id:number;source:string;title:string;venue?:string|null;address?:string|null;category?:string|null;tags?:string[];stockImage?:boolean;backupImage?:string;description:string;image:string|null;city:string;lat:number|null;lng:number|null;ageMin:number|null;ageMax:number|null;start:Date;end?:Date|null;tz:string};
 export async function fillFromCopies<T extends Fillable>(e:T):Promise<T>{
  const day=new Intl.DateTimeFormat("en-CA",{timeZone:e.tz,year:"numeric",month:"2-digit",day:"2-digit"}).format(e.start);
- const {rows}=await db.query(`select e.id,e.title,e.description,e.image_url,e.city,e.age_min,e.age_max,e.start_at,s.name as source,v.name as venue,v.address,
+ const {rows}=await db.query(`select e.id,e.title,e.description,e.image_url,e.city,e.age_min,e.age_max,e.start_at,e.end_at,s.name as source,v.name as venue,v.address,
    coalesce(v.latitude,e.latitude) as lat,coalesce(v.longitude,e.longitude) as lng
   from events e join sources s on s.id=e.source_id left join venues v on v.id=e.venue_id
   where e.local_date=$1::date and e.status='active' and e.id<>$2 limit 3000`,[day,e.id]).catch(()=>({rows:[] as any[]}));
@@ -51,6 +51,8 @@ export async function fillFromCopies<T extends Fillable>(e:T):Promise<T>{
   if(pl&&pl.id!==e.id||pl&&pl.venue!==e.venue){out.venue=pl.venue||null;out.address=pl.address||null;if(pl.lat!=null){out.lat=pl.lat;out.lng=pl.lng??out.lng}if(pl.city)out.city=pl.city}}
  if(!copies.length)return out;
 
+ // No time on this listing ("all day"): use the time another copy states.
+ if(hm(e.start)==="00:00"){const t=copies.find((r:any)=>hm(new Date(r.start_at))!=="00:00");if(t){out.start=new Date(t.start_at);if("end" in out)out.end=t.end_at?new Date(t.end_at):null}}
  if(thin(out.description)){const d=copies.find((r:any)=>!thin(r.description||""));if(d)out.description=d.description}
  if(out.ageMin==null){const a=copies.find((r:any)=>r.age_min!=null);if(a){out.ageMin=a.age_min;out.ageMax=a.age_max}}
  return out;
