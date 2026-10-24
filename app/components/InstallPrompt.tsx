@@ -58,6 +58,26 @@ export default function InstallPrompt() {
     };
   }, []);
 
+  // iOS never reports that "Add to Home Screen" actually happened — Android fires
+  // appinstalled, Safari fires nothing, so an iPhone user who followed the steps would
+  // otherwise keep seeing this card until they hunt for the ✕. The natural flow is the
+  // strongest signal available: the card was up, the tab went hidden (they left Safari
+  // to do it / check the icon), and now it's visible again. Treat that as "added" and
+  // remember it like a dismissal. Worst case we under-nag someone who was mid-install.
+  useEffect(() => {
+    if (mode !== "ios") return;
+    let wentHidden = false;
+    const onVis = () => {
+      if (document.hidden) { wentHidden = true; return; }
+      if (wentHidden) {
+        try { localStorage.setItem(DISMISS_KEY, String(Date.now())); } catch {}
+        setMode(null);
+      }
+    };
+    document.addEventListener("visibilitychange", onVis);
+    return () => document.removeEventListener("visibilitychange", onVis);
+  }, [mode]);
+
   if (!mode || /^\/(admin|signin|me|manage|cal|create)/.test(path || "")) return null;
 
   const dismiss = () => {
