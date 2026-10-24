@@ -126,7 +126,8 @@ console.log(failures?`${failures} source(s) did not succeed`:"All remote sources
  const total=configs.length+igTotal+fbTried,bad=failures+igFailed+fbFailed;
  await fetch(`${base}/api/ingest/report`,{method:"POST",headers:{"content-type":"application/json",authorization:`Bearer ${secret}`},
   body:JSON.stringify({sources:total,succeeded:total-bad,failed:bad,startedAt,notes:problems.slice(0,25).join("\n")})}).catch(e=>console.log(`Could not send the run report: ${e?.message||e}`));
- if(failures)process.exitCode=1;
+ // One city site being down is normal and shows in the table; the run is marked failed only when many fail at once.
+ if(failures>Math.max(3,configs.length*0.25))process.exitCode=1;
  await closeBrowserFetch();
 }
 main().catch(e=>{console.error(e);process.exit(1)});
