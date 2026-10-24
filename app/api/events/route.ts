@@ -7,6 +7,7 @@ import { discoveryRejection } from "../../../lib/ingestion/utils";
 import { bestPicture } from "../../../lib/pictures";
 import { choosePlace } from "../../../lib/places";
 import { sameEvent, familyPictures, familyKey } from "../../../lib/copies";
+import { sameEventCard, words, town } from "../../../lib/sameCard";
 import { stockPicture } from "../../../lib/stockPhotos";
 import { localParts, todayIn, DEFAULT_TZ } from "../../../lib/time";
 import { CITY_COORDS, milesBetween as miles } from "../../../lib/cities";
@@ -144,11 +145,6 @@ export async function GET(request:NextRequest){
  // sometimes twice from one source (a cut-off title). Two listings are the same event when they're on the same day
  // and either (a) start at the same time at the same venue with overlapping titles, or (b) are in the same place and
  // their titles mostly match (one of them a post), or (c) come from one source at one time with one title cut off.
- const STOP=new Set(["the","and","of","a","at","in","on","for","with","to","annual","city","town","village","free","fl","event","day","night","2025","2026","2027"]);
- const words=(t:string)=>new Set(t.toLowerCase().replace(/&/g," and ").replace(/[^a-z0-9]+/g," ").split(" ").filter(w=>w.length>2&&!STOP.has(w)));
- const place=(x:string)=>String(x||"").toLowerCase().replace(/&/g,"and").replace(/[^a-z0-9]+/g," ").trim();
- const town=(x:string)=>String(x||"").toLowerCase().replace(/^ft\.?\s/,"fort ").replace(/,.*$/,"").trim();
- const flat=(t:string)=>t.toLowerCase().replace(/[^a-z0-9]+/g,"");
  // Which copy leads the card: the organizer's calendar, then Ticketmaster, then the organizer's post, then round-ups.
  const rank=(e:any)=>isRoundup(e)?3:isIg(e)?2:e.source==="Ticketmaster"?1:0;
  // The same photo on 3+ differently named events is a cover or a placeholder (a round-up post's cover, a city's
@@ -158,21 +154,10 @@ export async function GET(request:NextRequest){
   const shared=new Set((await db.query("select image_url from events where image_url=any($1) group by image_url having count(distinct lower(title))>=3",[igPics]).catch(()=>({rows:[]}))).rows.map((r:any)=>r.image_url));
   for(const e of events as any[]){if(shared.has(e.image))e.image="";e._pics=(e._pics||[]).filter((p:any)=>!shared.has(p.image))}
  }
+ // Matching rules (lib/sameCard, with tests): same day; same time and venue; a post about a listed event; or same
+ // town and time from two listers sharing two title words, never across two different named places.
  const wc=new Map<any,Set<string>>(),W=(e:any)=>{let w=wc.get(e);if(!w){w=words(e.title);wc.set(e,w)}return w};
- const partOf=(t:string)=>/^(opening|closing) reception|^vip\b|\bpreview\b|after ?party|pre-?show|meet (and|&) greet|costume contest/i.test(t);
- const same=(a:any,b:any)=>{
-  if(a.date!==b.date||partOf(a.title)!==partOf(b.title))return false;   // an opening reception isn't a copy of its exhibit
-  const wa=W(a),wb=W(b);let hit=0;for(const x of wa)if(wb.has(x))hit++;
-  const fa=flat(a.title),fb=flat(b.title),contains=fa.length>=4&&fb.length>=4&&(fa.includes(fb)||fb.includes(fa));
-  const timesOk=!a.time||!b.time||a.time===b.time;
-  if(a.time&&a.time===b.time&&place(a.venue)&&place(a.venue)===place(b.venue)&&(hit>=1||contains))return true;                       // (a)
-  if(a.source===b.source&&a.time===b.time&&fa.length>=10&&fb.length>=10&&(fa.startsWith(fb)||fb.startsWith(fa)))return true;           // (c)
-  if(!(isIg(a)||isIg(b))||!timesOk)return false;
-  const near=(typeof a.distanceMiles==="number"&&typeof b.distanceMiles==="number"&&Math.abs(a.distanceMiles-b.distanceMiles)<4)||(!!town(a.city)&&town(a.city)===town(b.city));
-  if(!near)return false;
-  const small=Math.min(wa.size,wb.size);if(!small)return contains;
-  return contains||(hit>=Math.min(2,small)&&hit/small>=0.6);                                                                            // (b)
- };
+ const same=(a:any,b:any)=>sameEventCard(a,b,W);
  const better=(a:any,b:any)=>rank(a)!==rank(b)?rank(a)<rank(b):(!!a.image!==!!b.image?!!a.image:(a.desc||"").length>=(b.desc||"").length);
  const kept:any[]=[],byDay=new Map<string,number[]>();
  for(const e of [...events].sort((a:any,b:any)=>rank(a)-rank(b))){
