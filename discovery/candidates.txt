@@ -750,3 +750,5 @@ University of Vermont | Burlington, VT | https://www.uvm.edu/calendar | burlingt
 Worcester Public Library | Worcester, MA | https://www.mywpl.org/events | worcester
 Bangor Public Library | Bangor, ME | https://bangorpubliclibrary.libcal.com/calendar | bangor
 Rochester Public Library (LibCal) | Rochester, NY | https://roccitylibrary.org | rochester
+Worcester Public Library | Worcester, MA | https://www.mywpl.org/events | worcester
+Bangor Public Library | Bangor, ME | https://bangorpubliclibrary.libcal.com/calendar | bangor

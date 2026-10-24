@@ -31,8 +31,11 @@ async function probe(c:Cand):Promise<Found[]>{
  // On a library's own domain (events.dekalblibrary.org) the page names its Communico client instead of linking libnet.info.
  const commOwn=/libnet\.info|communico/i.test(h)?(h.match(/<meta[^>]+name="client"[^>]+content="([a-z0-9_-]+)"/i)?.[1]||h.match(/\bclient\s*:\s*['"]([a-z0-9_-]+)['"]/i)?.[1]||h.match(/libnet\.info\/[^"'\s]*?\/(?:editor|events)\/([a-z0-9_-]+)\//i)?.[1]):undefined;
  const comm=h.match(/https?:\/\/([a-z0-9-]+)\.libnet\.info/i)?.[1]&&!commOwn?h.match(/https?:\/\/([a-z0-9-]+)\.libnet\.info/i)?.[1]:commOwn;
- const commBase=commOwn&&!/libnet\.info$/.test(host)?origin:comm?`https://${comm}.libnet.info`:"";
- if(comm){const t=await get(`${commBase}/eeventcaldata?event_type=0&req=${encodeURIComponent(JSON.stringify({private:false,date:new Date().toISOString().slice(0,10),days:3,locations:[],ages:[],types:[]}))}`);
+ const commReq=`/eeventcaldata?event_type=0&req=${encodeURIComponent(JSON.stringify({private:false,date:new Date().toISOString().slice(0,10),days:3,locations:[],ages:[],types:[]}))}`;
+ // The feed lives on the library's own domain (events.dekalblibrary.org) or on <client>.libnet.info: try both.
+ let commBase=commOwn&&!/libnet\.info$/.test(host)?origin:comm?`https://${comm}.libnet.info`:"";
+ if(comm&&commBase===origin){const t=await get(origin+commReq);if(!(()=>{try{return JSON.parse(t.text).length}catch{return 0}})())commBase=`https://${comm}.libnet.info`}
+ if(comm){const t=await get(`${commBase}${commReq}`);
   const n=(()=>{try{return JSON.parse(t.text).length}catch{return 0}})();
   out.push({input:arg,platform:"communico",confidence:n?"confirmed":"likely",note:`${n} events in next 3 days`,config:{name,platform:"communico",params:{client:comm,...(commBase.endsWith("libnet.info")?{}:{baseUrl:commBase}),defaultVenue:name,defaultCity:city||undefined},source_type:"official-county",url:`${commBase}/events`}})}
 
@@ -45,7 +48,8 @@ async function probe(c:Cand):Promise<Found[]>{
 
  // LibCal (Springshare) — detected, adapter not built yet
  // Springshare sites (LibGuides/LibApps) usually have a LibCal calendar under the same name even when the home page doesn't link it.
- const libcal=h.match(/https?:\/\/([a-z0-9-]+)\.libcal\.com/i)?.[1]||h.match(/https?:\/\/([a-z0-9-]+)\.libapps\.com/i)?.[1];
+ const lcName=(re:RegExp)=>[...h.matchAll(re)].map(m=>m[1].toLowerCase()).find(x=>!/^(static|assets?|cdn|www|api|libapps|lib\d*|login)\b|static|assets/.test(x));
+ const libcal=(host.endsWith(".libcal.com")?host.split(".")[0]:"")||lcName(/https?:\/\/([a-z0-9-]+)\.libcal\.com/gi)||lcName(/https?:\/\/([a-z0-9-]+)\.libapps\.com/gi);
  // LibCal on a library's own domain: links like https://calendar.libraryweb.org/calendar/RPL/?cid=4901
  const lcOwn=!libcal?h.match(/https?:\/\/([a-z0-9.-]+)\/calendar\/[A-Za-z0-9_-]+\/?\?cid=(\d+)/i):null;
  if(lcOwn){const t=await get(`https://${lcOwn[1]}/ajax/calendar/list?c=${lcOwn[2]}&date=0000-00-00&perpage=1&page=1&audience=&cats=&camps=&inc=0`);
