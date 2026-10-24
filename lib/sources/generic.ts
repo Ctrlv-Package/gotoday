@@ -52,10 +52,19 @@ export async function fetchIcal(cfg:GenericCfg,startDate:string,endDate:string):
   const title=clean(icsValue(props.SUMMARY.v));if(title.length<3)continue;
   const desc=richText(icsValue(props.DESCRIPTION?.v||"")).slice(0,3000);
   const loc=clean(icsValue(props.LOCATION?.v||""));
-  const venue=loc.split(",")[0].trim().slice(0,120)||cfg.venue,address=/\d/.test(loc)?loc.slice(0,200):undefined;
+  // LOCATION is a place name ("Main Library, 100 Main St, …") or only a street address ("124 Sea Grove Main St, St.
+  // Augustine Beach, FL, 32080, US"). A bare address isn't a venue name: use the room or the source's name, and take
+  // the town from the address.
+  const parts=loc.split(",").map(x=>x.trim()).filter(Boolean),bare=/^\d/.test(parts[0]||"");
+  const room=clean(icsValue(props.ROOM?.v||""));
+  const venue=(bare?(room?`${cfg.venue} – ${room}`:cfg.venue):parts[0]||cfg.venue).slice(0,120),address=/\d/.test(loc)?loc.replace(/,\s*(US|USA|United States)$/i,"").slice(0,200):undefined;
+  const st=parts.findIndex((x,i)=>i>0&&/^[A-Z]{2}$/.test(x));
+  const city=st>1?`${parts[st-1]}, ${parts[st]}`:cfg.city;
+  const image=(()=>{const m=(props.IMAGE?.v||"").trim();if(/^https?:/.test(m))return m;const a=(props.ATTACH?.p||"")+":"+(props.ATTACH?.v||"");return /image|\.(jpe?g|png|webp)/i.test(a)&&/^https?:/.test(props.ATTACH?.v||"")?props.ATTACH!.v:undefined})();
   const link=(props.URL?.v||"").trim();const {kids,arts,tags}=tagsFor(title,desc,(props.CATEGORIES?.v||"").split(",").map(x=>clean(icsValue(x))));
   const uid=(props.UID?.v||title).replace(/[^A-Za-z0-9]+/g,"").slice(-40);
-  out.push({id:`${cfg.idPrefix}-${uid}-${s.date}`,title,city:cfg.city,venue,address,date:s.date,time:s.time,endTime:e&&e.date===s.date&&e.time>s.time?e.time:undefined,
+  const geo=(props.GEO?.v||"").split(/[;,]/).map(Number),hasGeo=geo.length===2&&geo.every(n=>isFinite(n)&&n!==0);
+  out.push({id:`${cfg.idPrefix}-${uid}-${s.date}`,title,city,venue,address,image,...(hasGeo?{latitude:geo[0],longitude:geo[1]}:{}),date:s.date,time:s.time,endTime:e&&e.date===s.date&&e.time>s.time?e.time:undefined,
    url:/^https?:/i.test(link)?link:cfg.url,sourceUrl:cfg.url,category:kids?"Family":arts?"Arts & Theatre":"Local",genre:"Community Event",
    desc:desc||`${cfg.source} event.`,tags:[...tags,"Local"],emoji:kids?"🎉":arts?"🎨":"📍",source:cfg.source,eventType:"event"});
  }

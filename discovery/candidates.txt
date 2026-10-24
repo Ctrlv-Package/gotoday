@@ -89,7 +89,7 @@ Pasco County Libraries | New Port Richey, FL | https://www.pascolibraries.org | 
 Clearwater Public Library | Clearwater, FL | https://www.myclearwaterlibrary.com | tampa
 Largo Public Library | Largo, FL | https://www.largo.com/library | tampa
 
-# ---- Jacksonville / Northeast Florida ----
+# ---- Jacksonville / Northeast Florida ---- (re-run 2026-10-24: LibraryCalendar detection)
 City of Jacksonville | Jacksonville, FL | https://www.jacksonville.gov | jacksonville
 Jacksonville Public Library | Jacksonville, FL | https://jaxpubliclibrary.org | jacksonville
 City of Jacksonville Beach | Jacksonville Beach, FL | https://www.jacksonvillebeach.org | jacksonville

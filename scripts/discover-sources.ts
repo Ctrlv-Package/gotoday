@@ -68,8 +68,12 @@ async function probe(c:Cand):Promise<Found[]>{
   const evLink=[...html.matchAll(/href="([^"#]*(?:\/events?|\/calendar|event-calendar|community-calendar)[^"#]*)"/gi)].map(x=>x[1]).find(h=>!/\.(pdf|jpg|png)$/i.test(h));
   const evUrl=evLink?(()=>{try{return new URL(evLink,origin).toString()}catch{return""}})():"";
   const evHtml=evUrl?(await get(evUrl)).text:"";const both=html+"\n"+evHtml;
+  // LibraryMarket "LibraryCalendar" (many public libraries: *.librarycalendar.com), which publishes an iCal feed.
+  {const lc=new URL(origin).hostname.endsWith(".librarycalendar.com")?origin:both.match(/https?:\/\/[a-z0-9-]+\.librarycalendar\.com/i)?.[0];
+   if(lc){const u=`${lc}/events/feed/ical`,t=await get(u);const n=(String(t.text).match(/BEGIN:VEVENT/g)||[]).length;
+    if(n)out.push({input:arg,platform:"ical",confidence:"confirmed",note:`${n} events (LibraryCalendar iCal)`,config:{name,platform:"ical",params:{url:u,city},source_type:"official-county",url:`${lc}/events/month`}})}}
   // WordPress "The Events Calendar"
-  {const t=await get(`${origin}/wp-json/tribe/events/v1/events?per_page=1`);const n=(()=>{try{return Number(JSON.parse(t.text)?.total)||0}catch{return 0}})();
+  if(!out.length)  {const t=await get(`${origin}/wp-json/tribe/events/v1/events?per_page=1`);const n=(()=>{try{return Number(JSON.parse(t.text)?.total)||0}catch{return 0}})();
    if(n)out.push({input:arg,platform:"tribe",confidence:"confirmed",note:`${n} upcoming events (The Events Calendar)`,config:{name,platform:"tribe",params:{url:origin,city},source_type:"official-city",url:evUrl||origin}})}
   // Localist (own subdomain or *.localist.com)
   if(!out.length){const loc=both.match(/https?:\/\/([a-z0-9.-]+)\/(?:event|calendar)[^"']*/i)&&/localist/i.test(both)?(both.match(/https?:\/\/([a-z0-9.-]*(?:localist\.com|calendar\.[a-z0-9.-]+))/i)?.[0]||origin):"";
