@@ -65,12 +65,12 @@ Reply with JSON only: {"results":[{"i":0,"topic":"type"}]}`;
  const text=(d?.candidates?.[0]?.content?.parts||[]).map((p:any)=>p.text||"").join("");
  const out=new Map<string,string>();
  // Read the answer leniently: one JSON object, a bare list, or several objects one after another.
- let list:any[]=[];
- try{const j=JSON.parse(text);list=Array.isArray(j)?j:j.results||[]}catch{
-  for(const m of text.matchAll(/\{[^{}]*"i"\s*:\s*(\d+)[^{}]*"topic"\s*:\s*"([^"]+)"[^{}]*\}/g))list.push({i:Number(m[1]),topic:m[2]});
-  if(!list.length)throw new Error(`Gemini answer not readable: ${text.slice(0,160)}`);
+ let answers:any[]=[];
+ try{const j=JSON.parse(text);answers=Array.isArray(j)?j:j.results||[]}catch{
+  for(const m of text.matchAll(/\{[^{}]*"i"\s*:\s*(\d+)[^{}]*"topic"\s*:\s*"([^"]+)"[^{}]*\}/g))answers.push({i:Number(m[1]),topic:m[2]});
+  if(!answers.length)throw new Error(`Gemini answer not readable: ${text.slice(0,160)}`);
  }
- for(const x of list){
+ for(const x of answers){
   const it=items[Number(x.i)],tp=String(x.topic||"").trim();
   if(it&&(tp==="none"||KEYS.includes(tp)))out.set(it.key,tp);
  }
