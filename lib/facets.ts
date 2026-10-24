@@ -153,7 +153,7 @@ const HIDE=/^(local|library|parks|tickets|free|drop-in|in-person|indoor|outdoor|
 export function displayTags(e:In,facets:Facet[]){
  const seen=new Set<string>(),out:string[]=[];
  const SHORT:Record<string,string>={"Arts & Theatre":"Arts"};
- for(const f of facets)if(f!=="Free"&&f!=="Family"&&f!=="Kids"&&f!=="Adults"&&!(f==="Arts & Theatre"&&facets.includes("Music"))){const x=SHORT[f]||f;if(!seen.has(x)){seen.add(x);out.push(x)}}
+ for(const f of facets)if(f!=="Free"&&f!=="Family"&&f!=="Kids"&&f!=="Adults"&&f!=="Big events"&&!(f==="Arts & Theatre"&&facets.includes("Music"))){const x=SHORT[f]||f;if(!seen.has(x)){seen.add(x);out.push(x)}}
  for(const raw of e.tags||[]){const x=raw.trim();if(!x||x.length>22||HIDE.test(x)||/\(/.test(x)||seen.has(x)||/^(arts & theatre|sports|music|arts? & cultural|crafting\/makers|clubs & groups)$/i.test(x))continue;seen.add(x);out.push(x)}
  return out;
 }
