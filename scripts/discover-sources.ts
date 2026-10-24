@@ -24,10 +24,13 @@ async function probe(c:Cand):Promise<Found[]>{
  if(!html)return[{input:arg,platform:"unreachable",confidence:"likely",note:`HTTP ${home.status||"error"} ${(home as any).error||""}`}];
  const name=c.name||titleName(html,host);
 
+ // Library calendar products, looked for on the home page and then on its Events/Calendar page (a library home page
+ // often links "Events" without naming the product; e.g. bpl.org → bpl.bibliocommons.com only on /events).
+ const libs=async(h:string,commPage:string)=>{const origin=new URL(commPage).origin,host=new URL(commPage).host.replace(/^www\./,"");
  // Communico (libraries)
  // On a library's own domain (events.dekalblibrary.org) the page names its Communico client instead of linking libnet.info.
- const commOwn=/libnet\.info|communico/i.test(html)?(html.match(/<meta[^>]+name="client"[^>]+content="([a-z0-9_-]+)"/i)?.[1]||html.match(/\bclient\s*:\s*['"]([a-z0-9_-]+)['"]/i)?.[1]):undefined;
- const comm=html.match(/https?:\/\/([a-z0-9-]+)\.libnet\.info/i)?.[1]&&!commOwn?html.match(/https?:\/\/([a-z0-9-]+)\.libnet\.info/i)?.[1]:commOwn;
+ const commOwn=/libnet\.info|communico/i.test(h)?(h.match(/<meta[^>]+name="client"[^>]+content="([a-z0-9_-]+)"/i)?.[1]||h.match(/\bclient\s*:\s*['"]([a-z0-9_-]+)['"]/i)?.[1]):undefined;
+ const comm=h.match(/https?:\/\/([a-z0-9-]+)\.libnet\.info/i)?.[1]&&!commOwn?h.match(/https?:\/\/([a-z0-9-]+)\.libnet\.info/i)?.[1]:commOwn;
  const commBase=commOwn&&!/libnet\.info$/.test(host)?origin:comm?`https://${comm}.libnet.info`:"";
  if(comm){const t=await get(`${commBase}/eeventcaldata?event_type=0&req=${encodeURIComponent(JSON.stringify({private:false,date:new Date().toISOString().slice(0,10),days:3,locations:[],ages:[],types:[]}))}`);
   const n=(()=>{try{return JSON.parse(t.text).length}catch{return 0}})();
@@ -35,17 +38,22 @@ async function probe(c:Cand):Promise<Found[]>{
 
  // BiblioCommons (libraries)
  // The library's own BiblioCommons name, not a shared CDN host (cdn-nerf, cor-liv-cdn-static, gateway…).
- const bib=(host.endsWith(".bibliocommons.com")?host.split(".")[0]:"")||[...html.matchAll(/https?:\/\/([a-z0-9-]+)\.bibliocommons\.com/gi)].map(m=>m[1].toLowerCase()).find(x=>!/^(cdn|cor-|static|gateway|www|api|assets?|media|images?)/.test(x)&&!/cdn|static/.test(x));
+ const bib=(host.endsWith(".bibliocommons.com")?host.split(".")[0]:"")||[...h.matchAll(/https?:\/\/([a-z0-9-]+)\.bibliocommons\.com/gi)].map(m=>m[1].toLowerCase()).find(x=>!/^(cdn|cor-|static|gateway|www|api|assets?|media|images?)/.test(x)&&!/cdn|static/.test(x));
  if(bib){const t=await get(`https://gateway.bibliocommons.com/v2/libraries/${bib}/events?limit=1`);
   const n=(()=>{try{return JSON.parse(t.text)?.events?.pagination?.count||0}catch{return 0}})();
   out.push({input:arg,platform:"bibliocommons",confidence:n?"confirmed":"likely",note:`${n} upcoming events`,config:{name,platform:"bibliocommons",params:{library:bib,defaultCity:city||"",state:city.split(",")[1]?.trim()},source_type:"official-county",url:`https://${bib}.bibliocommons.com/v2/events`}})}
 
  // LibCal (Springshare) — detected, adapter not built yet
  // Springshare sites (LibGuides/LibApps) usually have a LibCal calendar under the same name even when the home page doesn't link it.
- const libcal=html.match(/https?:\/\/([a-z0-9-]+)\.libcal\.com/i)?.[1]||html.match(/https?:\/\/([a-z0-9-]+)\.libapps\.com/i)?.[1];
+ const libcal=h.match(/https?:\/\/([a-z0-9-]+)\.libcal\.com/i)?.[1]||h.match(/https?:\/\/([a-z0-9-]+)\.libapps\.com/i)?.[1];
  if(libcal){const t=await get(`https://${libcal}.libcal.com/ajax/calendar/list?c=-1&date=0000-00-00&perpage=1&page=1&audience=&cats=&camps=&inc=0`);
   const n=(()=>{try{return Number(JSON.parse(t.text)?.total_results)||0}catch{return 0}})();
   out.push({input:arg,platform:"libcal",confidence:n?"confirmed":"likely",note:`${n} upcoming events`,config:{name,platform:"libcal",params:{site:libcal,defaultVenue:name,defaultCity:city||undefined},source_type:"official-city",url:`https://${libcal}.libcal.com/calendar`}})}
+
+ };
+ await libs(html,url);
+ const evPage=(h:string)=>{const l=[...h.matchAll(/href="([^"#]*(?:\/events?|\/calendar|event-calendar|community-calendar|programs)[^"#]*)"/gi)].map(x=>x[1]).find(x=>!/\.(pdf|jpg|png)$/i.test(x));try{return l?new URL(l,origin).toString():""}catch{return""}};
+ if(!out.length){const ev=evPage(html);if(ev&&ev!==url){const eh=(await get(ev)).text;if(eh)await libs(eh,ev)}}
 
  // CivicPlus / CivicEngage: calendar RSS feed
  {const t=await get(`${origin}/RSSFeed.aspx?ModID=58&CID=All-calendar.xml`),items=(t.text.match(/<item\b/gi)||[]).length;
