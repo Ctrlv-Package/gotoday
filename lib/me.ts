@@ -4,6 +4,7 @@ import {decodeHtml,isAllDay} from "./event-detail";
 import type {CalEvent} from "./calendar";
 import {DEFAULT_TZ} from "./time";
 import {rowToEvent,startOf,endOf} from "./community";
+import {rrule} from "./repeat";
 
 const SITE=process.env.NEXT_PUBLIC_SITE_URL||"https://www.mygotoday.com";
 export type MyEventRow={id:number;title:string;start:Date;end:Date|null;tz:string;venue:string|null;city:string;image:string|null;description:string;cancelled:boolean;source:string;date:string};
@@ -36,7 +37,7 @@ export async function followedSeries(userId:number):Promise<Followed[]>{
 export async function calendarEvents(userId:number){
  const saved=await savedEvents(userId,60);
  // Events this person created on GoToday (public or private, also while a public one waits for review).
- const mine=(await db.query(`select * from community_events where user_id=$1 and status in ('live','pending') and start_date>=current_date-60`,[userId]).catch(()=>({rows:[]}))).rows.map(rowToEvent);
+ const mine=(await db.query(`select * from community_events where user_id=$1 and status in ('live','pending') and (start_date>=current_date-60 or coalesce(repeat->>'kind','none')<>'none')`,[userId]).catch(()=>({rows:[]}))).rows.map(rowToEvent);
  const fol=(await db.query(`select distinct on (e.series_id,e.local_date) ${COLS} from follows f join events e on e.series_id=f.series_id
    join sources s on s.id=e.source_id left join venues v on v.id=e.venue_id
    where f.user_id=$1 and e.start_at>now()-interval '60 days' and (e.status='active' or e.title ~* '^\\W*(cancel+ed|postponed)')
@@ -45,7 +46,7 @@ export async function calendarEvents(userId:number){
  const seen=new Set<string>(),out:{e:CalEvent;cancelled?:boolean}[]=[];
  for(const c of mine){
   seen.add(`${c.title.toLowerCase()}|${c.date}`);
-  out.push({e:{uid:`gotoday-c${c.id}`,title:c.title,description:c.description,location:[c.venue,c.address,c.city].filter(Boolean).join(", "),start:startOf(c),end:endOf(c),allDay:c.allDay,tz:c.tz,url:`${SITE}/e/${c.shareToken}`}});
+  out.push({e:{uid:`gotoday-c${c.id}`,title:c.title,description:c.description,location:[c.venue,c.address,c.city].filter(Boolean).join(", "),start:startOf(c),end:endOf(c),allDay:c.allDay,tz:c.tz,url:`${SITE}/e/${c.shareToken}`,rrule:rrule(c.date,c.repeat)||undefined}});
  }
  for(const r of [...fol,...saved]){
   const k=`${r.title.toLowerCase()}|${r.date}`;if(seen.has(k))continue;seen.add(k);

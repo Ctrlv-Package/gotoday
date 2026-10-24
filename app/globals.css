@@ -565,3 +565,18 @@ a.linkBtn{text-decoration:none}
 .installTxt b{color:var(--ink);font-size:14px}
 .installBtn{flex:0 0 auto;background:var(--accent);color:#fff;border:0;border-radius:11px;padding:10px 16px;font-weight:800;font-size:14px;cursor:pointer}
 .installX{flex:0 0 auto;background:transparent;border:0;color:var(--muted);font-size:15px;padding:6px;line-height:1;cursor:pointer}
+
+/* Create/edit event: repeats */
+.efRepeat{display:flex;flex-direction:column;gap:10px}
+.efDays{display:flex;gap:6px;flex-wrap:wrap}
+.efDays button{width:42px;height:42px;border-radius:50%;border:1px solid var(--line);background:#fff;font-weight:800;cursor:pointer;color:var(--ink)}
+.efDays button.on{background:var(--accent);border-color:var(--accent);color:#fff}
+.efBy{display:flex;flex-direction:column;gap:6px}
+.efBy label{display:flex;align-items:center;gap:8px;border:1px solid var(--line);border-radius:12px;padding:10px 12px;cursor:pointer;font-weight:600}
+.efBy label.on{border-color:#a78bfa;background:#f5f3ff}
+.efUntil{display:flex;align-items:center;gap:12px;flex-wrap:wrap}.efUntil input[type=date]{max-width:200px}
+.efRepeatSum{margin:0;color:#5b21b6;font-weight:700}
+.efDays{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:6px;max-width:340px}
+.efDays button{width:auto;height:auto;aspect-ratio:1;max-width:46px;padding:0}
+.ef .efBy label{display:flex;flex-direction:row;justify-content:flex-start;text-align:left}
+.ef .efBy input[type=radio]{width:18px;height:18px;margin:0;flex:none;accent-color:var(--accent)}

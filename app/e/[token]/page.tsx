@@ -7,9 +7,10 @@ import ShareButton from "../../events/[id]/ShareButton";
 import AddToCalendar from "../../components/AddToCalendar";
 import Rsvp from "./Rsvp";
 import {stockPicture} from "../../../lib/stockPhotos";
+import {occurrences,nextOccurrence,describe as describeRepeat} from "../../../lib/repeat";
 export const dynamic="force-dynamic";
 
-const when=(e:CommunityEvent)=>{const s=startOf(e),en=endOf(e);return{date:fmtDate(s,undefined,e.tz),time:e.allDay?"All day":fmtTime(s,e.tz)+(en?` – ${fmtTime(en,e.tz)}`:"")}};
+const when=(e:CommunityEvent,date=e.date)=>{const s=startOf(e,date),en=endOf(e,date);return{date:fmtDate(s,undefined,e.tz),time:e.allDay?"All day":fmtTime(s,e.tz)+(en?` – ${fmtTime(en,e.tz)}`:"")}};
 function ages(e:CommunityEvent){if(e.ageMin==null&&e.ageMax==null)return"";if(e.ageMax==null)return`Ages ${e.ageMin}+`;return`Ages ${e.ageMin??0}–${e.ageMax}`}
 
 export async function generateMetadata({params}:{params:Promise<{token:string}>}):Promise<Metadata>{
@@ -20,11 +21,17 @@ export async function generateMetadata({params}:{params:Promise<{token:string}>}
  return{title:`${e.title} · GoToday`,description,robots:e.visibility==="private"||e.status!=="live"?{index:false,follow:false}:undefined,openGraph:{title:e.title,description,siteName:"GoToday",type:"website"}};
 }
 
-export default async function CommunityEventPage({params}:{params:Promise<{token:string}>}){
- const token=(await params).token,e=await eventByShare(token);
+export default async function CommunityEventPage({params,searchParams}:{params:Promise<{token:string}>;searchParams:Promise<{d?:string}>}){
+ const token=(await params).token,e=await eventByShare(token),asked=(await searchParams).d||"";
  const shell=(body:React.ReactNode)=><main className="detail"><SiteHeader extra={<Link href="/create" className="createPill" aria-label="Create event" title="Create event">+<span className="wideOnly"> Create event</span></Link>}/><div className="detailWrap">{body}</div></main>;
  if(!e||e.status==="rejected")return shell(<article className="detailCard"><div className="detailBody"><h1>Event unavailable</h1><p>This link doesn't match an event, or the host removed it.</p><Link href="/">Find something to do →</Link></div></article>);
- const w=when(e),a=ages(e),where=[e.venue,e.address,e.city].filter(Boolean).join(", "),ended=(endOf(e)||new Date(startOf(e).getTime()+(e.allDay?24:3)*3600e3)).getTime()<Date.now();
+ // A repeating event: the date the card linked to (?d=), else the next one coming up.
+ const today=new Intl.DateTimeFormat("en-CA",{timeZone:e.tz}).format(new Date());
+ const repeats=e.repeat.kind!=="none";
+ const date=!repeats?e.date:/^\d{4}-\d{2}-\d{2}$/.test(asked)&&occurrences(e.date,e.repeat,asked,asked).length?asked:nextOccurrence(e.date,e.repeat,today)||e.date;
+ const upcoming=repeats?occurrences(e.date,e.repeat,today,new Date(Date.parse(today)+400*86400e3).toISOString().slice(0,10),6).filter(d=>d!==date).slice(0,5):[];
+ const fmtShort=(d:string)=>new Date(d+"T12:00:00Z").toLocaleDateString("en-US",{weekday:"short",month:"short",day:"numeric",timeZone:"UTC"});
+ const w=when(e,date),a=ages(e),where=[e.venue,e.address,e.city].filter(Boolean).join(", "),ended=(endOf(e,date)||new Date(startOf(e,date).getTime()+(e.allDay?24:3)*3600e3)).getTime()<Date.now();
  // No photo from the host: a library photo of that kind of event (marked as illustrative).
  const photo=e.image||await stockPicture({title:e.title,desc:e.description,category:e.categories.join(" "),tags:e.categories,ageMax:e.ageMax}).catch(()=>""),stock=!e.image&&!!photo;
  const counts=e.visibility==="private"?await rsvpCounts(e.id):null;
@@ -41,7 +48,7 @@ export default async function CommunityEventPage({params}:{params:Promise<{token
   {e.hostName&&<p className="host">Hosted by <b>{e.hostName}</b></p>}
   {e.status==="pending"&&<div className="reg"><div><b>Waiting for review</b><span> · the link works, but it isn't listed in search yet.</span></div></div>}
   <div className="facts">
-   <div className="fact"><div className="k">When</div><div className="v">{w.date}</div><div className="s">{w.time}</div></div>
+   <div className="fact"><div className="k">When</div><div className="v">{w.date}</div><div className="s">{w.time}{repeats?` · ${describeRepeat(e.date,e.repeat)}`:""}</div>{upcoming.length>0&&<div className="s nextDates">Next: {upcoming.map(fmtShort).join(" · ")}</div>}</div>
    <div className="fact"><div className="k">Where</div><div className="v">{e.venue||e.address||e.city}</div><div className="s">{[e.venue?e.address:"",e.city].filter(Boolean).join(", ")}</div><a className="inline" href={dir} target="_blank" rel="noreferrer">Get directions ↗</a></div>
    {!e.isFree&&e.priceText&&<div className="fact"><div className="k">Cost</div><div className="v">{e.priceText}</div></div>}
   </div>

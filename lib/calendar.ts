@@ -1,8 +1,9 @@
 // "Add to calendar" for every calendar app: Apple/Outlook desktop via an .ics file, Google and Outlook.com
 // via their "new event" web links. One shape in, every format out.
-export type CalEvent={uid:string;title:string;description:string;location:string;start:Date;end:Date|null;allDay:boolean;tz:string;url:string};
+export type CalEvent={uid:string;title:string;description:string;location:string;start:Date;end:Date|null;allDay:boolean;tz:string;url:string;rrule?:string};   // rrule: repeating events (calendar apps show every date)
 
 const stamp=(d:Date)=>d.toISOString().replace(/[-:]/g,"").replace(/\.\d{3}/,"");
+const local=(d:Date,tz:string)=>{const p=Object.fromEntries(new Intl.DateTimeFormat("en-CA",{timeZone:tz,year:"numeric",month:"2-digit",day:"2-digit",hour:"2-digit",minute:"2-digit",second:"2-digit",hourCycle:"h23"}).formatToParts(d).map(x=>[x.type,x.value]));return`${p.year}${p.month}${p.day}T${p.hour}${p.minute}${p.second}`};
 const localDay=(d:Date,tz:string)=>new Intl.DateTimeFormat("en-CA",{timeZone:tz,year:"numeric",month:"2-digit",day:"2-digit"}).format(d);
 
 /** Timed events default to 1 hour when no (sensible) end is known; all-day events use their local date. */
@@ -20,6 +21,7 @@ export function googleCalendarLink(e:CalEvent){
  u.searchParams.set("dates",s.allDay?`${s.startDay.replace(/-/g,"")}/${s.endDay.replace(/-/g,"")}`:`${stamp(s.start)}/${stamp(s.end)}`);
  u.searchParams.set("details",details(e));u.searchParams.set("location",e.location);
  if(!s.allDay)u.searchParams.set("ctz",e.tz);
+ if(e.rrule)u.searchParams.set("recur",`RRULE:${e.rrule}`);
  return u.toString();
 }
 
@@ -39,8 +41,10 @@ const fold=(l:string)=>{const out:string[]=[];let x=l;while(x.length>73){out.pus
 function vevent(e:CalEvent,opts:{cancelled?:boolean;alarm?:boolean}={}){
  const s=calendarSpan(e);
  return["BEGIN:VEVENT",`UID:${e.uid}@mygotoday.com`,`DTSTAMP:${stamp(new Date())}`,
-  s.allDay?`DTSTART;VALUE=DATE:${s.startDay.replace(/-/g,"")}`:`DTSTART:${stamp(s.start)}`,
-  s.allDay?`DTEND;VALUE=DATE:${s.endDay.replace(/-/g,"")}`:`DTEND:${stamp(s.end)}`,
+  // A repeat follows local time (10 AM stays 10 AM after the clocks change), so it's written in the event's zone.
+  ...(s.allDay?[`DTSTART;VALUE=DATE:${s.startDay.replace(/-/g,"")}`,`DTEND;VALUE=DATE:${s.endDay.replace(/-/g,"")}`]
+   :e.rrule&&e.tz==="America/New_York"?[`DTSTART;TZID=${e.tz}:${local(s.start,e.tz)}`,`DTEND;TZID=${e.tz}:${local(s.end,e.tz)}`]:[`DTSTART:${stamp(s.start)}`,`DTEND:${stamp(s.end)}`]),
+  ...(e.rrule?[`RRULE:${e.rrule}`]:[]),
   `SUMMARY:${esc((opts.cancelled?"CANCELLED: ":"")+e.title)}`,`LOCATION:${esc(e.location)}`,`DESCRIPTION:${esc(details(e))}`,`URL:${e.url}`,
   ...(opts.cancelled?["STATUS:CANCELLED"]:[]),
   // Reminder: 1 hour before timed events; 9am the day of for all-day events.
@@ -50,7 +54,7 @@ function vevent(e:CalEvent,opts:{cancelled?:boolean;alarm?:boolean}={}){
 
 /** iCalendar file (Apple Calendar on iPhone/Mac, Outlook desktop, anything else). Includes a reminder. */
 export function icsText(e:CalEvent){
- const lines=["BEGIN:VCALENDAR","VERSION:2.0","PRODID:-//GoToday//mygotoday.com//EN","CALSCALE:GREGORIAN","METHOD:PUBLISH",...vevent(e),"END:VCALENDAR"];
+ const lines=["BEGIN:VCALENDAR","VERSION:2.0","PRODID:-//GoToday//mygotoday.com//EN","CALSCALE:GREGORIAN","METHOD:PUBLISH",...(e.rrule?EASTERN:[]),...vevent(e),"END:VCALENDAR"];
  return lines.map(fold).join("\r\n")+"\r\n";
 }
 

@@ -1,8 +1,9 @@
 "use client";
 import {useState} from "react";
+import {byOptions,describe,type Repeat,NO_REPEAT} from "../../lib/repeat";
 
 export type FormValues={title:string;description:string;date:string;startTime:string;endTime:string;allDay:boolean;venue:string;address:string;city:string;
- visibility:"public"|"private";isFree:boolean;priceText:string;ageMin:number|null;ageMax:number|null;category:string;categories?:string[];link:string;hostName:string;image?:string};
+ visibility:"public"|"private";isFree:boolean;priceText:string;ageMin:number|null;ageMax:number|null;category:string;categories?:string[];link:string;hostName:string;image?:string;repeat?:Repeat};
 export const EMPTY:FormValues={title:"",description:"",date:"",startTime:"",endTime:"",allDay:false,venue:"",address:"",city:"",visibility:"public",isFree:true,priceText:"",
  ageMin:null,ageMax:null,category:"Community",categories:["Community"],link:"",hostName:"",image:""};
 const CATEGORIES=["Community","Family","Kids","Music","Arts & Theatre","Sports","Food & Drink","Market","Party","Outdoors","Other"];
@@ -34,6 +35,7 @@ export default function EventForm({initial,submitLabel,onSubmit,busy}:{initial:F
    {!v.allDay&&<label className="efField"><span>Ends <small>(optional)</small></span><input type="time" value={v.endTime} onChange={e=>set("endTime",e.target.value)}/></label>}
   </div>
   <label className="efCheck"><input type="checkbox" checked={v.allDay} onChange={e=>set("allDay",e.target.checked)}/> All day</label>
+  <RepeatField date={v.date} value={v.repeat||NO_REPEAT} onChange={x=>set("repeat",x)}/>
 
   <label className="efField">Place name<input maxLength={120} value={v.venue} onChange={e=>set("venue",e.target.value)} placeholder="Weston Town Center, Vista Park, our house…"/></label>
   <div className="efRow">
@@ -105,5 +107,33 @@ function PhotoField({value,onChange}:{value:string;onChange:(url:string)=>void})
     <input type="file" accept="image/*" hidden disabled={busy} onChange={e=>pick(e.target.files?.[0])}/>
     <b>{busy?"Uploading…":"📷 Add a photo"}</b><small>A picture of the place, last year's event, or your flyer. Events with a photo get noticed.</small></label>}
   {err&&<small className="efPhotoErr" role="alert">{err}</small>}
+ </div>;
+}
+
+const WD=["S","M","T","W","T","F","S"],WDN=["Sunday","Monday","Tuesday","Wednesday","Thursday","Friday","Saturday"];
+/** Repeats: never / every week (pick days) / every month / every year. Monthly and yearly can follow the date or the
+ *  weekday ("the 4th Saturday of October"), so a yearly Saturday event lands on a Saturday every year. */
+function RepeatField({date,value,onChange}:{date:string;value:Repeat;onChange:(r:Repeat)=>void}){
+ const ok=/^\d{4}-\d{2}-\d{2}$/.test(date),dow=ok?new Date(date+"T12:00:00Z").getUTCDay():-1;
+ const set=(p:Partial<Repeat>)=>onChange({...value,...p});
+ const opts=value.kind==="monthly"||value.kind==="yearly"?byOptions(date,value.kind):[];
+ // Saturday-type events most often mean "the same weekday": suggest it when switching to monthly/yearly.
+ const pickKind=(kind:Repeat["kind"])=>{
+  if(kind==="none")return onChange({...NO_REPEAT});
+  if(kind==="weekly")return onChange({kind,days:ok?[dow]:[],by:"date",until:value.until});
+  const o=ok?byOptions(date,kind):[];onChange({kind,days:[],by:(o.find(x=>x.by==="nth")||o.find(x=>x.by==="last")||{by:"date" as const}).by,until:value.until});
+ };
+ return <div className="efField efRepeat">
+  <label className="efField">Repeats<select value={value.kind} onChange={e=>pickKind(e.target.value as Repeat["kind"])}>
+   <option value="none">Doesn't repeat</option><option value="weekly">Every week</option><option value="monthly">Every month</option><option value="yearly">Every year</option></select></label>
+  {value.kind==="weekly"&&<div className="efDays" role="group" aria-label="On these days">{WD.map((d,i)=>{const on=value.days.includes(i);
+   return <button key={i} type="button" className={on?"on":""} aria-pressed={on} aria-label={WDN[i]} title={WDN[i]} onClick={()=>{const n=on?value.days.filter(x=>x!==i):[...value.days,i].sort();set({days:n.length?n:value.days})}}>{d}</button>})}</div>}
+  {opts.length>1&&<div className="efBy">{opts.map(o=><label key={o.by} className={value.by===o.by?"on":""}><input type="radio" name="repeatBy" checked={value.by===o.by} onChange={()=>set({by:o.by})}/>{o.label}</label>)}</div>}
+  {value.kind!=="none"&&!ok&&<small className="muted">Pick the first date above.</small>}
+  {value.kind!=="none"&&ok&&<div className="efUntil">
+   <label className="efCheck"><input type="checkbox" checked={!!value.until} onChange={e=>set({until:e.target.checked?new Date(Date.parse(date)+(value.kind==="weekly"?90:value.kind==="monthly"?365:730)*86400e3).toISOString().slice(0,10):""})}/> Ends on a date</label>
+   {value.until&&<input type="date" min={date} value={value.until} onChange={e=>set({until:e.target.value})}/>}
+  </div>}
+  {value.kind!=="none"&&ok&&<p className="efRepeatSum">🔁 {describe(date,value)}{value.kind==="yearly"&&value.by!=="date"?" (the date moves so it's always that weekday)":""}</p>}
  </div>;
 }
