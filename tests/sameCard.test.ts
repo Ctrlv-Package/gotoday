@@ -35,3 +35,10 @@ test("a post placed a few blocks away in a neighboring town's listing still matc
   assert.equal(same(ev("Fall Festival",{venue:"Town Center",city:"Weston, FL",time:"",lat:26.1004,lng:-80.3998}),
     ev("Fall Festival 2026",{venue:"Town Center",city:"Davie, FL",source:"Weston · Instagram",time:"16:00:00",lat:26.1010,lng:-80.3990})),true);
 });
+
+test("one place under two names (two accounts' posts) is still one event", () => {
+  assert.equal(same(ev("Howl-O-Ween",{venue:"Countess deHoernle Spanish River Athletic Complex",city:"Boca Raton, FL",source:"Boca Raton Recreation · Instagram",time:"09:00:00"}),
+    ev("Howl-O-Ween",{venue:"Countess de Hoernle Park",city:"Boca Raton, FL",source:"City of Boca Raton · Instagram",time:"09:00:00"})),true);
+  // …but two different parks sharing only a generic word are two places
+  assert.equal(same(ev("Trunk or Treat",{venue:"Pine Island Park",source:"A · Instagram"}),ev("Trunk or Treat",{venue:"Central Park",source:"B · Instagram"})),false);
+});

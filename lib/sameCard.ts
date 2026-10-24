@@ -17,12 +17,19 @@ export const isIg=(e:{source?:string})=>/ · Instagram$/.test(e.source||"");
 const partOf=(t:string)=>/^(opening|closing) reception|^vip\b|\bpreview\b|after ?party|pre-?show|meet (and|&) greet|costume contest/i.test(t);
 const organizer=(e:CardLike)=>String(e.source||"").replace(/ · Instagram$/,"").toLowerCase();
 
+const PLACE_WORDS=new Set(["park","parks","center","centre","library","branch","regional","community","recreation","complex","field","fields","stadium","arena","plaza","square","church","school","elementary","middle","high","county","city","town","village","beach","lake","lakes","north","south","east","west","central","memorial","civic","cultural","senior","athletic","sports","hall","theater","theatre","museum","gardens","garden","downtown","street","avenue","boulevard","island","florida"]);
 /** Two named places that differ ("Pine Island Park" vs "Central Park") mean two events, whatever the titles say. */
 function placesConflict(a:CardLike,b:CardLike){
  const ga=isGenericVenue(a.venue,a.city,a.source),gb=isGenericVenue(b.venue,b.city,b.source);
  if(ga||gb)return false;
  const pa=place(a.venue),pb=place(b.venue);
- return pa!==pb&&!pa.includes(pb)&&!pb.includes(pa);
+ if(pa===pb||pa.includes(pb)||pb.includes(pa))return false;
+ const fa=pa.replace(/ /g,""),fb=pb.replace(/ /g,"");if(fa.includes(fb)||fb.includes(fa))return false;   // "deHoernle" / "de Hoernle"
+ // One place, two names ("Countess de Hoernle Park" / "Countess deHoernle Spanish River Athletic Complex"): a shared
+ // distinctive name word is the same place; generic words (park, center, library…) don't count.
+ const name=(x:string)=>new Set(x.split(" ").filter(w=>w.length>=5&&!PLACE_WORDS.has(w)));
+ const na=name(pa),nb=name(pb);for(const w of na)if(nb.has(w))return false;
+ return true;
 }
 
 export function sameEventCard(a:CardLike,b:CardLike,W:(e:CardLike)=>Set<string>=e=>words(e.title)){
