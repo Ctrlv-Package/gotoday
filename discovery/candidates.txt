@@ -661,3 +661,87 @@ City of Poughkeepsie | Poughkeepsie, NY | https://cityofpoughkeepsie.com | hudso
 Poughkeepsie Public Library District | Poughkeepsie, NY | https://www.poklib.org | hudson
 City of Kingston NY | Kingston, NY | https://www.kingston-ny.gov | hudson
 Town of New Paltz | New Paltz, NY | https://www.townofnewpaltz.org | hudson
+
+# ==== CONNECTICUT ====
+City of Stamford | Stamford, CT | https://www.stamfordct.gov | fairfield-ct
+Ferguson Library | Stamford, CT | https://www.fergusonlibrary.org | fairfield-ct
+Town of Greenwich | Greenwich, CT | https://www.greenwichct.gov | fairfield-ct
+Greenwich Library | Greenwich, CT | https://www.greenwichlibrary.org | fairfield-ct
+City of Norwalk | Norwalk, CT | https://www.norwalkct.gov | fairfield-ct
+Westport Library | Westport, CT | https://westportlibrary.org | fairfield-ct
+City of Bridgeport | Bridgeport, CT | https://www.bridgeportct.gov | fairfield-ct
+Fairfield Public Library | Fairfield, CT | https://www.fairfieldpubliclibrary.org | fairfield-ct
+City of New Haven | New Haven, CT | https://www.newhavenct.gov | newhaven
+New Haven Free Public Library | New Haven, CT | https://nhfpl.org | newhaven
+Yale University | New Haven, CT | https://calendar.yale.edu | newhaven
+City of Hartford | Hartford, CT | https://www.hartfordct.gov | hartford
+Hartford Public Library | Hartford, CT | https://www.hplct.org | hartford
+West Hartford Public Library | West Hartford, CT | https://www.westhartfordlibrary.org | hartford
+Town of West Hartford | West Hartford, CT | https://www.westhartfordct.gov | hartford
+City of Middletown CT | Middletown, CT | https://www.middletownct.gov | hartford
+Mystic Seaport Museum | Mystic, CT | https://www.mysticseaport.org | newlondon
+City of New London | New London, CT | https://www.newlondonct.org | newlondon
+# ==== RHODE ISLAND ====
+City of Providence | Providence, RI | https://www.providenceri.gov | providence
+Providence Public Library | Providence, RI | https://www.provlib.org | providence
+Providence Community Library | Providence, RI | https://www.provcomlib.org | providence
+City of Warwick | Warwick, RI | https://www.warwickri.gov | providence
+City of Newport RI | Newport, RI | https://www.cityofnewport.com | providence
+Brown University | Providence, RI | https://events.brown.edu | providence
+# ==== MASSACHUSETTS ====
+City of Boston | Boston, MA | https://www.boston.gov | boston
+Boston Public Library | Boston, MA | https://www.bpl.org | boston
+City of Cambridge | Cambridge, MA | https://www.cambridgema.gov | boston
+Cambridge Public Library | Cambridge, MA | https://www.cambridgema.gov/cpl | boston
+City of Somerville | Somerville, MA | https://www.somervillema.gov | boston
+Somerville Public Library | Somerville, MA | https://www.somervillepubliclibrary.org | boston
+Brookline Public Library | Brookline, MA | https://www.brooklinelibrary.org | boston
+City of Newton | Newton, MA | https://www.newtonma.gov | boston
+Newton Free Library | Newton, MA | https://newtonfreelibrary.net | boston
+City of Quincy | Quincy, MA | https://www.quincyma.gov | boston
+Thomas Crane Public Library | Quincy, MA | https://thomascranelibrary.org | boston
+Town of Lexington MA | Lexington, MA | https://www.lexingtonma.gov | boston
+Cary Memorial Library | Lexington, MA | https://www.carylibrary.org | boston
+City of Salem MA | Salem, MA | https://www.salemma.gov | boston
+Salem Public Library | Salem, MA | https://www.salempl.org | boston
+Museum of Science | Boston, MA | https://www.mos.org | boston
+New England Aquarium | Boston, MA | https://www.neaq.org | boston
+Harvard University | Cambridge, MA | https://calendar.harvard.edu | boston
+MIT | Cambridge, MA | https://calendar.mit.edu | boston
+Boston University | Boston, MA | https://www.bu.edu/calendar | boston
+City of Worcester | Worcester, MA | https://www.worcesterma.gov | worcester
+Worcester Public Library | Worcester, MA | https://www.mywpl.org | worcester
+City of Springfield MA | Springfield, MA | https://www.springfield-ma.gov | springfield-ma
+Springfield City Library | Springfield, MA | https://springfieldlibrary.org | springfield-ma
+Town of Amherst | Amherst, MA | https://www.amherstma.gov | springfield-ma
+Jones Library | Amherst, MA | https://www.joneslibrary.org | springfield-ma
+City of Northampton | Northampton, MA | https://www.northamptonma.gov | springfield-ma
+Town of Barnstable | Hyannis, MA | https://www.townofbarnstable.us | capecod
+Falmouth Public Library | Falmouth, MA | https://www.falmouthpubliclibrary.org | capecod
+Town of Provincetown | Provincetown, MA | https://www.provincetown-ma.gov | capecod
+City of New Bedford | New Bedford, MA | https://www.newbedford-ma.gov | capecod
+City of Plymouth MA | Plymouth, MA | https://www.plymouth-ma.gov | capecod
+# ==== NEW HAMPSHIRE ====
+City of Manchester NH | Manchester, NH | https://www.manchesternh.gov | southern-nh
+Manchester City Library | Manchester, NH | https://www.manchester.lib.nh.us | southern-nh
+City of Nashua | Nashua, NH | https://www.nashuanh.gov | southern-nh
+Nashua Public Library | Nashua, NH | https://www.nashualibrary.org | southern-nh
+City of Concord NH | Concord, NH | https://www.concordnh.gov | southern-nh
+City of Portsmouth NH | Portsmouth, NH | https://www.cityofportsmouth.com | seacoast-nh
+Portsmouth Public Library | Portsmouth, NH | https://www.cityofportsmouth.com/library | seacoast-nh
+Town of Hanover NH | Hanover, NH | https://www.hanovernh.org | upper-valley
+Dartmouth College | Hanover, NH | https://home.dartmouth.edu/events | upper-valley
+# ==== MAINE ====
+City of Portland ME | Portland, ME | https://www.portlandmaine.gov | portland-me
+Portland Public Library ME | Portland, ME | https://www.portlandlibrary.com | portland-me
+City of South Portland | South Portland, ME | https://www.southportland.org | portland-me
+Town of Falmouth ME | Falmouth, ME | https://www.falmouthme.org | portland-me
+Scarborough Public Library | Scarborough, ME | https://www.scarboroughlibrary.org | portland-me
+City of Bangor | Bangor, ME | https://www.bangormaine.gov | bangor
+Bangor Public Library | Bangor, ME | https://www.bangorpubliclibrary.org | bangor
+Town of Bar Harbor | Bar Harbor, ME | https://www.barharbormaine.gov | bangor
+City of Lewiston | Lewiston, ME | https://www.lewistonmaine.gov | portland-me
+# ==== VERMONT ====
+City of Burlington VT | Burlington, VT | https://www.burlingtonvt.gov | burlington-vt
+Fletcher Free Library | Burlington, VT | https://www.fletcherfree.org | burlington-vt
+University of Vermont | Burlington, VT | https://www.uvm.edu/calendar | burlington-vt

@@ -264,6 +264,21 @@ export const SEED_SOURCES:SourceConfig[]=[
  {name:"Ticketmaster Buffalo",platform:"ticketmaster",params:{latlong:"42.8864,-78.8784",radius:30,label:"Buffalo"},source_type:"ticketing",url:"https://www.ticketmaster.com",priority:60,region:"buffalo"},
  {name:"Ticketmaster Syracuse",platform:"ticketmaster",params:{latlong:"43.0481,-76.1474",radius:35,label:"Syracuse"},source_type:"ticketing",url:"https://www.ticketmaster.com",priority:60,region:"syracuse"},
  {name:"Ticketmaster Hudson Valley",platform:"ticketmaster",params:{latlong:"41.7,-73.93",radius:30,label:"Hudson Valley"},source_type:"ticketing",url:"https://www.ticketmaster.com",priority:60,region:"hudson"},
+ // ---- New England ----
+ {name:"Ticketmaster Fairfield County CT",platform:"ticketmaster",params:{latlong:"41.1,-73.4",radius:20,label:"Fairfield County CT"},source_type:"ticketing",url:"https://www.ticketmaster.com",priority:60,region:"fairfield-ct"},
+ {name:"Ticketmaster New Haven",platform:"ticketmaster",params:{latlong:"41.3083,-72.9279",radius:25,label:"New Haven"},source_type:"ticketing",url:"https://www.ticketmaster.com",priority:60,region:"newhaven"},
+ {name:"Ticketmaster Hartford",platform:"ticketmaster",params:{latlong:"41.7658,-72.6734",radius:25,label:"Hartford"},source_type:"ticketing",url:"https://www.ticketmaster.com",priority:60,region:"hartford"},
+ {name:"Ticketmaster New London & Mystic",platform:"ticketmaster",params:{latlong:"41.36,-72.0",radius:25,label:"New London & Mystic"},source_type:"ticketing",url:"https://www.ticketmaster.com",priority:60,region:"newlondon"},
+ {name:"Ticketmaster Providence",platform:"ticketmaster",params:{latlong:"41.824,-71.4128",radius:25,label:"Providence"},source_type:"ticketing",url:"https://www.ticketmaster.com",priority:60,region:"providence"},
+ {name:"Ticketmaster Boston",platform:"ticketmaster",params:{latlong:"42.3601,-71.0589",radius:25,label:"Boston"},source_type:"ticketing",url:"https://www.ticketmaster.com",priority:60,region:"boston"},
+ {name:"Ticketmaster Worcester",platform:"ticketmaster",params:{latlong:"42.2626,-71.8023",radius:25,label:"Worcester"},source_type:"ticketing",url:"https://www.ticketmaster.com",priority:60,region:"worcester"},
+ {name:"Ticketmaster Springfield MA",platform:"ticketmaster",params:{latlong:"42.1015,-72.5898",radius:30,label:"Springfield MA"},source_type:"ticketing",url:"https://www.ticketmaster.com",priority:60,region:"springfield-ma"},
+ {name:"Ticketmaster Cape Cod",platform:"ticketmaster",params:{latlong:"41.7,-70.3",radius:35,label:"Cape Cod"},source_type:"ticketing",url:"https://www.ticketmaster.com",priority:60,region:"capecod"},
+ {name:"Ticketmaster Southern New Hampshire",platform:"ticketmaster",params:{latlong:"42.9,-71.45",radius:25,label:"Southern New Hampshire"},source_type:"ticketing",url:"https://www.ticketmaster.com",priority:60,region:"southern-nh"},
+ {name:"Ticketmaster Portsmouth NH",platform:"ticketmaster",params:{latlong:"43.0718,-70.7626",radius:25,label:"Portsmouth NH"},source_type:"ticketing",url:"https://www.ticketmaster.com",priority:60,region:"seacoast-nh"},
+ {name:"Ticketmaster Portland ME",platform:"ticketmaster",params:{latlong:"43.6591,-70.2568",radius:35,label:"Portland ME"},source_type:"ticketing",url:"https://www.ticketmaster.com",priority:60,region:"portland-me"},
+ {name:"Ticketmaster Bangor",platform:"ticketmaster",params:{latlong:"44.8012,-68.7778",radius:45,label:"Bangor"},source_type:"ticketing",url:"https://www.ticketmaster.com",priority:60,region:"bangor"},
+ {name:"Ticketmaster Burlington VT",platform:"ticketmaster",params:{latlong:"44.4759,-73.2121",radius:40,label:"Burlington VT"},source_type:"ticketing",url:"https://www.ticketmaster.com",priority:60,region:"burlington-vt"},
 
  ...INSTAGRAM_ACCOUNTS,
 ];
