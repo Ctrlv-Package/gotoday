@@ -1,7 +1,7 @@
 "use client";
 import {useEffect,useState} from "react";
 // Guests say Going / Maybe / Can't go. Remembered per browser so they can change their answer.
-export default function Rsvp({share,counts}:{share:string;counts:{going:number;maybe:number;no:number}}){
+export default function Rsvp({share,counts,embedded}:{share:string;counts:{going:number;maybe:number;no:number};embedded?:boolean}){
  const key=`gotoday:rsvp:${share}`;
  const [name,setName]=useState(""),[status,setStatus]=useState<"going"|"maybe"|"no">("going"),[guests,setGuests]=useState(0),[note,setNote]=useState("");
  const [saved,setSaved]=useState<string|null>(null),[err,setErr]=useState(""),[busy,setBusy]=useState(false),[edit,setEdit]=useState(true);
@@ -12,7 +12,7 @@ export default function Rsvp({share,counts}:{share:string;counts:{going:number;m
    try{localStorage.setItem(key,JSON.stringify({name,status,guests,note}))}catch{}setSaved(status);setEdit(false);
   }catch{setErr("Couldn't reach GoToday. Try again.")}finally{setBusy(false)}}
  const label={going:"Going 🎉",maybe:"Maybe 🤔",no:"Can't go 😢"};
- return <section className="rsvp"><h2>RSVP</h2>
+ return <div className="rsvpSite">{!embedded&&<h2>RSVP</h2>}
   <p className="muted">{counts.going} going{counts.maybe?` · ${counts.maybe} maybe`:""}</p>
   {!edit&&saved?<div className="rsvpDone"><b>{name}, you replied: {label[saved as "going"]}</b>{guests>0&&saved!=="no"&&<span> (+{guests} guest{guests>1?"s":""})</span>}
    <button type="button" className="linkBtn" onClick={()=>setEdit(true)}>Change answer</button></div>
@@ -24,5 +24,5 @@ export default function Rsvp({share,counts}:{share:string;counts:{going:number;m
    {err&&<div className="efErrors">{err}</div>}
    <button className="btn primary" disabled={busy}>{busy?"Sending…":"Send RSVP"}</button>
   </form>}
- </section>;
+ </div>;
 }

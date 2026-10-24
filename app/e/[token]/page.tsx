@@ -1,7 +1,7 @@
 import Link from "next/link";
 import SiteHeader from "../../components/SiteHeader";
 import type {Metadata} from "next";
-import {eventByShare,startOf,endOf,rsvpCounts,type CommunityEvent} from "../../../lib/community";
+import {eventByShare,startOf,endOf,rsvpCounts,showPhone,type CommunityEvent} from "../../../lib/community";
 import {fmtDate,fmtTime} from "../../../lib/event-detail";
 import ShareButton from "../../events/[id]/ShareButton";
 import AddToCalendar from "../../components/AddToCalendar";
@@ -48,7 +48,7 @@ export default async function CommunityEventPage({params,searchParams}:{params:P
  const calConnected=!!user&&await calendarConnected(user.id).catch(()=>false);
  const canFollow=!!dbId&&!ended&&(e.repeat.kind==="yearly"||(!!row.series_id&&await followable(Number(row.series_id)).catch(()=>false)));
  const following=!!(user&&row?.series_id&&(await db.query("select 1 from follows where user_id=$1 and series_id=$2",[user.id,row.series_id]).catch(()=>({rowCount:0}))).rowCount);
- const counts=e.visibility==="private"?await rsvpCounts(e.id):null;
+ const counts=e.rsvp.onSite?await rsvpCounts(e.id):null;
  const map=`https://maps.google.com/maps?q=${encodeURIComponent(e.latitude!=null&&e.longitude!=null&&!e.address?`${e.latitude},${e.longitude}`:where)}&z=15&output=embed`;
  const dir=`https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(where)}`;
  return shell(<article className="detailCard">{photo&&<div className="heroWrap"><img className="detailHero" src={photo} alt=""/>{stock&&<span className="stockNote">Illustrative photo</span>}</div>}<div className="detailBody">
@@ -74,8 +74,28 @@ export default async function CommunityEventPage({params,searchParams}:{params:P
   </div>
   {canFollow&&<div className="ctaFollow"><FollowButton id={`db-${dbId}`} signedIn={!!user} initial={following} back={`/e/${token}`}/></div>}
   {e.description&&<section className="about"><h2>{e.visibility==="private"?"Details":"About this event"}</h2>{e.description.split(/\n+/).filter(Boolean).map((p,i)=><p key={i}>{p}</p>)}</section>}
-  {counts&&!ended&&<Rsvp share={token} counts={counts}/>}
+  {!ended&&(counts||e.rsvp.phone||e.rsvp.email)&&<RsvpBox e={e} date={w.date} counts={counts} share={token}/>}
   <section className="mapBox"><h2>Location</h2><p className="muted">{where}</p><iframe title={`Map of ${e.venue||e.city}`} src={map} loading="lazy" referrerPolicy="no-referrer-when-downgrade"/></section>
   <p className="sourceNote">{e.visibility==="private"?"Private event created on GoToday. Only people with this link can see it.":"Posted by a GoToday community member. Details can change, so check with the organizer before you go."} <Link href="/create">Create your own →</Link></p>
  </div></article>);
+}
+
+/** RSVP: straight to the host by text / call / email (with the message started for them), and/or Going / Maybe on GoToday. */
+function RsvpBox({e,date,counts,share}:{e:CommunityEvent;date:string;counts:{going:number;maybe:number;no:number}|null;share:string}){
+ const r=e.rsvp,who=r.name||e.hostName||"the host",hi=r.name?`Hi ${r.name}! `:"Hi! ";
+ const msg=`${hi}RSVP for ${e.title} (${date}): we'll be there! We are __ people. — `;
+ const by=r.by?new Date(r.by+"T12:00:00Z").toLocaleDateString("en-US",{weekday:"short",month:"short",day:"numeric",timeZone:"UTC"}):"";
+ return <section className="rsvp"><h2>RSVP</h2>
+  {by&&<p className="rsvpBy">Please reply by <b>{by}</b></p>}
+  {(r.phone||r.email)&&<div className="rsvpContact">
+   <p>RSVP to <b>{who}</b>{r.phone?<> · <a href={`tel:${r.phone}`}>{showPhone(r.phone)}</a></>:null}{r.email?<> · <a href={`mailto:${r.email}`}>{r.email}</a></>:null}</p>
+   <div className="rsvpBtns">
+    {r.phone&&<a className="btn primary" href={`sms:${r.phone}?&body=${encodeURIComponent(msg)}`}>💬 Text RSVP</a>}
+    {r.phone&&<a className="btn ghost" href={`tel:${r.phone}`}>📞 Call</a>}
+    {r.email&&<a className={`btn ${r.phone?"ghost":"primary"}`} href={`mailto:${r.email}?subject=${encodeURIComponent(`RSVP: ${e.title}`)}&body=${encodeURIComponent(msg)}`}>✉️ Email RSVP</a>}
+   </div>
+  </div>}
+  {counts&&(r.phone||r.email)&&<p className="muted rsvpOr">Or answer here, and {who} sees it on the guest list:</p>}
+  {counts&&<Rsvp share={share} counts={counts} embedded/>}
+ </section>;
 }

@@ -82,6 +82,7 @@ const STATEMENTS=[
  `alter table community_events add column if not exists image text`,
  `alter table community_events add column if not exists categories text[]`,
  `alter table community_events add column if not exists repeat jsonb`,
+ `alter table community_events add column if not exists rsvp jsonb`,
  `create table if not exists follows(user_id int not null references users(id) on delete cascade,series_id int not null references event_series(id) on delete cascade,
    created_at timestamptz default now(),primary key(user_id,series_id))`,
 ];

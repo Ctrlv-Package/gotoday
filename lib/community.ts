@@ -15,10 +15,27 @@ import {type Repeat,NO_REPEAT,cleanRepeat,occurrences,describe as describeRepeat
 export const COMMUNITY_SOURCE="GoToday Community";
 export type Visibility="public"|"private";
 export type CommunityInput={title:string;description:string;date:string;startTime:string;endTime:string;allDay:boolean;venue:string;address:string;city:string;
- visibility:Visibility;isFree:boolean;priceText:string;ageMin:number|null;ageMax:number|null;category:string;categories:string[];link:string;hostName:string;image:string;repeat:Repeat};
+ visibility:Visibility;isFree:boolean;priceText:string;ageMin:number|null;ageMax:number|null;category:string;categories:string[];link:string;hostName:string;image:string;repeat:Repeat;rsvp:RsvpSettings};
 export type CommunityEvent=CommunityInput&{id:number;shareToken:string;status:"live"|"pending"|"rejected"|"deleted";reviewReason:string|null;tz:string;
  latitude:number|null;longitude:number|null;eventId:number|null;createdAt:Date};
 export type Rsvp={id:number;name:string;status:"going"|"maybe"|"no";guests:number;note:string;createdAt:Date};
+
+/** How guests answer: Going/Maybe/Can't go on GoToday, and/or straight to the host by text, call or email. */
+export type RsvpSettings={onSite:boolean;name:string;phone:string;email:string;by:string};
+export const rsvpDefaults=(visibility:Visibility):RsvpSettings=>({onSite:visibility==="private",name:"",phone:"",email:"",by:""});
+/** "754-715-2330", "(754) 715 2330", "+1 754…" → "+17547152330"; "" when it isn't a phone number. */
+export function cleanPhone(raw:unknown){const d=String(raw??"").replace(/[^\d+]/g,"");const digits=d.replace(/\D/g,"");
+ if(digits.length===10)return`+1${digits}`;if(digits.length===11&&digits[0]==="1")return`+${digits}`;if(d.startsWith("+")&&digits.length>=8&&digits.length<=15)return`+${digits}`;return""}
+export const showPhone=(p:string)=>/^\+1\d{10}$/.test(p)?`(${p.slice(2,5)}) ${p.slice(5,8)}-${p.slice(8)}`:p;
+export function cleanRsvp(raw:any,visibility:Visibility,date:string):{rsvp:RsvpSettings;errors:string[]}{
+ const d=rsvpDefaults(visibility);if(!raw||typeof raw!=="object")return{rsvp:d,errors:[]};
+ const errors:string[]=[],str=(x:any,n:number)=>String(x??"").replace(/\s+/g," ").trim().slice(0,n);
+ const phoneIn=str(raw.phone,40),emailIn=str(raw.email,120).toLowerCase(),phone=cleanPhone(phoneIn);
+ if(phoneIn&&!phone)errors.push("The RSVP phone number doesn't look right.");
+ const email=/^[^\s@]+@[^\s@]+\.[a-z]{2,}$/i.test(emailIn)?emailIn:"";if(emailIn&&!email)errors.push("The RSVP email doesn't look right.");
+ let by=/^\d{4}-\d{2}-\d{2}$/.test(String(raw.by||""))?String(raw.by):"";if(by&&date&&by>date)by=date;
+ return{rsvp:{onSite:raw.onSite===undefined?d.onSite:!!raw.onSite,name:str(raw.name,60),phone,email,by},errors};
+}
 
 export const CATEGORIES=["Family","Kids","Music","Arts & Theatre","Sports","Food & Drink","Market","Community","Party","Outdoors","Other"];
 
@@ -45,8 +62,9 @@ export function validate(raw:any):{ok:true;v:CommunityInput}|{ok:false;errors:st
   repeat:NO_REPEAT,
   ...(()=>{const cats=[...new Set((Array.isArray(raw.categories)?raw.categories:[raw.category]).map((x:any)=>String(x||"")).filter((x:string)=>CATEGORIES.includes(x)))].slice(0,4) as string[];
    return{categories:cats.length?cats:["Community"],category:cats[0]||"Community"}})(),link:/^https?:\/\/\S+$/i.test(link)?link:"",hostName:s(raw.hostName,80),
-  image:/^\/img\/[0-9a-f]{24}$/.test(String(raw.image||""))?String(raw.image):""};
+  image:/^\/img\/[0-9a-f]{24}$/.test(String(raw.image||""))?String(raw.image):"",rsvp:rsvpDefaults("public")};
  const errors:string[]=[];
+ {const r=cleanRsvp(raw.rsvp,v.visibility,v.date);v.rsvp=r.rsvp;errors.push(...r.errors)}
  if(v.title.length<3)errors.push("Add a title.");
  if(!/^\d{4}-\d{2}-\d{2}$/.test(v.date))errors.push("Pick a date.");
  else{const today=new Date(Date.now()-86400e3).toISOString().slice(0,10),max=new Date(Date.now()+400*86400e3).toISOString().slice(0,10);if(v.date<today)errors.push("The date has already passed.");if(v.date>max)errors.push("Pick a date within the next year.")}
@@ -103,7 +121,7 @@ async function locate(v:CommunityInput){
 export function rowToEvent(r:any):CommunityEvent{
  return{id:r.id,shareToken:r.share_token,status:r.status,reviewReason:r.review_reason,tz:r.timezone,latitude:r.latitude,longitude:r.longitude,eventId:r.event_id,createdAt:new Date(r.created_at),
   title:r.title,description:r.description||"",date:r.start_date instanceof Date?r.start_date.toISOString().slice(0,10):String(r.start_date).slice(0,10),startTime:r.start_time||"",endTime:r.end_time||"",allDay:r.all_day,
-  venue:r.venue||"",address:r.address||"",city:r.city||"",visibility:r.visibility,isFree:r.is_free,priceText:r.price_text||"",ageMin:r.age_min,ageMax:r.age_max,category:r.category||"Community",link:r.link||"",hostName:r.host_name||"",image:r.image||"",repeat:r.repeat&&r.repeat.kind?{...NO_REPEAT,...r.repeat}:NO_REPEAT,categories:r.categories?.length?r.categories:[r.category||"Community"]};
+  venue:r.venue||"",address:r.address||"",city:r.city||"",visibility:r.visibility,isFree:r.is_free,priceText:r.price_text||"",ageMin:r.age_min,ageMax:r.age_max,category:r.category||"Community",link:r.link||"",hostName:r.host_name||"",image:r.image||"",repeat:r.repeat&&r.repeat.kind?{...NO_REPEAT,...r.repeat}:NO_REPEAT,categories:r.categories?.length?r.categories:[r.category||"Community"],rsvp:{...rsvpDefaults(r.visibility),...(r.rsvp&&typeof r.rsvp==="object"?r.rsvp:{})}};
 }
 
 export async function eventByShare(shareToken:string){await ensureSchema();const {rows}=await db.query("select * from community_events where share_token=$1 and status<>'deleted'",[shareToken]);return rows[0]?rowToEvent(rows[0]):null}
@@ -172,9 +190,9 @@ export async function createEvent(v:CommunityInput,ip:string,origin:string,userI
  const status=sc.decision==="approve"?"live":"pending";
  const share=token(9),manage=token(24),pt=await locate(v),tz=tzForCity(v.city);
  const {rows}=await db.query(`insert into community_events(share_token,manage_hash,visibility,status,review_reason,title,description,start_date,start_time,end_time,all_day,timezone,venue,address,city,
-   latitude,longitude,is_free,price_text,age_min,age_max,category,link,host_name,ip_hash,image,categories,repeat) values($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18,$19,$20,$21,$22,$23,$24,$25,$26,$27,$28) returning *`,
+   latitude,longitude,is_free,price_text,age_min,age_max,category,link,host_name,ip_hash,image,categories,repeat,rsvp) values($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18,$19,$20,$21,$22,$23,$24,$25,$26,$27,$28,$29) returning *`,
   [share,hashToken(manage),v.visibility,status,sc.reason,v.title,v.description,v.date,v.startTime||null,v.endTime||null,v.allDay,tz,v.venue||null,v.address||null,v.city,
-   pt?.latitude??null,pt?.longitude??null,v.isFree,v.priceText||null,v.ageMin,v.ageMax,v.category,v.link||null,v.hostName||null,ipHash,v.image||null,v.categories,v.repeat.kind==='none'?null:JSON.stringify(v.repeat)]);
+   pt?.latitude??null,pt?.longitude??null,v.isFree,v.priceText||null,v.ageMin,v.ageMax,v.category,v.link||null,v.hostName||null,ipHash,v.image||null,v.categories,v.repeat.kind==='none'?null:JSON.stringify(v.repeat),JSON.stringify(v.rsvp)]);
  if(userId)await db.query("update community_events set user_id=$1,owner_token=$2 where id=$3",[userId,manage,rows[0].id]);
  const e=rowToEvent(rows[0]);
  await syncListing(e,origin);
@@ -190,9 +208,9 @@ export async function updateEvent(manageToken:string,v:CommunityInput,origin:str
  const moved=v.address!==cur.address||v.venue!==cur.venue||v.city!==cur.city;
  const pt=moved?await locate(v):{latitude:cur.latitude,longitude:cur.longitude};
  const {rows}=await db.query(`update community_events set visibility=$2,status=$3,review_reason=$4,title=$5,description=$6,start_date=$7,start_time=$8,end_time=$9,all_day=$10,timezone=$11,venue=$12,address=$13,
-   city=$14,latitude=$15,longitude=$16,is_free=$17,price_text=$18,age_min=$19,age_max=$20,category=$21,link=$22,host_name=$23,image=$24,categories=$25,repeat=$26,updated_at=now() where id=$1 returning *`,
+   city=$14,latitude=$15,longitude=$16,is_free=$17,price_text=$18,age_min=$19,age_max=$20,category=$21,link=$22,host_name=$23,image=$24,categories=$25,repeat=$26,rsvp=$27,updated_at=now() where id=$1 returning *`,
   [cur.id,v.visibility,status,reason,v.title,v.description,v.date,v.startTime||null,v.endTime||null,v.allDay,tzForCity(v.city),v.venue||null,v.address||null,v.city,pt?.latitude??null,pt?.longitude??null,
-   v.isFree,v.priceText||null,v.ageMin,v.ageMax,v.category,v.link||null,v.hostName||null,v.image||null,v.categories,v.repeat.kind==='none'?null:JSON.stringify(v.repeat)]);
+   v.isFree,v.priceText||null,v.ageMin,v.ageMax,v.category,v.link||null,v.hostName||null,v.image||null,v.categories,v.repeat.kind==='none'?null:JSON.stringify(v.repeat),JSON.stringify(v.rsvp)]);
  const e=rowToEvent(rows[0]);await syncListing(e,origin);return{event:e};
 }
 
@@ -213,6 +231,7 @@ export async function reviewEvent(id:number,approve:boolean,origin:string){
 // ---------- RSVPs ----------
 export async function addRsvp(shareToken:string,raw:any){
  const e=await eventByShare(shareToken);if(!e||e.status!=="live")return{error:"Event not found."};
+ if(!e.rsvp.onSite)return{error:"This host takes RSVPs by phone or email."};
  const name=String(raw.name||"").replace(/\s+/g," ").trim().slice(0,60);if(name.length<2)return{error:"Add your name."};
  const status=["going","maybe","no"].includes(raw.status)?raw.status:"going";
  const guests=Math.max(0,Math.min(20,Math.round(Number(raw.guests)||0)));

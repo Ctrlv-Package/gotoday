@@ -39,7 +39,7 @@ export default function ManagePage(){
     <div className="linkBox"><div className="k">{e.visibility==="private"?"Invite link for your guests":"Event link"}</div><CopyLink url={data.shareUrl}/>
      <div className="linkActions"><a className="btn primary" href={data.shareUrl}>View event page</a></div></div>
 
-    {e.visibility==="private"&&<section className="related"><h2>Guest list · {data.counts.going} going{data.counts.maybe?` · ${data.counts.maybe} maybe`:""}{data.counts.no?` · ${data.counts.no} can't go`:""}</h2>
+    {(e.rsvp?e.rsvp.onSite:e.visibility==="private")&&<section className="related"><h2>Guest list · {data.counts.going} going{data.counts.maybe?` · ${data.counts.maybe} maybe`:""}{data.counts.no?` · ${data.counts.no} can't go`:""}</h2>
      {data.rsvps.length===0?<p className="muted">No RSVPs yet. Send your invite link to guests.</p>
      :<ul className="guests">{data.rsvps.map(r=><li key={r.id}><b>{r.name}</b><span className={`g ${r.status}`}>{r.status==="going"?"Going":r.status==="maybe"?"Maybe":"Can't go"}{r.guests>0&&r.status!=="no"?` +${r.guests}`:""}</span>{r.note&&<span className="muted">“{r.note}”</span>}</li>)}</ul>}
     </section>}

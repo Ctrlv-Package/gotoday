@@ -3,7 +3,8 @@ import {useState} from "react";
 import {byOptions,describe,type Repeat,NO_REPEAT} from "../../lib/repeat";
 
 export type FormValues={title:string;description:string;date:string;startTime:string;endTime:string;allDay:boolean;venue:string;address:string;city:string;
- visibility:"public"|"private";isFree:boolean;priceText:string;ageMin:number|null;ageMax:number|null;category:string;categories?:string[];link:string;hostName:string;image?:string;repeat?:Repeat};
+ visibility:"public"|"private";isFree:boolean;priceText:string;ageMin:number|null;ageMax:number|null;category:string;categories?:string[];link:string;hostName:string;image?:string;repeat?:Repeat;rsvp?:RsvpValues};
+export type RsvpValues={onSite:boolean;name:string;phone:string;email:string;by:string};
 export const EMPTY:FormValues={title:"",description:"",date:"",startTime:"",endTime:"",allDay:false,venue:"",address:"",city:"",visibility:"public",isFree:true,priceText:"",
  ageMin:null,ageMax:null,category:"Community",categories:["Community"],link:"",hostName:"",image:""};
 const CATEGORIES=["Community","Family","Kids","Music","Arts & Theatre","Sports","Food & Drink","Market","Party","Outdoors","Other"];
@@ -65,6 +66,8 @@ export default function EventForm({initial,submitLabel,onSubmit,busy}:{initial:F
    <label className="efField grow"><span>Link <small>(optional: tickets, sign-up, more info)</small></span><input type="url" maxLength={500} value={v.link} onChange={e=>set("link",e.target.value)} placeholder="https://"/></label>
    <label className="efField"><span>{v.visibility==="private"?"Hosted by":"Organizer"} <small>(optional)</small></span><input maxLength={80} value={v.hostName} onChange={e=>set("hostName",e.target.value)} placeholder={v.visibility==="private"?"The Garcias":"Weston Town Center"}/></label>
   </div>
+
+  <RsvpField visibility={v.visibility} date={v.date} value={v.rsvp} onChange={x=>set("rsvp",x)}/>
 
   <input className="efTrap" tabIndex={-1} autoComplete="off" name="website" aria-hidden onChange={e=>(v as any).website=e.target.value}/>
   <button className="btn primary efSubmit" type="submit" disabled={busy}>{busy?"Saving…":submitLabel}</button>
@@ -136,4 +139,25 @@ function RepeatField({date,value,onChange}:{date:string;value:Repeat;onChange:(r
   </div>}
   {value.kind!=="none"&&ok&&<p className="efRepeatSum">🔁 {describe(date,value)}{value.kind==="yearly"&&value.by!=="date"?" (the date moves so it's always that weekday)":""}</p>}
  </div>;
+}
+
+/** How guests answer: on GoToday (Going / Maybe / Can't go, with a guest list for the host), and/or straight to a
+ *  person by text, call or email ("RSVP to Pieri at 754-715-2330"). Either or both. */
+function RsvpField({visibility,date,value,onChange}:{visibility:"public"|"private";date:string;value?:RsvpValues;onChange:(r:RsvpValues)=>void}){
+ const r:RsvpValues=value||{onSite:visibility==="private",name:"",phone:"",email:"",by:""};
+ const set=(p:Partial<RsvpValues>)=>onChange({...r,...p});
+ const [open,setOpen]=useState(!!(r.phone||r.email||r.name||r.by));
+ return <fieldset className="efField efRsvp"><legend>RSVP <small>(optional)</small></legend>
+  <label className="efCheck"><input type="checkbox" checked={r.onSite} onChange={e=>set({onSite:e.target.checked})}/> Guests reply on GoToday (Going / Maybe / Can't go) and you see the guest list</label>
+  <label className="efCheck"><input type="checkbox" checked={open} onChange={e=>{setOpen(e.target.checked);if(!e.target.checked)set({name:"",phone:"",email:""})}}/> Guests RSVP to someone by text, call or email</label>
+  {open&&<div className="efRsvpWho">
+   <label className="efField">RSVP to <small>(name)</small><input maxLength={60} value={r.name} onChange={e=>set({name:e.target.value})} placeholder="Pieri" autoComplete="off"/></label>
+   <div className="efRow">
+    <label className="efField grow">Phone <small>(text or call)</small><input type="tel" inputMode="tel" maxLength={40} value={r.phone} onChange={e=>set({phone:e.target.value})} placeholder="754-555-0123" autoComplete="off"/></label>
+    <label className="efField grow">Email<input type="email" maxLength={120} value={r.email} onChange={e=>set({email:e.target.value})} placeholder="name@email.com" autoComplete="off"/></label>
+   </div>
+   <small className="muted">{visibility==="private"?"Only guests with your link see this.":"Shown on the public event page, so anyone who finds the event can see it."}</small>
+  </div>}
+  {(r.onSite||open)&&<label className="efField efRsvpBy">Please reply by <small>(optional)</small><input type="date" max={date||undefined} value={r.by} onChange={e=>set({by:e.target.value})}/></label>}
+ </fieldset>;
 }
