@@ -1,4 +1,4 @@
-import {settingFor} from "../facets";
+import {settingFor,junkTag} from "../facets";
 import {isGenericPicture} from "../pictures";
 import type { EventRecord } from "./types";
 export const slug=(s:string)=>s.toLowerCase().replace(/[^a-z0-9]+/g,"-").replace(/^-|-$/g,"");
@@ -106,7 +106,7 @@ export function normalize(e:EventRecord):EventRecord{
  const paid=/\$\s*[1-9]/.test(e.priceText||"")||e.source==="Ticketmaster";
  const free=e.isFree===true||(!paid&&/\bfree\b/i.test([e.priceText,e.desc,...(e.tags||[])].filter(Boolean).join(" ")));
  const ages=e.ageMin!=null&&e.ageMax!=null?[e.ageMin,e.ageMax] as [number,number]:ageRange(e);
- let tags=[...(e.tags||[])];
+ let tags=[...(e.tags||[])].filter(t=>!junkTag(t));
  if(ages){
   // Kids = the audience is children/teens. Family = kids can come (all-ages).
   const kids=ages[1]<=18;

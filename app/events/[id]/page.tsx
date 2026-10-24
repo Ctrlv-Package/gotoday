@@ -1,6 +1,7 @@
 import Link from "next/link";
 import SiteHeader from "../../components/SiteHeader";
 import HeroImage from "../../components/HeroImage";
+import {junkTag} from "../../../lib/facets";
 import {calendarConnected} from "../../../lib/me";
 import SaveButton from "../../components/SaveButton";
 import CalendarChoice from "../../components/CalendarChoice";
@@ -63,7 +64,7 @@ export default async function EventPage({params}:{params:Promise<{id:string}>}){
  const directReg=!!e.registrationUrl&&e.registrationUrl!==e.officialUrl;
  const regWhere=/library/i.test(e.source)?"library":/parks/i.test(e.source)?"parks":"event";
  const paras=e.description.split(/\n+/).map(x=>x.trim()).filter(Boolean);
- const tags=e.tags.filter(t=>!["Local","Library","Parks","Free","Tickets","Kids","Family"].includes(t)&&!/\(\d/.test(t)).slice(0,5);
+ const tags=e.tags.filter(t=>!junkTag(t)&&!["Local","Library","Parks","Free","Tickets","Kids","Family"].includes(t)&&!/\(\d/.test(t)).slice(0,5);
 
  return <main className="detail">
   <SiteHeader/>
