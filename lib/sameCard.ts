@@ -5,7 +5,7 @@
 // same day, and the looser rules need more agreement (same start time, same town, no conflicting place).
 import {isGenericVenue} from "./places";
 
-export type CardLike={title:string;date:string;time?:string;venue?:string;city?:string;source?:string;distanceMiles?:number};
+export type CardLike={title:string;date:string;time?:string;venue?:string;city?:string;source?:string;distanceMiles?:number;lat?:number|null;lng?:number|null};
 
 const STOP=new Set(["the","and","of","a","at","in","on","for","with","to","annual","city","town","village","free","fl","event","events","day","night",
  "only","residents","resident","presents","present","join","us","our","your","2025","2026","2027","2028","edition","fun","family","community","celebration"]);
@@ -36,7 +36,11 @@ export function sameEventCard(a:CardLike,b:CardLike,W:(e:CardLike)=>Set<string>=
  if(a.source===b.source&&a.time===b.time&&!placesConflict(a,b)&&fa.length>=10&&fb.length>=10&&(fa.startsWith(fb)||fb.startsWith(fa)))return true;
  if(!timesOk)return false;
  const sameTown=!!town(a.city)&&town(a.city)===town(b.city);
- const near=(typeof a.distanceMiles==="number"&&typeof b.distanceMiles==="number"&&Math.abs(a.distanceMiles-b.distanceMiles)<4)||sameTown;
+ // Near: the same town, or (towns differ or unknown) within a mile and a half of each other on the map.
+ // Two towns' events are never "near" just because they're a similar distance from the person searching.
+ const miles=a.lat!=null&&a.lng!=null&&b.lat!=null&&b.lng!=null?Math.hypot((a.lat-b.lat)*69,(a.lng-b.lng)*69*Math.cos(a.lat*Math.PI/180)):null;
+ const bothTowns=!!town(a.city)&&!!town(b.city);
+ const near=sameTown||(miles!=null?miles<1.5:!bothTowns&&typeof a.distanceMiles==="number"&&typeof b.distanceMiles==="number"&&Math.abs(a.distanceMiles-b.distanceMiles)<1);
  if(!near||placesConflict(a,b))return false;
  // (b) A post (Instagram) about an event listed elsewhere: same area, titles mostly match.
  if(isIg(a)||isIg(b)){

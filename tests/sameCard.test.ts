@@ -26,3 +26,12 @@ test("existing rules still hold", () => {
   assert.equal(same(ev("Art Exhibit: Waves",{venue:"Gallery"}),ev("Opening Reception: Waves",{venue:"Gallery"})),false);
   assert.equal(same(ev("Trunk or Treat"),ev("Trunk or Treat",{date:"2026-10-25"})),false);
 });
+
+test("different towns don't merge just because both are a similar distance away", () => {
+  assert.equal(same(ev("Trunk-Or-Treat (RESIDENTS ONLY)",{venue:"City of Plantation",time:"",distanceMiles:2.8,lat:26.1276,lng:-80.2331}),
+    ev("Halloween Happenings and Trunk or Treat",{venue:"Bergeron Rodeo Grounds",city:"Davie, FL",source:"Town of Davie · Instagram",time:"10:00:00",distanceMiles:4.1,lat:26.0765,lng:-80.2521})),false);
+});
+test("a post placed a few blocks away in a neighboring town's listing still matches when it's the same spot", () => {
+  assert.equal(same(ev("Fall Festival",{venue:"Town Center",city:"Weston, FL",time:"",lat:26.1004,lng:-80.3998}),
+    ev("Fall Festival 2026",{venue:"Town Center",city:"Davie, FL",source:"Weston · Instagram",time:"16:00:00",lat:26.1010,lng:-80.3990})),true);
+});
