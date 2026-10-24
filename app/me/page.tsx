@@ -11,6 +11,7 @@ import {eventsOfUser} from "../../lib/community";
 import {getLang} from "../../lib/lang-server";
 import {tFor,LOCALE} from "../../lib/i18n";
 import {LangSetting} from "../components/Lang";
+import BfcacheRefresh from "../components/BfcacheRefresh";
 export const dynamic="force-dynamic";
 export const metadata:Metadata={title:"My GoToday",robots:{index:false}};
 
@@ -18,15 +19,18 @@ const SITE=process.env.NEXT_PUBLIC_SITE_URL||"https://www.mygotoday.com";
 const when=(r:MyEventRow,loc:string)=>`${fmtDate(r.start,{weekday:"short",month:"short",day:"numeric"},r.tz,loc)}${isAllDay(r.start,r.tz)?"":` · ${fmtTime(r.start,r.tz,loc)}`}`;
 const longDate=(d:string,loc:string)=>new Date(d+"T12:00:00Z").toLocaleDateString(loc,{month:"long",day:"numeric",year:"numeric",timeZone:"UTC"});
 
-export default async function Me(){
+export default async function Me({searchParams}:{searchParams?:Promise<{deleted?:string}>}){
  const user=await currentUser().catch(()=>null);
  const lang=await getLang(),t=tFor(lang),loc=LOCALE[lang];
  const head=<SiteHeader me={false}/>;
+ const justDeleted=(await searchParams)?.deleted==="1";
+ const deletedNote=justDeleted?<div className="okMsg">{t("Event deleted.")}</div>:null;
 
- if(!user)return <main className="detail">{head}
+ if(!user)return <main className="detail">{head}<BfcacheRefresh/>
   <div className="detailWrap">
    <section className="detailCard"><div className="detailBody">
     <h1>{t("My GoToday")}</h1>
+    {deletedNote}
     <GuestSaved/>
     <GuestCreated/>
     <div className="perk">
@@ -49,11 +53,12 @@ export default async function Me(){
  const upcoming=saved.filter(r=>r.date>=today),past=saved.filter(r=>r.date<today).reverse();
  const feed=`${SITE.replace(/^https?:\/\//,"")}/cal/${token}.ics`;
 
- return <main className="detail">{head}
+ return <main className="detail">{head}<BfcacheRefresh/>
   <div className="detailWrap">
    <section className="detailCard"><div className="detailBody">
     <SignedInNote name={user.name}/>
     <h1>{t("My GoToday")}</h1>
+    {deletedNote}
     <p className="lead">{user.name?t("Hi {name}!",{name:user.name.split(" ")[0]}):t("Hi!")} {t("Here's what you've saved and your next-year reminders.")}</p>
 
     <section className="meSection">
