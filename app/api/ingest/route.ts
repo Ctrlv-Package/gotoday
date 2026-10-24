@@ -42,6 +42,15 @@ async function run(req:NextRequest){
   }
   // Instagram accounts share Meta's hourly call budget, and a run stops when it's used up. Stalest first, so the
   // accounts that waited longest go next time — not the same end of the alphabet waiting every run.
+  // Website sources not refreshed in N hours: the GitHub job runs them one by one, so every area stays fresh even
+  // when there are more sources than fit in one site run.
+  if(req.nextUrl.searchParams.get("list")==="stale"){
+   const hours=Math.max(1,Math.min(48,Number(req.nextUrl.searchParams.get("hours"))||6));
+   const {rows}=await db.query("select name,last_success_at from sources");const last=new Map(rows.map((r:any)=>[r.name,r.last_success_at?new Date(r.last_success_at).getTime():0]));
+   const cut=Date.now()-hours*3600e3;
+   const names=(await activeSources()).filter(s=>s.platform!=="instagram"&&(last.get(s.name)??0)<cut).map(s=>s.name).sort((a,b)=>(last.get(a)??0)-(last.get(b)??0));
+   return NextResponse.json({ok:true,sources:names});
+  }
   if(req.nextUrl.searchParams.get("list")==="instagram"){
    const names=(await activeSources()).filter(s=>s.platform==="instagram").map(s=>s.name);
    const last=new Map((await db.query("select name,last_success_at from sources where name=any($1)",[names]).catch(()=>({rows:[]}))).rows.map((r:any)=>[r.name,r.last_success_at?new Date(r.last_success_at).getTime():0]));

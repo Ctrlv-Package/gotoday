@@ -426,3 +426,120 @@ Beaufort County Library | Beaufort, SC | https://www.beaufortcountylibrary.org |
 Town of Bluffton | Bluffton, SC | https://www.townofbluffton.sc.gov | lowcountry
 City of Aiken | Aiken, SC | https://www.cityofaikensc.gov | augusta
 Live Oak Public Libraries | Savannah, GA | https://liveoakpl.org/events | savannah
+
+# ==== VIRGINIA ====
+# ---- Northern Virginia ----
+Fairfax County | Fairfax, VA | https://www.fairfaxcounty.gov | dcmetro
+Fairfax County Public Library | Fairfax, VA | https://www.fairfaxcounty.gov/library | dcmetro
+Fairfax County Park Authority | Fairfax, VA | https://www.fairfaxcounty.gov/parks | dcmetro
+Arlington County | Arlington, VA | https://www.arlingtonva.us | dcmetro
+Arlington Public Library | Arlington, VA | https://library.arlingtonva.us | dcmetro
+City of Alexandria | Alexandria, VA | https://www.alexandriava.gov | dcmetro
+Alexandria Library | Alexandria, VA | https://alexlibraryva.org | dcmetro
+Loudoun County | Leesburg, VA | https://www.loudoun.gov | dcmetro
+Loudoun County Public Library | Leesburg, VA | https://library.loudoun.gov | dcmetro
+Prince William County | Woodbridge, VA | https://www.pwcva.gov | dcmetro
+Prince William Public Libraries | Prince William, VA | https://www.pwcva.gov/department/library | dcmetro
+City of Fairfax | Fairfax, VA | https://www.fairfaxva.gov | dcmetro
+City of Falls Church | Falls Church, VA | https://www.fallschurchva.gov | dcmetro
+Town of Herndon | Herndon, VA | https://www.herndon-va.gov | dcmetro
+Town of Vienna | Vienna, VA | https://www.viennava.gov | dcmetro
+Town of Leesburg | Leesburg, VA | https://www.leesburgva.gov | dcmetro
+City of Manassas | Manassas, VA | https://www.manassasva.gov | dcmetro
+Reston Association | Reston, VA | https://www.reston.org | dcmetro
+City of Fredericksburg | Fredericksburg, VA | https://www.fredericksburgva.gov | dcmetro
+Central Rappahannock Regional Library | Fredericksburg, VA | https://www.librarypoint.org | dcmetro
+# ---- Richmond ----
+City of Richmond | Richmond, VA | https://www.rva.gov | richmond
+Richmond Public Library | Richmond, VA | https://rvalibrary.org | richmond
+Henrico County | Henrico, VA | https://henrico.gov | richmond
+Henrico County Public Library | Henrico, VA | https://henricolibrary.org | richmond
+Chesterfield County | Chesterfield, VA | https://www.chesterfield.gov | richmond
+Chesterfield County Public Library | Chesterfield, VA | https://library.chesterfield.gov | richmond
+Hanover County | Hanover, VA | https://www.hanovercounty.gov | richmond
+Pamunkey Regional Library | Hanover, VA | https://www.pamunkeylibrary.org | richmond
+Science Museum of Virginia | Richmond, VA | https://smv.org | richmond
+Virginia Museum of Fine Arts | Richmond, VA | https://vmfa.museum | richmond
+# ---- Hampton Roads ----
+City of Virginia Beach | Virginia Beach, VA | https://www.vbgov.com | hamptonroads
+Virginia Beach Public Library | Virginia Beach, VA | https://libraries.virginiabeach.gov | hamptonroads
+Virginia Beach Parks and Recreation | Virginia Beach, VA | https://parks.virginiabeach.gov | hamptonroads
+City of Norfolk | Norfolk, VA | https://www.norfolk.gov | hamptonroads
+Norfolk Public Library | Norfolk, VA | https://www.norfolkpubliclibrary.org | hamptonroads
+City of Chesapeake | Chesapeake, VA | https://www.cityofchesapeake.net | hamptonroads
+Chesapeake Public Library | Chesapeake, VA | https://www.chesapeakelibrary.org | hamptonroads
+City of Suffolk | Suffolk, VA | https://www.suffolkva.us | hamptonroads
+City of Portsmouth | Portsmouth, VA | https://www.portsmouthva.gov | hamptonroads
+City of Newport News | Newport News, VA | https://www.nnva.gov | hamptonroads
+Newport News Public Library | Newport News, VA | https://library.nnva.gov | hamptonroads
+City of Hampton | Hampton, VA | https://hampton.gov | hamptonroads
+Hampton Public Library | Hampton, VA | https://hampton.gov/library | hamptonroads
+James City County | Williamsburg, VA | https://www.jamescitycountyva.gov | hamptonroads
+Williamsburg Regional Library | Williamsburg, VA | https://www.wrl.org | hamptonroads
+York County | Yorktown, VA | https://www.yorkcounty.gov | hamptonroads
+# ---- Central & Western Virginia ----
+City of Charlottesville | Charlottesville, VA | https://www.charlottesville.gov | cville
+Albemarle County | Charlottesville, VA | https://www.albemarle.org | cville
+Jefferson-Madison Regional Library | Charlottesville, VA | https://www.jmrl.org | cville
+University of Virginia | Charlottesville, VA | https://calendar.virginia.edu | cville
+City of Roanoke | Roanoke, VA | https://www.roanokeva.gov | roanoke
+Roanoke Public Libraries | Roanoke, VA | https://www.roanokeva.gov/library | roanoke
+Roanoke County | Roanoke, VA | https://www.roanokecountyva.gov | roanoke
+City of Lynchburg | Lynchburg, VA | https://www.lynchburgva.gov | roanoke
+Town of Blacksburg | Blacksburg, VA | https://www.blacksburg.gov | roanoke
+Virginia Tech | Blacksburg, VA | https://calendar.vt.edu | roanoke
+City of Harrisonburg | Harrisonburg, VA | https://www.harrisonburgva.gov | cville
+
+# ==== WASHINGTON, DC ====
+DC Public Library | Washington, DC | https://www.dclibrary.org | dcmetro
+DC Department of Parks and Recreation | Washington, DC | https://dpr.dc.gov | dcmetro
+Smithsonian | Washington, DC | https://www.si.edu/events | dcmetro
+Kennedy Center | Washington, DC | https://www.kennedy-center.org | dcmetro
+National Building Museum | Washington, DC | https://nbm.org | dcmetro
+The Wharf DC | Washington, DC | https://www.wharfdc.com | dcmetro
+Georgetown BID | Washington, DC | https://www.georgetowndc.com | dcmetro
+Capitol Riverfront | Washington, DC | https://www.capitolriverfront.org | dcmetro
+American University | Washington, DC | https://www.american.edu/events | dcmetro
+Georgetown University | Washington, DC | https://calendar.georgetown.edu | dcmetro
+
+# ==== MARYLAND ====
+Montgomery County Public Libraries | Rockville, MD | https://www.montgomerycountymd.gov/library | dcmetro
+Montgomery Parks | Silver Spring, MD | https://montgomeryparks.org | dcmetro
+City of Rockville | Rockville, MD | https://www.rockvillemd.gov | dcmetro
+City of Gaithersburg | Gaithersburg, MD | https://www.gaithersburgmd.gov | dcmetro
+City of Takoma Park | Takoma Park, MD | https://takomaparkmd.gov | dcmetro
+Prince George's County Memorial Library System | Largo, MD | https://www.pgcmls.info | dcmetro
+Prince George's Parks | Riverdale, MD | https://www.pgparks.com | dcmetro
+City of Bowie | Bowie, MD | https://www.cityofbowie.org | dcmetro
+City of College Park | College Park, MD | https://www.collegeparkmd.gov | dcmetro
+City of Greenbelt | Greenbelt, MD | https://www.greenbeltmd.gov | dcmetro
+University of Maryland | College Park, MD | https://calendar.umd.edu | dcmetro
+Baltimore City | Baltimore, MD | https://www.baltimorecity.gov | baltimore
+Enoch Pratt Free Library | Baltimore, MD | https://www.prattlibrary.org | baltimore
+Baltimore County Public Library | Towson, MD | https://www.bcpl.info | baltimore
+Baltimore County | Towson, MD | https://www.baltimorecountymd.gov | baltimore
+Howard County Library System | Columbia, MD | https://hclibrary.org | baltimore
+Howard County | Ellicott City, MD | https://www.howardcountymd.gov | baltimore
+Anne Arundel County Public Library | Annapolis, MD | https://www.aacpl.net | baltimore
+City of Annapolis | Annapolis, MD | https://www.annapolis.gov | baltimore
+Harford County Public Library | Belcamp, MD | https://www.hcplonline.org | baltimore
+Carroll County Public Library | Westminster, MD | https://library.carr.org | baltimore
+Frederick County Public Libraries | Frederick, MD | https://www.fcpl.org | dcmetro
+City of Frederick | Frederick, MD | https://www.cityoffrederickmd.gov | dcmetro
+Washington County Free Library | Hagerstown, MD | https://www.washcolibrary.org | dcmetro
+Ocean City | Ocean City, MD | https://oceancitymd.gov | delmarva
+Wicomico Public Libraries | Salisbury, MD | https://www.wicomicolibrary.org | delmarva
+City of Salisbury | Salisbury, MD | https://salisbury.md | delmarva
+Johns Hopkins University | Baltimore, MD | https://events.jhu.edu | baltimore
+Maryland Science Center | Baltimore, MD | https://www.mdsci.org | baltimore
+National Aquarium | Baltimore, MD | https://aqua.org | baltimore
+
+# ==== DELAWARE ====
+New Castle County Libraries | Wilmington, DE | https://www.nccde.org/library | delmarva
+City of Wilmington DE | Wilmington, DE | https://www.wilmingtonde.gov | delmarva
+City of Newark DE | Newark, DE | https://newarkde.gov | delmarva
+City of Dover | Dover, DE | https://www.cityofdover.com | delmarva
+Delaware Libraries | Dover, DE | https://lib.de.us | delmarva
+City of Rehoboth Beach | Rehoboth Beach, DE | https://www.cityofrehoboth.com | delmarva
+City of Lewes | Lewes, DE | https://www.ci.lewes.de.us | delmarva
+University of Delaware | Newark, DE | https://events.udel.edu | delmarva

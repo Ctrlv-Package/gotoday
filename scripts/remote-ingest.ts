@@ -95,6 +95,21 @@ console.log(failures?`${failures} source(s) did not succeed`:"All remote sources
   }
  }catch(e:any){console.log(`Retry step failed: ${e?.message||e}`)}
 
+ // Website sources the site's own daily run hasn't refreshed in 6 hours: run them here one by one, 4 at a time.
+ try{
+  const lr=await fetch(`${base}/api/ingest?list=stale&hours=6`,{headers:{authorization:`Bearer ${secret}`}});
+  const names:string[]=((await lr.json().catch(()=>({}))).sources)||[];let ok=0,bad=0,next=0;
+  console.log(`Website sources to refresh: ${names.length}`);
+  await Promise.all(Array.from({length:4},async()=>{while(next<names.length){const name=names[next++];
+   try{const r=await fetch(`${base}/api/ingest?source=${encodeURIComponent(name)}`,{method:"POST",headers:{authorization:`Bearer ${secret}`},signal:AbortSignal.timeout(310000)});
+    const d:any=await r.json().catch(()=>({}));const sm=d?.sources?.[0]||{status:"error",error:d?.error||`HTTP ${r.status}`};
+    if(sm.status==="success")ok++;else{bad++;problems.push(`${name}: ${String(sm.error||"failed").slice(0,140)}`)}
+    console.log(`${name}: ${sm.status==="success"?`${sm.accepted} events`:`failed — ${sm.error}`}`);
+   }catch(e:any){bad++;console.log(`${name}: ${String(e?.message||e)}`)}
+  }}));
+  console.log(`Website sources refreshed: ${ok} ok, ${bad} failed`);
+ }catch(e:any){console.log(`Website refresh step failed: ${e?.message||e}`)}
+
  // Instagram accounts: the site does the work (Instagram API + flyer reading); we just call each one, 3 at a time.
  const igRows:string[]=[];let igEvents=0,igFailed=0,igTotal=0;
  try{

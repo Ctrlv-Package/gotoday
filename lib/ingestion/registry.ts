@@ -237,6 +237,14 @@ export const SEED_SOURCES:SourceConfig[]=[
  {name:"Ticketmaster Greenville-Spartanburg",platform:"ticketmaster",params:{latlong:"34.9,-82.15",radius:30,label:"Greenville-Spartanburg"},source_type:"ticketing",url:"https://www.ticketmaster.com",priority:60,region:"upstate"},
  {name:"Ticketmaster Myrtle Beach",platform:"ticketmaster",params:{latlong:"33.6891,-78.8867",radius:35,label:"Myrtle Beach"},source_type:"ticketing",url:"https://www.ticketmaster.com",priority:60,region:"myrtle"},
  {name:"Ticketmaster Hilton Head",platform:"ticketmaster",params:{latlong:"32.2163,-80.7526",radius:30,label:"Hilton Head"},source_type:"ticketing",url:"https://www.ticketmaster.com",priority:60,region:"lowcountry"},
+ // ---- Virginia, DC, Maryland, Delaware ----
+ {name:"Ticketmaster Washington DC",platform:"ticketmaster",params:{latlong:"38.9072,-77.0369",radius:25,label:"Washington DC"},source_type:"ticketing",url:"https://www.ticketmaster.com",priority:60,region:"dcmetro"},
+ {name:"Ticketmaster Baltimore",platform:"ticketmaster",params:{latlong:"39.2904,-76.6122",radius:25,label:"Baltimore"},source_type:"ticketing",url:"https://www.ticketmaster.com",priority:60,region:"baltimore"},
+ {name:"Ticketmaster Richmond",platform:"ticketmaster",params:{latlong:"37.5407,-77.436",radius:30,label:"Richmond"},source_type:"ticketing",url:"https://www.ticketmaster.com",priority:60,region:"richmond"},
+ {name:"Ticketmaster Hampton Roads",platform:"ticketmaster",params:{latlong:"36.85,-76.25",radius:30,label:"Hampton Roads"},source_type:"ticketing",url:"https://www.ticketmaster.com",priority:60,region:"hamptonroads"},
+ {name:"Ticketmaster Charlottesville",platform:"ticketmaster",params:{latlong:"38.0293,-78.4767",radius:30,label:"Charlottesville"},source_type:"ticketing",url:"https://www.ticketmaster.com",priority:60,region:"cville"},
+ {name:"Ticketmaster Roanoke",platform:"ticketmaster",params:{latlong:"37.271,-79.9414",radius:35,label:"Roanoke"},source_type:"ticketing",url:"https://www.ticketmaster.com",priority:60,region:"roanoke"},
+ {name:"Ticketmaster Delaware & Ocean City",platform:"ticketmaster",params:{latlong:"38.9,-75.3",radius:50,label:"Delaware & Ocean City"},source_type:"ticketing",url:"https://www.ticketmaster.com",priority:60,region:"delmarva"},
 
  ...INSTAGRAM_ACCOUNTS,
 ];
