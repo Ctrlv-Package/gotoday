@@ -91,7 +91,9 @@ export async function fetchTribe(cfg:GenericCfg,startDate:string,endDate:string)
 }
 
 // ---------- Localist ----------
+const PUBLIC_CAMPUS=/\b(arts?\/entertainment|music|concerts?|recitals?|performances?|theat(er|re)|opera|dance|ballet|film|screening|movie|exhibit\w*|gallery|museum|lectures?|speakers?|readings?|author|festival|fest\b|fair\b|athletics|football|basketball|baseball|softball|soccer|volleyball|game day|tailgate|planetarium|observatory|garden|tour|market|homecoming|community|public|family|kids|gala)\b/i;
 export async function fetchLocalist(cfg:GenericCfg,startDate:string,endDate:string):Promise<EventRecord[]>{
+ const campus=/universit|college|\.edu\b/i.test(`${cfg.source} ${cfg.url}`);
  const origin=new URL(cfg.url).origin,tz=cfg.tz||"America/New_York",out:EventRecord[]=[];
  const days=Math.min(370,Math.max(1,Math.round((Date.parse(endDate)-Date.parse(startDate))/864e5)+1));
  for(let page=1;page<=10;page++){
@@ -108,6 +110,9 @@ export async function fetchLocalist(cfg:GenericCfg,startDate:string,endDate:stri
     const title=clean(e.title);if(title.length<3)continue;
     const desc=richText(String(e.description_text||e.description||"")).slice(0,3000);
     const types=[...(e.filters?.event_types||[]),...(e.filters?.event_target_audience||[])].map((x:any)=>clean(x.name));
+    // A campus calendar is mostly student life; keep what the public goes to (performances, exhibits, talks,
+    // films, games, festivals).
+    if(campus&&!PUBLIC_CAMPUS.test(`${title} | ${types.join(" | ")}`))continue;
     const {kids,arts,tags}=tagsFor(title,desc,types);
     const en=inst.end?new Date(inst.end):null;
     out.push({id:`${cfg.idPrefix}-${e.id}-${date}`,title,city:e.geo?.city?`${clean(e.geo.city)}, ${clean(e.geo.state||"").slice(0,2)||"FL"}`:cfg.city,
