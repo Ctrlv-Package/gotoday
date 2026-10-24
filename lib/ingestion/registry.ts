@@ -206,6 +206,18 @@ export const SEED_SOURCES:SourceConfig[]=[
  {name:"NYC Parks",platform:"nyc-parks",params:{},source_type:"official-city",url:"https://www.nycgovparks.org/events",priority:98,region:"nyc"},
  {name:"Ticketmaster New York",platform:"ticketmaster",params:{latlong:"40.7306,-73.9866",radius:15,label:"New York City"},source_type:"ticketing",url:"https://www.ticketmaster.com",priority:60,region:"nyc"},
  {name:"Ticketmaster Tampa Bay",platform:"ticketmaster",params:{latlong:"27.9506,-82.4572",radius:35,label:"Tampa Bay"},source_type:"ticketing",url:"https://www.ticketmaster.com",priority:60,region:"tampa"},
+ {name:"Ticketmaster Jacksonville",platform:"ticketmaster",params:{latlong:"30.3322,-81.6557",radius:35,label:"Jacksonville"},source_type:"ticketing",url:"https://www.ticketmaster.com",priority:60,region:"jacksonville"},
+ {name:"Ticketmaster Daytona Beach",platform:"ticketmaster",params:{latlong:"29.2108,-81.0228",radius:30,label:"Daytona Beach"},source_type:"ticketing",url:"https://www.ticketmaster.com",priority:60,region:"volusia"},
+ {name:"Ticketmaster Space Coast",platform:"ticketmaster",params:{latlong:"28.2639,-80.7214",radius:30,label:"Space Coast"},source_type:"ticketing",url:"https://www.ticketmaster.com",priority:60,region:"spacecoast"},
+ {name:"Ticketmaster Treasure Coast",platform:"ticketmaster",params:{latlong:"27.2730,-80.3582",radius:30,label:"Treasure Coast"},source_type:"ticketing",url:"https://www.ticketmaster.com",priority:60,region:"treasurecoast"},
+ {name:"Ticketmaster Sarasota",platform:"ticketmaster",params:{latlong:"27.3364,-82.5307",radius:30,label:"Sarasota"},source_type:"ticketing",url:"https://www.ticketmaster.com",priority:60,region:"sarasota"},
+ {name:"Ticketmaster Fort Myers & Naples",platform:"ticketmaster",params:{latlong:"26.4,-81.85",radius:35,label:"Fort Myers & Naples"},source_type:"ticketing",url:"https://www.ticketmaster.com",priority:60,region:"swfl"},
+ {name:"Ticketmaster Lakeland",platform:"ticketmaster",params:{latlong:"28.0395,-81.9498",radius:25,label:"Lakeland"},source_type:"ticketing",url:"https://www.ticketmaster.com",priority:60,region:"polk"},
+ {name:"Ticketmaster Gainesville & Ocala",platform:"ticketmaster",params:{latlong:"29.4,-82.2",radius:35,label:"Gainesville & Ocala"},source_type:"ticketing",url:"https://www.ticketmaster.com",priority:60,region:"gainesville"},
+ {name:"Ticketmaster Tallahassee",platform:"ticketmaster",params:{latlong:"30.4383,-84.2807",radius:30,label:"Tallahassee"},source_type:"ticketing",url:"https://www.ticketmaster.com",priority:60,region:"tallahassee"},
+ {name:"Ticketmaster Pensacola & Emerald Coast",platform:"ticketmaster",params:{latlong:"30.45,-86.9",radius:45,label:"Pensacola & Emerald Coast"},source_type:"ticketing",url:"https://www.ticketmaster.com",priority:60,region:"panhandle",timezone:"America/Chicago"},
+ {name:"Ticketmaster Panama City",platform:"ticketmaster",params:{latlong:"30.1588,-85.6602",radius:30,label:"Panama City"},source_type:"ticketing",url:"https://www.ticketmaster.com",priority:60,region:"panhandle",timezone:"America/Chicago"},
+ {name:"Ticketmaster Key West",platform:"ticketmaster",params:{latlong:"24.5551,-81.78",radius:60,label:"Key West"},source_type:"ticketing",url:"https://www.ticketmaster.com",priority:60,region:"keys"},
 
  ...INSTAGRAM_ACCOUNTS,
 ];

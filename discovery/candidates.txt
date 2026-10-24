@@ -88,3 +88,144 @@ St. Petersburg Public Library | St. Petersburg, FL | https://www.splibraries.org
 Pasco County Libraries | New Port Richey, FL | https://www.pascolibraries.org | tampa
 Clearwater Public Library | Clearwater, FL | https://www.myclearwaterlibrary.com | tampa
 Largo Public Library | Largo, FL | https://www.largo.com/library | tampa
+
+# ---- Jacksonville / Northeast Florida ----
+City of Jacksonville | Jacksonville, FL | https://www.jacksonville.gov | jacksonville
+Jacksonville Public Library | Jacksonville, FL | https://jaxpubliclibrary.org | jacksonville
+City of Jacksonville Beach | Jacksonville Beach, FL | https://www.jacksonvillebeach.org | jacksonville
+City of Atlantic Beach | Atlantic Beach, FL | https://www.coab.us | jacksonville
+City of Neptune Beach | Neptune Beach, FL | https://www.nbfl.us | jacksonville
+City of Fernandina Beach | Fernandina Beach, FL | https://www.fbfl.us | jacksonville
+Nassau County Public Library | Fernandina Beach, FL | https://www.nassaureads.com | jacksonville
+Clay County | Green Cove Springs, FL | https://www.claycountygov.com | jacksonville
+Clay County Public Library | Orange Park, FL | https://www.claycountygov.com/community/library | jacksonville
+Town of Orange Park | Orange Park, FL | https://www.townoforangepark.com | jacksonville
+St. Johns County | St. Augustine, FL | https://www.sjcfl.us | jacksonville
+St. Johns County Public Library | St. Augustine, FL | https://www.sjcpls.org | jacksonville
+City of St. Augustine | St. Augustine, FL | https://www.citystaug.com | jacksonville
+City of St. Augustine Beach | St. Augustine Beach, FL | https://www.staugbch.com | jacksonville
+Visit Jacksonville | Jacksonville, FL | https://www.visitjacksonville.com | jacksonville
+Downtown Vision Jacksonville | Jacksonville, FL | https://dtjax.com | jacksonville
+
+# ---- Daytona / Volusia & Flagler ----
+City of Daytona Beach | Daytona Beach, FL | https://www.codb.us | volusia
+Volusia County | DeLand, FL | https://www.volusia.org | volusia
+Volusia County Public Library | Daytona Beach, FL | https://www.volusialibrary.org | volusia
+City of DeLand | DeLand, FL | https://www.deland.org | volusia
+City of Ormond Beach | Ormond Beach, FL | https://www.ormondbeach.org | volusia
+City of Port Orange | Port Orange, FL | https://www.port-orange.org | volusia
+City of New Smyrna Beach | New Smyrna Beach, FL | https://www.cityofnsb.com | volusia
+City of Deltona | Deltona, FL | https://www.deltonafl.gov | volusia
+City of Palm Coast | Palm Coast, FL | https://www.palmcoast.gov | volusia
+Flagler County Public Library | Palm Coast, FL | https://www.flaglercounty.gov/departments/library | volusia
+City of Flagler Beach | Flagler Beach, FL | https://www.cityofflaglerbeach.com | volusia
+
+# ---- Space Coast (Brevard) ----
+Brevard County | Viera, FL | https://www.brevardfl.gov | spacecoast
+Brevard County Public Libraries | Cocoa, FL | https://www.brevardfl.gov/PublicLibraries | spacecoast
+City of Melbourne | Melbourne, FL | https://www.melbourneflorida.org | spacecoast
+City of Palm Bay | Palm Bay, FL | https://www.palmbayfl.gov | spacecoast
+City of Titusville | Titusville, FL | https://www.titusville.com | spacecoast
+City of Cocoa | Cocoa, FL | https://www.cocoafl.gov | spacecoast
+City of Cocoa Beach | Cocoa Beach, FL | https://www.cityofcocoabeach.com | spacecoast
+City of Rockledge | Rockledge, FL | https://www.cityofrockledge.org | spacecoast
+City of Satellite Beach | Satellite Beach, FL | https://www.satellitebeach.org | spacecoast
+City of West Melbourne | West Melbourne, FL | https://www.westmelbourne.org | spacecoast
+Town of Melbourne Beach | Melbourne Beach, FL | https://www.melbournebeachfl.org | spacecoast
+
+# ---- Treasure Coast ----
+City of Port St. Lucie | Port St. Lucie, FL | https://www.cityofpsl.com | treasurecoast
+St. Lucie County | Fort Pierce, FL | https://www.stlucieco.gov | treasurecoast
+St. Lucie County Library | Fort Pierce, FL | https://www.stlucieco.gov/departments-services/a-z/library | treasurecoast
+City of Fort Pierce | Fort Pierce, FL | https://www.cityoffortpierce.com | treasurecoast
+Martin County | Stuart, FL | https://www.martin.fl.us | treasurecoast
+Martin County Library System | Stuart, FL | https://www.library.martin.fl.us | treasurecoast
+City of Stuart | Stuart, FL | https://www.cityofstuart.us | treasurecoast
+Indian River County | Vero Beach, FL | https://www.ircgov.com | treasurecoast
+Indian River County Library | Vero Beach, FL | https://www.irclibrary.org | treasurecoast
+City of Vero Beach | Vero Beach, FL | https://www.covb.org | treasurecoast
+City of Sebastian | Sebastian, FL | https://www.cityofsebastian.org | treasurecoast
+
+# ---- Sarasota / Manatee ----
+Sarasota County | Sarasota, FL | https://www.scgov.net | sarasota
+Sarasota County Libraries | Sarasota, FL | https://www.scgov.net/government/libraries | sarasota
+City of Sarasota | Sarasota, FL | https://www.sarasotafl.gov | sarasota
+City of Venice | Venice, FL | https://www.venicegov.com | sarasota
+City of North Port | North Port, FL | https://www.northportfl.gov | sarasota
+Manatee County | Bradenton, FL | https://www.mymanatee.org | sarasota
+Manatee County Public Library | Bradenton, FL | https://www.mymanatee.org/departments/library | sarasota
+City of Bradenton | Bradenton, FL | https://www.cityofbradenton.com | sarasota
+City of Palmetto | Palmetto, FL | https://www.palmettofl.org | sarasota
+Town of Longboat Key | Longboat Key, FL | https://www.longboatkey.org | sarasota
+Charlotte County | Port Charlotte, FL | https://www.charlottecountyfl.gov | sarasota
+City of Punta Gorda | Punta Gorda, FL | https://www.cityofpuntagordafl.com | sarasota
+
+# ---- Southwest Florida (Lee / Collier) ----
+Lee County | Fort Myers, FL | https://www.leegov.com | swfl
+Lee County Library System | Fort Myers, FL | https://www.leegov.com/library | swfl
+City of Fort Myers | Fort Myers, FL | https://www.cityftmyers.com | swfl
+City of Cape Coral | Cape Coral, FL | https://www.capecoral.gov | swfl
+City of Bonita Springs | Bonita Springs, FL | https://www.cityofbonitasprings.org | swfl
+Town of Fort Myers Beach | Fort Myers Beach, FL | https://www.fortmyersbeachfl.gov | swfl
+City of Sanibel | Sanibel, FL | https://www.mysanibel.com | swfl
+City of Estero | Estero, FL | https://www.estero-fl.gov | swfl
+Collier County | Naples, FL | https://www.colliercountyfl.gov | swfl
+Collier County Public Library | Naples, FL | https://www.collierlibrary.org | swfl
+City of Naples | Naples, FL | https://www.naplesgov.com | swfl
+City of Marco Island | Marco Island, FL | https://www.cityofmarcoisland.com | swfl
+
+# ---- Polk / Lakeland ----
+City of Lakeland | Lakeland, FL | https://www.lakelandgov.net | polk
+Lakeland Public Library | Lakeland, FL | https://www.lakelandgov.net/departments/library | polk
+Polk County | Bartow, FL | https://www.polk-county.net | polk
+City of Winter Haven | Winter Haven, FL | https://www.mywinterhaven.com | polk
+City of Haines City | Haines City, FL | https://www.hainescity.com | polk
+City of Bartow | Bartow, FL | https://www.cityofbartow.net | polk
+City of Auburndale | Auburndale, FL | https://www.auburndalefl.com | polk
+City of Lake Wales | Lake Wales, FL | https://www.lakewalesfl.gov | polk
+
+# ---- Gainesville / Ocala / North Central ----
+City of Gainesville | Gainesville, FL | https://www.gainesvillefl.gov | gainesville
+Alachua County | Gainesville, FL | https://alachuacounty.us | gainesville
+Alachua County Library District | Gainesville, FL | https://aclib.us | gainesville
+University of Florida | Gainesville, FL | https://calendar.ufl.edu | gainesville
+City of Ocala | Ocala, FL | https://www.ocalafl.gov | gainesville
+Marion County | Ocala, FL | https://www.marionfl.org | gainesville
+Marion County Public Library System | Ocala, FL | https://library.marioncountyfl.org | gainesville
+Lake County | Tavares, FL | https://www.lakecountyfl.gov | gainesville
+City of Leesburg | Leesburg, FL | https://www.leesburgflorida.gov | gainesville
+City of Clermont | Clermont, FL | https://www.clermontfl.gov | orlando
+Sumter County | Bushnell, FL | https://www.sumtercountyfl.gov | gainesville
+Citrus County | Inverness, FL | https://www.citrusbocc.com | gainesville
+Hernando County | Brooksville, FL | https://www.hernandocounty.us | tampa
+
+# ---- Tallahassee ----
+City of Tallahassee | Tallahassee, FL | https://www.talgov.com | tallahassee
+Leon County | Tallahassee, FL | https://cms.leoncountyfl.gov | tallahassee
+LeRoy Collins Leon County Public Library | Tallahassee, FL | https://cms.leoncountyfl.gov/Library | tallahassee
+Florida State University | Tallahassee, FL | https://calendar.fsu.edu | tallahassee
+Visit Tallahassee | Tallahassee, FL | https://visittallahassee.com | tallahassee
+
+# ---- Panhandle (Central time west of the Apalachicola) ----
+City of Pensacola | Pensacola, FL | https://www.cityofpensacola.com | panhandle | America/Chicago
+Escambia County | Pensacola, FL | https://myescambia.com | panhandle | America/Chicago
+West Florida Public Libraries | Pensacola, FL | https://mywfpl.com | panhandle | America/Chicago
+Santa Rosa County | Milton, FL | https://www.santarosa.fl.gov | panhandle | America/Chicago
+City of Gulf Breeze | Gulf Breeze, FL | https://www.cityofgulfbreeze.us | panhandle | America/Chicago
+Okaloosa County | Fort Walton Beach, FL | https://myokaloosa.com | panhandle | America/Chicago
+City of Destin | Destin, FL | https://www.cityofdestin.com | panhandle | America/Chicago
+City of Fort Walton Beach | Fort Walton Beach, FL | https://www.fwb.org | panhandle | America/Chicago
+City of Niceville | Niceville, FL | https://www.niceville.org | panhandle | America/Chicago
+Walton County | DeFuniak Springs, FL | https://www.co.walton.fl.us | panhandle | America/Chicago
+Bay County | Panama City, FL | https://www.baycountyfl.gov | panhandle | America/Chicago
+City of Panama City | Panama City, FL | https://www.panamacity.gov | panhandle | America/Chicago
+City of Panama City Beach | Panama City Beach, FL | https://www.pcbfl.gov | panhandle | America/Chicago
+Northwest Regional Library System | Panama City, FL | https://www.nwrls.com | panhandle | America/Chicago
+
+# ---- Florida Keys ----
+Monroe County | Key West, FL | https://www.monroecounty-fl.gov | keys
+Monroe County Public Library | Key West, FL | https://www.keyslibraries.org | keys
+City of Key West | Key West, FL | https://www.cityofkeywest-fl.gov | keys
+City of Marathon | Marathon, FL | https://www.ci.marathon.fl.us | keys
+Islamorada | Islamorada, FL | https://www.islamorada.fl.us | keys
+City of Key Colony Beach | Key Colony Beach, FL | https://www.keycolonybeach.net | keys

@@ -11,7 +11,7 @@
 import {appendFileSync,readFileSync} from "node:fs";
 import {installBrowserFetch,closeBrowserFetch} from "./browser-fetch";
 
-type Cand={name?:string;city:string;url:string;region?:string};
+type Cand={name?:string;city:string;url:string;region?:string;tz?:string};
 type Found={input:string;platform:string;confidence:"confirmed"|"likely";config?:any;note:string};
 const UA={"User-Agent":"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36","Accept":"text/html,application/xhtml+xml,*/*"};
 const get=async(url:string)=>{try{const r=await fetch(url,{headers:UA,signal:AbortSignal.timeout(25000)});return{status:r.status,text:r.ok?await r.text():""}}catch(e:any){return{status:0,text:"",error:String(e?.message||e)}}};
@@ -63,6 +63,23 @@ async function probe(c:Cand):Promise<Found[]>{
  if(/thrillshare|apptegy/i.test(html))out.push({input:arg,platform:"thrillshare",confidence:org?"confirmed":"likely",note:org?`org ${org[1]||org[2]||org[3]}`:"find orgId in the Events page network requests (…/api/v4/o/<orgId>/cms/events)",
   config:{name,platform:"thrillshare",params:{orgId:org?Number(org[1]||org[2]||org[3]):null,city,site:origin},url:`${origin}/events`}});
 
+ // Generic products (any city, museum, downtown group): look on the home page and its Events/Calendar page.
+ if(!out.length){
+  const evLink=[...html.matchAll(/href="([^"#]*(?:\/events?|\/calendar|event-calendar|community-calendar)[^"#]*)"/gi)].map(x=>x[1]).find(h=>!/\.(pdf|jpg|png)$/i.test(h));
+  const evUrl=evLink?(()=>{try{return new URL(evLink,origin).toString()}catch{return""}})():"";
+  const evHtml=evUrl?(await get(evUrl)).text:"";const both=html+"\n"+evHtml;
+  // WordPress "The Events Calendar"
+  {const t=await get(`${origin}/wp-json/tribe/events/v1/events?per_page=1`);const n=(()=>{try{return Number(JSON.parse(t.text)?.total)||0}catch{return 0}})();
+   if(n)out.push({input:arg,platform:"tribe",confidence:"confirmed",note:`${n} upcoming events (The Events Calendar)`,config:{name,platform:"tribe",params:{url:origin,city},source_type:"official-city",url:evUrl||origin}})}
+  // Localist (own subdomain or *.localist.com)
+  if(!out.length){const loc=both.match(/https?:\/\/([a-z0-9.-]+)\/(?:event|calendar)[^"']*/i)&&/localist/i.test(both)?(both.match(/https?:\/\/([a-z0-9.-]*(?:localist\.com|calendar\.[a-z0-9.-]+))/i)?.[0]||origin):"";
+   for(const base of [loc,origin].filter(Boolean)){const t=await get(`${base}/api/2/events?pp=1`);const n=(()=>{try{return Number(JSON.parse(t.text)?.page?.total)||0}catch{return 0}})();
+    if(n){out.push({input:arg,platform:"localist",confidence:"confirmed",note:`Localist calendar at ${base}`,config:{name,platform:"localist",params:{url:base,city},source_type:"official-city",url:base}});break}}}
+  // iCal feed link (Trumba, Google Calendar, CMS export)
+  if(!out.length){const ics=[...both.matchAll(/(?:href|src)="([^"]*(?:\.ics\b|webcal:|[?&]ical=1|iCalendar\.aspx|calendar\/ical)[^"]*)"/gi)].map(x=>x[1].replace(/&amp;/g,"&"))[0];
+   if(ics){const u=(()=>{try{return new URL(ics.replace(/^webcal:/i,"https:"),evUrl||origin).toString()}catch{return""}})();const t=u?await get(u):{text:""} as any;const n=(String(t.text).match(/BEGIN:VEVENT/g)||[]).length;
+    if(n)out.push({input:arg,platform:"ical",confidence:"confirmed",note:`${n} events in iCal feed`,config:{name,platform:"ical",params:{url:u,city},source_type:"official-city",url:evUrl||origin}})}}
+ }
  if(!out.length)out.push({input:arg,platform:"unknown",confidence:"likely",note:"No known calendar product detected on the home page; try the site's Events page URL instead"});
  return out;
 }
@@ -72,7 +89,8 @@ let resolved:string|undefined;
 async function siteBase(){if(resolved)return resolved;const u=(process.env.GOTODAY_URL||"").replace(/\/$/,"");try{resolved=new URL((await fetch(u)).url).origin}catch{resolved=u}return resolved}
 async function save(f:Found,c:Cand){
  const base=await siteBase(),secret=process.env.INGESTION_SECRET||"";
- const body={...f.config,region:c.region,timezone:"America/New_York"};
+ const body={...f.config,region:c.region,timezone:c.tz||"America/New_York"};
+ if(c.tz&&["ical","tribe","localist"].includes(String(body.platform)))body.params={...(body.params||{}),tz:c.tz};   // Panhandle west of the Apalachicola is Central time
  const post=async(extra:any)=>{const r=await fetch(`${base}/api/admin/sources`,{method:"POST",headers:{"content-type":"application/json",authorization:`Bearer ${secret}`},body:JSON.stringify({...body,...extra})});return{status:r.status,json:await r.json().catch(()=>({}))}};
  let r=await post({test:true});
  if(r.status===422)r=await post({remote:true,test:false}).then(x=>({...x,json:{...x.json,remote:true}}));
@@ -82,7 +100,7 @@ async function save(f:Found,c:Cand){
 async function main(){
  const cands:Cand[]=[];
  const file=process.env.DISCOVER_FILE;
- if(file){for(const line of readFileSync(file,"utf8").split("\n")){const l=line.trim();if(!l||l.startsWith("#"))continue;const [name,city,url,region]=l.split("|").map(x=>x.trim());if(/^https?:/.test(url||""))cands.push({name,city,url,region})}}
+ if(file){for(const line of readFileSync(file,"utf8").split("\n")){const l=line.trim();if(!l||l.startsWith("#"))continue;const [name,city,url,region,tz]=l.split("|").map(x=>x.trim());if(/^https?:/.test(url||""))cands.push({name,city,url,region,tz:tz||undefined})}}
  const text=process.argv.slice(2).join("\n")+"\n"+(process.env.DISCOVER_URLS||"");
  for(const m of text.matchAll(/(?:([A-Z][A-Za-z .'-]*?,\s*[A-Z]{2})\s*=\s*)?(https?:\/\/[^\s,]+)/g))cands.push({city:m[1]||"",url:m[2]});
  if(!cands.length){console.error('Usage: discover-sources.ts "City, ST=https://site" ... or DISCOVER_FILE=discovery/candidates.txt');process.exit(1)}
@@ -90,7 +108,16 @@ async function main(){
  if(process.env.USE_BROWSER==="1")await installBrowserFetch();
  const doSave=process.env.SAVE==="1"&&process.env.GOTODAY_URL&&process.env.INGESTION_SECRET;
  const all:(Found&{saved?:string})[]=[];
+ // Sites already covered (a saved source on the same host) are skipped, so adding lines for a new state doesn't
+ // re-check and re-save every earlier state. REDISCOVER=1 checks everything again.
+ const known=new Set<string>();
+ if(doSave&&process.env.REDISCOVER!=="1"){
+  const host=(u:unknown)=>{try{return new URL(String(u)).hostname.replace(/^www\./,"")}catch{return""}};
+  try{const r=await fetch(`${await siteBase()}/api/admin/sources`,{headers:{authorization:`Bearer ${process.env.INGESTION_SECRET}`}});const j:any=await r.json();
+   for(const c of (j.sources||j.configs||[]))for(const u of [c.url,c.params?.url,c.params?.site,c.params?.baseUrl,c.params?.listUrl])if(host(u))known.add(host(u));}catch(e){console.log("Couldn't read saved sources:",String(e))}
+ }
  for(const c of cands){
+  {const h=(()=>{try{return new URL(c.url).hostname.replace(/^www\./,"")}catch{return""}})();if(h&&known.has(h)){console.log(`skip (already a source) ${c.name||c.url}`);continue}}
   const f:Found[]=await probe(c).catch(e=>[{input:c.name||c.url,platform:"error",confidence:"likely",note:String(e?.message||e)}]);
   // One site can run several products (a city calendar plus its library's); keep their saved names distinct.
   if(f.filter(x=>x.config).length>1)for(const x of f)if(x.config&&/^(communico|bibliocommons|libcal)$/.test(x.platform)&&!/librar/i.test(x.config.name))x.config.name=`${x.config.name.replace(/^(City|Town|Village) of /i,"")} Public Library`;

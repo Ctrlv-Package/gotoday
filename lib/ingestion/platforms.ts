@@ -13,6 +13,7 @@ import {fetchThrillshare} from "../sources/thrillshare";
 import {fetchTicketmasterEvents} from "../sources/ticketmaster";
 import {fetchBrowardParkEvents} from "../sources/broward-parks";
 import {fetchRiverwalkEvents} from "../sources/riverwalk";
+import {fetchIcal,fetchTribe,fetchLocalist} from "../sources/generic";
 
 // Every source is (platform, params). Platforms are the calendar products cities, counties and
 // libraries buy, so one adapter covers every customer of that product nationwide. Adding a city is
@@ -55,6 +56,12 @@ export const PLATFORMS:Record<string,{describe:string;params:string;build:(p:Par
   build:(p)=>(s,e)=>fetchTicketmasterEvents(s,e,{marketId:p.marketId,latlong:p.latlong,radius:p.radius,label:p.label})},
  "broward-parks":{describe:"Broward County Parks event-calendar API",params:"(none)",build:()=>fetchBrowardParkEvents},
  riverwalk:{describe:"Riverwalk Fort Lauderdale calendar",params:"(none)",build:()=>fetchRiverwalkEvents},
+ ical:{describe:"Any iCal (.ics) calendar feed (Trumba, Google Calendar, CMS exports)",params:"url, city, venue?, tz?",
+  build:(p,m)=>{need(p,"url","city");return(s,e)=>fetchIcal({url:p.url,source:m.name,idPrefix:p.idPrefix||m.name.toLowerCase().replace(/[^a-z]+/g,""),city:p.city,venue:p.venue||m.name,tz:p.tz},s,e)}},
+ tribe:{describe:"WordPress 'The Events Calendar' (wp-json/tribe/events)",params:"url, city, venue?",
+  build:(p,m)=>{need(p,"url","city");return(s,e)=>fetchTribe({url:p.url,source:m.name,idPrefix:p.idPrefix||m.name.toLowerCase().replace(/[^a-z]+/g,""),city:p.city,venue:p.venue||m.name},s,e)}},
+ localist:{describe:"Localist event calendars (/api/2/events)",params:"url, city, venue?, tz?",
+  build:(p,m)=>{need(p,"url","city");return(s,e)=>fetchLocalist({url:p.url,source:m.name,idPrefix:p.idPrefix||m.name.toLowerCase().replace(/[^a-z]+/g,""),city:p.city,venue:p.venue||m.name,tz:p.tz},s,e)}},
  "nyc-parks":{describe:"NYC Parks public events (NYC Open Data)",params:"(none)",build:(p,m)=>(s,e)=>fetchNycParks(s,e,m.name)},
 };
 
