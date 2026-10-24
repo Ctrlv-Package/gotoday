@@ -29,7 +29,7 @@ async function probe(c:Cand):Promise<Found[]>{
  const libs=async(h:string,commPage:string)=>{const origin=new URL(commPage).origin,host=new URL(commPage).host.replace(/^www\./,"");
  // Communico (libraries)
  // On a library's own domain (events.dekalblibrary.org) the page names its Communico client instead of linking libnet.info.
- const commOwn=/libnet\.info|communico/i.test(h)?(h.match(/<meta[^>]+name="client"[^>]+content="([a-z0-9_-]+)"/i)?.[1]||h.match(/\bclient\s*:\s*['"]([a-z0-9_-]+)['"]/i)?.[1]):undefined;
+ const commOwn=/libnet\.info|communico/i.test(h)?(h.match(/<meta[^>]+name="client"[^>]+content="([a-z0-9_-]+)"/i)?.[1]||h.match(/\bclient\s*:\s*['"]([a-z0-9_-]+)['"]/i)?.[1]||h.match(/libnet\.info\/[^"'\s]*?\/(?:editor|events)\/([a-z0-9_-]+)\//i)?.[1]):undefined;
  const comm=h.match(/https?:\/\/([a-z0-9-]+)\.libnet\.info/i)?.[1]&&!commOwn?h.match(/https?:\/\/([a-z0-9-]+)\.libnet\.info/i)?.[1]:commOwn;
  const commBase=commOwn&&!/libnet\.info$/.test(host)?origin:comm?`https://${comm}.libnet.info`:"";
  if(comm){const t=await get(`${commBase}/eeventcaldata?event_type=0&req=${encodeURIComponent(JSON.stringify({private:false,date:new Date().toISOString().slice(0,10),days:3,locations:[],ages:[],types:[]}))}`);

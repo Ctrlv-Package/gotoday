@@ -745,3 +745,7 @@ City of Lewiston | Lewiston, ME | https://www.lewistonmaine.gov | portland-me
 City of Burlington VT | Burlington, VT | https://www.burlingtonvt.gov | burlington-vt
 Fletcher Free Library | Burlington, VT | https://www.fletcherfree.org | burlington-vt
 University of Vermont | Burlington, VT | https://www.uvm.edu/calendar | burlington-vt
+
+# ---- Thin areas: calendars found by hand ----
+Worcester Public Library | Worcester, MA | https://www.mywpl.org/events | worcester
+Bangor Public Library | Bangor, ME | https://bangorpubliclibrary.libcal.com/calendar | bangor
