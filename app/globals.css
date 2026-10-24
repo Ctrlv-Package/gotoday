@@ -597,3 +597,7 @@ a.linkBtn{text-decoration:none}
 .modeTabs button.active{background:#fff;color:var(--ink);box-shadow:0 1px 3px rgba(0,0,0,.12)}
 .modeNote{margin:2px 0 10px;color:#92400e;font-size:13px;font-weight:600}
 @media(max-width:540px){.modeTabs{display:flex}.modeTabs button{flex:1}}
+
+.seg.when.two{display:grid;grid-template-columns:repeat(2,minmax(0,1fr))}
+.meta .moreDates{color:var(--accent);font-weight:700}
+.filters.two{grid-template-columns:repeat(2,minmax(0,1fr))}

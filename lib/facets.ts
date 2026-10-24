@@ -132,6 +132,8 @@ export function facetsFor(e:In):Facet[]{
  *  family days, holiday celebrations, trunk-or-treats, tree lightings, fireworks). Not weekly programs, not ticketed
  *  shows (Ticketmaster), not job/resource fairs, not library classes unless the library itself calls it a festival. */
 const BIG=/\b(festivals?|fests?|fair|carnivals?|parades?|expo|block party|fireworks|tree lighting|holiday lighting|menorah lighting|day for children|children'?s day|kids'? day|family (fun )?day|fun day|trunk[- ]or[- ]treat|spooktacular|boo bash|monster mash|halloween (bash|bonanza|extravaganza|party in the park|festival)|egg hunt|eggstravaganza|oktoberfest|art walk|artwalk|food truck (rally|invasion|festival)|jamboree|extravaganza|fiesta|hoedown|founders'? day|heritage day|community day|movie in the park|concert in the park|pumpkin patch|winter wonderland|snow day|santa'?s? (village|parade|arrival|workshop)|light show|harvest (fest|festival|celebration)|diwali|lunar new year|plant (sale|affair)|state fair|county fair)\b/i;
+/** The same title test for the database (PostgreSQL writes word edges as \\y). */
+export const BIG_SQL=BIG.source.replace(/\\b/g,"\\y");
 const NOT_BIG=/\b(job|career|resource|college|vendor|hiring|health insurance|benefits|employment|book|science fair project|application|registration|meeting|workshop|class|seminar|webinar|info session|planning|vendors? wanted|call for|contest|awards?|judging)\b/i;
 export function isBigEvent(e:{title?:string;desc?:string;tags?:string[];source?:string;recurrence?:string|null}){
  const t=e.title||"",tags=e.tags||[];
