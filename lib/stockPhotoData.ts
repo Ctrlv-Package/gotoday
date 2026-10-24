@@ -80,10 +80,10 @@ export const TOPICS:Topic[]=[
  T("library",/$^/,"public library interior bright"),
  T("workshop",/\b(workshop|seminar|lecture|class|course|series|training|support group|info(rmation)? session)\b/i,"adult education class small group"),
  // Chosen by the AI reader only (lib/photoTopic): more specific seasonal and audience versions.
- T("kidshalloween",/$^/,"children halloween costumes"),
+ T("kidshalloween",/$^/,"kids halloween costume trick or treat"),
  T("halloweenparty",/$^/,"halloween costume party friends"),
  T("fallfestival",/$^/,"autumn festival family pumpkins"),
- T("kidschristmas",/$^/,"children christmas santa"),
+ T("kidschristmas",/$^/,"kids decorating christmas tree"),
  T("holidaylights",/$^/,"christmas lights display night"),
  T("kidscooking",/$^/,"children cooking kitchen"),
  T("winetasting",/$^/,"wine tasting glasses"),
