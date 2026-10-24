@@ -151,13 +151,13 @@ function RsvpField({visibility,date,value,onChange}:{visibility:"public"|"privat
   <label className="efCheck"><input type="checkbox" checked={r.onSite} onChange={e=>set({onSite:e.target.checked})}/> Guests reply on GoToday (Going / Maybe / Can't go) and you see the guest list</label>
   <label className="efCheck"><input type="checkbox" checked={open} onChange={e=>{setOpen(e.target.checked);if(!e.target.checked)set({name:"",phone:"",email:""})}}/> Guests RSVP to someone by text, call or email</label>
   {open&&<div className="efRsvpWho">
-   <label className="efField">RSVP to <small>(name)</small><input maxLength={60} value={r.name} onChange={e=>set({name:e.target.value})} placeholder="Pieri" autoComplete="off"/></label>
+   <label className="efField"><span>RSVP to <small>(name)</small></span><input maxLength={60} value={r.name} onChange={e=>set({name:e.target.value})} placeholder="Pieri" autoComplete="off"/></label>
    <div className="efRow">
-    <label className="efField grow">Phone <small>(text or call)</small><input type="tel" inputMode="tel" maxLength={40} value={r.phone} onChange={e=>set({phone:e.target.value})} placeholder="754-555-0123" autoComplete="off"/></label>
+    <label className="efField grow"><span>Phone <small>(text or call)</small></span><input type="tel" inputMode="tel" maxLength={40} value={r.phone} onChange={e=>set({phone:e.target.value})} placeholder="754-555-0123" autoComplete="off"/></label>
     <label className="efField grow">Email<input type="email" maxLength={120} value={r.email} onChange={e=>set({email:e.target.value})} placeholder="name@email.com" autoComplete="off"/></label>
    </div>
    <small className="muted">{visibility==="private"?"Only guests with your link see this.":"Shown on the public event page, so anyone who finds the event can see it."}</small>
   </div>}
-  {(r.onSite||open)&&<label className="efField efRsvpBy">Please reply by <small>(optional)</small><input type="date" max={date||undefined} value={r.by} onChange={e=>set({by:e.target.value})}/></label>}
+  {(r.onSite||open)&&<label className="efField efRsvpBy"><span>Please reply by <small>(optional)</small></span><input type="date" max={date||undefined} value={r.by} onChange={e=>set({by:e.target.value})}/></label>}
  </fieldset>;
 }
