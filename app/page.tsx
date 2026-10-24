@@ -57,7 +57,8 @@ export default function Home(){
   let returning=nav==="back_forward";try{returning=returning||sessionStorage.getItem("gotoday:openedEvent")==="1";sessionStorage.removeItem("gotoday:openedEvent")}catch{}
   if(freshParam||realReload||!returning){try{sessionStorage.removeItem(VIEW)}catch{};v=null}
   if(freshParam)history.replaceState(null,"",location.pathname+(fromUrl?`?zip=${fromUrl}`:""));
-  if(v&&v.day===today&&Date.now()-v.savedAt<45*60e3&&(!fromUrl||fromUrl===v.searchedZip)){
+  // Coming back restores what you were looking at even if the address still has an older ?zip= (you then used your location).
+  if(v&&v.day===today&&Date.now()-v.savedAt<45*60e3&&(returning||!fromUrl||fromUrl===v.searchedZip)){
    setZip(v.zip);setSearchedZip(v.searchedZip);setCoords(v.coords);setRadius(v.radius);setRange(v.range);setSelected(v.selected);setAgeBands(v.ageBands);
    setMoreOpen(v.moreOpen);setSetting(v.setting);setDropIn(v.dropIn);setSpanish(v.spanish);setSeniors(v.seniors);setTimeFilter(v.timeFilter);setView(v.view==="big"||v.view==="fav"?v.view:"all");if(v.bigRange)setBigRange(v.bigRange);if(v.bigRadius)setBigRadius(v.bigRadius);setSort(v.sort);setQuery(v.query);
    setEvents(v.events||[]);setMessage(v.message||"");setSoon(v.soon||null);setRestored(true);
@@ -86,7 +87,7 @@ export default function Home(){
   return()=>{clearTimeout(t);window.removeEventListener("scroll",onScroll);window.removeEventListener("pagehide",save);document.removeEventListener("click",onClick,true)};
  },[restored,view,bigRange,bigRadius,zip,searchedZip,coords,radius,range,selected,ageBands,moreOpen,setting,dropIn,spanish,seniors,timeFilter,sort,query,events,message,soon]);
 
- function searchZip(z:string){setZipErr("");if(!/^\d{5}$/.test(z)){setZipErr(z?t("A ZIP code has 5 digits, like 33326."):t("Enter a ZIP code to search."));return}store.set("gotoday:zip",z);setCoords(null);setSearchedZip(z);load(z,range,null,radius).then(ok=>{if(ok!==false)document.getElementById("results")?.scrollIntoView({behavior:"smooth"})})}
+ function searchZip(z:string){setZipErr("");if(!/^\d{5}$/.test(z)){setZipErr(z?t("A ZIP code has 5 digits, like 33326."):t("Enter a ZIP code to search."));return}store.set("gotoday:zip",z);setCoords(null);setSearchedZip(z);try{history.replaceState(null,"",`${location.pathname}?zip=${z}`)}catch{}load(z,range,null,radius).then(ok=>{if(ok!==false)document.getElementById("results")?.scrollIntoView({behavior:"smooth"})})}
  function submitZip(){searchZip(zip.trim())}
  // "Use my location": the button itself shows progress (finding you → loading events) and can't be pressed twice;
  // problems are explained right under it, where the person is looking.
@@ -98,7 +99,7 @@ export default function Home(){
   // If the browser's permission prompt is ignored, don't spin forever.
   const guard=setTimeout(()=>{setLocating(false);setLocErr(t("Waiting for permission — tap Allow in your browser's location prompt, or enter a ZIP code."))},20000);
   navigator.geolocation.getCurrentPosition(async p=>{clearTimeout(guard);setLocErr("");const c={lat:p.coords.latitude,lng:p.coords.longitude};setCoords(c);setSearchedZip("");setZip("");setLocating(false);
-    setTimeout(()=>document.getElementById("results")?.scrollIntoView({behavior:"smooth"}),50);await load("",range,c,radius)},
+    setTimeout(()=>document.getElementById("results")?.scrollIntoView({behavior:"smooth"}),50);try{history.replaceState(null,"",location.pathname)}catch{};await load("",range,c,radius)},
    e=>{clearTimeout(guard);setLocating(false);setLocErr(t(e.code===1?"Location is turned off for this site. Allow it in your browser settings, or enter a ZIP code.":e.code===3?"Finding your location took too long. Try again, or enter a ZIP code.":"Couldn't find your location. Try again, or enter a ZIP code."))},
    {timeout:15000,maximumAge:600000});
  }
