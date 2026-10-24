@@ -82,7 +82,7 @@ export async function GET(request:NextRequest){
  // (saved before coordinates existed) fall back to their city center below.
  // 10 extra miles: copies of an event just outside the search distance still help pick its picture (not shown).
  // "Big events" view (big=1): only festivals, fairs and yearly favorites, over the next week or month.
- const bigOnly=p.get("big")==="1",reach=radius+10;   // the database pre-picks likely ones by title (BIG_SQL); facets decide
+ const bigOnly=p.get("big")==="1",popular=p.get("popular")==="1",reach=radius+10;   // the database pre-picks likely ones by title (BIG_SQL); facets decide
  const dLat=reach/69,dLng=reach/(69*Math.cos(lat*Math.PI/180));
  const {rows}=await db.query(`select e.id,e.title,e.description,e.start_at,e.end_at,e.local_date::text as local_date,e.timezone,e.city,e.category,e.genre,e.tags,e.is_free,e.price_text,e.image_url,
    e.official_url,e.age_min,e.age_max,e.registration_text,e.recurrence,e.latitude,e.longitude,s.name as source,v.name as venue,v.address as venue_address
@@ -90,6 +90,7 @@ export async function GET(request:NextRequest){
   where e.status='active' and e.local_date between $1::date and $2::date
    and ((e.latitude between $3 and $4 and e.longitude between $5 and $6) or e.latitude is null)
    ${bigOnly?"and (e.title ~* $7 or e.tags && array['Fair/Festival','Festival','Festivals']::text[])":""}
+   ${popular?"and exists(select 1 from saved_events se where se.event_id=e.id)":""}
   order by e.start_at limit 4000`,[w.startDate,w.endDate,lat-dLat,lat+dLat,lng-dLng,lng+dLng,...(bigOnly?[BIG_SQL]:[])]);
  const now=Date.now();
  let events:any[]=[];const cancelledList:any[]=[],outside:any[]=[];
@@ -211,5 +212,12 @@ export async function GET(request:NextRequest){
  // No results: tell the page whether that's "nothing this day" or "we're not in this area yet".
  const coverage=events.length?{covered:true}:{covered:await covered(lat,lng,today),place:usedZip?zipPlace.get(postalCode)||null:null};
  // Same search within 10 minutes is answered from Vercel's cache, not the database (keeps the free database tier happy).
+ // Favorites (popular=1): how many people saved each card (any of its copies); the most-loved come first on the page.
+ if(popular&&events.length){
+  const ids=[...new Set(events.flatMap((e:any)=>(e._places||[]).map((x:any)=>Number(x.id)).concat(Number(String(e.id).replace(/^db-/,"")))).filter(Number.isFinite))];
+  const n=new Map((await db.query("select event_id,count(*)::int as n from saved_events where event_id=any($1) group by event_id",[ids]).catch(()=>({rows:[]}))).rows.map((r:any)=>[Number(r.event_id),r.n]));
+  for(const e of events as any[])e.saves=[...new Set([Number(String(e.id).replace(/^db-/,"")),...(e._places||[]).map((x:any)=>Number(x.id))])].reduce((a,id)=>a+(n.get(id)||0),0);
+  events=events.filter((e:any)=>e.saves>0);
+ }
  return NextResponse.json({coverage,events:events.slice(0,2000).map((e:any)=>({...e,desc:e.desc.length>320?e.desc.slice(0,317)+"…":e.desc})),range,startDate:w.startDate,endDate:w.endDate,center:[lat,lng],radius,localCount,ticketmasterCount:events.length-localCount,total:events.length},{headers:{"cache-control":"public, s-maxage=600, stale-while-revalidate=1800"}});
 }
