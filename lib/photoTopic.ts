@@ -56,7 +56,7 @@ Events:
 ${items.map((x,i)=>`${i}. ${x.title}${x.ages?` [ages ${x.ages}]`:""} — ${x.desc.replace(/\s+/g," ").slice(0,220)}`).join("\n")}
 
 Reply with JSON only: {"results":[{"i":0,"topic":"type"}]}`;
- const model=modelOverride||process.env.PHOTO_TOPIC_MODEL||"gemini-2.5-flash-lite";   // the lightest model has the most free requests
+ const model=modelOverride||process.env.PHOTO_TOPIC_MODEL||"gemini-3.5-flash-lite";   // the lightest model has the most free requests
  const r=await fetchRetry(`https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent`,{method:"POST",
   headers:{"content-type":"application/json","x-goog-api-key":key},
   body:JSON.stringify({contents:[{role:"user",parts:[{text:prompt}]}],generationConfig:{responseMimeType:"application/json",maxOutputTokens:4096,temperature:0}})},2);
