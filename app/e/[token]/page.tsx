@@ -5,6 +5,7 @@ import {eventByShare,startOf,endOf,rsvpCounts,showPhone,type CommunityEvent} fro
 import {fmtDate,fmtTime} from "../../../lib/event-detail";
 import ShareButton from "../../events/[id]/ShareButton";
 import AddToCalendar from "../../components/AddToCalendar";
+import ExpandableImage from "../../components/ExpandableImage";
 import Rsvp from "./Rsvp";
 import SaveButton from "../../components/SaveButton";
 import CalendarChoice from "../../components/CalendarChoice";
@@ -51,7 +52,7 @@ export default async function CommunityEventPage({params,searchParams}:{params:P
  const counts=e.rsvp.onSite?await rsvpCounts(e.id):null;
  const map=`https://maps.google.com/maps?q=${encodeURIComponent(e.latitude!=null&&e.longitude!=null&&!e.address?`${e.latitude},${e.longitude}`:where)}&z=15&output=embed`;
  const dir=`https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(where)}`;
- return shell(<article className="detailCard">{photo&&<div className="heroWrap"><img className="detailHero" src={photo} alt=""/>{stock&&<span className="stockNote">Illustrative photo</span>}</div>}<div className="detailBody">
+ return shell(<article className="detailCard">{photo&&<div className="heroWrap"><ExpandableImage className="detailHero" src={photo} alt=""/>{stock&&<span className="stockNote">Illustrative photo</span>}</div>}<div className="detailBody">
   <div className="badges">
    {e.visibility==="private"?<span className="b private">🔒 Private event</span>:<span className="b">🌎 Public event</span>}
    {e.isFree&&<span className="b free">Free</span>}{a&&<span className="b age">{a}</span>}

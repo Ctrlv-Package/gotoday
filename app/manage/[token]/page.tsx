@@ -12,6 +12,7 @@ type Data={event:FormValues&{status:string;reviewReason:string|null;shareToken:s
 export default function ManagePage(){
  const token=String(useParams().token||"");
  const [data,setData]=useState<Data|null>(null),[err,setErr]=useState(""),[busy,setBusy]=useState(false),[msg,setMsg]=useState(""),[confirmDel,setConfirmDel]=useState(false),[deleted,setDeleted]=useState(false),[formKey,setFormKey]=useState(0);
+ const [transferEmail,setTransferEmail]=useState(""),[confirmTransfer,setConfirmTransfer]=useState(false),[transferErr,setTransferErr]=useState(""),[transferred,setTransferred]=useState("");
  const auth={authorization:`Bearer ${token}`};
  async function load(){try{const r=await fetch("/api/community/manage",{headers:auth,cache:"no-store"});const d=await r.json();if(!d.ok){setErr(d.errors?.[0]||"Not found");return}setData(d);
   rememberEvent({title:d.event.title,date:d.event.date,shareUrl:d.shareUrl,manageUrl:location.href,visibility:d.event.visibility})}catch{setErr("Couldn't reach GoToday.")}}
@@ -22,6 +23,9 @@ export default function ManagePage(){
    setMsg(d.status==="pending"?"Saved. The changes are waiting for a quick review before they show in search.":"Saved ✓");await load();setFormKey(k=>k+1);window.scrollTo({top:0,behavior:"smooth"});return null;
   }catch{return["Couldn't reach GoToday."]}finally{setBusy(false)}}
  async function del(){setBusy(true);try{const r=await fetch("/api/community/manage",{method:"DELETE",headers:auth});if((await r.json()).ok){forgetEvent(location.href);setDeleted(true)}}finally{setBusy(false)}}
+ async function doTransfer(){setBusy(true);setTransferErr("");try{const r=await fetch("/api/community/manage",{method:"POST",headers:{...auth,"content-type":"application/json"},body:JSON.stringify({recipientEmail:transferEmail})});const d=await r.json();
+  if(!d.ok){setTransferErr(d.errors?.[0]||"Couldn't transfer.");setConfirmTransfer(false)}else{forgetEvent(location.href);setTransferred(d.recipientEmail)}
+ }catch{setTransferErr("Couldn't reach GoToday.");setConfirmTransfer(false)}finally{setBusy(false)}}
 
  const e=data?.event;
  return <main className="detail">
@@ -46,6 +50,14 @@ export default function ManagePage(){
 
     <section className="related"><h2>Edit details</h2>
      <EventForm key={formKey} initial={{...e,date:e.date}} submitLabel="Save changes" busy={busy} onSubmit={save}/></section>
+
+    <section className="related"><h2>Transfer to another user</h2>
+     {transferred?<><div className="okMsg">Transferred to <b>{transferred}</b>. This manage link no longer works — the new owner will find the event in My GoToday.</div><Link href="/create">Create another event →</Link></>
+     :<><p className="muted">Hand this event to someone else's GoToday account. They must already have signed in to GoToday with that email. Your manage link will stop working once it moves.</p>
+     {transferErr&&<div className="efErrors" role="alert"><div>• {transferErr}</div></div>}
+     {confirmTransfer?<div className="ctaRow"><button className="btn dangerBtn" disabled={busy} onClick={doTransfer}>Yes, transfer it to {transferEmail}</button><button className="btn ghost" onClick={()=>setConfirmTransfer(false)}>Cancel</button></div>
+     :<div className="ctaRow"><label className="efField grow"><span>New owner's email</span><input type="email" value={transferEmail} onChange={e=>setTransferEmail(e.target.value)} placeholder="them@example.com"/></label><button className="btn ghost" disabled={busy||!transferEmail.trim()} onClick={()=>setConfirmTransfer(true)}>Transfer…</button></div>}</>}
+    </section>
 
     <section className="danger"><h2>Delete event</h2>
      {confirmDel?<div className="ctaRow"><button className="btn dangerBtn" disabled={busy} onClick={del}>Yes, delete it</button><button className="btn ghost" onClick={()=>setConfirmDel(false)}>Cancel</button></div>
