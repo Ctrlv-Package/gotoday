@@ -29,7 +29,10 @@ Object.assign(CITY_COORDS,{"Orlando, FL":[28.5383,-81.3792],"Kissimmee, FL":[28.
 "Daytona Beach, FL":[29.2108,-81.0228],"Melbourne, FL":[28.0836,-80.6081],"Port St. Lucie, FL":[27.273,-80.3582],"Sarasota, FL":[27.3364,-82.5307],
 "Fort Myers, FL":[26.6406,-81.8723],"Naples, FL":[26.142,-81.7948],"Lakeland, FL":[28.0395,-81.9498],"Gainesville, FL":[29.6516,-82.3248],"Ocala, FL":[29.1872,-82.1401],
 "Tallahassee, FL":[30.4383,-84.2807],"Pensacola, FL":[30.4213,-87.2169],"Panama City Beach, FL":[30.1766,-85.8055],"Key West, FL":[24.5551,-81.78],
-"New York, NY":[40.7306,-73.9866],"Brooklyn, NY":[40.6782,-73.9442]} as Record<string,[number,number]>);
+"New York, NY":[40.7306,-73.9866],"Brooklyn, NY":[40.6782,-73.9442],
+"Atlanta, GA":[33.749,-84.388],"Savannah, GA":[32.0809,-81.0912],"Augusta, GA":[33.4735,-82.0105],"Athens, GA":[33.9519,-83.3576],"Decatur, GA":[33.7748,-84.2963],
+"Charlotte, NC":[35.2271,-80.8431],"Raleigh, NC":[35.7796,-78.6382],"Durham, NC":[35.994,-78.8986],"Asheville, NC":[35.5951,-82.5515],"Wilmington, NC":[34.2257,-77.9447],
+"Charleston, SC":[32.7765,-79.9311],"Columbia, SC":[34.0007,-81.0348],"Greenville, SC":[34.8526,-82.394],"Myrtle Beach, SC":[33.6891,-78.8867]} as Record<string,[number,number]>);
 export function milesBetween(a:number,b:number,c:number,d:number){const R=3958.8,q=(x:number)=>x*Math.PI/180,dp=q(c-a),dl=q(d-b),z=Math.sin(dp/2)**2+Math.cos(q(a))*Math.cos(q(c))*Math.sin(dl/2)**2;return 2*R*Math.asin(Math.sqrt(z))}
 
 /** "Fort Lauderdale, FL" -> "fort-lauderdale" */
@@ -39,4 +42,5 @@ export function cityFromSlug(slug:string):string|null{for(const name of Object.k
  *  the density check (scripts/density-check.ts) shows listings every day. */
 export const SEO_CITIES=["Sunrise, FL","Fort Lauderdale, FL","Hollywood, FL","Coral Springs, FL","Pembroke Pines, FL","Miramar, FL","Plantation, FL","Davie, FL","Weston, FL","Pompano Beach, FL","Deerfield Beach, FL","Miami, FL","Miami Beach, FL","Coral Gables, FL","Hialeah, FL","Aventura, FL","Boca Raton, FL","Delray Beach, FL","Boynton Beach, FL","West Palm Beach, FL","Jupiter, FL","Wellington, FL","Palm Beach Gardens, FL",
  "Orlando, FL","Kissimmee, FL","Winter Park, FL","Tampa, FL","St. Petersburg, FL","Clearwater, FL","Jacksonville, FL","St. Augustine, FL","Daytona Beach, FL","Melbourne, FL",
- "Sarasota, FL","Fort Myers, FL","Naples, FL","Lakeland, FL","Tallahassee, FL","Pensacola, FL","Key West, FL","New York, NY","Brooklyn, NY"];
+ "Sarasota, FL","Fort Myers, FL","Naples, FL","Lakeland, FL","Tallahassee, FL","Pensacola, FL","Key West, FL","New York, NY","Brooklyn, NY",
+ "Atlanta, GA","Savannah, GA","Augusta, GA","Athens, GA","Decatur, GA","Charlotte, NC","Raleigh, NC","Durham, NC","Asheville, NC","Wilmington, NC","Charleston, SC","Columbia, SC","Greenville, SC","Myrtle Beach, SC"];
