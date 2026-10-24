@@ -16,5 +16,5 @@ export async function GET(req:NextRequest){
 export async function POST(req:NextRequest){
  if(!auth(req))return NextResponse.json({ok:false},{status:401});
  const n=Math.min(40,Math.max(1,Number(req.nextUrl.searchParams.get("run"))||10));
- return NextResponse.json({ok:true,...await decidePending(n)});
+ return NextResponse.json({ok:true,...await decidePending(n,req.nextUrl.searchParams.get("model")||undefined)});
 }

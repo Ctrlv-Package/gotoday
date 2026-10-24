@@ -45,7 +45,7 @@ export async function decidedTopics():Promise<Map<string,string>>{
 }
 
 type Item={key:string;title:string;desc:string;ages:string};
-async function askGemini(items:Item[]):Promise<Map<string,string>>{
+async function askGemini(items:Item[],modelOverride?:string):Promise<Map<string,string>>{
  const key=process.env.GEMINI_API_KEY;if(!key)throw new Error("GEMINI_API_KEY not set");
  const list=KEYS.map(k=>`${k}: ${SHOWS[k]||TOPICS.find(t=>t.key===k)!.q}`).join("\n");
  const prompt=`You choose an illustrative stock photo for local event listings. For each event pick the ONE photo type below that best shows what people will actually do or see there, and who it's for (kids vs adults matters: a toddler Halloween storytime is "kidshalloween", not "halloween"; a library computer class is "tech", not "library"). Use "none" only if no type is even roughly right.
@@ -56,7 +56,7 @@ Events:
 ${items.map((x,i)=>`${i}. ${x.title}${x.ages?` [ages ${x.ages}]`:""} — ${x.desc.replace(/\s+/g," ").slice(0,220)}`).join("\n")}
 
 Reply with JSON only: {"results":[{"i":0,"topic":"type"}]}`;
- const model=process.env.GEMINI_MODEL||"gemini-flash-latest";
+ const model=modelOverride||process.env.PHOTO_TOPIC_MODEL||"gemini-2.5-flash-lite";   // the lightest model has the most free requests
  const r=await fetchRetry(`https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent`,{method:"POST",
   headers:{"content-type":"application/json","x-goog-api-key":key},
   body:JSON.stringify({contents:[{role:"user",parts:[{text:prompt}]}],generationConfig:{responseMimeType:"application/json",maxOutputTokens:4096,temperature:0}})},2);
@@ -73,7 +73,7 @@ Reply with JSON only: {"results":[{"i":0,"topic":"type"}]}`;
 
 /** Read upcoming events' titles not decided yet (no photo of their own first), up to `calls` AI calls of 40 titles.
  *  Paced for the free tier. Returns how many were decided. */
-export async function decidePending(calls=10){
+export async function decidePending(calls=10,model?:string){
  await schema();
  const known=await decidedTopics();
  const {rows}=await db.query(`select distinct on (lower(e.title)) e.title,e.description,e.age_min,e.age_max,(e.image_url is null or e.image_url='') as nopic
@@ -83,7 +83,7 @@ export async function decidePending(calls=10){
  for(let c=0;c<calls&&c*40<todo.length;c++){
   const batch:Item[]=todo.slice(c*40,c*40+40).map((r:any)=>({key:titleKey(r.title),title:r.title,desc:String(r.description||""),ages:r.age_min!=null||r.age_max!=null?`${r.age_min??0}-${r.age_max??"+"}`:""}));
   try{
-   const m=await askGemini(batch);
+   const m=await askGemini(batch,model);
    for(const [k,tp] of m){await db.query("insert into photo_topics(key,topic) values($1,$2) on conflict(key) do update set topic=excluded.topic,at=now()",[k,tp]);known.set(k,tp);done++}
   }catch(e:any){errors.push(String(e?.message||e).slice(0,200));if(/quota|rate|429/i.test(String(e?.message)))break}
   await new Promise(r=>setTimeout(r,4500));   // free tier: ~15 requests a minute

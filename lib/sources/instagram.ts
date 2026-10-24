@@ -257,10 +257,22 @@ export async function fetchInstagram(cfg:InstagramConfig,startDate:string,endDat
   if(e.slide){const k=`${e.post.id}#${e.slide}`;slideTitles.set(k,(slideTitles.get(k)||new Set()).add(sameEvent(e.title)))}
  }
  const perPost=new Map([...titlesPer].map(([k,v])=>[k,v.size])),perSlide=new Map([...slideTitles].map(([k,v])=>[k,v.size]));
+ // A video's cover frame is usually a person talking to the camera, not the event. Prefer a flyer or photo the
+ // account posted for the same day and subject (its "Halloween Happenings" flyer for a reel about the same night);
+ // with none, no picture here (the card gets a matching library photo instead).
+ const WORD=(t:string)=>new Set(t.toLowerCase().replace(/[^a-z0-9 ]+/g," ").split(" ").filter(w=>w.length>=5&&!/^(event|events|night|today|tomorrow|weekend|join|celebrat\w*|happening\w*|downtown|annual|free|family|october|november|december|january|february|march|april|august|september|saturday|sunday|friday|monday|tuesday|wednesday|thursday)$/.test(w)));
+ const flyerFor=(e:any):string|undefined=>{
+  const mine=WORD(`${e.title} ${e.summary||""}`);
+  const cands=found.filter((f:any)=>f.post.id!==e.post.id&&f.post.media_type!=="VIDEO"&&f.date===e.date);
+  const best=cands.find((f:any)=>sameEvent(f.title)===sameEvent(e.title))||cands.find((f:any)=>{const w=WORD(`${f.title} ${f.summary||""} ${(f.post.caption||"").slice(0,600)}`);for(const x of mine)if(w.has(x))return true;return false});
+  return best?(best.post.media_type==="CAROUSEL_ALBUM"?(best.slide&&slides(best.post)[best.slide-1])||slides(best.post)[0]:best.post.media_url):undefined;
+ };
  const pictureFor=(e:any)=>{
   const many=(perPost.get(e.post.id)||0)>=3||ROUNDUPS.has(cfg.username)&&(perPost.get(e.post.id)||0)>=2;
   const own=e.slide&&e.post.media_type==="CAROUSEL_ALBUM"&&(perSlide.get(`${e.post.id}#${e.slide}`)||0)===1&&!(many&&e.slide===1)?slides(e.post)[e.slide-1]:undefined;
-  return own||(many?undefined:imageOf(e.post));
+  if(own)return own;
+  if(e.post.media_type==="VIDEO")return flyerFor(e);
+  return many?undefined:imageOf(e.post);
  };
  for(const e of found){
   const k=key(e);if(e.cancelled||cancelled.has(k)||partOfCancelled(e)||seen.has(k)||e.date<startDate||e.date>endDate)continue;seen.add(k);
