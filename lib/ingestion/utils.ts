@@ -65,6 +65,8 @@ const SKILL_COURSE=/\b(english|spanish|french|italian|german|portuguese|mandarin
 const MULTI_SESSION=/\b(\d+[- ](?:week|part|session)s?|sessions|course)\b/i;
 const INSTRUCTION=/\b(academy|league|practice|open gym|after[- ]school|orientation|certification|training|clinic|lessons?|instructional|registration|enrollment)\b/i;
 
+const CAMPUS=/\b(advising|advisors? (hours|drop-?in)|drop-?in (advising|hours|tutoring)|tutoring|study (strategies|skills|session|hall)|honou?r cords?|cord distribution|commencement rehearsal|(university|campus|student|off-campus) housing|housing (selection|fair|application)|dissertation|thesis|prospectus|(oral|final) defen[cs]e|qualifying exam|faculty senate|faculty (and|&) staff|staff (training|development|appreciation)|for (faculty|staff|employees)|(students|employees|faculty|staff) only|info(rmation)? session|financial aid|registrar|transcripts?|syllabus|course registration|ledger|payroll|procurement|purchasing card|onboarding|new employee|supervisor training|compliance training|campus connect|canvas (training|basics)|lab safety|research (compliance|administration)|grant writing for faculty|recruit(ing|ment) (event|session|table)|tabling|classroom speaker|get to know)\b|\([A-Z]{2,6}\d{2,4}\)/i;
+const CAMPUS_TAG=/(^|\|)\s*(academic\/registrar|training and development|professional development|tabling|career development|faculty|staff|graduate school|advising|orientation)\s*(\||$)/i;
 export type DiscoveryReason="announcement"|"meeting"|"passive-display"|"service-or-support"|"fitness-class"|"recurring-instruction"|"marked-ineligible";
 export function discoveryRejection(e:EventRecord):DiscoveryReason|null{
  if(e.isDiscoveryEligible===false)return"marked-ineligible";
@@ -89,6 +91,9 @@ export function discoveryRejection(e:EventRecord):DiscoveryReason|null{
  const classTag=/(^|\|)\s*(class|workshop|technology)\s*(\||$)/i.test(tagText);
  if(PASSIVE.test(title)||(!strong&&/grab (?:and|&) go|information table/i.test(tagText)))return"passive-display";
  if(SERVICE.test(title)||(!strong&&/career\/business/i.test(tagText)))return"service-or-support";
+ // University calendars list their internal business next to public concerts and lectures: advising, staff
+ // trainings with course codes, housing selection, defenses, student-only sessions. Those aren't for the public.
+ if(CAMPUS.test(title)||(!strong&&CAMPUS_TAG.test(tagText)&&!EVENT_TITLE.test(title)))return"service-or-support";
  if(EVENT_TITLE.test(title))return null;
  if(FITNESS.test(title))return"fitness-class";
  if(SKILL_COURSE.test(title)&&(classTag||/\b(class|course|caf[eé]|workshop|essentials|basics|literacy|training|level)\b/i.test(title)))return"recurring-instruction";

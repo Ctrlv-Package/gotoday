@@ -1,0 +1,15 @@
+import {test} from "node:test";
+import assert from "node:assert/strict";
+import {discoveryRejection} from "../lib/ingestion/utils";
+const ev=(title:string,tags:string[]=[])=>({id:"x",title,date:"2026-10-28",time:"",city:"Tallahassee, FL",venue:"",desc:"",tags,source:"FSU"} as any);
+
+test("university internal business is not a public event", () => {
+  for(const [t,tags] of [["Departmental Ledger Review (BTAC04)",["Training and Development"]],["COSSPP Career Center Liaisons Fall 2026 Drop-In Advising Hours",[]],
+    ["Fall 2026 Honor Cord Distribution",[]],["University Housing: Selection Kickoff",[]],["Study Strategies",["Professional Development","Workshops & Seminars"]],
+    ["Campus Connect 101 (CC101)",["Professional Development"]],["Fall Off-Campus Housing Fair | The Ultimate Housing Quest",["Tabling"]]] as [string,string[]][])
+    assert.notEqual(discoveryRejection(ev(t,tags)),null,t);
+});
+test("public campus events stay", () => {
+  for(const t of ["Jazz III Performance","Senior Recital of Ms Haley Ann ONeill, oboe","Dirac-ula Fall Festival","Nightcrawler (2014) Film Screening","48 Hour Film Festival","Alumni Hall of Fame Gala","Climate Change - Four Basic Questions and The Current Debate"])
+    assert.equal(discoveryRejection(ev(t,["Arts/Entertainment"])),null,t);
+});
