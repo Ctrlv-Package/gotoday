@@ -316,7 +316,8 @@ export const ES:Record<string,string>={
 "Get GoToday on your home screen": "GoToday en tu pantalla de inicio",
 "Tap Share ⬆, scroll down, then \"Add to Home Screen\".": "Toca Compartir ⬆, baja y elige «Agregar a pantalla de inicio».",
 "Add it": "Agregar",
-"Not now": "Ahora no"
+"Not now": "Ahora no",
+"Event deleted.": "Evento eliminado."
 };
 export const RU:Record<string,string>={
 "Waiting for {app}'s next check": "Ждём следующей проверки: {app}",
@@ -634,5 +635,6 @@ export const RU:Record<string,string>={
 "Get GoToday on your home screen": "GoToday на главном экране",
 "Tap Share ⬆, scroll down, then \"Add to Home Screen\".": "Нажмите «Поделиться» ⬆, прокрутите вниз и выберите «На экран „Домой“».",
 "Add it": "Добавить",
-"Not now": "Не сейчас"
+"Not now": "Не сейчас",
+"Event deleted.": "Мероприятие удалено."
 };

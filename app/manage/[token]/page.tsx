@@ -11,7 +11,7 @@ type Data={event:FormValues&{status:string;reviewReason:string|null;shareToken:s
 
 export default function ManagePage(){
  const token=String(useParams().token||"");
- const [data,setData]=useState<Data|null>(null),[err,setErr]=useState(""),[busy,setBusy]=useState(false),[msg,setMsg]=useState(""),[confirmDel,setConfirmDel]=useState(false),[deleted,setDeleted]=useState(false),[formKey,setFormKey]=useState(0);
+ const [data,setData]=useState<Data|null>(null),[err,setErr]=useState(""),[busy,setBusy]=useState(false),[msg,setMsg]=useState(""),[confirmDel,setConfirmDel]=useState(false),[formKey,setFormKey]=useState(0);
  const [transferEmail,setTransferEmail]=useState(""),[confirmTransfer,setConfirmTransfer]=useState(false),[transferErr,setTransferErr]=useState(""),[transferred,setTransferred]=useState("");
  const auth={authorization:`Bearer ${token}`};
  async function load(){try{const r=await fetch("/api/community/manage",{headers:auth,cache:"no-store"});const d=await r.json();if(!d.ok){setErr(d.errors?.[0]||"Not found");return}setData(d);
@@ -22,7 +22,9 @@ export default function ManagePage(){
    if(!d.ok)return d.errors||["Couldn't save."];
    setMsg(d.status==="pending"?"Saved. The changes are waiting for a quick review before they show in search.":"Saved ✓");await load();setFormKey(k=>k+1);window.scrollTo({top:0,behavior:"smooth"});return null;
   }catch{return["Couldn't reach GoToday."]}finally{setBusy(false)}}
- async function del(){setBusy(true);try{const r=await fetch("/api/community/manage",{method:"DELETE",headers:auth});if((await r.json()).ok){forgetEvent(location.href);setDeleted(true)}}finally{setBusy(false)}}
+ // After a delete, go to My GoToday with a full page load (not a client-side back step): browser Back
+ // can restore a frozen copy of /me that still lists the event, which reads as if the delete failed.
+ async function del(){setBusy(true);try{const r=await fetch("/api/community/manage",{method:"DELETE",headers:auth});if((await r.json()).ok){forgetEvent(location.href);window.location.href="/me?deleted=1"}}finally{setBusy(false)}}
  async function doTransfer(){setBusy(true);setTransferErr("");try{const r=await fetch("/api/community/manage",{method:"POST",headers:{...auth,"content-type":"application/json"},body:JSON.stringify({recipientEmail:transferEmail})});const d=await r.json();
   if(!d.ok){setTransferErr(d.errors?.[0]||"Couldn't transfer.");setConfirmTransfer(false)}else{forgetEvent(location.href);setTransferred(d.recipientEmail)}
  }catch{setTransferErr("Couldn't reach GoToday.");setConfirmTransfer(false)}finally{setBusy(false)}}
@@ -31,8 +33,7 @@ export default function ManagePage(){
  return <main className="detail">
   <SiteHeader extra={<Link href="/create" className="createPill" aria-label="Create event" title="Create event">+<span className="wideOnly"> Create event</span></Link>}/>
   <div className="detailWrap"><article className="detailCard"><div className="detailBody">
-   {deleted?<><h1>Event deleted</h1><p>The event page and its link no longer work.</p><Link href="/create">Create another event →</Link></>
-   :err?<><h1>Manage link not found</h1><p>{err}</p><Link href="/">Back to GoToday →</Link></>
+   {err?<><h1>Manage link not found</h1><p>{err}</p><Link href="/">Back to GoToday →</Link></>
    :!data||!e?<p>Loading…</p>:<>
     <div className="badges">{e.visibility==="private"?<span className="b private">🔒 Private</span>:<span className="b">🌎 Public</span>}
      {e.status==="live"&&e.visibility==="public"&&<span className="b free">Listed in search</span>}
