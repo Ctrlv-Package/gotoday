@@ -546,3 +546,118 @@ University of Delaware | Newark, DE | https://events.udel.edu | delmarva
 
 # ---- Carolinas: retry with Trumba detection ----
 Spartanburg County Public Libraries | Spartanburg, SC | https://www.infodepot.org/Events | upstate
+
+# ==== PENNSYLVANIA ====
+City of Philadelphia | Philadelphia, PA | https://www.phila.gov | philly
+Free Library of Philadelphia | Philadelphia, PA | https://www.freelibrary.org | philly
+Philadelphia Parks & Recreation | Philadelphia, PA | https://www.phila.gov/departments/philadelphia-parks-recreation | philly
+Visit Philadelphia | Philadelphia, PA | https://www.visitphilly.com | philly
+Franklin Institute | Philadelphia, PA | https://www.fi.edu | philly
+Please Touch Museum | Philadelphia, PA | https://www.pleasetouchmuseum.org | philly
+Philadelphia Museum of Art | Philadelphia, PA | https://philamuseum.org | philly
+University of Pennsylvania | Philadelphia, PA | https://events.upenn.edu | philly
+Montgomery County Pennsylvania | Norristown, PA | https://www.montgomerycountypa.gov | philly
+Bucks County Free Library | Doylestown, PA | https://www.buckslib.org | philly
+Chester County Library | Exton, PA | https://www.chescolibraries.org | philly
+Delaware County Libraries | Media, PA | https://www.delcolibraries.org | philly
+Montgomery County-Norristown Public Library | Norristown, PA | https://www.mc-npl.org | philly
+Abington Township | Abington, PA | https://www.abingtonpa.gov | philly
+Lower Merion Township | Ardmore, PA | https://www.lowermerion.org | philly
+City of Pittsburgh | Pittsburgh, PA | https://www.pittsburghpa.gov | pittsburgh
+Carnegie Library of Pittsburgh | Pittsburgh, PA | https://www.carnegielibrary.org | pittsburgh
+Allegheny County | Pittsburgh, PA | https://www.alleghenycounty.us | pittsburgh
+Carnegie Science Center | Pittsburgh, PA | https://carnegiesciencecenter.org | pittsburgh
+University of Pittsburgh | Pittsburgh, PA | https://calendar.pitt.edu | pittsburgh
+City of Allentown | Allentown, PA | https://www.allentownpa.gov | lehigh
+Allentown Public Library | Allentown, PA | https://www.allentownpl.org | lehigh
+City of Bethlehem | Bethlehem, PA | https://www.bethlehem-pa.gov | lehigh
+Bethlehem Area Public Library | Bethlehem, PA | https://www.bapl.org | lehigh
+City of Lancaster | Lancaster, PA | https://www.cityoflancasterpa.gov | lancaster
+Lancaster Public Library | Lancaster, PA | https://lancasterpubliclibrary.org | lancaster
+City of Harrisburg | Harrisburg, PA | https://harrisburgpa.gov | lancaster
+Dauphin County Library System | Harrisburg, PA | https://www.dcls.org | lancaster
+York County Libraries PA | York, PA | https://www.yorklibraries.org | lancaster
+Hershey Public Library | Hershey, PA | https://www.hersheylibrary.org | lancaster
+City of Reading | Reading, PA | https://www.readingpa.gov | lehigh
+State College | State College, PA | https://www.statecollegepa.us | central-pa
+Schlow Centre Region Library | State College, PA | https://www.schlowlibrary.org | central-pa
+Penn State | University Park, PA | https://events.psu.edu | central-pa
+City of Erie | Erie, PA | https://www.cityof.erie.pa.us | erie
+Erie County Public Library | Erie, PA | https://www.erielibrary.org | erie
+City of Scranton | Scranton, PA | https://scrantonpa.gov | nepa
+Lackawanna County Library System | Scranton, PA | https://www.lclshome.org | nepa
+
+# ==== NEW JERSEY ====
+Jersey City | Jersey City, NJ | https://www.jerseycitynj.gov | nyc
+Jersey City Free Public Library | Jersey City, NJ | https://www.jclibrary.org | nyc
+City of Hoboken | Hoboken, NJ | https://www.hobokennj.gov | nyc
+Hoboken Public Library | Hoboken, NJ | https://hobokenlibrary.org | nyc
+City of Newark NJ | Newark, NJ | https://www.newarknj.gov | nyc
+Newark Public Library | Newark, NJ | https://npl.org | nyc
+Montclair Public Library | Montclair, NJ | https://www.montclairlibrary.org | nyc
+Township of Montclair | Montclair, NJ | https://www.montclairnjusa.org | nyc
+Bergen County | Hackensack, NJ | https://www.co.bergen.nj.us | nyc
+Hackensack Public Library | Hackensack, NJ | https://www.hackensacklibrary.org | nyc
+Paramus Public Library | Paramus, NJ | https://www.paramuslibrary.org | nyc
+Ridgewood Public Library | Ridgewood, NJ | https://ridgewoodlibrary.org | nyc
+Morris County Library | Whippany, NJ | https://mclib.info | nyc
+Morristown | Morristown, NJ | https://www.townofmorristown.org | nyc
+Somerset County Library System | Bridgewater, NJ | https://www.sclsnj.org | central-nj
+Middlesex County | New Brunswick, NJ | https://www.middlesexcountynj.gov | central-nj
+Edison Public Library | Edison, NJ | https://www.edisonpubliclibrary.org | central-nj
+Princeton Public Library | Princeton, NJ | https://www.princetonlibrary.org | central-nj
+Princeton University | Princeton, NJ | https://www.princeton.edu/events | central-nj
+Mercer County Library System | Lawrence Township, NJ | https://www.mcl.org | central-nj
+Monmouth County Library | Manalapan, NJ | https://monmouthcountylib.org | jersey-shore
+Monmouth County Parks | Lincroft, NJ | https://www.monmouthcountyparks.com | jersey-shore
+Ocean County Library | Toms River, NJ | https://www.theoceancountylibrary.org | jersey-shore
+Asbury Park | Asbury Park, NJ | https://www.cityofasburypark.com | jersey-shore
+Red Bank | Red Bank, NJ | https://redbanknj.org | jersey-shore
+Atlantic City | Atlantic City, NJ | https://www.acnj.gov | south-jersey
+Atlantic County Library System | Mays Landing, NJ | https://www.atlanticlibrary.org | south-jersey
+Cape May | Cape May, NJ | https://www.capemaycity.com | south-jersey
+Cape May County Library | Cape May Court House, NJ | https://www.cmclibrary.org | south-jersey
+Camden County Library System | Voorhees, NJ | https://www.camdencountylibrary.org | philly
+Cherry Hill Public Library | Cherry Hill, NJ | https://www.chplnj.org | philly
+Burlington County Library System | Westampton, NJ | https://www.bcls.lib.nj.us | philly
+Gloucester County Library System | Mullica Hill, NJ | https://www.gcls.org | philly
+
+# ==== NEW YORK (beyond NYC) ====
+New York Public Library | New York, NY | https://www.nypl.org | nyc
+Brooklyn Public Library | Brooklyn, NY | https://www.bklynlibrary.org | nyc
+Queens Public Library | Queens, NY | https://www.queenslibrary.org | nyc
+American Museum of Natural History | New York, NY | https://www.amnh.org | nyc
+Brooklyn Botanic Garden | Brooklyn, NY | https://www.bbg.org | nyc
+Westchester County | White Plains, NY | https://www.westchestergov.com | westchester
+White Plains Public Library | White Plains, NY | https://whiteplainslibrary.org | westchester
+City of Yonkers | Yonkers, NY | https://www.yonkersny.gov | westchester
+Yonkers Public Library | Yonkers, NY | https://www.ypl.org | westchester
+New Rochelle Public Library | New Rochelle, NY | https://www.nrpl.org | westchester
+Nassau County | Mineola, NY | https://www.nassaucountyny.gov | longisland
+Hempstead Public Library | Hempstead, NY | https://www.hempsteadlibrary.info | longisland
+Levittown Public Library | Levittown, NY | https://www.levittownpl.org | longisland
+Huntington Public Library | Huntington, NY | https://myhpl.org | longisland
+Town of Huntington | Huntington, NY | https://www.huntingtonny.gov | longisland
+Suffolk County | Hauppauge, NY | https://www.suffolkcountyny.gov | longisland
+Town of Islip | Islip, NY | https://islipny.gov | longisland
+Patchogue-Medford Library | Patchogue, NY | https://www.pmlib.org | longisland
+City of Albany | Albany, NY | https://www.albanyny.gov | capital-ny
+Albany Public Library | Albany, NY | https://www.albanypubliclibrary.org | capital-ny
+Schenectady County Public Library | Schenectady, NY | https://www.scpl.org | capital-ny
+City of Saratoga Springs | Saratoga Springs, NY | https://www.saratoga-springs.org | capital-ny
+Saratoga Springs Public Library | Saratoga Springs, NY | https://www.sspl.org | capital-ny
+City of Rochester | Rochester, NY | https://www.cityofrochester.gov | rochester
+Rochester Public Library | Rochester, NY | https://roccitylibrary.org | rochester
+Monroe County NY | Rochester, NY | https://www.monroecounty.gov | rochester
+City of Buffalo | Buffalo, NY | https://www.buffalony.gov | buffalo
+Buffalo & Erie County Public Library | Buffalo, NY | https://www.buffalolib.org | buffalo
+City of Syracuse | Syracuse, NY | https://www.syr.gov | syracuse
+Onondaga County Public Libraries | Syracuse, NY | https://www.onlib.org | syracuse
+Syracuse University | Syracuse, NY | https://calendar.syr.edu | syracuse
+City of Ithaca | Ithaca, NY | https://www.cityofithaca.org | syracuse
+Tompkins County Public Library | Ithaca, NY | https://tcpl.org | syracuse
+Cornell University | Ithaca, NY | https://events.cornell.edu | syracuse
+City of Poughkeepsie | Poughkeepsie, NY | https://cityofpoughkeepsie.com | hudson
+Poughkeepsie Public Library District | Poughkeepsie, NY | https://www.poklib.org | hudson
+City of Kingston NY | Kingston, NY | https://www.kingston-ny.gov | hudson
+Town of New Paltz | New Paltz, NY | https://www.townofnewpaltz.org | hudson
