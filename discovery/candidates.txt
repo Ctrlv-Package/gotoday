@@ -752,3 +752,41 @@ Bangor Public Library | Bangor, ME | https://bangorpubliclibrary.libcal.com/cale
 Rochester Public Library (LibCal) | Rochester, NY | https://roccitylibrary.org | rochester
 Worcester Public Library | Worcester, MA | https://www.mywpl.org/events | worcester
 Bangor Public Library | Bangor, ME | https://bangorpubliclibrary.libcal.com/calendar | bangor
+
+# ---- Visitor bureaus & downtown groups (thin areas first) ----
+Visit Space Coast | Cocoa Beach, FL | https://www.visitspacecoast.com/events/ | spacecoast
+Visit St. Lucie | Port St. Lucie, FL | https://www.visitstlucie.com/events/ | treasurecoast
+Visit Gainesville | Gainesville, FL | https://www.visitgainesville.com/events/ | gainesville
+Ocala Marion County Visitors | Ocala, FL | https://www.ocalamarion.com/events/ | gainesville
+Visit Myrtle Beach | Myrtle Beach, SC | https://www.visitmyrtlebeach.com/events/ | myrtle
+Wilmington and Beaches CVB | Wilmington, NC | https://www.wilmingtonandbeaches.com/events/ | wilmington
+Visit Fayetteville NC | Fayetteville, NC | https://www.visitfayettevillenc.com/events/ | fayetteville
+Visit Macon | Macon, GA | https://www.visitmacon.org/events/ | macon
+Visit Erie | Erie, PA | https://www.visiterie.com/events/ | erie
+Happy Valley PA | State College, PA | https://www.happyvalley.com/events/ | central-pa
+Visit Rochester | Rochester, NY | https://www.visitrochester.com/events/ | rochester
+Discover Worcester | Worcester, MA | https://www.discoverworcester.com/events | worcester
+Visit Bangor | Bangor, ME | https://www.visitbangormaine.com/events | bangor
+Visit Westchester NY | White Plains, NY | https://www.visitwestchesterny.com/events/ | westchester
+Mystic Country CT | Mystic, CT | https://www.mysticcountry.com/events | newlondon
+Downtown Asheville | Asheville, NC | https://www.ashevilledowntown.org/events | asheville
+Explore Asheville | Asheville, NC | https://www.exploreasheville.com/events/ | asheville
+Visit Greenville NC | Greenville, NC | https://www.visitgreenvillenc.com/events/ | easternnc
+Outer Banks Visitors Bureau | Manteo, NC | https://www.outerbanks.org/events/ | easternnc
+Hyannis Public Library | Hyannis, MA | https://www.hyannislibrary.org/events | capecod
+Sturgis Library | Barnstable, MA | https://www.sturgislibrary.org | capecod
+Eldredge Public Library | Chatham, MA | https://www.eldredgelibrary.org | capecod
+Brewster Ladies Library | Brewster, MA | https://www.brewsterladieslibrary.org | capecod
+Sandwich Public Library | Sandwich, MA | https://www.sandwichpubliclibrary.com | capecod
+Orleans Snow Library | Orleans, MA | https://www.snowlibrary.org | capecod
+Clams Libraries | Hyannis, MA | https://www.clamsnet.org | capecod
+Downtown Melbourne | Melbourne, FL | https://www.downtownmelbourne.com/events | spacecoast
+Historic Downtown Cocoa Village | Cocoa, FL | https://www.cocoavillagemainstreet.com/events | spacecoast
+Stuart Main Street | Stuart, FL | https://www.stuartmainstreet.org/events | treasurecoast
+Main Street Vero Beach | Vero Beach, FL | https://www.mainstreetverobeach.org/events | treasurecoast
+Fort Pierce Main Street | Fort Pierce, FL | https://www.mainstreetfortpierce.org/events | treasurecoast
+Downtown Charlottesville | Charlottesville, VA | https://www.downtowncharlottesville.net/events | cville
+Downtown Macon | Macon, GA | https://www.newtownmacon.com/events | macon
+Downtown Wilmington | Wilmington, NC | https://www.wilmingtondowntowninc.com/events | wilmington
+Erie Downtown Partnership | Erie, PA | https://www.downtownerie.com/events | erie
+Myrtle Beach Downtown | Myrtle Beach, SC | https://www.downtownmyrtlebeach.com/events | myrtle
