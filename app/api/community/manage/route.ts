@@ -1,5 +1,5 @@
 import {NextRequest,NextResponse} from "next/server";
-import {eventByManage,validate,updateEvent,deleteEvent,rsvpsFor,rsvpCounts} from "../../../../lib/community";
+import {eventByManage,validate,updateEvent,deleteEvent,transferEvent,rsvpsFor,rsvpCounts} from "../../../../lib/community";
 export const dynamic="force-dynamic";
 export const maxDuration=60;
 // The manage token travels in the Authorization header, never in a URL the server logs.
@@ -23,4 +23,11 @@ export async function PUT(req:NextRequest){
 export async function DELETE(req:NextRequest){
  const t=tokenOf(req);if(!t||!(await deleteEvent(t)))return nf();
  return NextResponse.json({ok:true});
+}
+export async function POST(req:NextRequest){
+ const t=tokenOf(req);if(!t)return nf();
+ const body=await req.json().catch(()=>null);
+ const out=await transferEvent(t,body?.recipientEmail||"");
+ if("error" in out)return NextResponse.json({ok:false,errors:[out.error]},{status:422});
+ return NextResponse.json({ok:true,recipientEmail:out.recipientEmail});
 }

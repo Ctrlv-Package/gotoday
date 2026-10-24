@@ -221,6 +221,24 @@ export async function deleteEvent(manageToken:string){
  return true;
 }
 
+/** Hand an event to another GoToday account, by the email they signed in with. The manage link rotates,
+ * so the old owner's link stops working — a transfer, not a copy. RSVPs and the public listing stay
+ * with the event, and the new owner finds it in My GoToday. */
+export async function transferEvent(manageToken:string,recipientEmail:string){
+ await ensureSchema();
+ const cur=await eventByManage(manageToken);if(!cur)return{error:"Event not found."};
+ const email=String(recipientEmail||"").trim().toLowerCase();
+ if(!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email))return{error:"Add the email address of their GoToday account."};
+ const r=await db.query("select id from users where lower(email)=lower($1)",[email]);
+ if(!r.rowCount)return{error:"No GoToday account uses that email yet. Ask them to sign in to GoToday first, then try again."};
+ const toId=Number(r.rows[0].id);
+ const owner=await db.query("select user_id from community_events where id=$1",[cur.id]);
+ if(owner.rows[0]?.user_id!=null&&Number(owner.rows[0].user_id)===toId)return{error:"That account already owns this event."};
+ const next=token(24);
+ await db.query("update community_events set user_id=$2,owner_token=$3,manage_hash=$4,updated_at=now() where id=$1",[cur.id,toId,next,hashToken(next)]);
+ return{event:cur,recipientEmail:email};
+}
+
 /** Admin review of public events the automatic check wasn't sure about. */
 export async function pendingEvents(){await ensureSchema();const {rows}=await db.query("select * from community_events where status='pending' order by created_at");return rows.map(rowToEvent)}
 export async function reviewEvent(id:number,approve:boolean,origin:string){
