@@ -133,7 +133,8 @@ console.log(failures?`${failures} source(s) did not succeed`:"All remote sources
  if(process.env.GITHUB_STEP_SUMMARY)appendFileSync(process.env.GITHUB_STEP_SUMMARY,["### Remote ingest results","","| Source | OK | Found | Accepted | Rejected | Error |","|---|---|---|---|---|---|",...rows,""].join("\n"));
  // Check what visitors now see in every area (duplicates, borrowed photos, wrong labels) and save it for the status page.
  // Photo types for new event titles (AI reads them; free tier, paced on the site).
- try{const pr=await fetch(`${base}/api/admin/phototopics?run=12`,{method:"POST",headers:{authorization:`Bearer ${secret}`},signal:AbortSignal.timeout(290000)});console.log("photo types:",JSON.stringify(await pr.json().catch(()=>({}))).slice(0,300))}catch(e:any){console.log(`photo types: ${e?.message||e}`)}
+ // Twice: many new event titles as areas are added (each call is one site run of up to 12 AI batches).
+ for(let k=0;k<2;k++){try{const pr=await fetch(`${base}/api/admin/phototopics?run=12`,{method:"POST",headers:{authorization:`Bearer ${secret}`},signal:AbortSignal.timeout(290000)});console.log("photo types:",JSON.stringify(await pr.json().catch(()=>({}))).slice(0,300))}catch(e:any){console.log(`photo types: ${e?.message||e}`)}}
  try{const qr=await fetch(`${base}/api/admin/audit?save=1`,{headers:{authorization:`Bearer ${secret}`},signal:AbortSignal.timeout(280000)});const q:any=await qr.json().catch(()=>({}));
   if(q.ok){console.log(`Quality check: ${q.problems} to look at across ${q.cards} cards ${JSON.stringify(q.summary)}`);if(q.problems>25)problems.push(`Quality check: ${q.problems} display problems (see status page)`)}
   else console.log(`Quality check failed: HTTP ${qr.status}`)}catch(e:any){console.log(`Quality check failed: ${e?.message||e}`)}
