@@ -135,7 +135,8 @@ function parseEvents(text:string,who:string):Extracted[]{
  *  back to paid Claude by default: the post is left uncached, read from its caption for now, and
  *  re-read by Gemini on a later run. Set AI_PAID_FALLBACK=on in Vercel to restore the old
  *  Claude-within-the-daily-budget fallback. Without a Gemini key, Claude is still the reader. */
-const GEMINI_MODEL=process.env.GEMINI_MODEL||"gemini-2.5-flash";   // pinned: the "gemini-flash-latest" alias points at the newest Flash, whose free quota can be far smaller; 2.5 Flash is the generous-quota model. Override with GEMINI_MODEL in Vercel.
+// Gemini 2.x models are no longer offered to new keys; 3.5 Flash-Lite reads images and has a free tier.
+const GEMINI_MODEL=process.env.GEMINI_MODEL&&!/gemini-2\./.test(process.env.GEMINI_MODEL)?process.env.GEMINI_MODEL:"gemini-3.5-flash-lite";   // pinned: the "gemini-flash-latest" alias points at the newest Flash, whose free quota can be far smaller; 2.5 Flash is the generous-quota model. Override with GEMINI_MODEL in Vercel.
 async function askGemini(content:any[]):Promise<Extracted[]>{
  const parts=content.map((c:any)=>c.type==="image"?{inline_data:{mime_type:c.source.media_type,data:c.source.data}}:{text:c.text});
  const r=await fetchRetry(`https://generativelanguage.googleapis.com/v1beta/models/${GEMINI_MODEL}:generateContent`,{method:"POST",
