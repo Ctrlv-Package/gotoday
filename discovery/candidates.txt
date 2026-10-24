@@ -425,3 +425,4 @@ Town of Hilton Head Island | Hilton Head Island, SC | https://hiltonheadislandsc
 Beaufort County Library | Beaufort, SC | https://www.beaufortcountylibrary.org | lowcountry
 Town of Bluffton | Bluffton, SC | https://www.townofbluffton.sc.gov | lowcountry
 City of Aiken | Aiken, SC | https://www.cityofaikensc.gov | augusta
+Live Oak Public Libraries | Savannah, GA | https://liveoakpl.org/events | savannah

@@ -41,7 +41,8 @@ async function probe(c:Cand):Promise<Found[]>{
   out.push({input:arg,platform:"bibliocommons",confidence:n?"confirmed":"likely",note:`${n} upcoming events`,config:{name,platform:"bibliocommons",params:{library:bib,defaultCity:city||"",state:city.split(",")[1]?.trim()},source_type:"official-county",url:`https://${bib}.bibliocommons.com/v2/events`}})}
 
  // LibCal (Springshare) — detected, adapter not built yet
- const libcal=html.match(/https?:\/\/([a-z0-9-]+)\.libcal\.com/i)?.[1];
+ // Springshare sites (LibGuides/LibApps) usually have a LibCal calendar under the same name even when the home page doesn't link it.
+ const libcal=html.match(/https?:\/\/([a-z0-9-]+)\.libcal\.com/i)?.[1]||html.match(/https?:\/\/([a-z0-9-]+)\.libapps\.com/i)?.[1];
  if(libcal){const t=await get(`https://${libcal}.libcal.com/ajax/calendar/list?c=-1&date=0000-00-00&perpage=1&page=1&audience=&cats=&camps=&inc=0`);
   const n=(()=>{try{return Number(JSON.parse(t.text)?.total_results)||0}catch{return 0}})();
   out.push({input:arg,platform:"libcal",confidence:n?"confirmed":"likely",note:`${n} upcoming events`,config:{name,platform:"libcal",params:{site:libcal,defaultVenue:name,defaultCity:city||undefined},source_type:"official-city",url:`https://${libcal}.libcal.com/calendar`}})}
