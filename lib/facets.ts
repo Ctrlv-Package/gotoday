@@ -138,7 +138,8 @@ export function isBigEvent(e:{title?:string;desc?:string;tags?:string[];source?:
  if(e.source==="Ticketmaster"||e.recurrence)return false;
  if(NOT_BIG.test(t))return false;
  const library=/library/i.test(e.source||"");
- if(tags.some(x=>/^(fair\/festival|festivals?|special events?)$/i.test(x.trim())))return true;
+ if(/\b(sun|mon|tues|wednes|thurs|fri|satur)days?\s+(block party|fun ?day)\b/i.test(t))return false;   // a weekly thing (NoBe Sunday Block Party)
+ if(tags.some(x=>/^(fair\/festival|festivals?)$/i.test(x.trim())))return true;   // the organizer calls it a festival
  return !library&&BIG.test(t);
 }
 
