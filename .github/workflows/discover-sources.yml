@@ -23,15 +23,25 @@ jobs:
     timeout-minutes: 45
     steps:
       - uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
       - uses: actions/setup-node@v5
         with:
           node-version: 22
       - run: npm install --no-audit --no-fund
       - run: npx playwright install --with-deps chromium
+      # On a push, check only the lines that push added (the file keeps growing state by state).
+      - name: New candidate lines
+        if: github.event_name == 'push'
+        id: new
+        run: |
+          git diff "${{ github.event.before }}" HEAD -- discovery/candidates.txt 2>/dev/null | grep -E '^\+[^+]' | sed 's/^+//' > discovery/new.txt || git diff HEAD~1 -- discovery/candidates.txt | grep -E '^\+[^+]' | sed 's/^+//' > discovery/new.txt || true
+          echo "count=$(grep -cE '^[^#].*https?://' discovery/new.txt || true)" >> "$GITHUB_OUTPUT"; cat discovery/new.txt
       - run: npx tsx scripts/discover-sources.ts
+        if: github.event_name != 'push' || steps.new.outputs.count != '0'
         env:
           DISCOVER_URLS: ${{ inputs.urls }}
-          DISCOVER_FILE: ${{ inputs.urls == '' && 'discovery/candidates.txt' || '' }}
+          DISCOVER_FILE: ${{ github.event_name == 'push' && 'discovery/new.txt' || (inputs.urls == '' && 'discovery/candidates.txt' || '') }}
           USE_BROWSER: "1"
           SAVE: ${{ (github.event_name == 'push' || inputs.save) && '1' || '0' }}
           GOTODAY_URL: ${{ secrets.GOTODAY_URL }}
