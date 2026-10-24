@@ -229,3 +229,8 @@ City of Key West | Key West, FL | https://www.cityofkeywest-fl.gov | keys
 City of Marathon | Marathon, FL | https://www.ci.marathon.fl.us | keys
 Islamorada | Islamorada, FL | https://www.islamorada.fl.us | keys
 City of Key Colony Beach | Key Colony Beach, FL | https://www.keycolonybeach.net | keys
+
+# ---- Florida: calendar pages found by hand ----
+St. Johns County Public Library | St. Augustine, FL | https://sjcpls.librarycalendar.com | jacksonville
+Marion County Public Library | Ocala, FL | https://marioncountyfl.libcal.com/calendar | gainesville
+West Florida Public Libraries | Pensacola, FL | https://wfpl.libcal.com/calendar | panhandle | America/Chicago
