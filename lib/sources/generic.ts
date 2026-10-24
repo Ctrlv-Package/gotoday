@@ -19,6 +19,10 @@ function tagsFor(title:string,desc:string,extra:string[]=[]){
  const sports=/\b(5k|run|race|tournament|game|sports?|golf|tennis|pickleball|soccer)\b/.test(t);
  return{kids,arts,sports,tags:[...extra.filter(Boolean),...(kids?["Family"]:[]),...(arts?["Arts & Theatre"]:[]),...(sports?["Sports"]:[])]};
 }
+const stateOf=(city:string)=>city.split(",")[1]?.trim()||"FL";
+const STATES:Record<string,string>={alabama:"AL",connecticut:"CT",delaware:"DE","district of columbia":"DC",florida:"FL",georgia:"GA",maine:"ME",maryland:"MD",massachusetts:"MA","new hampshire":"NH","new jersey":"NJ","new york":"NY","north carolina":"NC",pennsylvania:"PA","rhode island":"RI","south carolina":"SC",vermont:"VT",virginia:"VA","west virginia":"WV",tennessee:"TN",ohio:"OH"};
+/** "FL", "Florida", "fl" → "FL"; unknown → the source's own state. */
+const stateCode=(raw:unknown,city:string)=>{const t=clean(raw);return /^[A-Za-z]{2}$/.test(t)?t.toUpperCase():STATES[t.toLowerCase()]||stateOf(city)};
 const localDay=(d:Date,tz:string)=>new Intl.DateTimeFormat("en-CA",{timeZone:tz,year:"numeric",month:"2-digit",day:"2-digit"}).format(d);
 const localTime=(d:Date,tz:string)=>new Intl.DateTimeFormat("en-GB",{timeZone:tz,hour:"2-digit",minute:"2-digit",second:"2-digit",hourCycle:"h23"}).format(d);
 
@@ -87,7 +91,7 @@ export async function fetchTribe(cfg:GenericCfg,startDate:string,endDate:string)
    const cats=(e.categories||[]).map((c:any)=>clean(c.name));
    const {kids,arts,tags}=tagsFor(title,desc,cats);
    const cost=clean(e.cost);const free=!cost||/^(free|\$?0(\.00)?)$/i.test(cost);
-   const city=v?.city?`${clean(v.city)}, ${clean(v.stateprovince||v.state||"").slice(0,2)||cfg.city.split(",")[1]?.trim()||"FL"}`:cfg.city;
+   const city=v?.city?`${clean(v.city)}, ${stateCode(v.stateprovince||v.state,cfg.city)}`:cfg.city;
    out.push({id:`${cfg.idPrefix}-${e.id}-${date}`,title,city,venue:clean(v?.venue)||cfg.venue,address:v?.address?[clean(v.address),clean(v.city)].filter(Boolean).join(", "):undefined,
     date,time:all?"":String(e.start_date).slice(11,19),endTime:!all&&String(e.end_date||"").slice(0,10)===date?String(e.end_date).slice(11,19):undefined,
     url:e.url||cfg.url,sourceUrl:cfg.url,image:e.image?.url||undefined,category:kids?"Family":arts?"Arts & Theatre":"Local",genre:"Community Event",
@@ -124,7 +128,7 @@ export async function fetchLocalist(cfg:GenericCfg,startDate:string,endDate:stri
     if(campus&&!PUBLIC_CAMPUS.test(`${title} | ${types.join(" | ")}`))continue;
     const {kids,arts,tags}=tagsFor(title,desc,types);
     const en=inst.end?new Date(inst.end):null;
-    out.push({id:`${cfg.idPrefix}-${e.id}-${date}`,title,city:e.geo?.city?`${clean(e.geo.city)}, ${clean(e.geo.state||"").slice(0,2)||"FL"}`:cfg.city,
+    out.push({id:`${cfg.idPrefix}-${e.id}-${date}`,title,city:e.geo?.city?`${clean(e.geo.city)}, ${stateCode(e.geo.state,cfg.city)}`:cfg.city,
      venue:clean(e.location_name)||cfg.venue,address:clean(e.address)||undefined,date,time:inst.all_day?"":localTime(st,tz),
      endTime:en&&!inst.all_day&&localDay(en,tz)===date?localTime(en,tz):undefined,url:e.localist_url||e.url||cfg.url,sourceUrl:cfg.url,
      image:e.photo_url||undefined,category:kids?"Family":arts?"Arts & Theatre":"Local",genre:"Community Event",desc:desc||`${cfg.source} event.`,

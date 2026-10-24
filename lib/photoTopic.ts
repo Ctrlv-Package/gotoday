@@ -17,7 +17,7 @@ const SHOWS:Record<string,string>={
  knitting:"knitting / sewing / crochet",crafts:"arts & crafts supplies (adult crafts, DIY)",painting:"painting class at easels",artfair:"art gallery / art exhibit / art fair",
  photography:"cameras / photography",garden:"gardening / plants",food:"food festival / street food / food trucks",kidscooking:"children cooking or baking",winetasting:"wine tasting",
  blockparty:"street festival / block party crowd",concert:"live concert on stage",dance:"dance performance / social dance (adults)",theater:"theater stage / play / musical",
- movie:"movie night / cinema / popcorn",nature:"nature trail / park walk / wildlife",beach:"Florida beach",boat:"kayak / paddleboard / boating",yoga:"yoga / meditation (adults)",
+ movie:"movie night / cinema / popcorn",nature:"nature trail / park walk / wildlife",beach:"beach",boat:"kayak / paddleboard / boating",yoga:"yoga / meditation (adults)",
  fitness:"group fitness / running / walking event",soccer:"soccer",basketball:"basketball",baseball:"baseball / softball",tennis:"tennis / pickleball",swim:"swimming pool",
  shooting:"archery / target shooting",golf:"golf",sports:"general sports",pets:"dogs (dog events, pet adoption, read to a dog)",animals:"farm / petting zoo animals",
  cars:"classic car show",discussion:"adults talking over coffee (discussion group, coffee chat, town hall chat)",history:"historic building / museum / history talk",

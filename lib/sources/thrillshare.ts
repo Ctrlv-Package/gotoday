@@ -24,7 +24,7 @@ export async function fetchThrillshare(cfg:ThrillshareConfig,startDate:string,en
   const venueRaw=String(e.venue||e.address||"").trim();
   const [venueName,...rest]=venueRaw.split(" - ");
   const address=(rest.join(" - ")||(/\d/.test(venueName)?venueName:"")).replace(/,\s*USA$/,"")||undefined;
-  const cityM=address?.match(/,\s*([A-Za-z .'-]+),\s*FL/i);
+  const ST=(cfg.city.split(",")[1]||"FL").trim(),cityM=address?.match(new RegExp(`,\\s*([A-Za-z .'-]+),\\s*${ST}\\b`,"i"));
   const lat=Number(e.latitude),lng=Number(e.longitude);
   const desc=stripHtml(String(e.description||"")).replace(/\s+/g," ").trim().slice(0,1000);
   const filters:string[]=(Array.isArray(e.filter_name)?e.filter_name:[]).filter(Boolean);
@@ -33,7 +33,7 @@ export async function fetchThrillshare(cfg:ThrillshareConfig,startDate:string,en
   const kids=/\b(kids?|children|youth|teens?|story ?time|trunk or treat|egg hunt)\b/.test(blob);
   const family=kids||/\b(family|festival|parade|movie|fireworks|holiday|celebration)\b/.test(blob);
   const arts=/\b(music|concert|band|film|movie|theat(re|er)|arts?|ceramics|dance|show)\b/.test(blob);
-  out.push({id:`${cfg.idPrefix}-${e.id}`,title,city:cityM?`${cityM[1].trim()}, FL`:cfg.city,venue:(venueName&&!/^\d/.test(venueName)?venueName:cfg.source).trim(),address,
+  out.push({id:`${cfg.idPrefix}-${e.id}`,title,city:cityM?`${cityM[1].trim()}, ${(cfg.city.split(",")[1]||"FL").trim()}`:cfg.city,venue:(venueName&&!/^\d/.test(venueName)?venueName:cfg.source).trim(),address,
    latitude:Number.isFinite(lat)&&lat!==0?lat:undefined,longitude:Number.isFinite(lng)&&lng!==0?lng:undefined,
    date,time,endTime,url:`${cfg.site}/events?id=${e.id}`,sourceUrl:`${cfg.site}/events`,
    category:family?"Family":arts?"Arts & Theatre":"Local",genre:filters[0]||"City Event",desc:desc||`Official ${cfg.source} event.`,

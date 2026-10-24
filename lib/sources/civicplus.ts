@@ -30,8 +30,9 @@ export function parseCivicPlusRss(xml:string,cfg:CivicPlusConfig,startDate:strin
   // Location block: lines between "Location:" and the next <strong> label.
   const locHtml=descHtml.split(/<strong>\s*Location:\s*<\/strong>/i)[1]?.split(/<strong>/i)[0]||"";
   const lines=locHtml.split(/<br\s*\/?>/i).map(x=>stripHtml(x)).filter(Boolean);
-  const cityLine=lines.find(l=>/,\s*FL\b/i.test(l));
-  const city=cityLine?cityLine.replace(/\s*\d{5}(-\d{4})?\s*$/,"").replace(/,\s*FL.*$/i,"").trim()+", FL":cfg.city;
+  const ST=(cfg.city.split(",")[1]||"FL").trim(),stRe=new RegExp(`,\\s*${ST}\\b`,"i");   // the source's own state
+  const cityLine=lines.find(l=>stRe.test(l));
+  const city=cityLine?cityLine.replace(/\s*\d{5}(-\d{4})?\s*$/,"").replace(new RegExp(`,\\s*${ST}.*$`,"i"),"").trim()+`, ${ST}`:cfg.city;
   const hasStreet=lines.some(l=>/^\d+\s+\S/.test(l));
   const venueName=lines.length&&!/^\d/.test(lines[0])&&lines[0]!==cityLine?lines[0]:cfg.venue;
   const address=hasStreet?lines.filter(l=>l!==venueName).join(", "):"";
