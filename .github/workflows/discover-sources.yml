@@ -17,6 +17,9 @@ on:
         type: boolean
         default: true
 
+permissions:
+  contents: write
+
 jobs:
   discover:
     runs-on: ubuntu-24.04
@@ -46,3 +49,13 @@ jobs:
           SAVE: ${{ (github.event_name == 'push' || inputs.save) && '1' || '0' }}
           GOTODAY_URL: ${{ secrets.GOTODAY_URL }}
           INGESTION_SECRET: ${{ secrets.INGESTION_SECRET }}
+      # The results table, readable without opening the Actions page (branch "discovery-results", no deploy).
+      - name: Save results
+        if: always()
+        run: |
+          mkdir -p out && cp "$GITHUB_STEP_SUMMARY" out/results.md 2>/dev/null || echo "no summary" > out/results.md
+          cp discovery/new.txt out/ 2>/dev/null || true
+          cd out && echo '{"git":{"deploymentEnabled":false}}' > vercel.json
+          git init -q -b discovery-results && git config user.name discovery && git config user.email discovery@users.noreply.github.com
+          git add -A && git commit -qm "discovery results $(date -u +%FT%TZ)"
+          git push -qf "https://x-access-token:${{ github.token }}@github.com/${{ github.repository }}.git" discovery-results
