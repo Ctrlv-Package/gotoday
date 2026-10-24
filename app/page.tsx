@@ -106,11 +106,14 @@ export default function Home(){
  }
 
  const filtered=useMemo(()=>{
-  const qWords=norm(query).split(" ").filter(w=>w.length>1),interests=selected.filter(x=>x!=="Free");
+  const qWords=norm(query).split(" ").filter(w=>w.length>1),interests=selected.filter(x=>x!=="Free"&&x!=="Big events"),big=selected.includes("Big events");
   return events.filter(e=>{
    const tags=new Set([e.category,...(e.tags||[])]);
    // Interests come from the server's facets (one consistent reading of every source); chips combine with OR.
    const facets=new Set(e.facets||[...tags].filter(Boolean) as string[]);
+   // Big events: festivals, fairs and yearly family days, from up to 25 mi; far ones only show under this choice.
+   if((e as any).far&&!big)return false;
+   if(big&&!facets.has("Big events"))return false;
    const cm=(interests.length===0||interests.some(x=>facets.has(x)))&&(!selected.includes("Free")||facets.has("Free")||!!e.isFree);
    const more=(setting==="Any"||tags.has(setting))&&(!dropIn||tags.has("Drop-in"))&&(!spanish||tags.has("En Español"))&&(!seniors||tags.has("Seniors")||(e.ageMin!=null&&e.ageMin>=50));
    // Kids' ages: an event counts when its range overlaps a chosen band; a kids event that gives no ages is for any age.
@@ -157,7 +160,7 @@ export default function Home(){
   </section>}
   {hasPlace&&<section className="content" id="results">
    <div className="toolbar">
-    <div className="where"><b>📍 {where}</b><span className="rangeLabel">{t("within {n} mi",{n:radius})}</span></div>
+    <div className="where"><b>📍 {where}</b><span className="rangeLabel">{t("within {n} mi",{n:selected.includes("Big events")?String(Math.max(Number(radius)||10,25)):radius})}</span></div>
     <input type="search" placeholder={t("Search events")} value={query} onChange={e=>setQuery(e.target.value)}/>
    </div>
 
@@ -182,6 +185,8 @@ export default function Home(){
     <div className="fcSection">
      <div className="label">{t("What are you into?")}</div>
      <div className="chips wrap even4">{CHIPS.map(c=><button key={c} className={((c==="All"?selected.length===0&&moreCount===0:selected.includes(c))?"active":"")+(t(c==="Arts & Theatre"?"Arts":c).length>=8?" long":"")} onClick={()=>toggleChip(c)}>{c==="Arts & Theatre"?<><span className="lg">{t("Arts & Theatre")}</span><span className="sm">{t("Arts")}</span></>:t(c)}</button>)}</div>
+     <button type="button" className={`bigChip${selected.includes("Big events")?" active":""}`} aria-pressed={selected.includes("Big events")} onClick={()=>toggleChip("Big events")}>
+      <span className="bigStar" aria-hidden>⭐</span><b>{t("Big events")}</b><span className="bigNote">{t("Festivals, fairs & yearly favorites · up to {n} mi",{n:String(Math.max(Number(radius)||10,25))})}</span></button>
     </div>
     {selected.includes("Kids")&&<div className="fcSection">
      <div className="label">{t("Kids' ages")}</div>

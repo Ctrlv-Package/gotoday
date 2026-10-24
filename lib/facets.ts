@@ -4,7 +4,7 @@
 // chips can't trust raw tags. Facets come from the title and description first, then from tags that mean
 // something reliable.
 
-export type Facet="Family"|"Kids"|"Adults"|"Music"|"Arts & Theatre"|"Sports"|"Free";
+export type Facet="Family"|"Kids"|"Adults"|"Music"|"Arts & Theatre"|"Sports"|"Free"|"Big events";
 type In={title:string;desc?:string;tags?:string[];category?:string;genre?:string;source?:string;ageMin?:number|null;ageMax?:number|null;isFree?:boolean;priceText?:string};
 
 const has=(re:RegExp,...xs:(string|undefined)[])=>xs.some(x=>!!x&&re.test(x));
@@ -110,6 +110,7 @@ export function facetsFor(e:In):Facet[]{
  // unless they say otherwise; libraries and Ticketmaster have to say so.
  const adultish=has(ADULT,t);
  if(!adultOnly&&!adultish&&(kids||has(FAMILY,t)||tagHas(FAMILY_TAGS)&&!tagHas(ADULT_TAGS)||tagHas(/^families$|^everyone$|^all ages$/i)||has(/\b(famil(y|ies)|all ages|kids|children)\b/i,d)||(CITY_SOURCE(e.source)&&!has(ADULT,d)&&!out.has("Music")&&!/\b(meeting|commission|board|council|workshop|seminar|class)\b/i.test(t))))out.add("Family");
+ if(isBigEvent(e as any))out.add("Big events");
  if(adultOnly||has(ADULT,t)||tagHas(ADULT_TAGS)||(ageMin!=null&&ageMin>=13&&!kidAges))out.add("Adults");
 
  // Free: said so, or a public community event from a city, county, parks department or library that
@@ -125,6 +126,20 @@ export function facetsFor(e:In):Facet[]{
  const freeSaid=/\bfree (admission|entry|to attend|and open to (the|all)|for (all|everyone|the public|families|kids|children))\b|\b(admission|entry) is free\b|\bno (cost|charge|admission)\b|\bat no cost\b/i.test(`${t} ${e.desc||""}`);
  if(!paid&&(e.isFree||tagHas(/^free$/i)||freeTitle||freeSaid)||!paid&&(gov&&e.source!=="Ticketmaster"&&!priced&&!tagHas(/^tickets$/i)))out.add("Free");
  return[...out];
+}
+
+/** Big events: the once-a-season community happenings worth a drive (festivals, fairs, parades, carnivals, yearly
+ *  family days, holiday celebrations, trunk-or-treats, tree lightings, fireworks). Not weekly programs, not ticketed
+ *  shows (Ticketmaster), not job/resource fairs, not library classes unless the library itself calls it a festival. */
+const BIG=/\b(festivals?|fests?|fair|carnivals?|parades?|expo|block party|fireworks|tree lighting|holiday lighting|menorah lighting|day for children|children'?s day|kids'? day|family (fun )?day|fun day|trunk[- ]or[- ]treat|spooktacular|boo bash|monster mash|halloween (bash|bonanza|extravaganza|party in the park|festival)|egg hunt|eggstravaganza|oktoberfest|art walk|artwalk|food truck (rally|invasion|festival)|jamboree|extravaganza|fiesta|hoedown|founders'? day|heritage day|community day|movie in the park|concert in the park|pumpkin patch|winter wonderland|snow day|santa'?s? (village|parade|arrival|workshop)|light show|harvest (fest|festival|celebration)|diwali|lunar new year|plant (sale|affair)|state fair|county fair)\b/i;
+const NOT_BIG=/\b(job|career|resource|college|vendor|hiring|health insurance|benefits|employment|book|science fair project|application|registration|meeting|workshop|class|seminar|webinar|info session|planning|vendors? wanted|call for|contest|awards?|judging)\b/i;
+export function isBigEvent(e:{title?:string;desc?:string;tags?:string[];source?:string;recurrence?:string|null}){
+ const t=e.title||"",tags=e.tags||[];
+ if(e.source==="Ticketmaster"||e.recurrence)return false;
+ if(NOT_BIG.test(t))return false;
+ const library=/library/i.test(e.source||"");
+ if(tags.some(x=>/^(fair\/festival|festivals?|special events?)$/i.test(x.trim())))return true;
+ return !library&&BIG.test(t);
 }
 
 /** Placeholder or empty labels some calendars send ("Event Category Here", "Uncategorized"): never shown or kept. */

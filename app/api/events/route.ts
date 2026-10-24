@@ -79,9 +79,12 @@ export async function GET(request:NextRequest){
  // Bounding box first (uses the lat/lng index), exact distance second; rows without coordinates
  // (saved before coordinates existed) fall back to their city center below.
  // 10 extra miles: copies of an event just outside the search distance still help pick its picture (not shown).
- const dLat=(radius+10)/69,dLng=(radius+10)/(69*Math.cos(lat*Math.PI/180));
+ // Big events (festivals, fairs, yearly family days) are worth a drive: they come from up to 25 miles even when
+ // the search is smaller, marked far, and the page shows them only under the "Big events" choice.
+ const bigR=Math.max(radius,25),reach=Math.max(radius+10,bigR);
+ const dLat=reach/69,dLng=reach/(69*Math.cos(lat*Math.PI/180));
  const {rows}=await db.query(`select e.id,e.title,e.description,e.start_at,e.end_at,e.local_date::text as local_date,e.timezone,e.city,e.category,e.genre,e.tags,e.is_free,e.price_text,e.image_url,
-   e.official_url,e.age_min,e.age_max,e.registration_text,e.latitude,e.longitude,s.name as source,v.name as venue,v.address as venue_address
+   e.official_url,e.age_min,e.age_max,e.registration_text,e.recurrence,e.latitude,e.longitude,s.name as source,v.name as venue,v.address as venue_address
   from events e join sources s on s.id=e.source_id left join venues v on v.id=e.venue_id
   where e.status='active' and e.local_date between $1::date and $2::date
    and ((e.latitude between $3 and $4 and e.longitude between $5 and $6) or e.latitude is null)
@@ -93,11 +96,12 @@ export async function GET(request:NextRequest){
   let la=r.latitude==null?NaN:Number(r.latitude),lo=r.longitude==null?NaN:Number(r.longitude),acc="venue";
   if(!Number.isFinite(la)){const k=String(r.city||"").trim();let c=CITY_COORDS[k];if(!c){const p=await cityCoords(k);if(p)c=[p.latitude,p.longitude]}if(!c)continue;[la,lo]=c;acc="city"}
   const d=miles(lat,lng,la,lo);
-  if(d>radius){if(d<=radius+10)outside.push({id:r.id,title:decodeHtml(r.title||""),date:r.local_date||lp.date,city:r.city||"",source:r.source,image:r.image_url||"",venue:decodeHtml(r.venue||""),address:r.venue_address||"",time:lp.time==="00:00:00"?"":lp.time,lat:la,lng:lo});continue}
+  const far=d>radius;
+  if(far){if(d<=radius+10)outside.push({id:r.id,title:decodeHtml(r.title||""),date:r.local_date||lp.date,city:r.city||"",source:r.source,image:r.image_url||"",venue:decodeHtml(r.venue||""),address:r.venue_address||"",time:lp.time==="00:00:00"?"":lp.time,lat:la,lng:lo});if(d>bigR)continue}
   const allDay=lp.time==="00:00:00";
   const e:any={id:"db-"+r.id,title:decodeHtml(r.title||""),city:r.city||"",venue:decodeHtml(r.venue||""),address:r.venue_address||"",date:r.local_date||lp.date,time:allDay?"":lp.time,
    image:r.image_url||"",url:r.official_url||"",category:r.category||"Local",genre:r.genre||"",desc:decodeHtml(r.description||""),tags:Array.isArray(r.tags)?r.tags:[],
-   source:/^Ticketmaster/.test(r.source)?"Ticketmaster":r.source,priceText:r.price_text||undefined,isFree:Boolean(r.is_free),ageMin:r.age_min??undefined,ageMax:r.age_max??undefined,registration:r.registration_text||undefined,
+   source:/^Ticketmaster/.test(r.source)?"Ticketmaster":r.source,priceText:r.price_text||undefined,isFree:Boolean(r.is_free),ageMin:r.age_min??undefined,ageMax:r.age_max??undefined,registration:r.registration_text||undefined,recurrence:r.recurrence||undefined,
    distanceMiles:Math.round(d*10)/10,distanceAccuracy:acc,lat:la,lng:lo};
   if(e.source==="Ticketmaster"&&TM_JUNK.test(e.title))continue;
   if(/^\W*(cancel+ed|postponed)\b/i.test(e.title)){cancelledList.push(e);continue}   // "CANCELED: Kids in Motion" etc.
@@ -128,6 +132,7 @@ export async function GET(request:NextRequest){
    const endAt=r.end_at?new Date(r.end_at).getTime():0,span=endAt-start.getTime();
    const end=span>0&&span<=12*3600e3?endAt:start.getTime()+4*3600e3;if(end<now)over=true;else live=start.getTime()<=now}
   if(live)e.live=true;if(over)e.over=true;
+  if(far){if(!(e.facets||[]).includes("Big events"))continue;e.far=true}
   events.push(e);
  }
  // Same program on the same day at several places of one organizer (library branches) -> one card, nearest first.
