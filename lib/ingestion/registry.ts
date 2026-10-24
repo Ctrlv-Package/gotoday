@@ -235,7 +235,16 @@ export async function loadSourceConfigs():Promise<SourceConfig[]>{
    [c.name,c.platform,JSON.stringify(c.params||{}),c.source_type||"official-city",c.url||null,c.priority??90,c.region||null,c.timezone||"America/New_York",c.enabled!==false,!!c.remote]);
  }
  const {rows}=await db.query("select * from source_configs order by priority desc,name");
- return rows.map((r:any)=>({name:r.name,platform:r.platform,params:r.params||{},source_type:r.source_type,url:r.url,priority:r.priority,region:r.region,timezone:r.timezone,enabled:r.enabled,remote:r.remote}));
+ return dedupeCalendars(rows.map((r:any)=>({name:r.name,platform:r.platform,params:r.params||{},source_type:r.source_type,url:r.url,priority:r.priority,region:r.region,timezone:r.timezone,enabled:r.enabled,remote:r.remote})));
+}
+/** One calendar saved under two names (a county site and its library page both lead to the same LibCal) is fetched
+ *  once: the copy is switched off. For library platforms the name with "Library" in it is kept. */
+export function dedupeCalendars(list:SourceConfig[]):SourceConfig[]{
+ const sig=(c:SourceConfig)=>`${c.platform}:${JSON.stringify(Object.entries(c.params||{}).filter(([k])=>!/^(default(City|Venue)|city|venue|branchCities|label|idPrefix)$/.test(k)).sort())}`;
+ const lib=(c:SourceConfig)=>/^(libcal|communico|bibliocommons)$/.test(c.platform)&&/librar/i.test(c.name)?1:0;
+ const keep=new Map<string,SourceConfig>();
+ for(const c of list){if(c.enabled===false)continue;const k=sig(c),o=keep.get(k);if(!o||lib(c)>lib(o))keep.set(k,c)}
+ return list.map(c=>c.enabled!==false&&keep.get(sig(c))!==c?{...c,enabled:false}:c);
 }
 export async function allSources(){return(await loadSourceConfigs()).map(toSource)}
 /** Sources ingested on Vercel. */

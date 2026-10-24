@@ -63,17 +63,23 @@ async function run(req:NextRequest){
   // Upcoming events saved without a map position get their town's center, so searches can find them.
   try{const {rows}=await db.query("select distinct city from events where latitude is null and status='active' and local_date>=current_date and city is not null limit 40");
    for(const {city} of rows){const p=await cityCoords(city);if(p)await db.query("update events set latitude=$1,longitude=$2 where latitude is null and city=$3",[p.latitude,p.longitude,city])}}catch{}
+  // Many regions now: stalest sources first, 10 at a time, and no new start after 4 minutes, so the run always
+  // finishes inside its time limit and whatever didn't fit goes first next time.
+  try{const last=new Map((await db.query("select name,last_success_at from sources").catch(()=>({rows:[]}))).rows.map((r:any)=>[r.name,r.last_success_at?new Date(r.last_success_at).getTime():0]));
+   names.sort((a,b)=>(last.get(a)??0)-(last.get(b)??0))}catch{}
+  const started=Date.now();
   let next=0;
-  const worker=async()=>{while(next<names.length){const i=next++,name=names[i];
+  const worker=async()=>{while(next<names.length&&Date.now()-started<240e3){const i=next++,name=names[i];
    try{
-    const r=await fetch(`${origin}/api/ingest?source=${encodeURIComponent(name)}`,{method:"POST",headers:{authorization:auth},signal:AbortSignal.timeout(295000)});
+    const r=await fetch(`${origin}/api/ingest?source=${encodeURIComponent(name)}`,{method:"POST",headers:{authorization:auth},signal:AbortSignal.timeout(Math.max(30e3,292e3-(Date.now()-started)))});
     const d=await r.json().catch(()=>({}));
     results[i]=d?.sources?.[0]||{source:name,found:0,accepted:0,rejected:0,status:"error",error:d?.error||`HTTP ${r.status}`};
    }catch(e:any){results[i]={source:name,found:0,accepted:0,rejected:0,status:"error",error:e?.name==="TimeoutError"?"Timed out":String(e?.message||e)}}
   }};
-  await Promise.all(Array.from({length:Math.min(4,names.length)},worker));
-  const ok=results.filter(r=>r?.status==="success").length;
-  if(log?.rows?.[0])await db.query("update ingest_log set finished_at=now(),succeeded=$2,failed=$3 where id=$1",[log.rows[0].id,ok,results.length-ok]).catch(()=>{});
+  await Promise.all(Array.from({length:Math.min(10,names.length)},worker));
+  for(let i=0;i<names.length;i++)if(!results[i])results[i]={source:names[i],found:0,accepted:0,rejected:0,status:"deferred"};
+  const ok=results.filter(r=>r?.status==="success").length,deferred=results.filter(r=>r?.status==="deferred").length;
+  if(log?.rows?.[0])await db.query("update ingest_log set finished_at=now(),succeeded=$2,failed=$3 where id=$1",[log.rows[0].id,ok,results.length-ok-deferred]).catch(()=>{});
   return NextResponse.json({ok:true,startDate:ymd(now),endDate:ymd(end),sources:results});
  }catch(e:any){console.error("Ingestion failed",e);return NextResponse.json({ok:false,error:e?.message||"Ingestion failed"},{status:500})}
 }

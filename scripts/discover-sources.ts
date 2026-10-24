@@ -97,6 +97,7 @@ async function save(f:Found,c:Cand){
  return r.status===200?(r.json.remote?"saved (remote)":`saved (${r.json.sample?.count??"?"} events in 14 days)`):`not saved: ${r.json.error||r.status}`;
 }
 
+const sigOf=(platform:string,params:any)=>`${platform}:${JSON.stringify(Object.entries(params||{}).filter(([k])=>!/^(default(City|Venue)|city|venue|branchCities|label)$/.test(k)).sort())}`;
 async function main(){
  const cands:Cand[]=[];
  const file=process.env.DISCOVER_FILE;
@@ -110,11 +111,11 @@ async function main(){
  const all:(Found&{saved?:string})[]=[];
  // Sites already covered (a saved source on the same host) are skipped, so adding lines for a new state doesn't
  // re-check and re-save every earlier state. REDISCOVER=1 checks everything again.
- const known=new Set<string>();
+ const known=new Set<string>(),savedSigs=new Map<string,string>();
  if(doSave&&process.env.REDISCOVER!=="1"){
   const host=(u:unknown)=>{try{return new URL(String(u)).hostname.replace(/^www\./,"")}catch{return""}};
   try{const r=await fetch(`${await siteBase()}/api/admin/sources`,{headers:{authorization:`Bearer ${process.env.INGESTION_SECRET}`}});const j:any=await r.json();
-   for(const c of (j.sources||j.configs||[]))for(const u of [c.url,c.params?.url,c.params?.site,c.params?.baseUrl,c.params?.listUrl])if(host(u))known.add(host(u));}catch(e){console.log("Couldn't read saved sources:",String(e))}
+   for(const c of (j.sources||j.configs||[])){for(const u of [c.url,c.params?.url,c.params?.site,c.params?.baseUrl,c.params?.listUrl])if(host(u))known.add(host(u));savedSigs.set(sigOf(c.platform,c.params),c.name)}}catch(e){console.log("Couldn't read saved sources:",String(e))}
  }
  for(const c of cands){
   {const h=(()=>{try{return new URL(c.url).hostname.replace(/^www\./,"")}catch{return""}})();if(h&&known.has(h)){console.log(`skip (already a source) ${c.name||c.url}`);continue}}
@@ -123,7 +124,11 @@ async function main(){
   if(f.filter(x=>x.config).length>1)for(const x of f)if(x.config&&/^(communico|bibliocommons|libcal)$/.test(x.platform)&&!/librar/i.test(x.config.name))x.config.name=`${x.config.name.replace(/^(City|Town|Village) of /i,"")} Public Library`;
   for(const x of f){
    let saved:string|undefined;
+   // One calendar found from two sites (a county page and its library page both pointing at the same LibCal) is saved once.
+   const sig=x.config?sigOf(x.platform,x.config.params):"";
+   if(x.config&&savedSigs.has(sig)){console.log(`skip (same calendar as ${savedSigs.get(sig)}) ${x.input}`);continue}
    if(doSave&&x.config&&x.confidence==="confirmed")saved=await save(x,c).catch(e=>`not saved: ${e?.message||e}`);
+   if(x.config&&saved?.startsWith("saved"))savedSigs.set(sig,x.config.name);
    all.push({...x,saved});console.log(`${x.platform.padEnd(14)} ${x.confidence.padEnd(9)} ${x.input}  — ${x.note}${saved?`  [${saved}]`:""}`);
   }
  }
