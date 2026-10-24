@@ -16,8 +16,12 @@ const SITE = process.env.NEXT_PUBLIC_SITE_URL || "https://www.mygotoday.com";
 
 export const metadata: Metadata = {
   metadataBase: new URL(SITE),
-  title: "GoToday — Find something worth doing near you",
-  description: "Free and local things happening near you — library storytimes, park concerts, festivals, markets and more.",
+  title: "GoToday — Things to do today near you | Local events, free & family fun",
+  description: "GoToday (mygotoday.com) finds things to do near you today, this weekend and this month: free family events, kids' activities, library storytimes, concerts, festivals, markets and more.",
+  keywords: ["GoToday", "Go Today", "mygotoday", "things to do near me", "things to do today", "events near me", "events this weekend", "free events", "family events", "kids activities", "local events"],
+  applicationName: "GoToday",
+  // Google Search Console ownership code (set GOOGLE_SITE_VERIFICATION in Vercel).
+  verification: process.env.GOOGLE_SITE_VERIFICATION ? { google: process.env.GOOGLE_SITE_VERIFICATION } : undefined,
   alternates: { canonical: "/" },
   openGraph: { siteName: "GoToday", type: "website", url: SITE, title: "GoToday", description: "Find something worth doing near you." },
   // Installed-app presentation (the manifest itself is served by app/manifest.ts).
@@ -40,6 +44,9 @@ export default async function RootLayout({
   return (
     <html lang={lang}>
       <body>
+        {/* Who we are, for search engines: the brand name people type ("GoToday", "Go Today") and its address. */}
+        <script type="application/ld+json" dangerouslySetInnerHTML={{__html: JSON.stringify({"@context": "https://schema.org", "@type": "WebSite", name: "GoToday", alternateName: ["Go Today", "mygotoday", "My GoToday"], url: SITE + "/",
+          description: "Things to do near you today: free and family events, kids' activities, concerts, festivals and more."})}} />
         <LangProvider lang={lang}>{children}</LangProvider>
         <NavTracker/>
         <PwaRegister/>

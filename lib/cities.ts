@@ -22,6 +22,14 @@ export const CITY_COORDS:Record<string,[number,number]>={
 "Royal Palm Beach, FL":[26.7084,-80.2306],"Greenacres, FL":[26.6276,-80.1253],"Palm Beach Gardens, FL":[26.8234,-80.1387],"Belle Glade, FL":[26.6845,-80.6676],
 "Lantana, FL":[26.5865,-80.0521],"Tequesta, FL":[26.9709,-80.1284],"Palm Springs, FL":[26.6359,-80.0962],"Loxahatchee, FL":[26.6837,-80.2798]
 };
+
+// Beyond South Florida (2026-10-24: rest of Florida and New York City).
+Object.assign(CITY_COORDS,{"Orlando, FL":[28.5383,-81.3792],"Kissimmee, FL":[28.2919,-81.4076],"Winter Park, FL":[28.6,-81.3392],"Tampa, FL":[27.9506,-82.4572],
+"St. Petersburg, FL":[27.7676,-82.6403],"Clearwater, FL":[27.9659,-82.8001],"Jacksonville, FL":[30.3322,-81.6557],"St. Augustine, FL":[29.9012,-81.3124],
+"Daytona Beach, FL":[29.2108,-81.0228],"Melbourne, FL":[28.0836,-80.6081],"Port St. Lucie, FL":[27.273,-80.3582],"Sarasota, FL":[27.3364,-82.5307],
+"Fort Myers, FL":[26.6406,-81.8723],"Naples, FL":[26.142,-81.7948],"Lakeland, FL":[28.0395,-81.9498],"Gainesville, FL":[29.6516,-82.3248],"Ocala, FL":[29.1872,-82.1401],
+"Tallahassee, FL":[30.4383,-84.2807],"Pensacola, FL":[30.4213,-87.2169],"Panama City Beach, FL":[30.1766,-85.8055],"Key West, FL":[24.5551,-81.78],
+"New York, NY":[40.7306,-73.9866],"Brooklyn, NY":[40.6782,-73.9442]} as Record<string,[number,number]>);
 export function milesBetween(a:number,b:number,c:number,d:number){const R=3958.8,q=(x:number)=>x*Math.PI/180,dp=q(c-a),dl=q(d-b),z=Math.sin(dp/2)**2+Math.cos(q(a))*Math.cos(q(c))*Math.sin(dl/2)**2;return 2*R*Math.asin(Math.sqrt(z))}
 
 /** "Fort Lauderdale, FL" -> "fort-lauderdale" */
@@ -29,4 +37,6 @@ export const citySlug=(name:string)=>name.replace(/,\s*[A-Za-z]{2}$/,"").toLower
 export function cityFromSlug(slug:string):string|null{for(const name of Object.keys(CITY_COORDS))if(citySlug(name)===slug)return name;return null}
 /** Cities with their own /today landing page: the South Florida core, where
  *  the density check (scripts/density-check.ts) shows listings every day. */
-export const SEO_CITIES=["Sunrise, FL","Fort Lauderdale, FL","Hollywood, FL","Coral Springs, FL","Pembroke Pines, FL","Miramar, FL","Plantation, FL","Davie, FL","Weston, FL","Pompano Beach, FL","Deerfield Beach, FL","Miami, FL","Miami Beach, FL","Coral Gables, FL","Hialeah, FL","Aventura, FL","Boca Raton, FL","Delray Beach, FL","Boynton Beach, FL","West Palm Beach, FL","Jupiter, FL","Wellington, FL","Palm Beach Gardens, FL"];
+export const SEO_CITIES=["Sunrise, FL","Fort Lauderdale, FL","Hollywood, FL","Coral Springs, FL","Pembroke Pines, FL","Miramar, FL","Plantation, FL","Davie, FL","Weston, FL","Pompano Beach, FL","Deerfield Beach, FL","Miami, FL","Miami Beach, FL","Coral Gables, FL","Hialeah, FL","Aventura, FL","Boca Raton, FL","Delray Beach, FL","Boynton Beach, FL","West Palm Beach, FL","Jupiter, FL","Wellington, FL","Palm Beach Gardens, FL",
+ "Orlando, FL","Kissimmee, FL","Winter Park, FL","Tampa, FL","St. Petersburg, FL","Clearwater, FL","Jacksonville, FL","St. Augustine, FL","Daytona Beach, FL","Melbourne, FL",
+ "Sarasota, FL","Fort Myers, FL","Naples, FL","Lakeland, FL","Tallahassee, FL","Pensacola, FL","Key West, FL","New York, NY","Brooklyn, NY"];

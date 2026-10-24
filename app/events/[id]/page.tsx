@@ -32,7 +32,7 @@ export async function generateMetadata({params}:{params:Promise<{id:string}>}):P
  const {id}=await params;const e=await loadEvent(id).catch(()=>null);
  if(!e)return{title:"Event · GoToday"};
  const description=`${fmtDate(e.start,undefined,e.tz)} · ${timeRange(e)} · ${e.venue||e.city}${e.isFree?" · Free":""}`;
- return{title:`${e.title} · GoToday`,description,openGraph:{title:e.title,description,siteName:"GoToday",type:"website",images:e.image?[{url:e.image}]:undefined},twitter:{card:e.image?"summary_large_image":"summary",title:e.title,description}};
+ return{title:`${e.title} · GoToday`,description,alternates:{canonical:`/events/${encodeURIComponent(id)}`},openGraph:{title:e.title,description,siteName:"GoToday",type:"website",images:e.image?[{url:e.image}]:undefined},twitter:{card:e.image?"summary_large_image":"summary",title:e.title,description}};
 }
 
 export default async function EventPage({params}:{params:Promise<{id:string}>}){
@@ -66,7 +66,16 @@ export default async function EventPage({params}:{params:Promise<{id:string}>}){
  const paras=e.description.split(/\n+/).map(x=>x.trim()).filter(Boolean);
  const tags=e.tags.filter(t=>!junkTag(t)&&!["Local","Library","Parks","Free","Tickets","Kids","Family"].includes(t)&&!/\(\d/.test(t)).slice(0,5);
 
+ // Event details in Google's format (schema.org Event): lets the listing show in Google's event results.
+ const jsonLd={"@context":"https://schema.org","@type":"Event",name:e.title,startDate:(isAllDay(e.start,e.tz)?localParts(e.start,e.tz).date:e.start.toISOString()),
+  ...(e.end&&e.end>e.start?{endDate:isAllDay(e.start,e.tz)?localParts(e.end,e.tz).date:e.end.toISOString()}:{}),
+  eventStatus:"https://schema.org/EventScheduled",eventAttendanceMode:"https://schema.org/OfflineEventAttendanceMode",
+  location:{"@type":"Place",name:e.venue||e.city,address:e.address||e.city,...(e.lat!=null&&e.lng!=null?{geo:{"@type":"GeoCoordinates",latitude:e.lat,longitude:e.lng}}:{})},
+  ...(e.image&&!e.stockImage?{image:[e.image]}:{}),description:e.description.slice(0,500),url:`https://www.mygotoday.com/events/${encodeURIComponent(id)}`,
+  organizer:{"@type":"Organization",name:sourceLabel(e),url:e.officialUrl},
+  ...(e.isFree?{isAccessibleForFree:true,offers:{"@type":"Offer",price:0,priceCurrency:"USD",availability:"https://schema.org/InStock",url:e.officialUrl}}:{})};
  return <main className="detail">
+  {!ended&&<script type="application/ld+json" dangerouslySetInnerHTML={{__html:JSON.stringify(jsonLd).replace(/</g,"\\u003c")}}/>}
   <SiteHeader/>
   <div className="detailWrap">
    <article className="detailCard">
