@@ -58,6 +58,7 @@ export async function fetchTicketmasterEvents(startDate:string,endDate:string,cf
   const totalPages=Number(d?.page?.totalPages)||0;
   if(page+1>=totalPages||(page+1)*199>=1000)break;
  }
- if(out.length===0)throw new Error(`Ticketmaster returned no events for ${cfg.label||cfg.marketId||cfg.latlong}`);
+ // A whole market with nothing means a broken setup; a small area can simply have a quiet month.
+ if(out.length===0&&!cfg.latlong)throw new Error(`Ticketmaster returned no events for ${cfg.label||cfg.marketId}`);
  return out;
 }

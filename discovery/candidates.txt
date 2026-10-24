@@ -314,3 +314,8 @@ Middle Georgia Regional Library | Macon, GA | https://www.bibblib.org | macon
 City of Warner Robins | Warner Robins, GA | https://www.wrga.gov | macon
 Columbus Consolidated Government | Columbus, GA | https://www.columbusga.gov | columbus
 Chattahoochee Valley Libraries | Columbus, GA | https://www.cvlga.org | columbus
+
+# ---- Georgia: calendar pages found by hand ----
+Atlanta-Fulton Public Library | Atlanta, GA | https://fulcolibrary.bibliocommons.com/v2/events | atlanta
+DeKalb County Public Library | Decatur, GA | https://events.dekalblibrary.org/events | atlanta
+Augusta-Richmond County Public Library | Augusta, GA | https://arcpls.librarycalendar.com | augusta
