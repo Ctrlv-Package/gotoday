@@ -1,3 +1,4 @@
+import {captionTitle,captionPlace} from "./captionRead";
 import type {EventRecord} from "../ingestion/types";
 import {db} from "../db";
 import {ensureSchema} from "../schema";
@@ -180,8 +181,8 @@ export function captionOnly(p:Post):Extracted[]{
  let date=`${y}-${String(mo).padStart(2,"0")}-${m[2].padStart(2,"0")}`;if(date<posted){y++;date=`${y}${date.slice(4)}`}
  const t=c.match(/\b(\d{1,2})(?::(\d{2}))?\s*(am|pm)?\s*[-–to]+\s*(\d{1,2})(?::(\d{2}))?\s*(am|pm)\b/i);
  const h=(hh:string,mm:string|undefined,ap:string)=>{let x=+hh%12;if(/pm/i.test(ap))x+=12;return`${String(x).padStart(2,"0")}:${mm||"00"}`};
- const title=(c.split(/\n|[.!?]/)[0]||"Event").replace(/[^\p{L}\p{N}&' -]/gu,"").trim().slice(0,80)||"Event";
- return[{title,date,start:t?h(t[1],t[2],t[3]||t[6]):undefined,end:t?h(t[4],t[5],t[6]):undefined,summary:c.slice(0,300)}];
+ const title=captionTitle(c),{place,address}=captionPlace(c);
+ return[{title,date,start:t?h(t[1],t[2],t[3]||t[6]):undefined,end:t?h(t[4],t[5],t[6]):undefined,summary:c.slice(0,300),place:[place,address].filter(Boolean).join(", ")||undefined}];
 }
 
 class NoCredit extends Error{}
