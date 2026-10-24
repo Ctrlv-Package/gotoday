@@ -11,7 +11,7 @@ export default function Home(){
  const {t,locale}=useT();
  const[zipErr,setZipErr]=useState(""),lastGood=useRef(""),[zip,setZip]=useState(""),[searchedZip,setSearchedZip]=useState(""),[coords,setCoords]=useState<{lat:number;lng:number}|null>(null);
  const[radius,setRadius]=useState("25"),[range,setRange]=useState("today"),[selected,setSelected]=useState<string[]>([]),[ageBands,setAgeBands]=useState<string[]>([]),[moreOpen,setMoreOpen]=useState(false),[setting,setSetting]=useState("Any"),[dropIn,setDropIn]=useState(false),[spanish,setSpanish]=useState(false),[seniors,setSeniors]=useState(false);
- const[timeFilter,setTimeFilter]=useState("Any time"),[sort,setSort]=useState("Nearest"),[query,setQuery]=useState("");
+ const[timeFilter,setTimeFilter]=useState("Any time"),[bigOnly,setBigOnly]=useState(false),[sort,setSort]=useState("Nearest"),[query,setQuery]=useState("");
  const[soon,setSoon]=useState<{place:string|null}|null>(null),[events,setEvents]=useState<EventItem[]>([]),[loading,setLoading]=useState(false),[message,setMessage]=useState(""),[toast,setToast]=useState("");
 
  async function load(z:string,r:string,c:{lat:number;lng:number}|null,rad:string){
@@ -50,7 +50,7 @@ export default function Home(){
   if(freshParam)history.replaceState(null,"",location.pathname+(fromUrl?`?zip=${fromUrl}`:""));
   if(v&&v.day===today&&Date.now()-v.savedAt<45*60e3&&(!fromUrl||fromUrl===v.searchedZip)){
    setZip(v.zip);setSearchedZip(v.searchedZip);setCoords(v.coords);setRadius(v.radius);setRange(v.range);setSelected(v.selected);setAgeBands(v.ageBands);
-   setMoreOpen(v.moreOpen);setSetting(v.setting);setDropIn(v.dropIn);setSpanish(v.spanish);setSeniors(v.seniors);setTimeFilter(v.timeFilter);setSort(v.sort);setQuery(v.query);
+   setMoreOpen(v.moreOpen);setSetting(v.setting);setDropIn(v.dropIn);setSpanish(v.spanish);setSeniors(v.seniors);setTimeFilter(v.timeFilter);setBigOnly(!!v.bigOnly);setSort(v.sort);setQuery(v.query);
    setEvents(v.events||[]);setMessage(v.message||"");setSoon(v.soon||null);setRestored(true);
    try{history.scrollRestoration="manual"}catch{}
    const y=v.scrollY||0;requestAnimationFrame(()=>requestAnimationFrame(()=>window.scrollTo(0,y)));
@@ -65,7 +65,7 @@ export default function Home(){
  // Keep the saved view current (filters, results and scroll position) so "Back" lands where you were.
  useEffect(()=>{
   if(!restored)return;
-  const save=()=>{try{sessionStorage.setItem(VIEW,JSON.stringify({zip,searchedZip,coords,radius,range,selected,ageBands,moreOpen,setting,dropIn,spanish,seniors,timeFilter,sort,query,
+  const save=()=>{try{sessionStorage.setItem(VIEW,JSON.stringify({bigOnly,zip,searchedZip,coords,radius,range,selected,ageBands,moreOpen,setting,dropIn,spanish,seniors,timeFilter,sort,query,
    events,message,soon,scrollY:window.scrollY,savedAt:Date.now(),day:new Date().toDateString()}))}catch{}};
   save();
   let t:any=null;const onScroll=()=>{clearTimeout(t);t=setTimeout(save,150)};
@@ -75,7 +75,7 @@ export default function Home(){
    save()};
   window.addEventListener("scroll",onScroll,{passive:true});window.addEventListener("pagehide",save);document.addEventListener("click",onClick,true);
   return()=>{clearTimeout(t);window.removeEventListener("scroll",onScroll);window.removeEventListener("pagehide",save);document.removeEventListener("click",onClick,true)};
- },[restored,zip,searchedZip,coords,radius,range,selected,ageBands,moreOpen,setting,dropIn,spanish,seniors,timeFilter,sort,query,events,message,soon]);
+ },[restored,bigOnly,zip,searchedZip,coords,radius,range,selected,ageBands,moreOpen,setting,dropIn,spanish,seniors,timeFilter,sort,query,events,message,soon]);
 
  function searchZip(z:string){setZipErr("");if(!/^\d{5}$/.test(z)){setZipErr(z?t("A ZIP code has 5 digits, like 33326."):t("Enter a ZIP code to search."));return}store.set("gotoday:zip",z);setCoords(null);setSearchedZip(z);load(z,range,null,radius).then(ok=>{if(ok!==false)document.getElementById("results")?.scrollIntoView({behavior:"smooth"})})}
  function submitZip(){searchZip(zip.trim())}
@@ -106,7 +106,7 @@ export default function Home(){
  }
 
  const filtered=useMemo(()=>{
-  const qWords=norm(query).split(" ").filter(w=>w.length>1),interests=selected.filter(x=>x!=="Free"&&x!=="Big events"),big=selected.includes("Big events");
+  const qWords=norm(query).split(" ").filter(w=>w.length>1),interests=selected.filter(x=>x!=="Free"),big=bigOnly;
   return events.filter(e=>{
    const tags=new Set([e.category,...(e.tags||[])]);
    // Interests come from the server's facets (one consistent reading of every source); chips combine with OR.
@@ -128,7 +128,7 @@ export default function Home(){
    if(sort!=="Nearest")return when;
    return (a.date||"").localeCompare(b.date||"")||(a.distanceMiles??999)-(b.distanceMiles??999)||when;
   });
- },[events,selected,timeFilter,sort,query,ageBands,setting,dropIn,spanish,seniors]);
+ },[events,bigOnly,selected,timeFilter,sort,query,ageBands,setting,dropIn,spanish,seniors]);
 
  const moreCount=(setting!=="Any"?1:0)+(dropIn?1:0)+(spanish?1:0)+(seniors?1:0);
  const where=coords?t("your location"):searchedZip||t("your area"),hasPlace=!!(coords||searchedZip);
@@ -160,12 +160,18 @@ export default function Home(){
   </section>}
   {hasPlace&&<section className="content" id="results">
    <div className="toolbar">
-    <div className="where"><b>📍 {where}</b><span className="rangeLabel">{t("within {n} mi",{n:selected.includes("Big events")?String(Math.max(Number(radius)||10,25)):radius})}</span></div>
+    <div className="where"><b>📍 {where}</b><span className="rangeLabel">{t("within {n} mi",{n:bigOnly?String(Math.max(Number(radius)||10,25)):radius})}</span></div>
     <input type="search" placeholder={t("Search events")} value={query} onChange={e=>setQuery(e.target.value)}/>
    </div>
 
    {/* All filters live in one card: when + sort controls, interests, then optional extras. */}
    <div className="filterCard">
+    {/* Two ways to look: everything nearby, or just the big ones (festivals, fairs, yearly favorites) from farther away. */}
+    <div className="modeTabs" role="tablist">
+     <button type="button" role="tab" aria-selected={!bigOnly} className={!bigOnly?"active":""} onClick={()=>setBigOnly(false)}>{t("All events")}</button>
+     <button type="button" role="tab" aria-selected={bigOnly} className={bigOnly?"active":""} onClick={()=>setBigOnly(true)}>⭐ {t("Big events")}</button>
+    </div>
+    {bigOnly&&<p className="modeNote">{t("Festivals, fairs & yearly favorites · up to {n} mi",{n:String(Math.max(Number(radius)||10,25))})}</p>}
     <div className="fcTop">
      <div className="fcWhen">
       <div className="label">{t("When")}</div>
@@ -185,8 +191,6 @@ export default function Home(){
     <div className="fcSection">
      <div className="label">{t("What are you into?")}</div>
      <div className="chips wrap even4">{CHIPS.map(c=><button key={c} className={((c==="All"?selected.length===0&&moreCount===0:selected.includes(c))?"active":"")+(t(c==="Arts & Theatre"?"Arts":c).length>=8?" long":"")} onClick={()=>toggleChip(c)}>{c==="Arts & Theatre"?<><span className="lg">{t("Arts & Theatre")}</span><span className="sm">{t("Arts")}</span></>:t(c)}</button>)}</div>
-     <button type="button" className={`bigChip${selected.includes("Big events")?" active":""}`} aria-pressed={selected.includes("Big events")} onClick={()=>toggleChip("Big events")}>
-      <span className="bigStar" aria-hidden>⭐</span><b>{t("Big events")}</b><span className="bigNote">{t("Festivals, fairs & yearly favorites · up to {n} mi",{n:String(Math.max(Number(radius)||10,25))})}</span></button>
     </div>
     {selected.includes("Kids")&&<div className="fcSection">
      <div className="label">{t("Kids' ages")}</div>

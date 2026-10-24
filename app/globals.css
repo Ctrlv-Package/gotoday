@@ -590,3 +590,10 @@ a.linkBtn{text-decoration:none}
 .bigStar{font-size:18px;flex:none}
 @media(hover:hover){.bigChip:hover{border-color:#f59e0b}}
 @media(max-width:400px){.bigChip{flex-wrap:wrap;row-gap:2px}.bigChip .bigNote{flex-basis:100%;padding-left:28px}}
+
+/* All events / Big events: a switch at the top of the filters */
+.modeTabs{display:inline-flex;gap:4px;padding:4px;background:#f3f4f6;border-radius:999px;margin-bottom:6px}
+.modeTabs button{border:0;background:transparent;padding:9px 18px;border-radius:999px;font-weight:800;font-size:14px;color:#4b5563;cursor:pointer;white-space:nowrap}
+.modeTabs button.active{background:#fff;color:var(--ink);box-shadow:0 1px 3px rgba(0,0,0,.12)}
+.modeNote{margin:2px 0 10px;color:#92400e;font-size:13px;font-weight:600}
+@media(max-width:540px){.modeTabs{display:flex}.modeTabs button{flex:1}}
