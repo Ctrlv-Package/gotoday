@@ -42,3 +42,16 @@ test("one place under two names (two accounts' posts) is still one event", () =>
   // …but two different parks sharing only a generic word are two places
   assert.equal(same(ev("Trunk or Treat",{venue:"Pine Island Park",source:"A · Instagram"}),ev("Trunk or Treat",{venue:"Central Park",source:"B · Instagram"})),false);
 });
+
+test("same spot on the map under two venue names (round-up post vs Ticketmaster) is one event", () => {
+  assert.equal(same(ev("Blake Shelton Concert",{venue:"Seminole Hard Rock Hotel",city:"Hollywood, FL",source:"The Broward Scene · Instagram",time:"20:00:00",lat:26.0517,lng:-80.2112}),
+    ev("Blake Shelton",{venue:"Hard Rock Live",city:"Hollywood, FL",source:"Ticketmaster",time:"20:00:00",lat:26.0503,lng:-80.2110})),true);
+});
+test("a rare event name at the same place matches; ordinary words don't", () => {
+  const dh={venue:"Downtown Hollywood",city:"Hollywood, FL",time:""};
+  assert.equal(same(ev("Hollyweird Halloween",{...dh,source:"Hollywood Parks & Rec · Instagram"}),ev("Hollyweird Festival",{...dh,source:"The Broward Scene · Instagram"})),true);
+  assert.equal(same(ev("Halloween Festival",{...dh,source:"Hollywood Parks & Rec · Instagram"}),ev("Halloween Dance",{...dh,source:"The Broward Scene · Instagram"})),false);
+});
+test("& and 'and' read the same", () => {
+  assert.equal(same(ev("Coffee & Beats",{venue:"",city:"Fort Lauderdale, FL",source:"The Broward Scene · Instagram",time:"10:00:00"}),ev("Coffee and Beats",{venue:"",city:"Fort Lauderdale, FL",source:"Downtown Fort Lauderdale · Instagram",time:"10:00:00"})),true);
+});

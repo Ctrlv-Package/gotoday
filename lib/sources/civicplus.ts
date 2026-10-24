@@ -57,7 +57,9 @@ export async function fetchCivicPlus(cfg:CivicPlusConfig,startDate:string,endDat
  const feed=`${cfg.site.replace(/\/$/,"")}/RSSFeed.aspx?ModID=58&CID=${cfg.cid||"All-calendar.xml"}`;
  const r=await fetchRetry(feed,{headers:{"User-Agent":"Mozilla/5.0 (compatible; GoToday/1.0; +https://mygotoday.com)","Accept":"application/rss+xml,application/xml,text/xml"},cache:"no-store"});
  if(!r.ok)throw new Error(`HTTP ${r.status} from ${feed}`);
- const {items,events}=parseCivicPlusRss(await r.text(),cfg,startDate,endDate,feed);
- if(items===0)throw new Error(`Calendar RSS feed has no items: ${feed}`);
+ const xml=await r.text(),{items,events}=parseCivicPlusRss(xml,cfg,startDate,endDate,feed);
+ // A real, empty calendar feed (a small city between events) is a quiet month, not a failure; anything that isn't
+ // an RSS feed at all (an error page, a block page) still is.
+ if(items===0&&!/<rss[\s>]|<channel[\s>]/i.test(xml))throw new Error(`Calendar RSS feed not readable: ${feed}`);
  return addCostsFromPages(events);   // the feed has no cost; each event page does
 }

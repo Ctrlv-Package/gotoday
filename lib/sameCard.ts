@@ -12,14 +12,17 @@ const STOP=new Set(["the","and","of","a","at","in","on","for","with","to","annua
 export const words=(t:string)=>new Set(t.toLowerCase().replace(/&/g," and ").replace(/[^a-z0-9]+/g," ").split(" ").filter(w=>w.length>2&&!STOP.has(w)));
 const place=(x?:string)=>String(x||"").toLowerCase().replace(/&/g,"and").replace(/[^a-z0-9]+/g," ").trim();
 export const town=(x?:string)=>String(x||"").toLowerCase().replace(/^ft\.?\s/,"fort ").replace(/,.*$/,"").trim();
-const flat=(t:string)=>t.toLowerCase().replace(/[^a-z0-9]+/g,"");
+const flat=(t:string)=>t.toLowerCase().replace(/&/g,"and").replace(/[^a-z0-9]+/g,"");
 export const isIg=(e:{source?:string})=>/ · Instagram$/.test(e.source||"");
 const partOf=(t:string)=>/^(opening|closing) reception|^vip\b|\bpreview\b|after ?party|pre-?show|meet (and|&) greet|costume contest/i.test(t);
 const organizer=(e:CardLike)=>String(e.source||"").replace(/ · Instagram$/,"").toLowerCase();
 
+// Event words too ordinary to identify one event by themselves.
+const COMMON=new Set(["halloween","festival","christmas","holiday","holidays","market","concert","celebration","party","movie","movies","craft","crafts","crafternoon","storytime","spooky","pumpkin","pumpkins","parade","trunk","treat","costume","contest","dance","music","family","families","kids","children","toddler","toddlers","weekend","saturday","sunday","monday","tuesday","wednesday","thursday","friday","special","annual","holiday","summer","autumn","winter","spring","harvest","carnival","festive","show","series","program","workshop","class","classes","event","events","social","night","nights","tournament","league","library","birthday","anniversary","opening","grand","presents","presenting","featuring","halloweentown","october","november","december","fiesta","bash","block","street","downtown","community","outdoor","indoor","sports","games","gaming","reading","author","book","books","movie","screening","festivities","fundraiser","charity","benefit","gala","awards","holidays","trick","treating","haunted","house","yoga","fitness","farmers","artisan","vendors","vendor"]);
 const PLACE_WORDS=new Set(["park","parks","center","centre","library","branch","regional","community","recreation","complex","field","fields","stadium","arena","plaza","square","church","school","elementary","middle","high","county","city","town","village","beach","lake","lakes","north","south","east","west","central","memorial","civic","cultural","senior","athletic","sports","hall","theater","theatre","museum","gardens","garden","downtown","street","avenue","boulevard","island","florida"]);
 /** Two named places that differ ("Pine Island Park" vs "Central Park") mean two events, whatever the titles say. */
-function placesConflict(a:CardLike,b:CardLike){
+function placesConflict(a:CardLike,b:CardLike,miles?:number|null){
+ if(miles!=null&&miles<0.25)return false;   // one spot on the map under two names ("Seminole Hard Rock Hotel" / "Hard Rock Live")
  const ga=isGenericVenue(a.venue,a.city,a.source),gb=isGenericVenue(b.venue,b.city,b.source);
  if(ga||gb)return false;
  const pa=place(a.venue),pb=place(b.venue);
@@ -48,7 +51,7 @@ export function sameEventCard(a:CardLike,b:CardLike,W:(e:CardLike)=>Set<string>=
  const miles=a.lat!=null&&a.lng!=null&&b.lat!=null&&b.lng!=null?Math.hypot((a.lat-b.lat)*69,(a.lng-b.lng)*69*Math.cos(a.lat*Math.PI/180)):null;
  const bothTowns=!!town(a.city)&&!!town(b.city);
  const near=sameTown||(miles!=null?miles<1.5:!bothTowns&&typeof a.distanceMiles==="number"&&typeof b.distanceMiles==="number"&&Math.abs(a.distanceMiles-b.distanceMiles)<1);
- if(!near||placesConflict(a,b))return false;
+ if(!near||placesConflict(a,b,miles))return false;
  // (b) A post (Instagram) about an event listed elsewhere: same area, titles mostly match.
  if(isIg(a)||isIg(b)){
   const small=Math.min(wa.size,wb.size);
@@ -57,6 +60,10 @@ export function sameEventCard(a:CardLike,b:CardLike,W:(e:CardLike)=>Set<string>=
  // (d) Same town, same start time, from two different listers (one of them a post or a listing without a real
  // place), sharing at least two meaningful title words: "Trunk-Or-Treat (Residents Only)" by the city and
  // "Villains vs. Superheroes Trunk or Treat" by its parks account, both 6 PM.
+ // (e) A post about a named event at the same spot: "Hollyweird Halloween" / "Hollyweird Festival" at Downtown Hollywood.
+ // One shared word is enough only when it's a rare name (not "halloween", "festival"…) and the place agrees.
+ const samePlace=(!!place(a.venue)&&place(a.venue)===place(b.venue))||(miles!=null&&miles<0.25);
+ if((isIg(a)||isIg(b))&&samePlace){for(const x of wa)if(wb.has(x)&&x.length>=6&&!COMMON.has(x)&&!PLACE_WORDS.has(x))return true}
  const twoListers=organizer(a)!==organizer(b)||isIg(a)!==isIg(b);
  const loose=isIg(a)||isIg(b)||isGenericVenue(a.venue,a.city,a.source)||isGenericVenue(b.venue,b.city,b.source);
  if(sameTown&&sameTime&&hit>=2&&twoListers&&loose)return true;
