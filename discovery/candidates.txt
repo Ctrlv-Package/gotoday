@@ -543,3 +543,6 @@ Delaware Libraries | Dover, DE | https://lib.de.us | delmarva
 City of Rehoboth Beach | Rehoboth Beach, DE | https://www.cityofrehoboth.com | delmarva
 City of Lewes | Lewes, DE | https://www.ci.lewes.de.us | delmarva
 University of Delaware | Newark, DE | https://events.udel.edu | delmarva
+
+# ---- Carolinas: retry with Trumba detection ----
+Spartanburg County Public Libraries | Spartanburg, SC | https://www.infodepot.org/Events | upstate
