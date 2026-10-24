@@ -319,3 +319,109 @@ Chattahoochee Valley Libraries | Columbus, GA | https://www.cvlga.org | columbus
 Atlanta-Fulton Public Library | Atlanta, GA | https://fulcolibrary.bibliocommons.com/v2/events | atlanta
 DeKalb County Public Library | Decatur, GA | https://events.dekalblibrary.org/events | atlanta
 Augusta-Richmond County Public Library | Augusta, GA | https://arcpls.librarycalendar.com | augusta
+
+# ==== NORTH CAROLINA ====
+# ---- Charlotte ----
+City of Charlotte | Charlotte, NC | https://www.charlottenc.gov | charlotte
+Mecklenburg County Park and Recreation | Charlotte, NC | https://parkandrec.mecknc.gov | charlotte
+Charlotte Mecklenburg Library | Charlotte, NC | https://www.cmlibrary.org | charlotte
+Town of Huntersville | Huntersville, NC | https://www.huntersville.org | charlotte
+Town of Cornelius | Cornelius, NC | https://www.cornelius.org | charlotte
+Town of Davidson | Davidson, NC | https://www.townofdavidson.org | charlotte
+Town of Matthews | Matthews, NC | https://www.matthewsnc.gov | charlotte
+Town of Mint Hill | Mint Hill, NC | https://www.minthill.com | charlotte
+Town of Pineville | Pineville, NC | https://www.pinevillenc.gov | charlotte
+City of Concord | Concord, NC | https://www.concordnc.gov | charlotte
+Cabarrus County Public Library | Concord, NC | https://www.cabarruscounty.us/library | charlotte
+City of Gastonia | Gastonia, NC | https://www.gastonianc.gov | charlotte
+Gaston County Public Library | Gastonia, NC | https://www.gastonlibrary.org | charlotte
+Town of Mooresville | Mooresville, NC | https://www.mooresvillenc.gov | charlotte
+Union County Public Library | Monroe, NC | https://www.unioncountync.gov/library | charlotte
+Town of Indian Trail | Indian Trail, NC | https://www.indiantrail.org | charlotte
+Discovery Place | Charlotte, NC | https://discoveryplace.org | charlotte
+# ---- Triangle ----
+City of Raleigh | Raleigh, NC | https://raleighnc.gov | triangle
+Wake County Public Libraries | Raleigh, NC | https://www.wake.gov/departments-government/wake-county-public-libraries | triangle
+Wake County | Raleigh, NC | https://www.wake.gov | triangle
+Town of Cary | Cary, NC | https://www.carync.gov | triangle
+Town of Apex | Apex, NC | https://www.apexnc.org | triangle
+Town of Holly Springs | Holly Springs, NC | https://www.hollyspringsnc.gov | triangle
+Town of Wake Forest | Wake Forest, NC | https://www.wakeforestnc.gov | triangle
+Town of Morrisville | Morrisville, NC | https://www.morrisvillenc.gov | triangle
+Town of Garner | Garner, NC | https://www.garnernc.gov | triangle
+Town of Fuquay-Varina | Fuquay-Varina, NC | https://www.fuquay-varina.org | triangle
+Town of Knightdale | Knightdale, NC | https://www.knightdalenc.gov | triangle
+City of Durham | Durham, NC | https://www.durhamnc.gov | triangle
+Durham County Library | Durham, NC | https://durhamcountylibrary.org | triangle
+Durham Parks and Recreation | Durham, NC | https://www.dprplaytime.com | triangle
+Town of Chapel Hill | Chapel Hill, NC | https://www.townofchapelhill.org | triangle
+Chapel Hill Public Library | Chapel Hill, NC | https://chapelhillpubliclibrary.org | triangle
+Orange County Public Library NC | Hillsborough, NC | https://www.orangecountync.gov/library | triangle
+Town of Carrboro | Carrboro, NC | https://www.carrboronc.gov | triangle
+NC Museum of Natural Sciences | Raleigh, NC | https://naturalsciences.org | triangle
+Marbles Kids Museum | Raleigh, NC | https://www.marbleskidsmuseum.org | triangle
+North Carolina State University | Raleigh, NC | https://calendar.ncsu.edu | triangle
+Duke University | Durham, NC | https://calendar.duke.edu | triangle
+UNC Chapel Hill | Chapel Hill, NC | https://calendar.unc.edu | triangle
+# ---- Triad ----
+City of Greensboro | Greensboro, NC | https://www.greensboro-nc.gov | triad
+Greensboro Public Library | Greensboro, NC | https://library.greensboro-nc.gov | triad
+City of Winston-Salem | Winston-Salem, NC | https://www.cityofws.org | triad
+Forsyth County Public Library NC | Winston-Salem, NC | https://www.forsyth.cc/library | triad
+City of High Point | High Point, NC | https://www.highpointnc.gov | triad
+High Point Public Library | High Point, NC | https://www.highpointnc.gov/library | triad
+# ---- Mountains ----
+City of Asheville | Asheville, NC | https://www.ashevillenc.gov | asheville
+Buncombe County | Asheville, NC | https://www.buncombecounty.org | asheville
+Buncombe County Public Libraries | Asheville, NC | https://www.buncombecounty.org/governing/depts/library | asheville
+City of Hendersonville | Hendersonville, NC | https://www.hendersonvillenc.gov | asheville
+Town of Boone | Boone, NC | https://www.townofboone.net | asheville
+City of Hickory | Hickory, NC | https://www.hickorync.gov | charlotte
+# ---- Eastern NC & coast ----
+City of Wilmington | Wilmington, NC | https://www.wilmingtonnc.gov | wilmington
+New Hanover County | Wilmington, NC | https://www.nhcgov.com | wilmington
+New Hanover County Public Library | Wilmington, NC | https://libraries.nhcgov.com | wilmington
+Town of Carolina Beach | Carolina Beach, NC | https://www.carolinabeach.org | wilmington
+Town of Wrightsville Beach | Wrightsville Beach, NC | https://www.townofwrightsvillebeach.com | wilmington
+City of Fayetteville | Fayetteville, NC | https://www.fayettevillenc.gov | fayetteville
+Cumberland County Public Library | Fayetteville, NC | https://www.cumberland.lib.nc.us | fayetteville
+City of Greenville | Greenville, NC | https://www.greenvillenc.gov | easternnc
+Sheppard Memorial Library | Greenville, NC | https://www.sheppardlibrary.org | easternnc
+City of Jacksonville NC | Jacksonville, NC | https://www.jacksonvillenc.gov | easternnc
+Dare County | Manteo, NC | https://www.darenc.gov | easternnc
+Town of Kill Devil Hills | Kill Devil Hills, NC | https://www.kdhnc.com | easternnc
+City of New Bern | New Bern, NC | https://www.newbernnc.gov | easternnc
+
+# ==== SOUTH CAROLINA ====
+City of Charleston | Charleston, SC | https://www.charleston-sc.gov | charleston
+Charleston County | Charleston, SC | https://www.charlestoncounty.gov | charleston
+Charleston County Public Library | Charleston, SC | https://www.ccpl.org | charleston
+Charleston County Parks | Charleston, SC | https://www.ccprc.com | charleston
+Town of Mount Pleasant | Mount Pleasant, SC | https://www.tompsc.com | charleston
+City of North Charleston | North Charleston, SC | https://www.northcharleston.org | charleston
+Town of Summerville | Summerville, SC | https://www.summervillesc.gov | charleston
+Dorchester County Library | Summerville, SC | https://www.dcl.lib.sc.us | charleston
+Berkeley County Library | Moncks Corner, SC | https://www.berkeleylibrarysc.org | charleston
+City of Columbia | Columbia, SC | https://www.columbiasc.gov | columbia
+Richland Library | Columbia, SC | https://www.richlandlibrary.com | columbia
+Lexington County Public Library | Lexington, SC | https://www.lexcolibrary.com | columbia
+Town of Lexington | Lexington, SC | https://www.lexsc.com | columbia
+University of South Carolina | Columbia, SC | https://calendar.sc.edu | columbia
+City of Greenville SC | Greenville, SC | https://www.greenvillesc.gov | upstate
+Greenville County Library System | Greenville, SC | https://www.greenvillelibrary.org | upstate
+Greenville County Parks | Greenville, SC | https://www.greenvillerec.com | upstate
+City of Spartanburg | Spartanburg, SC | https://www.cityofspartanburg.org | upstate
+Spartanburg County Public Libraries | Spartanburg, SC | https://www.infodepot.org | upstate
+City of Greer | Greer, SC | https://www.cityofgreer.org | upstate
+City of Anderson | Anderson, SC | https://www.cityofandersonsc.com | upstate
+City of Rock Hill | Rock Hill, SC | https://www.cityofrockhill.com | charlotte
+York County Library | Rock Hill, SC | https://www.yclibrary.org | charlotte
+Town of Fort Mill | Fort Mill, SC | https://www.fortmillsc.gov | charlotte
+City of Myrtle Beach | Myrtle Beach, SC | https://www.cityofmyrtlebeach.com | myrtle
+Horry County | Conway, SC | https://www.horrycountysc.gov | myrtle
+Horry County Memorial Library | Conway, SC | https://www.horrycountysc.gov/departments/libraries | myrtle
+City of North Myrtle Beach | North Myrtle Beach, SC | https://www.nmb.us | myrtle
+Town of Hilton Head Island | Hilton Head Island, SC | https://hiltonheadislandsc.gov | lowcountry
+Beaufort County Library | Beaufort, SC | https://www.beaufortcountylibrary.org | lowcountry
+Town of Bluffton | Bluffton, SC | https://www.townofbluffton.sc.gov | lowcountry
+City of Aiken | Aiken, SC | https://www.cityofaikensc.gov | augusta

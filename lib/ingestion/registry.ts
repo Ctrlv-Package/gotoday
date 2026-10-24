@@ -225,6 +225,18 @@ export const SEED_SOURCES:SourceConfig[]=[
  {name:"Ticketmaster Athens GA",platform:"ticketmaster",params:{latlong:"33.9519,-83.3576",radius:25,label:"Athens GA"},source_type:"ticketing",url:"https://www.ticketmaster.com",priority:60,region:"athens"},
  {name:"Ticketmaster Macon",platform:"ticketmaster",params:{latlong:"32.8407,-83.6324",radius:30,label:"Macon"},source_type:"ticketing",url:"https://www.ticketmaster.com",priority:60,region:"macon"},
  {name:"Ticketmaster Columbus GA",platform:"ticketmaster",params:{latlong:"32.461,-84.9877",radius:30,label:"Columbus GA"},source_type:"ticketing",url:"https://www.ticketmaster.com",priority:60,region:"columbus"},
+ // ---- Carolinas ----
+ {name:"Ticketmaster Charlotte",platform:"ticketmaster",params:{latlong:"35.2271,-80.8431",radius:35,label:"Charlotte"},source_type:"ticketing",url:"https://www.ticketmaster.com",priority:60,region:"charlotte"},
+ {name:"Ticketmaster Raleigh-Durham",platform:"ticketmaster",params:{latlong:"35.85,-78.8",radius:30,label:"Raleigh-Durham"},source_type:"ticketing",url:"https://www.ticketmaster.com",priority:60,region:"triangle"},
+ {name:"Ticketmaster Greensboro & Winston-Salem",platform:"ticketmaster",params:{latlong:"36.08,-80.0",radius:30,label:"Greensboro & Winston-Salem"},source_type:"ticketing",url:"https://www.ticketmaster.com",priority:60,region:"triad"},
+ {name:"Ticketmaster Asheville",platform:"ticketmaster",params:{latlong:"35.5951,-82.5515",radius:35,label:"Asheville"},source_type:"ticketing",url:"https://www.ticketmaster.com",priority:60,region:"asheville"},
+ {name:"Ticketmaster Wilmington NC",platform:"ticketmaster",params:{latlong:"34.2257,-77.9447",radius:30,label:"Wilmington NC"},source_type:"ticketing",url:"https://www.ticketmaster.com",priority:60,region:"wilmington"},
+ {name:"Ticketmaster Fayetteville NC",platform:"ticketmaster",params:{latlong:"35.0527,-78.8784",radius:25,label:"Fayetteville NC"},source_type:"ticketing",url:"https://www.ticketmaster.com",priority:60,region:"fayetteville"},
+ {name:"Ticketmaster Charleston",platform:"ticketmaster",params:{latlong:"32.7765,-79.9311",radius:30,label:"Charleston"},source_type:"ticketing",url:"https://www.ticketmaster.com",priority:60,region:"charleston"},
+ {name:"Ticketmaster Columbia SC",platform:"ticketmaster",params:{latlong:"34.0007,-81.0348",radius:30,label:"Columbia SC"},source_type:"ticketing",url:"https://www.ticketmaster.com",priority:60,region:"columbia"},
+ {name:"Ticketmaster Greenville-Spartanburg",platform:"ticketmaster",params:{latlong:"34.9,-82.15",radius:30,label:"Greenville-Spartanburg"},source_type:"ticketing",url:"https://www.ticketmaster.com",priority:60,region:"upstate"},
+ {name:"Ticketmaster Myrtle Beach",platform:"ticketmaster",params:{latlong:"33.6891,-78.8867",radius:35,label:"Myrtle Beach"},source_type:"ticketing",url:"https://www.ticketmaster.com",priority:60,region:"myrtle"},
+ {name:"Ticketmaster Hilton Head",platform:"ticketmaster",params:{latlong:"32.2163,-80.7526",radius:30,label:"Hilton Head"},source_type:"ticketing",url:"https://www.ticketmaster.com",priority:60,region:"lowcountry"},
 
  ...INSTAGRAM_ACCOUNTS,
 ];
