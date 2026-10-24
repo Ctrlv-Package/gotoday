@@ -16,13 +16,14 @@ const hms=(s:string)=>{const m=String(s||"").match(/[T ](\d{2}):(\d{2})/);return
 const truthy=(v:unknown)=>v===true||v===1||v==="1"||v==="true";
 
 export async function fetchLibCal(cfg:LibCalConfig,startDate:string,endDate:string):Promise<EventRecord[]>{
- const base=`https://${cfg.site}.libcal.com`;
+ // "site" is the LibCal name (x → x.libcal.com) or, for a library on its own domain, that host (calendar.libraryweb.org).
+ const host=cfg.site.includes(".")?cfg.site:`${cfg.site}.libcal.com`,base=`https://${host}`;
  const out:EventRecord[]=[],seen=new Set<string>();let total=0;
  for(let page=1;page<=30;page++){
   const url=`${base}/ajax/calendar/list?c=${cfg.calendarId??-1}&date=0000-00-00&perpage=48&page=${page}&audience=&cats=&camps=&inc=0`;
   const r=await fetchRetry(url,{headers:{"Accept":"application/json, text/javascript, */*","X-Requested-With":"XMLHttpRequest","Referer":`${base}/calendar`,
    "User-Agent":"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36"},cache:"no-store"});
-  if(!r.ok){if(page===1)throw new Error(`HTTP ${r.status} from ${cfg.site}.libcal.com`);break}
+  if(!r.ok){if(page===1)throw new Error(`HTTP ${r.status} from ${host}`);break}
   const d:any=await r.json();
   const rows:any[]=Array.isArray(d?.results)?d.results:[];
   total+=rows.length;
@@ -60,6 +61,6 @@ export async function fetchLibCal(cfg:LibCalConfig,startDate:string,endDate:stri
   const per=Number(d?.perpage)||48,tot=Number(d?.total_results)||0;
   if(rows.length===0||pastEnd||(tot&&page*per>=tot))break;
  }
- if(total===0)throw new Error(`${cfg.site}.libcal.com returned zero events`);
+ if(total===0)throw new Error(`${host} returned zero events`);
  return out;
 }

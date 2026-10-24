@@ -46,6 +46,11 @@ async function probe(c:Cand):Promise<Found[]>{
  // LibCal (Springshare) — detected, adapter not built yet
  // Springshare sites (LibGuides/LibApps) usually have a LibCal calendar under the same name even when the home page doesn't link it.
  const libcal=h.match(/https?:\/\/([a-z0-9-]+)\.libcal\.com/i)?.[1]||h.match(/https?:\/\/([a-z0-9-]+)\.libapps\.com/i)?.[1];
+ // LibCal on a library's own domain: links like https://calendar.libraryweb.org/calendar/RPL/?cid=4901
+ const lcOwn=!libcal?h.match(/https?:\/\/([a-z0-9.-]+)\/calendar\/[A-Za-z0-9_-]+\/?\?cid=(\d+)/i):null;
+ if(lcOwn){const t=await get(`https://${lcOwn[1]}/ajax/calendar/list?c=${lcOwn[2]}&date=0000-00-00&perpage=1&page=1&audience=&cats=&camps=&inc=0`);
+  const n=(()=>{try{return Number(JSON.parse(t.text)?.total_results)||0}catch{return 0}})();
+  if(n)out.push({input:arg,platform:"libcal",confidence:"confirmed",note:`${n} upcoming events (LibCal at ${lcOwn[1]})`,config:{name,platform:"libcal",params:{site:lcOwn[1],calendarId:Number(lcOwn[2]),defaultVenue:name,defaultCity:city||undefined},source_type:"official-city",url:`https://${lcOwn[1]}/calendar?cid=${lcOwn[2]}`}})}
  if(libcal){const t=await get(`https://${libcal}.libcal.com/ajax/calendar/list?c=-1&date=0000-00-00&perpage=1&page=1&audience=&cats=&camps=&inc=0`);
   const n=(()=>{try{return Number(JSON.parse(t.text)?.total_results)||0}catch{return 0}})();
   out.push({input:arg,platform:"libcal",confidence:n?"confirmed":"likely",note:`${n} upcoming events`,config:{name,platform:"libcal",params:{site:libcal,defaultVenue:name,defaultCity:city||undefined},source_type:"official-city",url:`https://${libcal}.libcal.com/calendar`}})}
@@ -57,7 +62,7 @@ async function probe(c:Cand):Promise<Found[]>{
 
  // CivicPlus / CivicEngage: calendar RSS feed
  {const t=await get(`${origin}/RSSFeed.aspx?ModID=58&CID=All-calendar.xml`),items=(t.text.match(/<item\b/gi)||[]).length;
-  if(items||/civicplus|CivicEngage|\/RSSFeed\.aspx/i.test(html))out.push({input:arg,platform:"civicplus",confidence:items?"confirmed":"likely",note:`${items} items in calendar RSS`,config:{name,platform:"civicplus",params:{site:origin,city},url:`${origin}/Calendar.aspx`}})}
+  if(items||/civicplus|CivicEngage|\/RSSFeed\.aspx|\/Calendar\.aspx\?(EID|CID)=/i.test(html))out.push({input:arg,platform:"civicplus",confidence:items?"confirmed":"likely",note:`${items} items in calendar RSS`,config:{name,platform:"civicplus",params:{site:origin,city},url:`${origin}/Calendar.aspx`}})}
 
  // Granicus govAccess: /Home/Components/Calendar event links, vi-events-tiles lists
  if(/\/Home\/Components\/Calendar|vi-events-tiles|govAccess/i.test(html)){
