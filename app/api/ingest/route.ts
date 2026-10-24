@@ -39,7 +39,13 @@ async function run(req:NextRequest){
    const failing=new Set(rows.map((r:any)=>r.name));
    return NextResponse.json({ok:true,sources:(await activeSources()).filter(s=>failing.has(s.name)&&s.platform!=="instagram"&&s.platform!=="ticketmaster").map(s=>s.name)});
   }
-  if(req.nextUrl.searchParams.get("list")==="instagram")return NextResponse.json({ok:true,sources:(await activeSources()).filter(s=>s.platform==="instagram").map(s=>s.name)});
+  // Instagram accounts share Meta's hourly call budget, and a run stops when it's used up. Stalest first, so the
+  // accounts that waited longest go next time — not the same end of the alphabet waiting every run.
+  if(req.nextUrl.searchParams.get("list")==="instagram"){
+   const names=(await activeSources()).filter(s=>s.platform==="instagram").map(s=>s.name);
+   const last=new Map((await db.query("select name,last_success_at from sources where name=any($1)",[names]).catch(()=>({rows:[]}))).rows.map((r:any)=>[r.name,r.last_success_at?new Date(r.last_success_at).getTime():0]));
+   return NextResponse.json({ok:true,sources:names.sort((a,b)=>(last.get(a)??0)-(last.get(b)??0))});
+  }
   const names=(await activeSources()).filter(s=>s.platform!=="instagram").map(s=>s.name),origin=/localhost|127\.0\.0\.1/.test(req.nextUrl.host)?req.nextUrl.origin:SITE,results:any[]=new Array(names.length);
   await ensureSchema();
   const trigger=req.headers.get("user-agent")?.includes("vercel-cron")?"schedule":"manual";
