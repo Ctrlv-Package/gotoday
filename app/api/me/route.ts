@@ -8,6 +8,9 @@ export async function GET(){
  const u=await currentUser();
  if(!u)return NextResponse.json({signedIn:false},{headers:{"cache-control":"no-store"}});
  const saved=(await db.query("select event_id from saved_events where user_id=$1",[u.id])).rows.map((r:any)=>`db-${r.event_id}`);
+ // Listings of events this person created (every date): already in their GoToday calendar.
+ const mine=(await db.query(`select e.id from community_events c join events e on (e.external_id='community-'||c.id or e.external_id like 'community-'||c.id||'-%')
+   where c.user_id=$1 and c.status in ('live','pending') and e.status='active'`,[u.id]).catch(()=>({rows:[]}))).rows.map((r:any)=>`db-${r.id}`);
  const following=(await db.query("select series_id from follows where user_id=$1",[u.id])).rows.map((r:any)=>r.series_id);
- return NextResponse.json({signedIn:true,name:u.name,email:u.email,image:u.image,saved,following,calConnected:await calendarConnected(u.id)},{headers:{"cache-control":"no-store"}});
+ return NextResponse.json({signedIn:true,name:u.name,email:u.email,image:u.image,saved,following,mine,calConnected:await calendarConnected(u.id)},{headers:{"cache-control":"no-store"}});
 }

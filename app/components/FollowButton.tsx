@@ -5,7 +5,7 @@ import {setFollowing} from "./saved";
 
 /** "Remind me next year" (following the event's family): be told when this event comes around again (next year's date, whenever it's announced).
  *  Needs an account, so guests are sent to sign in first and the follow happens when they come back. */
-export default function FollowButton({id,signedIn,initial}:{id:string;signedIn:boolean;initial:boolean}){
+export default function FollowButton({id,signedIn,initial,back}:{id:string;signedIn:boolean;initial:boolean;back?:string}){
  const {t}=useT();
  const [on,setOn]=useState(initial),[busy,setBusy]=useState(false),[note,setNote]=useState("");
  const act=async(next:boolean)=>{
@@ -19,7 +19,7 @@ export default function FollowButton({id,signedIn,initial}:{id:string;signedIn:b
   if(u.searchParams.get("follow")==="1"){u.searchParams.delete("follow");u.searchParams.delete("signedin");history.replaceState(null,"",u.pathname+(u.search||""));if(!initial)act(true)}
  // eslint-disable-next-line react-hooks/exhaustive-deps
  },[]);
- if(!signedIn)return <a className="btn ghost followBtn" href={`/signin?next=${encodeURIComponent(`/events/${id}?follow=1`)}&why=follow`}>
+ if(!signedIn)return <a className="btn ghost followBtn" href={`/signin?next=${encodeURIComponent(`${back||`/events/${id}`}${(back||"").includes("?")?"&":"?"}follow=1`)}&why=follow`}>
   <Bell/> {t("Remind me next year")}</a>;
  return <>
   <button type="button" className={`btn ghost followBtn${on?" on":""}`} aria-pressed={on} disabled={busy} onClick={()=>act(!on)} title={on?t("You'll be reminded next year — tap to stop"):t("Get next year's date as soon as it's announced")}>

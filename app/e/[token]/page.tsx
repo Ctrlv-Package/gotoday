@@ -6,6 +6,13 @@ import {fmtDate,fmtTime} from "../../../lib/event-detail";
 import ShareButton from "../../events/[id]/ShareButton";
 import AddToCalendar from "../../components/AddToCalendar";
 import Rsvp from "./Rsvp";
+import SaveButton from "../../components/SaveButton";
+import CalendarChoice from "../../components/CalendarChoice";
+import FollowButton from "../../components/FollowButton";
+import {currentUser} from "../../../lib/auth";
+import {calendarConnected} from "../../../lib/me";
+import {followable} from "../../../lib/series";
+import {db} from "../../../lib/db";
 import {stockPicture} from "../../../lib/stockPhotos";
 import {occurrences,nextOccurrence,describe as describeRepeat} from "../../../lib/repeat";
 export const dynamic="force-dynamic";
@@ -34,6 +41,13 @@ export default async function CommunityEventPage({params,searchParams}:{params:P
  const w=when(e,date),a=ages(e),where=[e.venue,e.address,e.city].filter(Boolean).join(", "),ended=(endOf(e,date)||new Date(startOf(e,date).getTime()+(e.allDay?24:3)*3600e3)).getTime()<Date.now();
  // No photo from the host: a library photo of that kind of event (marked as illustrative).
  const photo=e.image||await stockPicture({title:e.title,desc:e.description,category:e.categories.join(" "),tags:e.categories,ageMax:e.ageMax}).catch(()=>""),stock=!e.image&&!!photo;
+ // A public listing has a GoToday entry per date: Save, the calendar check and "Remind me next year" work on it.
+ const listed=e.visibility==="public"&&e.status==="live";
+ const row=listed?(await db.query("select id,series_id from events where fingerprint=$1 and status='active'",[e.repeat.kind==="none"?`community|${e.id}`:`community|${e.id}|${date}`]).catch(()=>({rows:[]}))).rows[0]:null;
+ const dbId=row?Number(row.id):null,user=await currentUser().catch(()=>null);
+ const calConnected=!!user&&await calendarConnected(user.id).catch(()=>false);
+ const canFollow=!!dbId&&!ended&&(e.repeat.kind==="yearly"||(!!row.series_id&&await followable(Number(row.series_id)).catch(()=>false)));
+ const following=!!(user&&row?.series_id&&(await db.query("select 1 from follows where user_id=$1 and series_id=$2",[user.id,row.series_id]).catch(()=>({rowCount:0}))).rowCount);
  const counts=e.visibility==="private"?await rsvpCounts(e.id):null;
  const map=`https://maps.google.com/maps?q=${encodeURIComponent(e.latitude!=null&&e.longitude!=null&&!e.address?`${e.latitude},${e.longitude}`:where)}&z=15&output=embed`;
  const dir=`https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(where)}`;
@@ -52,11 +66,13 @@ export default async function CommunityEventPage({params,searchParams}:{params:P
    <div className="fact"><div className="k">Where</div><div className="v">{e.venue||e.address||e.city}</div><div className="s">{[e.venue?e.address:"",e.city].filter(Boolean).join(", ")}</div><a className="inline" href={dir} target="_blank" rel="noreferrer">Get directions ↗</a></div>
    {!e.isFree&&e.priceText&&<div className="fact"><div className="k">Cost</div><div className="v">{e.priceText}</div></div>}
   </div>
-  <div className="ctaRow">
-   {e.link&&<a className="btn primary" href={e.link} target="_blank" rel="noreferrer nofollow ugc">{e.isFree?"More info ↗":"Tickets & info ↗"}</a>}
-   {!ended&&<AddToCalendar base={`/e/${token}`}/>}
+  {e.link&&<div className="ctaRow"><a className="btn primary" href={e.link} target="_blank" rel="noreferrer nofollow ugc">{e.isFree?"More info ↗":"Tickets & info ↗"}</a></div>}
+  <div className={`ctaGrid${dbId&&!ended?"":" two"}`}>
+   {dbId&&<SaveButton item={{id:`db-${dbId}`,title:e.title,date,venue:e.venue||e.city}}/>}
+   {!ended&&(dbId?<CalendarChoice base={`/e/${token}`} id={`db-${dbId}`} connected={calConnected}/>:<AddToCalendar base={`/e/${token}`}/>)}
    <ShareButton title={e.title} text={`${e.title} · ${w.date}, ${w.time}${e.venue?` at ${e.venue}`:""}`}/>
   </div>
+  {canFollow&&<div className="ctaFollow"><FollowButton id={`db-${dbId}`} signedIn={!!user} initial={following} back={`/e/${token}`}/></div>}
   {e.description&&<section className="about"><h2>{e.visibility==="private"?"Details":"About this event"}</h2>{e.description.split(/\n+/).filter(Boolean).map((p,i)=><p key={i}>{p}</p>)}</section>}
   {counts&&!ended&&<Rsvp share={token} counts={counts}/>}
   <section className="mapBox"><h2>Location</h2><p className="muted">{where}</p><iframe title={`Map of ${e.venue||e.city}`} src={map} loading="lazy" referrerPolicy="no-referrer-when-downgrade"/></section>

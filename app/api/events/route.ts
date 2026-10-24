@@ -127,12 +127,13 @@ export async function GET(request:NextRequest){
   if(live)e.live=true;if(over)e.over=true;
   events.push(e);
  }
- // Same program on the same day at several places (library branches, city + Ticketmaster) -> one card, nearest first.
+ // Same program on the same day at several places of one organizer (library branches) -> one card, nearest first.
  const groups=new Map<string,any[]>();
  const isIg=(e:any)=>/ · Instagram$/.test(e.source||"");
  // Round-up accounts repost other people's events: their copy gives way to the organizer's own listing.
  const isRoundup=(e:any)=>/^(Miami Residents|Weekend Broward|The Broward Scene|To Do with Kids (Broward|Miami)) · Instagram$/.test(e.source||"");
- for(const e of events){const k=collapseKey(e.title,e.date);const g=groups.get(k);g?g.push(e):groups.set(k,[e])}
+ // Only within one organizer: two different hosts' "Trunk or Treat" on the same day are two events, not one card.
+ for(const e of events){const k=`${String(e.source||"").replace(/ · Instagram$/,"")}|${collapseKey(e.title,e.date)}`;const g=groups.get(k);g?g.push(e):groups.set(k,[e])}
  events=[...groups.values()].map(g=>{g.sort((a:any,b:any)=>(a.over?1:0)-(b.over?1:0)||a.distanceMiles-b.distanceMiles||((a.source==="Ticketmaster"?1:0)-(b.source==="Ticketmaster"?1:0))||(isIg(a)?1:0)-(isIg(b)?1:0)||(isRoundup(a)?1:0)-(isRoundup(b)?1:0));const venues=new Set(g.map((x:any)=>x.venue));let m={...g[0]};for(const o of g.slice(1))m=mergeCopy(m,o);return{...m,moreLocations:venues.size-1,otherVenues:[...venues].slice(1,6)}})
   .sort((a:any,b:any)=>(a.date+(a.time||"")).localeCompare(b.date+(b.time||""))||((a.source==="Ticketmaster"?1:0)-(b.source==="Ticketmaster"?1:0)));
  // ---- One card per real-world event, whatever the source ----

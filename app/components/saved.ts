@@ -3,7 +3,7 @@
 // those move into their account (and then show on every device and in their personal calendar).
 export type SavedItem={id:string;title:string;date?:string;venue?:string};
 const KEY="gotoday:saved";
-type Me={signedIn:boolean;name?:string|null;email?:string;image?:string|null;saved?:string[];following?:number[];calConnected?:boolean};
+type Me={signedIn:boolean;name?:string|null;email?:string;image?:string|null;saved?:string[];following?:number[];mine?:string[];calConnected?:boolean};
 
 let me:Promise<Me>|null=null;
 const listeners=new Set<()=>void>();
