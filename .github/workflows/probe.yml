@@ -30,7 +30,7 @@ jobs:
             case "$u" in *mygotoday.com/api/admin/*|*mygotoday.com/api/ingest*) AUTH="Authorization: Bearer $SECRET";; esac
             curl -sSL -X $METHOD -m 300 $BODY ${AUTH:+-H "$AUTH"} -A "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0 Safari/537.36" \
               -D "out/$i.headers" -o "out/$i.body" "$u" || echo "curl failed" > "out/$i.error"
-            { head -c 400000 "out/$i.body" > "out/$i.txt" 2>/dev/null || true; }; rm -f "out/$i.body"
+            { head -c 6000000 "out/$i.body" > "out/$i.txt" 2>/dev/null || true; }; rm -f "out/$i.body"
             echo "$i $u" >> out/index.txt
           done
       - name: Save to probe-results branch
