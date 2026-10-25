@@ -17,3 +17,9 @@ test("admission and party bookings aren't events", () => {
   for(const t of ["Museum Admission","Birthday Party","Birthday Parties","General Admission"])assert.notEqual(discoveryRejection(ev(t)),null,t);
   assert.equal(discoveryRejection(ev("Birthday Party for Smokey Bear")),null);
 });
+
+test("town services are not events", ()=>{
+ for(const t of ["Bulky Item Pickup for Wed/Sat Garbage","Leaf Collection","Social Work Intern - Open Hours","Friends Book Donations"])
+  assert.equal(discoveryRejection({title:t,tags:[]} as any),"service-or-support",t);
+ assert.equal(discoveryRejection({title:"Pumpkin Palooza",tags:[]} as any),null);
+});
