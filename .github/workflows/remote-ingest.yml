@@ -3,7 +3,12 @@ name: Remote ingest (city sites that block Vercel)
 on:
   schedule:
     - cron: "20 10,16,22 * * *"   # ~6:20 AM, 12:20 PM, 6:20 PM Eastern (GitHub often starts scheduled runs late)
-  workflow_dispatch: {}         # "Run workflow" button in the Actions tab
+  workflow_dispatch:            # "Run workflow" button in the Actions tab
+    inputs:
+      read_pages:
+        description: "Also open event pages for prices, photos and descriptions (normally only the morning run does)"
+        type: boolean
+        default: false
 
 # One run at a time: a late scheduled run waits for a manual one instead of hitting Instagram twice at once.
 concurrency:
@@ -29,6 +34,7 @@ jobs:
           GOTODAY_URL: ${{ secrets.GOTODAY_URL }}
           INGESTION_SECRET: ${{ secrets.INGESTION_SECRET }}
           MODE: sites   # Instagram has its own hourly job (instagram.yml)
+          READ_EVENT_PAGES: ${{ inputs.read_pages && '1' || '' }}
       # If the run fails, keep the end of its log on the probe-results branch so it can be read without the Actions UI.
       - name: Save log on failure
         if: failure()

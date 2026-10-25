@@ -155,13 +155,15 @@ export function costFromPage(html:string):string|undefined{
   .replace(/<\/(h\d|dt|th|strong|b|label|span|div|p|li|td|dd)>/gi,"$&\n").replace(/<br\s*\/?>/gi,"\n");
  const lines=stripLines(text);
  for(let i=0;i<lines.length;i++){
-  const l=lines[i],m=l.match(/^(cost|costs|admission|price|prices|fees?|tickets?|entry|registration fee|ticket prices?)\s*:?\s*(.*)$/i);
+  const l=lines[i],m=l.match(/^(cost|costs|admission|general admission|price|prices|fees?|tickets?|entry|registration fee|ticket prices?|reserved seat(?:ing|s)?|seats?|seating)\s*:?\s*(.*)$/i);
   if(!m)continue;
   // "Cost" on its own line (a heading) → the value is on the next line(s).
   let v=m[2].trim();if(!v)v=(lines[i+1]||"")+(/\$|free/i.test(lines[i+2]||"")?" "+lines[i+2]:"");
   v=v.replace(/\s+/g," ").trim().slice(0,140);
   if(v&&(/\$\s?\d|\bfree\b|no (cost|charge)|\d+\s*dollars/i.test(v)))return v;
  }
+ // No labelled line: a line that pairs a price with tickets/seats ("Reserved Seats $20", "Tickets are $15 in advance").
+ for(const l of lines){if(l.length<=160&&/\$\s?\d/.test(l)&&/\b(tickets?|seats?|seating|admission|per person|entry|cost)\b/i.test(l))return l.replace(/\s+/g," ").trim()}
  return undefined;
 }
 function stripLines(s:string){return s.split("\n").map(x=>x.replace(/<[^>]+>/g," ").replace(/&nbsp;|&#160;/g," ").replace(/&amp;/g,"&").replace(/\s+/g," ").trim()).filter(Boolean)}

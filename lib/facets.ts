@@ -9,7 +9,7 @@ type In={title:string;desc?:string;tags?:string[];category?:string;genre?:string
 
 const has=(re:RegExp,...xs:(string|undefined)[])=>xs.some(x=>!!x&&re.test(x));
 
-const MUSIC=/\b(music(al)?|concerts?|concierto|jazz|blues|band|orchestra|symphony|philharmonic|choir|chorus|choral|sing(ing|-?along)?|songs?|dj|tunes|guitar|piano|ukulele|violin|drums?|drumming|daiko|karaoke|open mic|recital|mariachi|salsa night|hip[- ]hop|reggae|rock|opera)\b/i;
+const MUSIC=/\b(music|concerts?|concierto|jazz|blues|band|orchestra|symphony|philharmonic|choir|chorus|choral|sing(ing|-?along)?|songs?|dj|tunes|guitar|piano|ukulele|violin|drums?|drumming|daiko|karaoke|open mic|recital|mariachi|salsa night|hip[- ]hop|reggae|rock|opera)\b/i;
 const ARTS=/\b(art|arts|artists?|artwork|paint(ing)?|draw(ing)?|sketch|crafts?|crafting|exhibit(ion)?|gallery|museum|theat(re|er)|musical|ballet|dance|dancing|film|movies?|cinema|screening|poetry|poets?|sculpt\w*|pottery|ceramics?|photograph\w*|perler|beading|knit\w*|crochet|sewing|quilt\w*|mola|alebrije|mural|comedy|improv|puppet\w*|calligraphy|origami|watercolor|creative writing)\b/i;
 const ART_TAGS=/^(arts? & cultural|exhibit|crafting\/makers|arts & crafts|performances|art|theat(re|er)|dance)$|^performances/i;
 const SPORTS=/\b(sports?|football|soccer|baseball|softball|basketball|volleyball|tennis|pickleball|golf|hockey|lacrosse|rugby|cricket|swim(ming)?|aquatics?|5k|10k|fun run|run|running|race|marathon|triathlon|bike|biking|cycling|ride|yoga|zumba|pilates|fitness|workout|boot ?camp|karate|martial arts|taekwondo|jiu[- ]?jitsu|boxing|kayak\w*|paddle\w*|skate\w*|sluggers|tee[- ]?ball|t-ball|bowling|archery|fishing|walk(ing)? club)\b/i;
@@ -126,7 +126,9 @@ export function facetsFor(e:In):Facet[]{
  const pt=(e.priceText||"").trim(),costNotFree=!!pt&&!/\bfree\b|no (cost|charge)/i.test(pt)&&!/(^|[\s:–-])free\b/i.test(t);
  const paid=isPaid(e)||costNotFree;
  const freeSaid=/\bfree (admission|entry|to attend|and open to (the|all)|for (all|everyone|the public|families|kids|children))\b|\b(admission|entry) is free\b|\bno (cost|charge|admission)\b|\bat no cost\b/i.test(`${t} ${e.desc||""}`);
- if(!paid&&(e.isFree||tagHas(/^free$/i)||freeTitle||freeSaid)||!paid&&(gov&&e.source!=="Ticketmaster"&&!priced&&!tagHas(/^tickets$/i)))out.add("Free");
+ // Shows at a city theater or civic center (musicals, plays, concerts, galas) are usually ticketed: no "free" guess for them.
+ const showLike=/\b(musical|the musical|play|theat(er|re)|broadway|concert|symphony|orchestra|ballet|opera|recital|comedy|comedian|gala|dinner|tribute|live in concert|performance|presents|on stage|productions?|tour)\b/i.test(t);
+ if(!paid&&(e.isFree||tagHas(/^free$/i)||freeTitle||freeSaid)||!paid&&(gov&&!showLike&&e.source!=="Ticketmaster"&&!priced&&!tagHas(/^tickets$/i)))out.add("Free");
  return[...out];
 }
 

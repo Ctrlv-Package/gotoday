@@ -20,3 +20,17 @@ test("missing time, missing image and boilerplate titles are flagged",()=>{
  assert.ok(types({title:"Click here"}).includes("fails-validation"));
 });
 test("a clean listing has no findings",()=>{assert.deepEqual(types({}),[])});
+
+test("event page prices: labelled and unlabelled", async ()=>{
+ const {costFromPage}=await import("../lib/ingestion/utils");
+ assert.equal(costFromPage("<p>DATE &amp; TIME: Sunday</p><p>Reserved seating:  $20</p>"),"$20");
+ assert.equal(costFromPage("<p>Saturday at 2pm</p><p>Reserved Seats $20</p>"),"$20");
+ assert.equal(costFromPage("<p>Tickets are only $15 in advance at the door</p>"),"are only $15 in advance at the door");
+ assert.equal(costFromPage("<p>Join us for fun</p>"),undefined);
+});
+test("city theater shows aren't guessed free", async ()=>{
+ const {facetsFor}=await import("../lib/facets");
+ const f=facetsFor({title:"The Lightning Thief: The Percy Jackson Musical",source:"City of Sunrise",desc:"Official City of Sunrise event."} as any);
+ assert.ok(!f.includes("Free"));assert.ok(!f.includes("Music"));assert.ok(f.includes("Arts & Theatre"));
+ assert.ok(facetsFor({title:"Fall Festival",source:"City of Sunrise"} as any).includes("Free"));
+});
