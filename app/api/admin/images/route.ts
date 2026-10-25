@@ -20,6 +20,8 @@ export async function POST(req:NextRequest){
  if(!s||req.headers.get("authorization")!==`Bearer ${s}`)return NextResponse.json({ok:false,error:"Unauthorized"},{status:401});
  const b:any=await req.json().catch(()=>({}));const id=Number(String(b?.id||"").replace(/^db-/,""));
  if(!id)return NextResponse.json({ok:false,error:"id required"},{status:400});
- const r=await db.query("update events set image_url=null,updated_at=now() where id=$1 returning id,title",[id]);
+ // The same picture is often on other copies of the event (another day, an earlier reading); cards borrow pictures from
+ // copies, so the picture comes off every event that carries it.
+ const r=await db.query("update events set image_url=null,updated_at=now() where image_url=(select image_url from events where id=$1 and image_url is not null) or id=$1 returning id,title",[id]);
  return NextResponse.json({ok:true,cleared:r.rows});
 }
