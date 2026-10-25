@@ -223,7 +223,7 @@ nav{display:flex;justify-content:space-between;align-items:center;max-width:1180
 .rsvpDone{display:flex;flex-direction:column;gap:4px;background:#e7f7ee;border-radius:12px;padding:12px 14px;margin-top:8px}
 .guests{list-style:none;padding:0;margin:0;display:flex;flex-direction:column;gap:6px}
 .guests li{display:flex;gap:10px;align-items:baseline;flex-wrap:wrap;padding:10px 12px;border:1px solid var(--line);border-radius:12px}
-.g{font-size:12px;font-weight:800;padding:2px 8px;border-radius:99px}.g.going{background:#e7f7ee;color:#137a4b}.g.maybe{background:#fffbeb;color:#92400e}.g.no{background:var(--soft);color:var(--muted)}
+.g{font-size:12px;font-weight:800;padding:2px 8px;border-radius:99px}.g.going{background:#e7f7ee;color:#137a4b}.g.maybe{background:#fffbeb;color:#92400e}.g.no{background:#fef2f2;color:#b91c1c}
 .danger{margin-top:28px;border-top:1px solid var(--line);padding-top:12px}
 .review{list-style:none;padding:0;display:flex;flex-direction:column;gap:14px}
 .review li{border:1px solid var(--line);border-radius:14px;padding:14px;display:flex;flex-direction:column;gap:6px}
