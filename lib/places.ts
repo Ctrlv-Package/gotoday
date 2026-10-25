@@ -33,17 +33,22 @@ export function streetOnly(address:string,city:string){
 }
 export type PlaceSuggestion={name:string;address:string;city:string};
 const STREET_NAME=/^\d{2,6}\s+\S+.*\b(St|Street|Ave|Avenue|Blvd|Boulevard|Rd|Road|Ln|Lane|Dr|Drive|Way|Ct|Court|Pl|Place|Hwy|Highway|Ter|Terrace)\b/i;
-/** Rank venue rows for the create form's place suggestions: the user's town first, then a
- *  name that starts with what they typed, then a name that contains it, then an address match.
- *  A bare street address ranks last (it's a place without a name). Dedupes by name+town. */
+/** Rank venue rows for the create form's place suggestions. Every word the user typed must
+ *  appear somewhere in the row's name, address or town ("flying squirrel weston" matches
+ *  "Flying Squirrel Trampoline Park" in Weston, where a whole-phrase search never would).
+ *  The user's town ranks first, then a name that starts with the first word, then a name
+ *  that contains it, then an address/town match. A bare street address ranks last (it's a
+ *  place without a name). Dedupes by name+town. */
 export function rankPlaceSuggestions(q:string,city:string,rows:PlaceSuggestion[]):PlaceSuggestion[]{
  const query=q.trim().toLowerCase();if(query.length<2)return[];
- const town=city.trim().toLowerCase().split(",")[0];
- // Only rows that actually match the typed text rank at all; the town is a bonus, not a pass.
- const matching=rows.filter(r=>{const name=r.name.trim().toLowerCase(),addr=(r.address||"").trim().toLowerCase();return name.includes(query)||addr.includes(query)});
+ const words=query.split(/\s+/).filter(Boolean),town=city.trim().toLowerCase().split(",")[0];
+ const matching=rows.filter(r=>{
+  const hay=`${r.name} ${r.address||""} ${r.city}`.toLowerCase();
+  return words.every(w=>hay.includes(w));
+ });
  const scored=matching.filter(r=>r.name.trim()).map(r=>{
-  const name=r.name.trim().toLowerCase(),addr=(r.address||"").trim().toLowerCase();
-  let sc=name.startsWith(query)?5:name.includes(query)?3:1;
+  const name=r.name.trim().toLowerCase(),first=words[0];
+  let sc=name.startsWith(first)?5:name.includes(first)?3:1;
   if(town&&r.city.trim().toLowerCase().startsWith(town))sc+=10;
   if(STREET_NAME.test(r.name.trim()))sc-=2;
   return{...r,sc,hasAddr:!!r.address.trim()};
@@ -51,6 +56,19 @@ export function rankPlaceSuggestions(q:string,city:string,rows:PlaceSuggestion[]
  const seen=new Set<string>(),out:PlaceSuggestion[]=[];
  for(const r of scored){const k=`${r.name.trim().toLowerCase()}|${r.city.trim().toLowerCase()}`;if(seen.has(k))continue;seen.add(k);out.push({name:r.name,address:r.address,city:r.city});if(out.length>=8)break}
  return out;
+}
+// US state names -> abbreviations, so an outside result's "Weston, Florida" fills the City
+// field in the site's "Weston, FL" form (the time-zone lookup reads the abbreviation).
+const US_STATE_ABBR:Record<string,string>={Alabama:"AL",Alaska:"AK",Arizona:"AZ",Arkansas:"AR",California:"CA",Colorado:"CO",Connecticut:"CT",Delaware:"DE","District of Columbia":"DC",Florida:"FL",Georgia:"GA",Hawaii:"HI",Idaho:"ID",Illinois:"IL",Indiana:"IN",Iowa:"IA",Kansas:"KS",Kentucky:"KY",Louisiana:"LA",Maine:"ME",Maryland:"MD",Massachusetts:"MA",Michigan:"MI",Minnesota:"MN",Mississippi:"MS",Missouri:"MO",Montana:"MT",Nebraska:"NE",Nevada:"NV","New Hampshire":"NH","New Jersey":"NJ","New Mexico":"NM","New York":"NY","North Carolina":"NC","North Dakota":"ND",Ohio:"OH",Oklahoma:"OK",Oregon:"OR",Pennsylvania:"PA","Rhode Island":"RI","South Carolina":"SC","South Dakota":"SD",Tennessee:"TN",Texas:"TX",Utah:"UT",Vermont:"VT",Virginia:"VA",Washington:"WA","West Virginia":"WV",Wisconsin:"WI",Wyoming:"WY"};
+/** A Photon (OpenStreetMap) feature -> the suggestion shape the create form fills. Null when
+ *  the feature has no usable name. Outside the US the state name is kept as-is. */
+export function photonSuggestion(f:any):PlaceSuggestion|null{
+ const p=f?.properties;if(!p||!String(p.name||"").trim())return null;
+ const street=[p.housenumber,p.street].filter(Boolean).join(" ").trim();
+ const town=String(p.city||p.town||p.village||"").trim();
+ const state=String(p.state||"").trim();
+ const suffix=p.countrycode==="US"&&state?(US_STATE_ABBR[state]||state):state;
+ return{name:String(p.name).trim(),address:street,city:town&&suffix?`${town}, ${suffix}`:town};
 }
 /** The place an event shows, from all its listings (cards and event pages use this same choice): the most specific
  *  (street address > named place > town only), ties to the oldest listing; a bare street address takes the place name
