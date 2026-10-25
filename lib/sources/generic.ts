@@ -117,7 +117,8 @@ export async function fetchLocalist(cfg:GenericCfg,startDate:string,endDate:stri
   for(const w of rows){const e=w.event||w;
    // Universities mark who an event is for: when that's only students/faculty/staff, it isn't a public event.
    const aud=(e.filters?.event_target_audience||[]).map((x:any)=>clean(x.name).toLowerCase());
-   if(aud.length&&!aud.some((a:string)=>/public|community|everyone|general|all|visitor|famil|alumni|guest|open/.test(a)))continue;
+   // (Only on a campus calendar: a public library's audiences are Children / Teens / Adults, all public.)
+   if(campus&&aud.length&&!aud.some((a:string)=>/public|community|everyone|general|all|visitor|famil|alumni|guest|open/.test(a)))continue;
    for(const inst of (e.event_instances||[]).map((x:any)=>x.event_instance||x)){
     const st=new Date(inst.start);if(isNaN(+st))continue;const date=localDay(st,tz);if(date<startDate||date>endDate)continue;
     const title=clean(e.title);if(title.length<3)continue;
