@@ -1,0 +1,42 @@
+name: Daily quality audit
+
+# The "new-state check" as code: samples live listings, flags the classes of listing a
+# visitor would see as wrong, and fails loudly when the numbers drift from yesterday's
+# report (a drift usually means a rule broke, not that a town changed). Writes its report
+# to the quality-results branch (separate from density's probe-results branch) so the next
+# run can diff against it. A failing run is the alert: it notifies the repo owner.
+on:
+  schedule:
+    - cron: "45 11 * * *"   # daily ~6:45 AM Eastern
+  workflow_dispatch: {}
+permissions:
+  contents: write
+jobs:
+  quality:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 22
+      - run: npm install --no-audit --no-fund
+      - name: Previous report (for drift)
+        run: |
+          curl -sf "https://raw.githubusercontent.com/${{ github.repository }}/quality-results/quality.json" -o prev.json || echo "no previous report"
+      - name: Audit the live site
+        env:
+          GOTODAY_URL: ${{ secrets.GOTODAY_URL }}
+        run: |
+          mkdir -p out
+          npx tsx scripts/quality-audit.ts --out out/quality.json | tee out/quality.txt
+      - name: Drift check
+        run: |
+          if [ -f prev.json ]; then npx tsx scripts/drift-check.ts --before prev.json --after out/quality.json; else echo "first run: no baseline to compare"; fi
+      - name: Save report to quality-results branch
+        if: always()
+        run: |
+          cd out && echo '{"git":{"deploymentEnabled":false}}' > vercel.json
+          git init -q -b quality-results && git config user.name probe && git config user.email probe@users.noreply.github.com
+          git add -A && git commit -qm "quality audit $(date -u +%FT%TZ)"
+          git push -qf "https://x-access-token:${{ github.token }}@github.com/${{ github.repository }}.git" quality-results
