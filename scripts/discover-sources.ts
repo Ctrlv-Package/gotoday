@@ -98,6 +98,13 @@ async function probe(c:Cand):Promise<Found[]>{
   {const lc=new URL(origin).hostname.endsWith(".librarycalendar.com")?origin:both.match(/https?:\/\/[a-z0-9-]+\.librarycalendar\.com/i)?.[0];
    if(lc){const u=`${lc}/events/feed/ical`,t=await get(u);const n=(String(t.text).match(/BEGIN:VEVENT/g)||[]).length;
     if(n)out.push({input:arg,platform:"ical",confidence:"confirmed",note:`${n} events (LibraryCalendar iCal)`,config:{name,platform:"ical",params:{url:u,city},source_type:"official-county",url:`${lc}/events/month`}})}}
+  // Assabet Interactive library calendars (<name>.assabetinteractive.com) and LibraryCalendar run on the library's own
+  // Drupal site (/modules/custom/library_calendar/): both publish an iCal feed.
+  if(!out.length){const as=both.match(/https?:\/\/([a-z0-9-]+)\.assabetinteractive\.com/i)?.[1];
+   const lcSelf=/\/modules\/custom\/library_calendar\//i.test(both)?origin:"";
+   for(const [u,what] of [[as?`https://${as}.assabetinteractive.com/calendar/upcoming-events.ics`:"","Assabet iCal"],[lcSelf?`${lcSelf}/events/feed/ical`:"","LibraryCalendar iCal"]] as [string,string][]){
+    if(!u||out.length)continue;const t=await get(u);const n=(String(t.text).match(/BEGIN:VEVENT/g)||[]).length;
+    if(n)out.push({input:arg,platform:"ical",confidence:"confirmed",note:`${n} events (${what})`,config:{name,platform:"ical",params:{url:u,city},source_type:"official-county",url:evUrl||origin}})}}
   // Trumba calendars (many cities, counties and universities) embed a "spud" naming the calendar; each has an iCal feed.
   if(!out.length){const tw=both.match(/trumba[\s\S]{0,400}?webName\s*:\s*["']([a-z0-9_.-]+)["']/i)?.[1]||both.match(/trumba\.com\/calendars\/([a-z0-9_.-]+?)(?:\.(?:ics|rss|xml)|[?"'\/])/i)?.[1];
    if(tw){const u=`https://www.trumba.com/calendars/${tw}.ics`,t=await get(u);const n=(String(t.text).match(/BEGIN:VEVENT/g)||[]).length;
