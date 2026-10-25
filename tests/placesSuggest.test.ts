@@ -1,6 +1,6 @@
 import {test} from "node:test";
 import assert from "node:assert/strict";
-import {rankPlaceSuggestions,streetOnly,photonSuggestion,filterOutsideSuggestions} from "../lib/places";
+import {rankPlaceSuggestions,streetOnly,photonSuggestion,filterOutsideSuggestions,photonQuery} from "../lib/places";
 
 const rows=[
  {name:"Weston Town Center",address:"1675 Market St",city:"Weston, FL"},
@@ -57,6 +57,12 @@ test("outside suggestions: junk dropped, town filter keeps only the user's town"
  ];
  assert.deepEqual(filterOutsideSuggestions(rows,"Weston, FL").map(r=>r.name),["Flying Squirrel Trampoline Park"]);
  assert.deepEqual(filterOutsideSuggestions(rows,"").map(r=>r.name),["Flying Squirrel","Flying Squirrel Park","Flying Squirrel Trampoline Park","Flying Squirrel Court"]);
+});
+test("the Photon query carries the form's town when it isn't already typed",()=>{
+ assert.equal(photonQuery("Flying","Weston, FL"),"Flying Weston");
+ assert.equal(photonQuery("Flying sq","Weston, FL"),"Flying sq Weston");
+ assert.equal(photonQuery("flying squirrel weston","Weston, FL"),"flying squirrel weston");
+ assert.equal(photonQuery("Flying",""),"Flying");
 });
 test("short queries return nothing",()=>{
  assert.deepEqual(rankPlaceSuggestions("p","Weston, FL",rows),[]);
