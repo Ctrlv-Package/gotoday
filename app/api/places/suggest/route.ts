@@ -1,13 +1,16 @@
 import {NextResponse} from "next/server";
 import {db} from "../../../../lib/db";
-import {rankPlaceSuggestions,photonSuggestion} from "../../../../lib/places";
+import {rankPlaceSuggestions,photonSuggestion,filterOutsideSuggestions,type PlaceSuggestion} from "../../../../lib/places";
 export const dynamic="force-dynamic";
 // Suggest real places as the user types a place name in the create form.
 // First GoToday's own venues table (public listings only: private events never reach it).
 // Then, when the site's own list runs short, Photon (OpenStreetMap, free, no key) fills the
 // rest — that's what finds a real business the site has never listed, like a trampoline park
-// in the user's town. Photon is a best-effort extra: if it fails or is slow, the site's own
-// places still answer. Typing a place name sends that name to Photon; nothing personal.
+// in the user's town. Photon answers globally, so its results are filtered to the form's
+// town when one is given (50 candidates fetched, so the town's own places can't be cut off
+// before filtering) and results that are neither a street nor a town are dropped. Photon is
+// a best-effort extra: if it fails or is slow, the site's own places still answer. Typing a
+// place name sends that name to Photon; nothing personal.
 export async function GET(req:Request){
  const p=new URL(req.url).searchParams,q=(p.get("q")||"").trim().slice(0,80),city=(p.get("city")||"").trim().slice(0,80);
  if(q.length<2)return NextResponse.json({ok:true,suggestions:[]});
@@ -19,11 +22,12 @@ export async function GET(req:Request){
  const out=rankPlaceSuggestions(q,city,rows);
  if(out.length<8){
   try{
-   const res=await fetch(`https://photon.komoot.io/api/?q=${encodeURIComponent(q)}&limit=8&lang=en`,{signal:AbortSignal.timeout(3000)});
+   const res=await fetch(`https://photon.komoot.io/api/?q=${encodeURIComponent(q)}&limit=50&lang=en`,{signal:AbortSignal.timeout(3000)});
    const d=await res.json().catch(()=>({}));
+   const mapped:PlaceSuggestion[]=[];
+   for(const f of Array.isArray(d.features)?d.features:[]){const s=photonSuggestion(f);if(s)mapped.push(s)}
    const seen=new Set(out.map(o=>`${o.name.toLowerCase()}|${o.city.toLowerCase()}`));
-   for(const f of Array.isArray(d.features)?d.features:[]){
-    const s=photonSuggestion(f);if(!s)continue;
+   for(const s of filterOutsideSuggestions(mapped,city)){
     const k=`${s.name.toLowerCase()}|${s.city.toLowerCase()}`;if(seen.has(k))continue;seen.add(k);out.push(s);
     if(out.length>=8)break;
    }
