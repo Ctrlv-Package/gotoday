@@ -1001,3 +1001,99 @@ Goodnow Library | Sudbury, MA | https://www.goodnowlibrary.org | boston
 Acton Memorial Library | Acton, MA | https://www.actonmemoriallibrary.org | boston
 Woburn Public Library | Woburn, MA | https://www.woburnpubliclibrary.org | boston
 Burlington Public Library MA | Burlington, MA | https://www.burlingtonpubliclibrary.org | boston
+
+# ==== NEW JERSEY towns & recreation (weekend/Halloween events live here, not at libraries) ====
+Township of Cranford Recreation | Cranford, NJ | https://www.cranfordnj.org/recreation-and-parks | nyc
+Township of Scotch Plains | Scotch Plains, NJ | https://www.scotchplainsnj.gov | nyc
+Township of Springfield | Springfield, NJ | https://www.springfield-nj.us | nyc
+Borough of Kenilworth | Kenilworth, NJ | https://www.kenilworthnj.org | nyc
+Borough of Garwood | Garwood, NJ | https://www.garwood.org | nyc
+Township of Clark | Clark, NJ | https://www.clarknj.org | nyc
+Borough of Roselle Park | Roselle Park, NJ | https://www.rpnj.org | nyc
+Borough of Roselle | Roselle, NJ | https://www.boroughofroselle.com | nyc
+Borough of New Providence | New Providence, NJ | https://www.newprov.org | nyc
+Township of Berkeley Heights | Berkeley Heights, NJ | https://www.bhtwp.com | nyc
+Borough of Mountainside | Mountainside, NJ | https://www.mountainside-nj.com | nyc
+Township of Hillside | Hillside, NJ | https://www.hillsidenj.us | nyc
+City of Plainfield | Plainfield, NJ | https://www.plainfieldnj.gov | central-nj
+Borough of Fanwood | Fanwood, NJ | https://www.fanwoodnj.org | nyc
+Township of Winfield | Winfield Park, NJ | https://www.winfieldpark.org | nyc
+Union County Parks | Elizabeth, NJ | https://ucnj.org/parks-recreation | nyc
+Township of West Orange | West Orange, NJ | https://www.westorange.org | nyc
+Township of South Orange Village | South Orange, NJ | https://www.southorange.org | nyc
+Township of Millburn | Millburn, NJ | https://www.twp.millburn.nj.us | nyc
+Township of Verona | Verona, NJ | https://www.veronanj.org | nyc
+Township of Nutley | Nutley, NJ | https://www.nutleynj.org | nyc
+Township of Bloomfield | Bloomfield, NJ | https://www.bloomfieldtwpnj.com | nyc
+Borough of Caldwell | Caldwell, NJ | https://www.caldwell-nj.com | nyc
+Township of Cedar Grove | Cedar Grove, NJ | https://www.cedargrovenj.org | nyc
+Borough of Glen Ridge | Glen Ridge, NJ | https://www.glenridgenj.org | nyc
+City of Orange Township | Orange, NJ | https://www.orangenj.gov | nyc
+City of East Orange | East Orange, NJ | https://www.eastorange-nj.gov | nyc
+Township of Belleville | Belleville, NJ | https://www.bellevillenj.org | nyc
+Township of Irvington | Irvington, NJ | https://www.irvington.net | nyc
+Turtle Back Zoo | West Orange, NJ | https://www.turtlebackzoo.com | nyc
+Borough of Madison | Madison, NJ | https://www.rosenet.org | nyc
+Borough of Chatham | Chatham, NJ | https://www.chathamborough.org | nyc
+Township of Chatham | Chatham, NJ | https://www.chathamtownship.org | nyc
+Borough of Florham Park | Florham Park, NJ | https://www.fpboro.net | nyc
+Township of Morris | Morristown, NJ | https://www.morristwp.com | nyc
+Town of Morristown | Morristown, NJ | https://www.townofmorristown.org/recreation | nyc
+Township of Parsippany | Parsippany, NJ | https://www.parsippany.net | nyc
+Township of Randolph | Randolph, NJ | https://www.randolphnj.org | nyc
+Township of Denville | Denville, NJ | https://www.denvillenj.org | nyc
+Township of Montville | Montville, NJ | https://www.montvillenj.org | nyc
+Township of Livingston Recreation | Livingston, NJ | https://www.livingstonnj.org/recreation | nyc
+City of Summit Recreation | Summit, NJ | https://www.cityofsummit.org/recreation | nyc
+Town of Westfield Recreation | Westfield, NJ | https://www.westfieldnj.gov/recreation | nyc
+Township of Woodbridge | Woodbridge, NJ | https://www.twp.woodbridge.nj.us | central-nj
+Township of Edison | Edison, NJ | https://www.edisonnj.org | central-nj
+Township of Piscataway | Piscataway, NJ | https://www.piscatawaynj.org | central-nj
+City of New Brunswick | New Brunswick, NJ | https://www.cityofnewbrunswick.org | central-nj
+Borough of Metuchen | Metuchen, NJ | https://www.metuchennj.org | central-nj
+Borough of Highland Park | Highland Park, NJ | https://www.hpboro.com | central-nj
+Township of East Brunswick | East Brunswick, NJ | https://www.eastbrunswick.org | central-nj
+Township of South Brunswick | South Brunswick, NJ | https://www.sbtnj.net | central-nj
+Township of Old Bridge | Old Bridge, NJ | https://www.oldbridge.com | central-nj
+Borough of Sayreville | Sayreville, NJ | https://www.sayreville.com | central-nj
+City of Rahway Recreation | Rahway, NJ | https://www.cityofrahway.com/recreation | nyc
+Township of Bridgewater | Bridgewater, NJ | https://www.bridgewaternj.gov | central-nj
+Borough of Somerville | Somerville, NJ | https://www.somervillenj.org | central-nj
+Township of Hillsborough | Hillsborough, NJ | https://www.hillsborough-nj.org | central-nj
+Township of Franklin | Somerset, NJ | https://www.franklintwpnj.org | central-nj
+Bernards Township | Basking Ridge, NJ | https://www.bernards.org | central-nj
+Township of Montgomery | Skillman, NJ | https://www.montgomerynj.gov | central-nj
+Princeton Municipality | Princeton, NJ | https://www.princetonnj.gov | central-nj
+Township of West Windsor | West Windsor, NJ | https://www.westwindsornj.org | central-nj
+Township of Hamilton | Hamilton, NJ | https://www.hamiltonnj.com | central-nj
+Township of Lawrence | Lawrenceville, NJ | https://www.lawrencetwp.com | central-nj
+City of Hoboken Recreation | Hoboken, NJ | https://www.hobokennj.gov/departments/recreation | nyc
+City of Bayonne | Bayonne, NJ | https://www.bayonnenj.org | nyc
+Town of Secaucus | Secaucus, NJ | https://www.secaucusnj.gov | nyc
+Township of Weehawken | Weehawken, NJ | https://www.weehawken-nj.us | nyc
+Town of Kearny | Kearny, NJ | https://www.kearnynj.org | nyc
+Township of North Bergen | North Bergen, NJ | https://www.northbergen.org | nyc
+Township of Teaneck | Teaneck, NJ | https://www.teanecknj.gov | nyc
+Borough of Fort Lee | Fort Lee, NJ | https://www.fortleenj.org | nyc
+City of Englewood | Englewood, NJ | https://www.cityofenglewood.org | nyc
+Borough of Fair Lawn | Fair Lawn, NJ | https://www.fairlawn.org | nyc
+Village of Ridgewood | Ridgewood, NJ | https://www.ridgewoodnj.net | nyc
+Borough of Paramus | Paramus, NJ | https://www.paramusborough.org | nyc
+City of Hackensack | Hackensack, NJ | https://www.hackensack.org | nyc
+Township of Mahwah | Mahwah, NJ | https://www.mahwahtwp.org | nyc
+Borough of Ramsey | Ramsey, NJ | https://www.ramseynj.com | nyc
+Township of Wyckoff | Wyckoff, NJ | https://www.wyckoff-nj.com | nyc
+Township of Wayne | Wayne, NJ | https://www.waynetownship.com | nyc
+City of Clifton | Clifton, NJ | https://www.cliftonnj.org | nyc
+Township of Little Falls | Little Falls, NJ | https://www.lfnj.com | nyc
+Township of Middletown | Middletown, NJ | https://www.middletownnj.org | jersey-shore
+Borough of Red Bank | Red Bank, NJ | https://www.redbanknj.org | jersey-shore
+City of Long Branch | Long Branch, NJ | https://www.longbranch.org | jersey-shore
+Township of Holmdel | Holmdel, NJ | https://www.holmdeltownship-nj.gov | jersey-shore
+Township of Marlboro | Marlboro, NJ | https://www.marlboro-nj.gov | jersey-shore
+Township of Manalapan | Manalapan, NJ | https://www.mtnj.org | jersey-shore
+Borough of Freehold | Freehold, NJ | https://www.freeholdboroughnj.gov | jersey-shore
+Township of Howell | Howell, NJ | https://www.twp.howell.nj.us | jersey-shore
+Township of Toms River | Toms River, NJ | https://www.tomsrivertownship.com | jersey-shore
+Township of Brick | Brick, NJ | https://www.bricktownship.net | jersey-shore
+Point Pleasant Beach | Point Pleasant Beach, NJ | https://www.pointpleasantbeach.org | jersey-shore
