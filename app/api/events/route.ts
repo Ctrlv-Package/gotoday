@@ -58,7 +58,9 @@ function mergeCopy(keep:any,other:any){
  m._places=[...(keep._places||[]),...(other._places||[])];
  m._pics=[...(keep._pics||[]),...(other._pics||[])];
  if(thinDesc(m.desc)&&!thinDesc(other.desc||""))m.desc=other.desc;
- m.facets=[...new Set([...(m.facets||[]),...(other.facets||[])])];
+ // A copy's labels fill gaps, but "Kids"/"Family" never move onto a listing whose own ages say teens or adults.
+ const grown=(m.ageMin??0)>=13;
+ m.facets=[...new Set([...(m.facets||[]),...(other.facets||[]).filter((f:string)=>!(grown&&(f==="Kids"||f==="Family")))])];
  if(!(m.labels||[]).length&&(other.labels||[]).length)m.labels=other.labels;
  if(!m.isFree&&other.isFree&&!m.paid)m.isFree=true;
  if(m.ageMin==null&&other.ageMin!=null){m.ageMin=other.ageMin;m.ageMax=other.ageMax}

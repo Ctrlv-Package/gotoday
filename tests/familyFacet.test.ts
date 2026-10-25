@@ -13,3 +13,8 @@ test("'Everyone' plus a family-type event is Family", () => {
   assert.ok(facetsFor(lib("Bingo for Books",["Everyone"],"All ages welcome.")).includes("Family"));
   assert.ok(facetsFor(lib("Fall Craft Afternoon",["Families"])).includes("Family"));
 });
+test("teens + adults library programs aren't Kids", () => {
+  const f=facetsFor({title:"Coffee @ The Library",desc:"Calling all lovers of books and music!",tags:["Teens","New Adults","Adults","Discussion/Lecture"],source:"Broward County Library",category:"Local",ageMin:13,ageMax:99} as any);
+  assert.ok(!f.includes("Kids"),String(f));
+  assert.ok(facetsFor({title:"Teen Anime Club",tags:["Teens"],source:"Broward County Library",category:"Local",ageMin:13,ageMax:17} as any).includes("Kids"));
+});

@@ -102,7 +102,7 @@ export function facetsFor(e:In):Facet[]{
  // Who it's for.
  const adultOnly=(ageMin!=null&&ageMin>=18)||noKids(e.desc||"");
  const kidAges=ageMax!=null&&ageMax<=17;
- const kids=!adultOnly&&(kidAges||/^to do with kids/i.test(e.source||"")||has(KIDS,t)||tagHas(KID_TAGS)&&!tagHas(/^local$/i)||(has(KIDS,d)&&!has(ADULT,t)));
+ const kids=!adultOnly&&(kidAges||/^to do with kids/i.test(e.source||"")||has(KIDS,t)||tagHas(KID_TAGS)&&!tagHas(/^local$/i)&&!(ageMax!=null&&ageMax>=18&&tagHas(/^(new )?adults?$|^seniors?$|^50\+$/i))||(has(KIDS,d)&&!has(ADULT,t)));
  // Big family events (festivals, open houses, Halloween, "all ages") are great for kids too.
  // Kids = made for children, or built around things children come for (trick-or-treating, egg hunt, petting zoo,
  // Santa…). A market, plant sale, exhibit or block party that families may attend is Family, not Kids.
