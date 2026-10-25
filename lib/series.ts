@@ -55,8 +55,15 @@ export async function seriesOf(eventId:number):Promise<number|null>{
 
 /** Follow makes sense for events that come around now and then (yearly festivals, seasonal events), not for a
  *  storytime that's on every week — those you just save. */
-export async function followable(seriesId:number){
+// Events that come back every year: festivals, fairs, parades, holiday celebrations, "annual" anything, races.
+const ANNUAL=/\b(annual|\d+(st|nd|rd|th) (annual|year)|festival|fest\b|fair\b|parade|carnival|expo\b|jubilee|celebration|heritage|holiday|halloween|trunk[- ]or[- ]treat|haunted|harvest|pumpkin|thanksgiving|christmas|santa|tree lighting|menorah|hanukkah|kwanzaa|new year|easter|egg hunt|st\.? patrick|cinco de mayo|juneteenth|memorial day|july 4|fourth of july|independence day|labor day|veterans day|mlk|black history|pride|oktoberfest|diwali|lunar new year|5k|10k|half marathon|marathon|fun run|turkey trot|regatta|air show|fireworks|gala|homecoming|founders'? day|block party|art walk|food truck (fest|rally))\b/i;
+// One-off productions and programs (a kids' studio's musical, a touring show, a class) don't come back as "the same" event.
+const ONE_OFF=/\b(musical|the musical|play\b|presents|tour\b|comedy|stand-?up|tribute|recital|workshop|class|club|storytime|story time|lecture|talk\b|book (club|talk)|meeting|webinar|screening)\b/i;
+export async function followable(seriesId:number,title=""){
  const r=(await db.query(`select count(distinct local_date) filter (where local_date between current_date and current_date+60)::int as soon,
-   bool_or(recurrence is not null and recurrence<>'') as recurring from events where series_id=$1 and status='active'`,[seriesId])).rows[0];
- return !r?.recurring&&(r?.soon??0)<=3;
+   bool_or(recurrence is not null and recurrence<>'') as recurring,
+   bool_or(local_date < current_date-300) as seen_last_year from events where series_id=$1`,[seriesId])).rows[0];
+ if(r?.recurring||(r?.soon??0)>3)return false;
+ // Seen last year too = it really repeats yearly. Otherwise only when its name says it's a yearly kind of event.
+ return !!r?.seen_last_year||(ANNUAL.test(title)&&!ONE_OFF.test(title.replace(ANNUAL,"")));
 }

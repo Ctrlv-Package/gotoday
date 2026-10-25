@@ -65,15 +65,16 @@ export function parseGovAccessGrid(html:string,origin:string){
 
 export async function fetchGovAccess(cfg:GovAccessConfig,startDate:string,endDate:string):Promise<EventRecord[]>{
  const origin=new URL(cfg.site).origin;
- const items=new Map<string,{href:string;title:string;date:string;time:string;endTime?:string;desc?:string;image?:string;from:string}>();
+ const items=new Map<string,{href:string;title:string;date:string;time:string;endTime?:string;desc?:string;image?:string;from:string;venue?:string}>();
  let pagesOk=0;const errors:string[]=[];
  const get=async(url:string)=>{const r=await fetchRetry(url,{headers:HEADERS,cache:"no-store"});if(!r.ok){errors.push(`HTTP ${r.status} ${url}`);return null}pagesOk++;return r.text()};
  // Rich tiles first (they carry descriptions and images).
- for(const p of cfg.tilePages||[]){
+ // A tile page can name its venue: "/leisure-services/theatre-art-gallery|Sunrise Civic Center Theatre".
+ for(const entry of cfg.tilePages||[]){const [p,venue]=entry.split("|");
   for(let page=1;page<=6;page++){
    const url=origin+p.replace(/\/$/,"")+(page>1?`/-npage-${page}`:""),html=await get(url);if(!html)break;
    const tiles=parseGovAccessTiles(html,origin);let added=0;
-   for(const t of tiles){const k=t.href+"|"+t.date;if(!items.has(k)){items.set(k,{...t,from:url});added++}}
+   for(const t of tiles){const k=t.href+"|"+t.date;if(!items.has(k)){items.set(k,{...t,from:url,venue:venue?.trim()||undefined});added++}}
    const lastDate=tiles.map(t=>t.date).sort().pop()||"";
    if(!added||lastDate>endDate||!new RegExp(`-npage-${page+1}`).test(html))break;
   }
@@ -97,7 +98,7 @@ export async function fetchGovAccess(cfg:GovAccessConfig,startDate:string,endDat
   const family=kids||/\b(family|festival|parade|movie|fireworks|holiday|celebration|fest)\b/.test(blob);
   const arts=/\b(music|concert|symphony|band|film|movie|theat(re|er)|arts?|dance|pops|show)\b/.test(blob);
   const sports=/\b(run|walk|5k|race|tournament|golf|soccer)\b/.test(blob);
-  out.push({id:`${cfg.idPrefix}-${slug(it.title+"-"+it.date)}`,title:it.title,city:cfg.city,venue:cfg.venue,date:it.date,time:it.time,endTime:it.endTime||undefined,
+  out.push({id:`${cfg.idPrefix}-${slug(it.title+"-"+it.date)}`,title:it.title,city:cfg.city,venue:it.venue||cfg.venue,date:it.date,time:it.time,endTime:it.endTime||undefined,
    url:it.href,sourceUrl:it.from,image:it.image,category:family?"Family":arts?"Arts & Theatre":sports?"Sports":"Local",genre:"City Event",
    desc:it.desc||`Official ${cfg.source} event.`,tags:[...(family?["Family"]:[]),...(kids?["Kids"]:[]),...(arts?["Arts & Theatre"]:[]),...(sports?["Sports"]:[]),"Local"],
    emoji:family?"🎉":arts?"🎵":sports?"🏃":"📍",source:cfg.source});

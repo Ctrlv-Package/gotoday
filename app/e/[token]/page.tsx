@@ -50,7 +50,7 @@ export default async function CommunityEventPage({params,searchParams}:{params:P
  const row=listed?(await db.query("select id,series_id from events where fingerprint=$1 and status='active'",[e.repeat.kind==="none"?`community|${e.id}`:`community|${e.id}|${date}`]).catch(()=>({rows:[]}))).rows[0]:null;
  const dbId=row?Number(row.id):null,user=await currentUser().catch(()=>null);
  const calConnected=!!user&&await calendarConnected(user.id).catch(()=>false);
- const canFollow=!!dbId&&!ended&&(e.repeat.kind==="yearly"||(!!row.series_id&&await followable(Number(row.series_id)).catch(()=>false)));
+ const canFollow=!!dbId&&!ended&&(e.repeat.kind==="yearly"||(!!row.series_id&&await followable(Number(row.series_id),e.title).catch(()=>false)));
  const following=!!(user&&row?.series_id&&(await db.query("select 1 from follows where user_id=$1 and series_id=$2",[user.id,row.series_id]).catch(()=>({rowCount:0}))).rowCount);
  const counts=e.rsvp.onSite?await rsvpCounts(e.id):null;
  // The host (signed in) sees who replied right here, with a link to manage the event.

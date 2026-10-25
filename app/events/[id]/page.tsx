@@ -55,7 +55,7 @@ export default async function EventPage({params}:{params:Promise<{id:string}>}){
  // Follow (be told when it's back next year) is offered for events that come around now and then, not weekly ones.
  const user=await currentUser().catch(()=>null);
  const series=await seriesOf(e.id).catch(()=>null);
- const canFollow=!!series&&e.source!=="Ticketmaster"&&await followable(series).catch(()=>false);
+ const canFollow=!!series&&e.source!=="Ticketmaster"&&await followable(series,e.title).catch(()=>false);
  // Their GoToday calendar is connected (a calendar app reads it, or they just added it): saved = already in their calendar.
  const calConnected=!!user&&await calendarConnected(user.id);
  const following=!!(user&&series&&(await db.query("select 1 from follows where user_id=$1 and series_id=$2",[user.id,series]).catch(()=>({rowCount:0}))).rowCount);
