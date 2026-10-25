@@ -17,7 +17,7 @@ export default function EventForm({initial,submitLabel,onSubmit,busy}:{initial:F
  // Place suggestions: real venues from GoToday's own list, as the user types the place name.
  // No external API or key: the venues table already holds every public listing's place.
  type PlaceSug={name:string;address:string;city:string};
- const [placeSug,setPlaceSug]=useState<PlaceSug[]>([]),[placeOpen,setPlaceOpen]=useState(false),placePicked=useRef(false);
+ const [placeSug,setPlaceSug]=useState<PlaceSug[]>([]),[placeOpen,setPlaceOpen]=useState(false),placePicked=useRef(false),placeBox=useRef<HTMLDivElement>(null);
  useEffect(()=>{
   const q=v.venue.trim();
   if(placePicked.current){placePicked.current=false;return}
@@ -29,6 +29,15 @@ export default function EventForm({initial,submitLabel,onSubmit,busy}:{initial:F
   return()=>{clearTimeout(t);ctl.abort()};
  },[v.venue,v.city]);
  const pickPlace=(s:PlaceSug)=>{placePicked.current=true;setV(o=>({...o,venue:s.name,address:streetOnly(s.address,s.city)||o.address,city:s.city||o.city}));setPlaceSug([]);setPlaceOpen(false)};
+ // The list stays open while the user scrolls it: it closes on a tap outside it or on
+ // Escape, not on losing focus (which used to shut it mid-scroll).
+ useEffect(()=>{
+  if(!placeOpen)return;
+  const out=(e:Event)=>{if(!placeBox.current?.contains(e.target as Node))setPlaceOpen(false)};
+  const key=(e:KeyboardEvent)=>{if(e.key==="Escape")setPlaceOpen(false)};
+  document.addEventListener("pointerdown",out);document.addEventListener("keydown",key);
+  return()=>{document.removeEventListener("pointerdown",out);document.removeEventListener("keydown",key)};
+ },[placeOpen]);
  const ageKey=AGES.find(([,a,b])=>a===v.ageMin&&b===v.ageMax)?.[0]||"custom";
  const today=new Date(Date.now()-new Date().getTimezoneOffset()*60000).toISOString().slice(0,10);
  async function submit(ev:React.FormEvent){ev.preventDefault();setErrors([]);
@@ -56,8 +65,8 @@ export default function EventForm({initial,submitLabel,onSubmit,busy}:{initial:F
   <label className="efCheck"><input type="checkbox" checked={v.allDay} onChange={e=>set("allDay",e.target.checked)}/> All day</label>
   <RepeatField date={v.date} value={v.repeat||NO_REPEAT} onChange={x=>set("repeat",x)}/>
 
-  <div className="placeSuggest">
-   <label className="efField">Place name<input maxLength={120} value={v.venue} onChange={e=>set("venue",e.target.value)} placeholder="Weston Town Center, Vista Park, our house…" autoComplete="off" onFocus={()=>{if(placeSug.length)setPlaceOpen(true)}} onBlur={()=>setTimeout(()=>setPlaceOpen(false),150)} onKeyDown={e=>{if(e.key==="Escape")setPlaceOpen(false)}}/></label>
+  <div className="placeSuggest" ref={placeBox}>
+   <label className="efField">Place name<input maxLength={120} value={v.venue} onChange={e=>set("venue",e.target.value)} placeholder="Weston Town Center, Vista Park, our house…" autoComplete="off" onFocus={()=>{if(placeSug.length)setPlaceOpen(true)}} onKeyDown={e=>{if(e.key==="Escape")setPlaceOpen(false)}}/></label>
    {placeOpen&&placeSug.length>0&&<ul className="placeSuggestList">{placeSug.map((s,i)=><li key={`${s.name}|${s.address}|${s.city}|${i}`}><button type="button" onMouseDown={e=>{e.preventDefault();pickPlace(s)}}><b>{s.name}</b>{(streetOnly(s.address,s.city)||s.city)&&<span>{[streetOnly(s.address,s.city),s.city].filter(Boolean).join(", ")}</span>}</button></li>)}</ul>}
   </div>
   <div className="efRow">

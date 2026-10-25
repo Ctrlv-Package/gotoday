@@ -1,6 +1,6 @@
 import {test} from "node:test";
 import assert from "node:assert/strict";
-import {rankPlaceSuggestions,streetOnly,photonSuggestion} from "../lib/places";
+import {rankPlaceSuggestions,streetOnly,photonSuggestion,filterOutsideSuggestions} from "../lib/places";
 
 const rows=[
  {name:"Weston Town Center",address:"1675 Market St",city:"Weston, FL"},
@@ -46,6 +46,17 @@ test("a Photon feature maps to the form's fields",()=>{
  assert.deepEqual(photonSuggestion(f),{name:"Flying Squirrel Trampoline Park",address:"3305 Corporate Avenue",city:"Weston, FL"});
  assert.equal(photonSuggestion({properties:{street:"Main St",city:"Weston",state:"Florida",countrycode:"US"}}),null);
  assert.equal(photonSuggestion({properties:{name:"Café",city:"Lisboa",state:"Lisboa",countrycode:"PT"}})?.city,"Lisboa, Lisboa");
+});
+test("outside suggestions: junk dropped, town filter keeps only the user's town",()=>{
+ const rows=[
+  {name:"Flying Squirrel Creek",address:"",city:""},
+  {name:"Flying Squirrel",address:"",city:"Lijiang, Yunnan"},
+  {name:"Flying Squirrel Park",address:"6600 South Woodlawn Avenue",city:"Chicago, IL"},
+  {name:"Flying Squirrel Trampoline Park",address:"3305 Corporate Avenue",city:"Weston, FL"},
+  {name:"Flying Squirrel Court",address:"",city:"Bayonet Point, FL"},
+ ];
+ assert.deepEqual(filterOutsideSuggestions(rows,"Weston, FL").map(r=>r.name),["Flying Squirrel Trampoline Park"]);
+ assert.deepEqual(filterOutsideSuggestions(rows,"").map(r=>r.name),["Flying Squirrel","Flying Squirrel Park","Flying Squirrel Trampoline Park","Flying Squirrel Court"]);
 });
 test("short queries return nothing",()=>{
  assert.deepEqual(rankPlaceSuggestions("p","Weston, FL",rows),[]);
