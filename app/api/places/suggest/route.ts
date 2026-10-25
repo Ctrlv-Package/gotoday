@@ -1,6 +1,6 @@
 import {NextResponse} from "next/server";
 import {db} from "../../../../lib/db";
-import {rankPlaceSuggestions,photonSuggestion,filterOutsideSuggestions,photonQuery,distanceRank,mergeSuggestions,withinRadiusKm,tomtomSuggestion,mapboxSuggestion,NEARBY_RADIUS_KM,type PlaceSuggestion} from "../../../../lib/places";
+import {rankPlaceSuggestions,photonSuggestion,filterOutsideSuggestions,photonQuery,mergeSuggestions,withinRadiusKm,nearbyRank,tomtomSuggestion,mapboxSuggestion,NEARBY_RADIUS_KM,type PlaceSuggestion} from "../../../../lib/places";
 export const dynamic="force-dynamic";
 // Suggest real places as the user types a place name in the create form, from every
 // source the site can reach for free:
@@ -16,13 +16,13 @@ export const dynamic="force-dynamic";
 //     Each is fetched in parallel with a 3 s timeout and fails open, and an absent key
 //     skips that source silently — so the list works with any subset of sources.
 // Merging: first source wins on duplicates (same name in the same town). Ranking: in
-// nearby mode ("Use my location") the combined list is ranked by distance and results
-// beyond NEARBY_RADIUS_KM are dropped whenever nearer ones exist (so "Near you" never
-// shows Cuba while a nearer bench exists; if nothing is near, the nearest results still
-// show rather than an empty list). Without coordinates the order is locals first, then
-// outside sources in Photon, TomTom, Mapbox order. Typing a place name sends that name
-// to Photon and, when the bench is thin, to TomTom/Mapbox; coordinates ride along with
-// the search only and are never saved to the event or anywhere else.
+// nearby mode ("Use my location") the combined list is distance-ranked and only results
+// within NEARBY_RADIUS_KM survive — strict, no fallback: when nothing qualifies the list
+// is empty and the form says so, because a far result must never pose as a nearby one.
+// Without coordinates the order is locals first, then outside sources in Photon, TomTom,
+// Mapbox order. Typing a place name sends that name to Photon and, when the bench is
+// thin, to TomTom/Mapbox; coordinates ride along with the search only and are never
+// saved to the event or anywhere else.
 export async function GET(req:Request){
  const p=new URL(req.url).searchParams,q=(p.get("q")||"").trim().slice(0,80),city=(p.get("city")||"").trim().slice(0,80);
  const laN=Number(p.get("lat")),loN=Number(p.get("lon"));
@@ -75,9 +75,7 @@ export async function GET(req:Request){
  }
  let out:PlaceSuggestion[];
  if(coords){
-  const ranked=distanceRank(combined,coords.lat,coords.lon);
-  const near=withinRadiusKm(ranked,coords.lat,coords.lon,NEARBY_RADIUS_KM);
-  out=(near.length?near:ranked).slice(0,8);
+  out=nearbyRank(combined,coords.lat,coords.lon).slice(0,8);
  }else{
   out=combined.slice(0,8);
  }
