@@ -10,27 +10,23 @@ export default function NotifyButton({manageToken}:{manageToken?:string}){
   const ios=/iphone|ipad|ipod/i.test(navigator.userAgent),standalone=(navigator as any).standalone||matchMedia("(display-mode: standalone)").matches;
   if(!("serviceWorker" in navigator)||!("PushManager" in window)||!("Notification" in window)){setState(ios&&!standalone?"ios":"unsupported");return}
   if(Notification.permission==="denied"){setState("blocked");return}
-  // Turned on before on this device: show it as on right away, then confirm with the browser.
+  // Turned on before on this device (and not turned off): it's on. Make sure the browser's subscription still exists
+  // (re-creating it silently if the browser dropped it — permission is already granted, so no prompt) and link it to
+  // this event's host. The page never flips back to the button on its own.
   let remembered=false;try{remembered=!!localStorage.getItem(KEY)}catch{}
-  if(remembered&&Notification.permission==="granted")setState("on");
-  (async()=>{
-   const reg=await navigator.serviceWorker.getRegistration("/")||await Promise.race([navigator.serviceWorker.ready,new Promise<undefined>(r=>setTimeout(()=>r(undefined),4000))]);
-   const sub=await reg?.pushManager.getSubscription();
-   if(sub&&Notification.permission==="granted"){setState("on");try{localStorage.setItem(KEY,sub.endpoint)}catch{};save(sub).catch(()=>{})}   // also links this event's host to the device
-   else if(reg){setState(st=>st==="on"?"idle":st);try{localStorage.removeItem(KEY)}catch{}}
-  })().catch(()=>{});
- // eslint-disable-next-line react-hooks/exhaustive-deps
+  if(remembered&&Notification.permission==="granted"){setState("on");ensure().catch(()=>{})}
  },[]);
  async function save(sub:PushSubscription){const r=await fetch("/api/push",{method:"POST",headers:{"content-type":"application/json"},body:JSON.stringify({subscription:sub.toJSON(),manageToken})});if(!r.ok)throw new Error("save")}
+ async function ensure(){
+  const reg=await navigator.serviceWorker.register("/sw.js");await navigator.serviceWorker.ready;
+  let sub=await reg.pushManager.getSubscription();
+  if(!sub){const {publicKey}=await (await fetch("/api/push")).json();sub=await reg.pushManager.subscribe({userVisibleOnly:true,applicationServerKey:b64(publicKey)})}
+  await save(sub);try{localStorage.setItem(KEY,sub.endpoint)}catch{}
+ }
  async function turnOn(){
   setState("busy");
-  try{
-   if(await Notification.requestPermission()!=="granted"){setState("blocked");return}
-   const reg=await navigator.serviceWorker.register("/sw.js");await navigator.serviceWorker.ready;
-   const {publicKey}=await (await fetch("/api/push")).json();
-   const sub=await reg.pushManager.getSubscription()||await reg.pushManager.subscribe({userVisibleOnly:true,applicationServerKey:b64(publicKey)});
-   await save(sub);try{localStorage.setItem(KEY,sub.endpoint)}catch{};setState("on");
-  }catch{setState("error")}
+  try{if(await Notification.requestPermission()!=="granted"){setState("blocked");return}await ensure();setState("on")}
+  catch{setState("error")}
  }
  async function turnOff(){
   setState("busy");
