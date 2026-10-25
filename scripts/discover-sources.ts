@@ -85,7 +85,7 @@ async function probe(c:Cand):Promise<Found[]>{
   const list=[...new Set([...html.matchAll(/href="([^"]*(?:Event[s]?-?Calendar|Events-directory|\/Events)(?:["?\/])?[^"]*)"/gi)].map(x=>x[1]).filter(h=>!/\/-|\.(pdf|jpg|png)$/i.test(h)))][0];
   // The list page itself, not one event or a meeting under it: cut the link after its first Events/Calendar folder
   // ("/Events-directory/2026-Events/Spooktacular" → "/Events-directory").
-  const listUrl=(()=>{if(!list)return"";try{const u=new URL(list.replace(/["'].*$/,""),origin);const segs=u.pathname.split("/").filter(Boolean);const i=segs.findIndex(x=>/event|calendar/i.test(x));if(i<0)return"";u.pathname="/"+segs.slice(0,i+1).join("/");u.search="";return u.toString()}catch{return""}})();
+  const listUrl=(()=>{if(!list)return"";try{const u=new URL(list.replace(/["'].*$/,""),origin);const segs=u.pathname.split("/").filter(Boolean);let i=-1;segs.forEach((x,k)=>{if(/event|calendar/i.test(x)&&(i<0||k===i+1))i=k});if(i<0)return"";u.pathname="/"+segs.slice(0,i+1).join("/");u.search="";return u.toString()}catch{return""}})();
   if(listUrl){out.push({input:arg,platform:"opencities",confidence:"confirmed",note:`event list ${listUrl} (OpenCities; read by the GitHub job)`,config:{name,platform:"opencities",remote:true,params:{listUrl,city},url:listUrl}})}
   else out.push({input:arg,platform:"opencities",confidence:"likely",note:`event list ${list||"(find the Events page)"}; OpenCities sites usually block cloud servers, so save with remote:true`,
    config:{name,platform:"opencities",remote:true,params:{listUrl:list?new URL(list,origin).toString():"",city},url:list?new URL(list,origin).toString():origin}})}

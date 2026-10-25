@@ -135,7 +135,20 @@ export function detailOccurrences(html:string):Occurrence[]{
  return out;
 }
 
-export async function fetchOpenCities(cfg:OpenCitiesConfig,startDate:string,endDate:string):Promise<EventRecord[]>{
+export async function fetchOpenCities(cfg:OpenCitiesConfig,startDate:string,endDate:string,hop=0):Promise<EventRecord[]>{
+ // A landing page ("Calendars", "City Calendar") instead of the event list itself: follow its links to the actual
+ // list (".../Calendars/Events", ".../Community-Events-Calendar") — the one with the most event cards.
+ if(hop===0){try{
+  const r=await fetchRetry(cfg.listUrl,{headers:BROWSER_HEADERS,cache:"no-store"});
+  if(r.ok){const html=await r.text(),origin=new URL(cfg.listUrl).origin;
+   if(articleItems(html,origin).length<3){
+    const subs=[...new Set([...html.matchAll(/href=["']([^"'#?]+)["']/gi)].map(m=>{try{return new URL(m[1].replace(/&amp;/g,"&"),origin).toString()}catch{return""}})
+     .filter(u=>u.startsWith(origin)&&u!==cfg.listUrl&&/\/[^\/]*(events?|calendar)[^\/]*$/i.test(new URL(u).pathname)&&!/permit|sponsor|apply|meeting|government|parking|faq|directions|rental/i.test(u)))].slice(0,6);
+    let best:{u:string;n:number}|null=null;
+    for(const u of subs){const rr=await fetchRetry(u,{headers:BROWSER_HEADERS,cache:"no-store"}).catch(()=>null);if(!rr?.ok)continue;const n=articleItems(await rr.text(),origin).length;if(n>=3&&(!best||n>best.n))best={u,n}}
+    if(best)return fetchOpenCities({...cfg,listUrl:best.u},startDate,endDate,1);
+   }}
+ }catch{}}
  const origin=new URL(cfg.listUrl).origin;
  const listBase=cfg.listUrl.split("?")[0].replace(/\/$/,"");
  const pageUrl=cfg.pageUrl||((n:number)=>`${listBase}?dlv_OC%20CL%20Public%20Events%20Listing=(pageindex=${n})`);
@@ -195,7 +208,9 @@ export async function fetchOpenCities(cfg:OpenCitiesConfig,startDate:string,endD
      tags:[...(it.tags||[]),...(family?["Family"]:[]),...(free?["Free"]:[]),"Local"],emoji:family?"🎉":"📍",source:cfg.source,isFree:free,eventType:"event"});
   }catch{}
  }
- if(out.length===0)throw new Error(`No events in ${startDate}..${endDate} (found ${linksSeen} event cards on ${cfg.listUrl})`);
+ // Cards found but none are public events (all council meetings) is a quiet list, not a broken one.
+ if(out.length===0&&linksSeen===0)throw new Error(`No event cards on ${cfg.listUrl}`);
+ if(out.length===0)return[];
  return expandFromDetails(out,startDate,endDate,cfg.detailLimit??120);
 }
 
