@@ -1,6 +1,7 @@
 "use client";
 import {useEffect,useRef,useState} from "react";
 import {byOptions,describe,type Repeat,NO_REPEAT} from "../../lib/repeat";
+import {streetOnly} from "../../lib/places";
 
 export type FormValues={title:string;description:string;date:string;startTime:string;endTime:string;allDay:boolean;venue:string;address:string;city:string;
  visibility:"public"|"private";isFree:boolean;priceText:string;ageMin:number|null;ageMax:number|null;category:string;categories?:string[];link:string;hostName:string;image?:string;repeat?:Repeat;rsvp?:RsvpValues};
@@ -27,7 +28,7 @@ export default function EventForm({initial,submitLabel,onSubmit,busy}:{initial:F
   },250);
   return()=>{clearTimeout(t);ctl.abort()};
  },[v.venue,v.city]);
- const pickPlace=(s:PlaceSug)=>{placePicked.current=true;setV(o=>({...o,venue:s.name,address:s.address||o.address,city:s.city||o.city}));setPlaceSug([]);setPlaceOpen(false)};
+ const pickPlace=(s:PlaceSug)=>{placePicked.current=true;setV(o=>({...o,venue:s.name,address:streetOnly(s.address,s.city)||o.address,city:s.city||o.city}));setPlaceSug([]);setPlaceOpen(false)};
  const ageKey=AGES.find(([,a,b])=>a===v.ageMin&&b===v.ageMax)?.[0]||"custom";
  const today=new Date(Date.now()-new Date().getTimezoneOffset()*60000).toISOString().slice(0,10);
  async function submit(ev:React.FormEvent){ev.preventDefault();setErrors([]);
@@ -57,7 +58,7 @@ export default function EventForm({initial,submitLabel,onSubmit,busy}:{initial:F
 
   <div className="placeSuggest">
    <label className="efField">Place name<input maxLength={120} value={v.venue} onChange={e=>set("venue",e.target.value)} placeholder="Weston Town Center, Vista Park, our house…" autoComplete="off" onFocus={()=>{if(placeSug.length)setPlaceOpen(true)}} onBlur={()=>setTimeout(()=>setPlaceOpen(false),150)} onKeyDown={e=>{if(e.key==="Escape")setPlaceOpen(false)}}/></label>
-   {placeOpen&&placeSug.length>0&&<ul className="placeSuggestList">{placeSug.map((s,i)=><li key={`${s.name}|${s.address}|${s.city}|${i}`}><button type="button" onMouseDown={e=>{e.preventDefault();pickPlace(s)}}><b>{s.name}</b>{(s.address||s.city)&&<span>{[s.address,s.city].filter(Boolean).join(", ")}</span>}</button></li>)}</ul>}
+   {placeOpen&&placeSug.length>0&&<ul className="placeSuggestList">{placeSug.map((s,i)=><li key={`${s.name}|${s.address}|${s.city}|${i}`}><button type="button" onMouseDown={e=>{e.preventDefault();pickPlace(s)}}><b>{s.name}</b>{(streetOnly(s.address,s.city)||s.city)&&<span>{[streetOnly(s.address,s.city),s.city].filter(Boolean).join(", ")}</span>}</button></li>)}</ul>}
   </div>
   <div className="efRow">
    <label className="efField grow"><span>Street address {v.visibility==="private"?<small>(only guests with the link see it)</small>:<small>(helps people find it)</small>}</span><input maxLength={200} value={v.address} onChange={e=>set("address",e.target.value)} placeholder="1675 Market St" autoComplete="street-address"/></label>
