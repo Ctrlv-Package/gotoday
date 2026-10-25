@@ -12,7 +12,7 @@ const SHOWS:Record<string,string>={
  halloweenparty:"adults/teens at a Halloween costume party",pumpkin:"pumpkin patch",fallfestival:"autumn/fall festival with pumpkins and families",
  oktoberfest:"Oktoberfest beer and pretzels",christmas:"Christmas tree and ornaments",kidschristmas:"children with Santa / Christmas fun",holidaylights:"holiday lights display / tree lighting at night",
  easter:"Easter eggs / egg hunt",fireworks:"fireworks",parade:"street parade",reading:"books (book club, author talk, reading program for adults)",
- chess:"chess",games:"board games / bingo / trivia (adults)",videogames:"video game controllers",lego:"LEGO bricks",stem:"science lab / experiments / robotics / STEM",
+ chess:"chess",cardgames:"people playing a card game / trading cards at a table (Pokémon, Magic, Uno, card clubs)",games:"board games / bingo / trivia (adults)",videogames:"video game controllers",lego:"LEGO bricks",stem:"science lab / experiments / robotics / STEM",
  tech:"people using laptops (computer, tech, digital skills class)",farmersmarket:"farmers market produce",market:"outdoor market / bazaar stalls",train:"miniature train ride",
  knitting:"knitting / sewing / crochet",crafts:"arts & crafts supplies (adult crafts, DIY)",painting:"painting class at easels",artfair:"art gallery / art exhibit / art fair",
  photography:"cameras / photography",garden:"gardening / plants",food:"food festival / street food / food trucks",kidscooking:"children cooking or baking",winetasting:"wine tasting",

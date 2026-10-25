@@ -23,8 +23,11 @@ const LABEL_AGES:[RegExp,[number,number]][]=[
 ];
 export function textAgeRange(s:string):[number,number]|null{
  let m=s.match(/\b(\d{1,2})\s*(?:-|–|to)\s*(\d{1,2})\s*months?\b/i);if(m)return[0,Math.max(1,Math.ceil(+m[2]/12))];
- m=s.match(/\bages?\s*(\d{1,2})\s*(?:-|–|to|through)\s*(\d{1,2})\b/i);if(m&&+m[1]<=+m[2])return[+m[1],+m[2]];
- m=s.match(/\bages?\s*(\d{1,2})\s*(?:\+|&\s*up|and up|and older|or older)/i);if(m)return[+m[1],99];
+ // "ages 7-12", "aged 7-12", "kids 7 to 12", "for children 5–8", "7-12 year olds", "7 to 12 years old"
+ m=s.match(/\b(?:ages?|aged|kids|children|youth|for)\s*(?:of\s*)?(\d{1,2})\s*(?:-|–|to|through)\s*(\d{1,2})\b(?!\s*(?:pm|am|p\.m|a\.m|:|\/))/i)
+  ||s.match(/\b(\d{1,2})\s*(?:-|–|to)\s*(\d{1,2})\s*(?:-\s*)?(?:year|yr)s?[- ]?olds?\b/i)||s.match(/\b(\d{1,2})\s*(?:-|–|to)\s*(\d{1,2})\s*years?\s*(?:old|of age)\b/i);
+ if(m&&+m[1]<=+m[2]&&+m[2]<=99)return[+m[1],+m[2]];
+ m=s.match(/\b(?:ages?|aged)\s*(\d{1,2})\s*(?:\+|&\s*up|and up|and older|or older)/i);if(m)return[+m[1],99];
  m=s.match(/\bages?\s*(\d{1,2})\s*(?:and|&)\s*under\b/i);if(m)return[0,+m[1]];
  m=s.match(/\bgrades?\s*(k|\d{1,2})\s*(?:-|–|to|through)\s*(\d{1,2})\b/i);if(m)return[m[1].toLowerCase()==="k"?5:+m[1]+5,+m[2]+6];
  return null;

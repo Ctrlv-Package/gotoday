@@ -43,7 +43,7 @@ const NEXT:Record<string,string>={kidshalloween:"halloween",halloweenparty:"hall
  pets:"animals",animals:"nature",cars:"festival",history:"culture",culture:"festival",health:"community",seniors:"community",teens:"community",career:"community",
  language:"reading",sensory:"baby",festival:"blockparty",kids:"baby",music:"concert",arts:"painting",community:"festival",blockparty:"concert",concert:"festival",
  dance:"theater",theater:"concert",movie:"theater",yoga:"fitness",artfair:"painting",market:"farmersmarket",food:"market",boat:"beach",beach:"nature",nature:"garden",
- crafts:"painting",painting:"crafts",tech:"stem",reading:"storytime",games:"kidsgames",videogames:"games",photography:"arts"};
+ crafts:"painting",painting:"crafts",tech:"stem",reading:"storytime",games:"kidsgames",cardgames:"games",videogames:"games",photography:"arts"};
 
 // Seniors programs (55+, chair exercise) get seniors photos rather than a dance troupe or a gym.
 const SENIOR_SWAP=new Set(["dance","fitness","yoga","sports","concert","music","community"]);
@@ -52,7 +52,7 @@ const forSeniors=(e:{title?:string;desc?:string;tags?:string[]})=>/(\b(seniors?|
 const KID_VERSION:Record<string,string>={halloween:"kidshalloween",christmas:"kidschristmas",food:"kidscooking",library:"storytime",workshop:"kids",concert:"kidsmusic",music:"kidsmusic",dance:"kidsdance",theater:"kidstheater",painting:"kidsart",arts:"kidsart",crafts:"kidsart",
  artfair:"kidsart",yoga:"kids",fitness:"kidssports",sports:"kidssports",games:"kidsgames",reading:"storytime",tech:"stem",community:"kids",festival:"kids",teens:"kids",
  career:"kids",language:"kids",health:"kids",seniors:"kids",history:"kids",culture:"kids",movie:"kids"};
-const SPECIFIC=new Set(["chess","lego","videogames","knitting","train","golf","tennis","swim","shooting","basketball","baseball","soccer","cars","oktoberfest","diwali","dayofdead","easter","fireworks","winetasting","photography","boat","pets","yoga"]);
+const SPECIFIC=new Set(["chess","cardgames","lego","videogames","knitting","train","golf","tennis","swim","shooting","basketball","baseball","soccer","cars","oktoberfest","diwali","dayofdead","easter","fireworks","winetasting","photography","boat","pets","yoga"]);
 export const forKids=(e:{title?:string;desc?:string;tags?:string[];ageMax?:number|null})=>
  (e.ageMax!=null&&e.ageMax<=12)||/\b(toddlers?|preschool\w*|pre-?k|kids?|children'?s?|child|bab(y|ies)|infants?|story ?time|tots|little ones|tweens?|kinder\w*|ages? [0-9])\b/i.test(`${e.title||""} ${String(e.desc||"").slice(0,300)} ${(e.tags||[]).join(" ")}`);
 
@@ -64,7 +64,9 @@ export async function stockPicture(e:{title:string;desc?:string;category?:string
  // A very specific photo (chess, LEGO, golf…) only when the event itself names that subject: the reader once put
  // chess pieces on a Pokémon club.
  const named=(k:string)=>{const t=TOPICS.find(x=>x.key===k);return!t||t.re.test(`${e.title} ${String(e.desc||"").slice(0,400)}`)};
- let topic=ai&&ai!=="none"&&(!SPECIFIC.has(ai)||named(ai))?ai:topicFor({...e,venue:e.venue||undefined});
+ const byWords=topicFor({...e,venue:e.venue||undefined});
+ // …and the other way round: when the event names a specific subject (Pokémon cards), that beats a general reading.
+ let topic=SPECIFIC.has(byWords)&&!SPECIFIC.has(ai||"")?byWords:ai&&ai!=="none"&&(!SPECIFIC.has(ai)||named(ai))?ai:byWords;
  if(forSeniors(e)&&SENIOR_SWAP.has(topic)&&(!ai||ai==="none"))topic="seniors";
  else if(forKids(e)&&KID_VERSION[topic])topic=KID_VERSION[topic];
  for(let i=0;i<6&&!by.get(topic)?.length&&NEXT[topic];i++)topic=NEXT[topic];

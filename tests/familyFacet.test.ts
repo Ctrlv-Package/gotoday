@@ -18,3 +18,11 @@ test("teens + adults library programs aren't Kids", () => {
   assert.ok(!f.includes("Kids"),String(f));
   assert.ok(facetsFor({title:"Teen Anime Club",tags:["Teens"],source:"Broward County Library",category:"Local",ageMin:13,ageMax:17} as any).includes("Kids"));
 });
+
+test("ages written in the description win over the audience label", async ()=>{
+ const {textAgeRange}=await import("../lib/ingestion/utils");
+ assert.deepEqual(textAgeRange("Recommended for kids aged 7-12 get to come"),[7,12]);
+ assert.deepEqual(textAgeRange("For 7-10 year olds"),[7,10]);
+ assert.deepEqual(textAgeRange("children 5 to 8 years old"),[5,8]);
+ assert.equal(textAgeRange("Open 10-12 pm for families"),null);
+});
