@@ -1,3 +1,4 @@
+import {decodeEntities} from "./html";
 import {settingFor} from "./facets";
 import {db} from "./db";
 import {ensureSchema} from "./schema";
@@ -7,7 +8,7 @@ import {googleCalendarLink,icsText,type CalEvent} from "./calendar";
 import {fillFromCopies} from "./copies";
 import {placeScore} from "./places";
 export const TZ=DEFAULT_TZ;
-export function decodeHtml(s:string){return String(s||"").replace(/&#(\d+);/g,(_,n)=>String.fromCharCode(Number(n))).replace(/&#x([0-9a-f]+);/gi,(_,n)=>String.fromCharCode(parseInt(n,16))).replace(/&amp;/g,"&").replace(/&quot;/g,'"').replace(/&apos;|&#39;/g,"'")}
+export function decodeHtml(s:string){return decodeEntities(s)}
 
 export type EventDetail={
  id:number;title:string;description:string;start:Date;end:Date|null;city:string;image:string|null;officialUrl:string;priceText:string|null;isFree:boolean;

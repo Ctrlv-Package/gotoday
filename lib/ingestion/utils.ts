@@ -1,8 +1,9 @@
+import {decodeEntities} from "../html";
 import {settingFor,junkTag} from "../facets";
 import {isGenericPicture} from "../pictures";
 import type { EventRecord } from "./types";
 export const slug=(s:string)=>s.toLowerCase().replace(/[^a-z0-9]+/g,"-").replace(/^-|-$/g,"");
-export const stripHtml=(s:string)=>s.replace(new RegExp("<script[^>]*>[\\s\\S]*?</script>","gi")," ").replace(new RegExp("<style[^>]*>[\\s\\S]*?</style>","gi")," ").replace(new RegExp("<[^>]+>","g")," ").replace(/&nbsp;|&#160;/g," ").replace(/&amp;/g,"&").replace(/&#39;|&apos;/g,"'").replace(/&quot;/g,'\"').replace(/\s+/g," ").trim();
+export const stripHtml=(s:string)=>decodeEntities(s.replace(new RegExp("<script[^>]*>[\\s\\S]*?</script>","gi")," ").replace(new RegExp("<style[^>]*>[\\s\\S]*?</style>","gi")," ").replace(new RegExp("<[^>]+>","g")," ").replace(/&nbsp;|&#160;/g," ").replace(/&amp;/g,"&").replace(/&#39;|&apos;/g,"'").replace(/&quot;/g,'\"').replace(/\s+/g," ").trim());
 /** HTML -> plain text that keeps paragraph breaks (stripHtml collapses all whitespace). */
 export function richText(html:string){
  const marked=String(html||"").replace(/&lt;/g,"<").replace(/&gt;/g,">").replace(/<\/(p|div|li|h\d)>|<br\s*\/?>/gi," \u00a7\u00a7 ");

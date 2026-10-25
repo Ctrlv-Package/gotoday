@@ -1,3 +1,4 @@
+import {decodeEntities} from "../../../lib/html";
 import { db } from "../../../lib/db";
 import { facetsFor, cleanAges, displayTags, settingFor, isPaid, BIG_SQL } from "../../../lib/facets";
 import { NextRequest, NextResponse } from "next/server";
@@ -12,7 +13,7 @@ import { stockPicture } from "../../../lib/stockPhotos";
 import { localParts, todayIn, DEFAULT_TZ } from "../../../lib/time";
 import { CITY_COORDS, milesBetween as miles } from "../../../lib/cities";
 
-function decodeHtml(s:string){return s.replace(/&#(\d+);/g,(_,n)=>String.fromCharCode(Number(n))).replace(/&#x([0-9a-f]+);/gi,(_,n)=>String.fromCharCode(parseInt(n,16))).replace(/&amp;/g,"&").replace(/&quot;/g,'"').replace(/&apos;|&#39;/g,"'")}
+function decodeHtml(s:string){return decodeEntities(s)}
 function collapseKey(title:string,date:string){return [title.toLowerCase().replace(/&/g,"and").replace(/[^a-z0-9]+/g," ").trim(),date].join("|")}
 const zipPlace=new Map<string,string>();
 /** ZIPs the lookup service says don't exist (as opposed to the service being unreachable). */
