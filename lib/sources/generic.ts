@@ -141,3 +141,33 @@ export async function fetchLocalist(cfg:GenericCfg,startDate:string,endDate:stri
  }
  return out;
 }
+
+// ---------- Squarespace event pages ----------
+// Any Squarespace "Events" collection returns its list as JSON with ?format=json: {upcoming:[{title,fullUrl,assetUrl,
+// startDate,endDate (ms),location:{addressTitle,addressLine1,addressLine2,mapLat,mapLng},excerpt,body}],website:{timeZone}}.
+// Many downtown groups, small museums, markets and nonprofits run on Squarespace.
+export async function fetchSquarespace(cfg:GenericCfg,startDate:string,endDate:string):Promise<EventRecord[]>{
+ const base=cfg.url.replace(/[?#].*$/,""),origin=new URL(base).origin,out:EventRecord[]=[];
+ const r=await fetchRetry(`${base}?format=json`,{headers:{...UA,Accept:"application/json"},cache:"no-store"});
+ if(!r.ok)throw new Error(`HTTP ${r.status} from ${new URL(base).host} (Squarespace events)`);
+ const d:any=await r.json().catch(()=>null);if(!d||!Array.isArray(d.upcoming))throw new Error(`${new URL(base).host} is not a Squarespace events page`);
+ const tz=cfg.tz||d?.website?.timeZone||"America/New_York";
+ for(const e of d.upcoming){
+  const st=new Date(Number(e.startDate));if(isNaN(+st))continue;const date=localDay(st,tz);if(date<startDate||date>endDate)continue;
+  const title=clean(e.title);if(title.length<3)continue;
+  const en=e.endDate?new Date(Number(e.endDate)):null;
+  const loc=e.location||{};const line2=clean(loc.addressLine2);
+  const town=line2.match(/^([^,]+),\s*([A-Z]{2})\b/);
+  const desc=richText(String(e.body||e.excerpt||"")).slice(0,3000);
+  const {kids,arts,tags}=tagsFor(title,desc,(e.categories||[]).map(clean));
+  const lat=Number(loc.mapLat||loc.markerLat),lng=Number(loc.mapLng||loc.markerLng);
+  out.push({id:`${cfg.idPrefix}-${e.id||e.urlId||title}-${date}`,title,city:town?`${town[1].trim()}, ${town[2]}`:cfg.city,
+   venue:clean(loc.addressTitle)||cfg.venue,address:[clean(loc.addressLine1),line2].filter(Boolean).join(", ")||undefined,date,
+   time:localTime(st,tz),endTime:en&&localDay(en,tz)===date?localTime(en,tz):undefined,
+   ...(Number.isFinite(lat)&&Number.isFinite(lng)&&lat!==0&&Math.abs(lat-40.7207559)>1e-6?{latitude:lat,longitude:lng}:{}),   // 40.72… is Squarespace's default pin
+   url:e.fullUrl?new URL(e.fullUrl,origin).toString():base,sourceUrl:base,image:/^https?:/.test(String(e.assetUrl||""))?e.assetUrl:undefined,
+   category:kids?"Family":arts?"Arts & Theatre":"Local",genre:"Community Event",desc:desc||`${cfg.source} event.`,
+   tags:[...tags,"Local"],emoji:kids?"🎉":arts?"🎨":"📍",source:cfg.source,eventType:"event"});
+ }
+ return out;
+}

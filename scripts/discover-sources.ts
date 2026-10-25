@@ -128,6 +128,18 @@ async function probe(c:Cand):Promise<Found[]>{
   if(!out.length){const loc=both.match(/https?:\/\/([a-z0-9.-]+)\/(?:event|calendar)[^"']*/i)&&/localist/i.test(both)?(both.match(/https?:\/\/([a-z0-9.-]*(?:localist\.com|calendar\.[a-z0-9.-]+))/i)?.[0]||origin):"";
    for(const base of [loc,origin].filter(Boolean)){const t=await get(`${base}/api/2/events?pp=1`);const n=(()=>{try{return Number(JSON.parse(t.text)?.page?.total)||0}catch{return 0}})();
     if(n){out.push({input:arg,platform:"localist",confidence:"confirmed",note:`Localist calendar at ${base}`,config:{name,platform:"localist",params:{url:base,city},source_type:"official-city",url:base}});break}}}
+  // Google Calendar embedded on the page (many small museums, markets and nonprofits): its public iCal feed.
+  if(!out.length){const srcs=[...new Set([...both.matchAll(/calendar\.google\.com\/calendar\/(?:u\/\d\/)?embed\?[^"'<>\s]*?[?&;]src=([^&"'<>\s]+)/gi)].map(m=>{try{return decodeURIComponent(m[1].replace(/&amp;/g,"&"))}catch{return m[1]}}))].slice(0,3);
+   let best:{u:string;n:number}|null=null;
+   for(const id of srcs){const u=`https://calendar.google.com/calendar/ical/${encodeURIComponent(id)}/public/basic.ics`,t=await get(u);
+    const now=new Date().toISOString().slice(0,10).replace(/-/g,"");const n=[...String(t.text).matchAll(/DTSTART[^:]*:(\d{8})/g)].filter(m=>m[1]>=now).length;
+    if(n&&(!best||n>best.n))best={u,n}}
+   if(best)out.push({input:arg,platform:"ical",confidence:"confirmed",note:`${best.n} upcoming events (Google Calendar)`,config:{name,platform:"ical",params:{url:best.u,city},source_type:"venue",url:evUrl||origin}})}
+  // Squarespace events page: ?format=json lists upcoming events.
+  if(!out.length&&/squarespace/i.test(both)){
+   for(const page of [...new Set([evUrl,`${origin}/events`,`${origin}/calendar`,`${origin}/upcoming-events`].filter(Boolean))]){
+    const t=await get(`${page.replace(/[?#].*$/,"")}?format=json`);const n=(()=>{try{return(JSON.parse(t.text)?.upcoming||[]).length}catch{return 0}})();
+    if(n){out.push({input:arg,platform:"squarespace",confidence:"confirmed",note:`${n} upcoming events (Squarespace)`,config:{name,platform:"squarespace",params:{url:page.replace(/[?#].*$/,""),city},source_type:"venue",url:page}});break}}}
   // iCal feed link (Trumba, Google Calendar, CMS export)
   if(!out.length){const ics=[...both.matchAll(/(?:href|src)="([^"]*(?:\.ics\b|webcal:|[?&]ical=1|iCalendar\.aspx|calendar\/ical)[^"]*)"/gi)].map(x=>x[1].replace(/&amp;/g,"&"))[0];
    if(ics){const u=(()=>{try{return new URL(ics.replace(/^webcal:/i,"https:"),evUrl||origin).toString()}catch{return""}})();const t=u?await get(u):{text:""} as any;const n=(String(t.text).match(/BEGIN:VEVENT/g)||[]).length;
