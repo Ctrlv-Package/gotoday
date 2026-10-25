@@ -7,6 +7,8 @@ import ShareButton from "../../events/[id]/ShareButton";
 import AddToCalendar from "../../components/AddToCalendar";
 import ExpandableImage from "../../components/ExpandableImage";
 import Rsvp from "./Rsvp";
+import HostLink from "./HostLink";
+import {rsvpsFor} from "../../../lib/community";
 import SaveButton from "../../components/SaveButton";
 import CalendarChoice from "../../components/CalendarChoice";
 import FollowButton from "../../components/FollowButton";
@@ -50,6 +52,9 @@ export default async function CommunityEventPage({params,searchParams}:{params:P
  const canFollow=!!dbId&&!ended&&(e.repeat.kind==="yearly"||(!!row.series_id&&await followable(Number(row.series_id)).catch(()=>false)));
  const following=!!(user&&row?.series_id&&(await db.query("select 1 from follows where user_id=$1 and series_id=$2",[user.id,row.series_id]).catch(()=>({rowCount:0}))).rowCount);
  const counts=e.rsvp.onSite?await rsvpCounts(e.id):null;
+ // The host (signed in) sees who replied right here, with a link to manage the event.
+ const own=user?(await db.query("select owner_token from community_events where id=$1 and user_id=$2",[e.id,user.id]).catch(()=>({rows:[]}))).rows[0]:null;
+ const guests=own&&e.rsvp.onSite?await rsvpsFor(e.id).catch(()=>[]):[];
  const map=`https://maps.google.com/maps?q=${encodeURIComponent(e.latitude!=null&&e.longitude!=null&&!e.address?`${e.latitude},${e.longitude}`:where)}&z=15&output=embed`;
  const dir=`https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(where)}`;
  return shell(<article className="detailCard">{photo&&<div className="heroWrap"><ExpandableImage className="detailHero" src={photo} alt=""/>{stock&&<span className="stockNote">Illustrative photo</span>}</div>}<div className="detailBody">
@@ -75,7 +80,14 @@ export default async function CommunityEventPage({params,searchParams}:{params:P
   </div>
   {canFollow&&<div className="ctaFollow"><FollowButton id={`db-${dbId}`} signedIn={!!user} initial={following} back={`/e/${token}`}/></div>}
   {e.description&&<section className="about"><h2>{e.visibility==="private"?"Details":"About this event"}</h2>{e.description.split(/\n+/).filter(Boolean).map((p,i)=><p key={i}>{p}</p>)}</section>}
-  {!ended&&(counts||e.rsvp.phone||e.rsvp.email)&&<RsvpBox e={e} date={w.date} counts={counts} share={token}/>}
+  {own?<section className="rsvp hostView"><h2>Your guest list</h2>
+    {e.rsvp.onSite?<><p className="muted">{counts?.going||0} going{counts?.maybe?` · ${counts.maybe} maybe`:""}{counts?.no?` · ${counts.no} can't go`:""}</p>
+     {guests.length===0?<p className="muted">No replies yet. Share the link with your guests.</p>
+     :<ul className="guests">{guests.map(r=><li key={r.id}><b>{r.name}</b><span className={`g ${r.status}`}>{r.status==="going"?"Going":r.status==="maybe"?"Maybe":"Can't go"}{r.guests>0&&r.status!=="no"?` +${r.guests}`:""}</span>{r.note&&<span className="muted">“{r.note}”</span>}</li>)}</ul>}</>
+    :<p className="muted">Guests reply to you by {[e.rsvp.phone&&"text or call",e.rsvp.email&&"email"].filter(Boolean).join(" or ")||"the contact you gave"}. Turn on “Guests reply on GoToday” in Manage to keep a guest list here.</p>}
+    {own.owner_token&&<a className="btn ghost small" href={`/manage/${own.owner_token}`}>Manage event</a>}
+   </section>
+  :<>{!ended&&<HostLink share={token}/>}{!ended&&(counts||e.rsvp.phone||e.rsvp.email)&&<RsvpBox e={e} date={w.date} counts={counts} share={token}/>}</>}
   <section className="mapBox"><h2>Location</h2><p className="muted">{where}</p><iframe title={`Map of ${e.venue||e.city}`} src={map} loading="lazy" referrerPolicy="no-referrer-when-downgrade"/></section>
   <p className="sourceNote">{e.visibility==="private"?"Private event created on GoToday. Only people with this link can see it.":"Posted by a GoToday community member. Details can change, so check with the organizer before you go."} <Link href="/create">Create your own →</Link></p>
  </div></article>);
