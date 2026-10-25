@@ -18,7 +18,9 @@ const KIDS=/\b(kids?|children'?s?|child|toddlers?|bab(y|ies)|infants?|preschool(
 const KID_TAGS=/^(kids|children|toddlers|preschool|babies|tweens?|teens?|young adult|storytime|story time|tween \(|children \(|youth)/i;
 const FAMILY=/\b(famil(y|ies)|all ages|everyone|kids|children|parents?|festivals?|fests?|fairs?|parades?|carnivals?|halloween|trunk[- ]or[- ]treat|pumpkin|egg hunt|movie night|movie in the park|open house|celebration|block party|oktoberfest|bow ?wow|ween|boo|costume|dogs?|pets?|petting zoo|pony|zoo|petting|picnic|santa|tree lighting|fireworks)\b/i;
 const KID_EVENT=/\b(trunk[- ]or[- ]treat|trick[- ]or[- ]treat\w*|egg hunts?|petting zoo|pony rides?|santa|pumpkin patch|bounce houses?|face painting|kids?'? (zone|area|corner|activities)|children'?s (activities|area)|puppet\w*|story ?time|magic show|character meet)\b/i;
-const FAMILY_TAGS=/^(family|families|all ages|everyone)$/i;
+// What makes an "open to everyone" listing a family outing (not a lecture or recital that anyone may attend).
+const FAMILY_OUTING=/\b(festivals?|fests?|fairs?|parades?|carnivals?|halloween|trunk[- ]or[- ]treat|pumpkins?|egg hunt|movie|movies|picnic|open house|block party|celebration|holiday|tree lighting|santa|games?|bingo|crafts?|lego|magic|puppets?|circus|zoo|animals?|nature|garden|beach|park|play|music in the park|concert in the park|fireworks)\b/i;
+const FAMILY_TAGS=/^(family|families)$/i;
 const ADULT=/\b(adults?|21\+|18\+|seniors?|older adults|55\+|50\+|wine|beer|brew(ery|ing)?|cocktails?|margarita|happy hour|bar crawl|pub|networking|career|job fair|resume|medicare|retirement|wealth|investing|taxes|estate planning|book club|singles|ladies night|date night)\b/i;
 const ADULT_TAGS=/^(adults?|adult \(|new adults|older adults|seniors|21\+|18\+)/i;
 
@@ -109,7 +111,7 @@ export function facetsFor(e:In):Facet[]{
  // Family = fine to bring the kids. Adult-themed titles never count; city and parks events count
  // unless they say otherwise; libraries and Ticketmaster have to say so.
  const adultish=has(ADULT,t);
- if(!adultOnly&&!adultish&&(kids||has(FAMILY,t)||tagHas(FAMILY_TAGS)&&!tagHas(ADULT_TAGS)||tagHas(/^families$|^everyone$|^all ages$/i)||has(/\b(famil(y|ies)|all ages|kids|children)\b/i,d)||(CITY_SOURCE(e.source)&&!has(ADULT,d)&&!out.has("Music")&&!/\b(meeting|commission|board|council|workshop|seminar|class)\b/i.test(t))))out.add("Family");
+ if(!adultOnly&&!adultish&&(kids||has(FAMILY,t)||tagHas(FAMILY_TAGS)&&!tagHas(ADULT_TAGS)||(tagHas(/^everyone$|^all ages$/i)&&(kidEvent||has(FAMILY_OUTING,t)))||has(/\b(famil(y|ies)|kids|children)\b/i,d)||(has(/\ball ages\b/i,d)&&has(FAMILY_OUTING,t))||(CITY_SOURCE(e.source)&&!has(ADULT,d)&&!out.has("Music")&&!/\b(meeting|commission|board|council|workshop|seminar|class)\b/i.test(t))))out.add("Family");
  if(isBigEvent(e as any))out.add("Big events");
  if(adultOnly||has(ADULT,t)||tagHas(ADULT_TAGS)||(ageMin!=null&&ageMin>=13&&!kidAges))out.add("Adults");
 

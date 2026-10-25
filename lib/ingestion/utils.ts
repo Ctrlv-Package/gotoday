@@ -117,7 +117,9 @@ export function normalize(e:EventRecord):EventRecord{
   const kids=ages[1]<=18;
   tags=tags.filter(t=>t!=="Kids");
   if(kids)tags.push("Kids");
-  if(kids||ages[0]===0||isAllAges(e))tags.push("Family");
+  // Family = made with families in mind: a kids' audience or a listing that says "family/families". "Everyone" or
+  // "All ages" only means anyone may come (a Yiddish song recital is open to everyone, not a family outing).
+  if(kids||(e.tags||[]).some(t=>/\bfamil(y|ies)\b/i.test(t)))tags.push("Family");
  }
  if(free)tags.push("Free");
  // Setting (Indoor/Outdoor): see settingFor in lib/facets.ts (also re-applied when results are served).
