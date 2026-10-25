@@ -3,6 +3,7 @@ import {kidAgeRange} from "../lib/facets";
 import {useEffect,useMemo,useRef,useState} from "react";
 import SaveButton from "./components/SaveButton";
 import NavMe from "./components/NavMe";
+import ReplyBanner from "./components/ReplyBanner";
 import Dropdown from "./components/Dropdown";
 import CalendarChoice from "./components/CalendarChoice";
 import {useT,LangPicker} from "./components/Lang";
@@ -151,6 +152,7 @@ export default function Home(){
  return <main className="page">
   <section className="hero">
    <nav><a className="logo" href="/?fresh=1">Go<span>Today</span></a><span className="navRight"><LangPicker/><NavMe/><a className="createBtn" href="/create" aria-label={t("Create event")}><span aria-hidden>+</span><span className="createTxt">{t("Create")}</span><span className="hideXs">{t(" event")}</span></a></span></nav>
+   <ReplyBanner/>
    <div className="heroContent">
     <div className="eyebrow">{t("EXPLORE MORE. TODAY.")}</div>
     <h1>{t("Find your")} <span>{t("next thing.")}</span></h1>

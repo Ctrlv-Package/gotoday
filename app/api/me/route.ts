@@ -13,6 +13,7 @@ export async function GET(){
    where c.user_id=$1 and c.status in ('live','pending') and e.status='active'`,[u.id]).catch(()=>({rows:[]}))).rows.map((r:any)=>`db-${r.id}`);
  const following=(await db.query("select series_id from follows where user_id=$1",[u.id])).rows.map((r:any)=>r.series_id);
  // Guest replies the host hasn't looked at yet (a dot on their avatar).
- const newReplies=(await db.query("select count(*)::int as n from rsvps r join community_events c on c.id=r.community_event_id where c.user_id=$1 and c.status<>'deleted' and r.created_at>coalesce(c.rsvp_seen_at,'epoch')",[u.id]).catch(()=>({rows:[{n:0}]}))).rows[0]?.n||0;
- return NextResponse.json({signedIn:true,name:u.name,email:u.email,image:u.image,saved,following,mine,newReplies,calConnected:await calendarConnected(u.id)},{headers:{"cache-control":"no-store"}});
+ const nr=(await db.query("select c.title,c.share_token,count(*)::int as n from rsvps r join community_events c on c.id=r.community_event_id where c.user_id=$1 and c.status<>'deleted' and r.created_at>coalesce(c.rsvp_seen_at,'epoch') group by 1,2 order by max(r.created_at) desc",[u.id]).catch(()=>({rows:[]}))).rows as any[];
+ const newReplies=nr.reduce((a,x)=>a+x.n,0),newRepliesFor=nr.slice(0,3).map(x=>({title:x.title,share:x.share_token,n:x.n}));
+ return NextResponse.json({signedIn:true,name:u.name,email:u.email,image:u.image,saved,following,mine,newReplies,newRepliesFor,calConnected:await calendarConnected(u.id)},{headers:{"cache-control":"no-store"}});
 }

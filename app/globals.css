@@ -633,3 +633,7 @@ a.linkBtn{text-decoration:none}
 .hostActions{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
 .meLink{position:relative}
 .replyDot{position:absolute;top:-4px;right:-4px;min-width:18px;height:18px;padding:0 5px;border-radius:999px;background:#ef4444;color:#fff;font-size:11px;font-weight:800;line-height:18px;text-align:center;box-shadow:0 0 0 2px #fff}
+@media(max-width:540px){.meLink.signed span.replyDot{display:block}}
+.replyBanner{display:flex;align-items:center;gap:10px;justify-content:space-between;flex-wrap:wrap;margin:12px auto 0;width:calc(100% - 32px);max-width:720px;box-sizing:border-box;position:relative;z-index:2;padding:12px 14px;border-radius:16px;background:#fef2f2;border:1px solid #fecaca;color:#7f1d1d;font-weight:700;text-decoration:none}
+.replyBanner span{flex:1 1 200px}
+.replyBanner b{white-space:nowrap;color:#b91c1c}
