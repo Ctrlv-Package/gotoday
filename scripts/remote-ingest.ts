@@ -124,7 +124,7 @@ console.log(failures?`${failures} source(s) did not succeed`:"All remote sources
    try{const r=await fetch(`${base}/api/ingest?source=${encodeURIComponent(name)}`,{method:"POST",headers:{authorization:`Bearer ${secret}`},signal:AbortSignal.timeout(310000)});
     const d:any=await r.json().catch(()=>({}));const sm=d?.sources?.[0]||{status:"error",error:d?.error||`HTTP ${r.status}`};
     // Instagram's hourly limit: stop here; the rest are read on the next run (nothing is lost).
-    if(sm.status==="skipped"||/rate limit/i.test(String(sm.error||""))){if(next<names.length){problems.push(`Instagram hourly limit reached — ${names.length-next} accounts wait for the next run`);next=names.length}continue}
+    if(sm.status==="skipped"||/rate limit/i.test(String(sm.error||""))){if(next<names.length){console.log(`Instagram hourly limit: stopping after ${next-1} accounts (${String(sm.error||"").slice(0,120)})`);problems.push(`Instagram hourly limit reached — ${names.length-next} accounts wait for the next run`);next=names.length}continue}
     const ok=sm.status==="success";if(ok)igEvents+=sm.accepted||0;else{igFailed++;problems.push(`${name}: ${String(sm.error||"failed").slice(0,140)}`)}
     console.log(`${name}: ${ok?`${sm.accepted} events`:`failed — ${sm.error}`}`);
     if(!ok||sm.accepted)igRows.push(`| ${name.replace(/ · Instagram$/,"")} | ${ok?"✅":"❌"} | ${sm.accepted??0} | ${String(sm.error||"").replace(/\|/g,"/").slice(0,160)} |`);
