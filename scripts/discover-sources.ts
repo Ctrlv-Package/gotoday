@@ -164,7 +164,7 @@ async function main(){
    // A source already saved under this name keeps its settings (a re-check never swaps a working calendar for another).
    if(x.config&&knownNames.has(x.config.name)&&process.env.REDISCOVER!=="1"){console.log(`skip (already saved as ${x.config.name}) ${x.input}`);continue}
    if(doSave&&x.config&&x.confidence==="confirmed")saved=await save(x,c).catch(e=>`not saved: ${e?.message||e}`);
-   if(x.config&&saved?.startsWith("saved"))savedSigs.set(sig,x.config.name);
+   if(x.config&&saved?.startsWith("saved")){savedSigs.set(sig,x.config.name);knownNames.add(x.config.name)}   // a second find for the same site this run doesn't replace the first
    all.push({...x,saved});console.log(`${x.platform.padEnd(14)} ${x.confidence.padEnd(9)} ${x.input}  — ${x.note}${saved?`  [${saved}]`:""}`);
   }
  }
