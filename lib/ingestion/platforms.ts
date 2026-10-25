@@ -8,6 +8,7 @@ import {fetchCivicPlus} from "../sources/civicplus";
 import {fetchGovAccess} from "../sources/govaccess";
 import {fetchOpenCities} from "../sources/opencities";
 import {fetchLibCal} from "../sources/libcal";
+import {cityCoords} from "./geocode";
 import {fetchInstagram} from "../sources/instagram";
 import {fetchThrillshare} from "../sources/thrillshare";
 import {fetchTicketmasterEvents} from "../sources/ticketmaster";
@@ -27,7 +28,31 @@ const CITY_MAPS:Record<string,(venue:string)=>string>={broward:browardBranchCity
 function cityLookup(p:Params){
  if(CITY_MAPS[p.cityMap])return CITY_MAPS[p.cityMap];
  const pairs:[RegExp,string][]=(p.branchCities||[]).map(([r,c]:[string,string])=>[new RegExp(r,"i"),c]);
- return(v:string)=>{for(const [r,c] of pairs)if(r.test(v))return c;return p.defaultCity||""};
+ return(v:string)=>{for(const [r,c] of pairs)if(r.test(v))return c;return townFromLibrary(v,p.defaultCity)||p.defaultCity||""};
+}
+
+// A shared (consortium) library calendar lists many towns' libraries ("Montclair Public Library", "Fair Lawn's Maurice
+// M. Pine Library"). With no branch map, the town in the library's own name says where the event is; without this every
+// event was placed in the source's home town, miles from the real library.
+const NOT_TOWN=/^(the|main|central|downtown|county|regional|region|branch|children'?s?|kids|teen|youth|law|our|mobile|bookmobile|virtual|online|headquarters|hq|community|public|free|memorial|joint|university|college|school|district|city|town|village|township|borough|library|system|outreach|local|history|genealogy|technology|learning|reference|music|art|arts|science|meeting|room|auditorium)$/i;
+/** A town read from a library's name counts only if it is a real town within 40 miles of the calendar's home town
+ *  ("Cypress Creek Library" is a branch name, not a town): otherwise the event keeps the home town, as before. */
+async function realTowns(events:EventRecord[],p:Params):Promise<EventRecord[]>{
+ const home=p.defaultCity?await cityCoords(p.defaultCity):null;if(!home)return events;
+ const mapped=new Set((p.branchCities||[]).map((x:[string,string])=>x[1]));const ok=new Map<string,boolean>();
+ for(const e of events){const c=e.city||"";if(!c||c===p.defaultCity||mapped.has(c)||ok.has(c))continue;
+  const pt=await cityCoords(c);ok.set(c,!!pt&&Math.hypot((pt.latitude-home.latitude)*69,(pt.longitude-home.longitude)*69*Math.cos(home.latitude*Math.PI/180))<=40)}
+ return events.map(e=>ok.get(e.city||"")===false?{...e,city:p.defaultCity}:e);
+}
+export function townFromLibrary(venue:string,defaultCity?:string):string{
+ const st=String(defaultCity||"").match(/,\s*([A-Z]{2})$/)?.[1];if(!st)return"";
+ const v=String(venue||"").replace(/\s+/g," ").trim();
+ const m=v.match(/^(?:the\s+)?([A-Z][A-Za-z.\-]*(?:\s+[A-Z][A-Za-z.\-]*){0,2}?)(?:'s\s|\s+(?:Free\s+)?(?:Public\s+)?(?:Memorial\s+)?(?:Township\s+|Borough\s+|Town\s+|City\s+|Village\s+)?Library\b)/);
+ if(!m)return"";
+ const town=m[1].replace(/\s+(Twp|Township|Borough|Boro|Town|City|Village)\.?$/i,"").trim();
+ if(town.length<3||/county|university|college|school|district|library/i.test(town)||town.split(" ").some(w=>NOT_TOWN.test(w)))return"";
+ if(town.toLowerCase()===String(defaultCity).replace(/,.*$/,"").trim().toLowerCase())return"";
+ return `${town}, ${st}`;
 }
 const need=(p:Params,...keys:string[])=>{for(const k of keys)if(p[k]==null||p[k]==="")throw new Error(`Missing param "${k}"`)};
 const rx=(s?:string)=>s?new RegExp(s,"i"):undefined;
@@ -35,10 +60,10 @@ const rx=(s?:string)=>s?new RegExp(s,"i"):undefined;
 export const PLATFORMS:Record<string,{describe:string;params:string;build:(p:Params,m:Meta)=>Fetcher}>={
  communico:{describe:"Communico library calendars (*.libnet.info)",params:"client, defaultVenue, defaultCity | cityMap (broward|miami-dade) | branchCities [[regex,city]], siteUrl?, baseUrl? (custom domain)",
   build:(p,m)=>{need(p,"client");
-   return(s,e)=>fetchCommunico({client:p.client,source:m.name,idPrefix:p.idPrefix||p.client,defaultVenue:p.defaultVenue||m.name,cityFor:cityLookup(p),siteUrl:p.siteUrl,baseUrl:p.baseUrl},s,e)}},
+   return(s,e)=>fetchCommunico({client:p.client,source:m.name,idPrefix:p.idPrefix||p.client,defaultVenue:p.defaultVenue||m.name,cityFor:cityLookup(p),siteUrl:p.siteUrl,baseUrl:p.baseUrl},s,e).then(r=>realTowns(r,p))}},
  libcal:{describe:"Springshare LibCal library calendars (*.libcal.com)",params:"site, defaultVenue, defaultCity | branchCities [[regex,city]], calendarId?",
   build:(p,m)=>{need(p,"site");
-   return(s,e)=>fetchLibCal({site:p.site,source:m.name,idPrefix:p.idPrefix||p.site,defaultVenue:p.defaultVenue||m.name,cityFor:cityLookup(p),calendarId:p.calendarId},s,e)}},
+   return(s,e)=>fetchLibCal({site:p.site,source:m.name,idPrefix:p.idPrefix||p.site,defaultVenue:p.defaultVenue||m.name,cityFor:cityLookup(p),calendarId:p.calendarId},s,e).then(r=>realTowns(r,p))}},
  bibliocommons:{describe:"BiblioCommons library events (gateway.bibliocommons.com)",params:"library, defaultCity, state?",
   build:(p,m)=>{need(p,"library","defaultCity");return(s,e)=>fetchBiblioCommons({library:p.library,source:m.name,idPrefix:p.idPrefix||p.library,defaultCity:p.defaultCity,defaultVenue:p.defaultVenue,state:p.state},s,e)}},
  civicplus:{describe:"CivicPlus/CivicEngage city calendar RSS (RSSFeed.aspx?ModID=58)",params:"site, city, cid?",
