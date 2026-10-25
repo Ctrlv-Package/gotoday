@@ -11,3 +11,15 @@ export async function GET(req:NextRequest){
   (select count(*)::int from events where local_date>=current_date and status='active' and image_url ~ 'cdninstagram|fbcdn') as upcoming_instagram_links`).catch((e:any)=>({rows:[{error:String(e?.message||e)}]}))).rows[0];
  return NextResponse.json({ok:true,...r});
 }
+
+// POST /api/admin/images {id:"db-305561"} (Bearer INGESTION_SECRET): take a wrong picture off one event right away
+// (the card falls back to a matching library photo). The next reading of its source picks the picture again with the
+// current rules.
+export async function POST(req:NextRequest){
+ const s=process.env.INGESTION_SECRET;
+ if(!s||req.headers.get("authorization")!==`Bearer ${s}`)return NextResponse.json({ok:false,error:"Unauthorized"},{status:401});
+ const b:any=await req.json().catch(()=>({}));const id=Number(String(b?.id||"").replace(/^db-/,""));
+ if(!id)return NextResponse.json({ok:false,error:"id required"},{status:400});
+ const r=await db.query("update events set image_url=null,updated_at=now() where id=$1 returning id,title",[id]);
+ return NextResponse.json({ok:true,cleared:r.rows});
+}
