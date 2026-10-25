@@ -31,9 +31,6 @@ type SourceSummary={source:string;found:number;accepted:number;quarantined:numbe
 export async function runSource(s:EventSource,getRaw:()=>Promise<EventRecord[]>):Promise<SourceSummary>{
  await ensureSchema();
  const sourceId=await sourceRow(s),run=await db.query("insert into ingestion_runs(source_id) values($1) returning id",[sourceId]),runId=Number(run.rows[0].id);
- // A source with no prior successful run quarantines its whole first batch: the new-state check,
- // done by the gate instead of by eyeballing the site after it publishes.
- const isNewSource=(await db.query(`select 1 from ingestion_runs where source_id=$1 and status='success' limit 1`,[sourceId])).rowCount===0;
  let found=0,accepted=0,quarantined=0,rejected=0;
  try{
   const runStarted=new Date();
@@ -56,7 +53,7 @@ export async function runSource(s:EventSource,getRaw:()=>Promise<EventRecord[]>)
    good.push(e);
   }
   for(let i=0;i<good.length;i+=5){const batch=good.slice(i,i+5);
-   await Promise.all(batch.map(async e=>{const g=await geocodeEvent(e),reasons=quarantineReasons(g,{isNewSource});
+   await Promise.all(batch.map(async e=>{const g=await geocodeEvent(e),reasons=quarantineReasons(g);
     if(reasons.length)quarantined++;else accepted++;await saveEvent(sourceId,g,s.timezone||DEFAULT_TZ,reasons.length?reasons.join(","):null)}))}
   // Only a successful refresh may mark this source's older events as stale.
   if(accepted>0)await db.query("update events set status='stale',updated_at=now() where source_id=$1 and status='active' and last_verified_at < $2",[sourceId,runStarted]);

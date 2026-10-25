@@ -25,7 +25,7 @@ export default function Admin(){
      <span className="muted">Check said: {p.reviewReason||"—"}</span>
      <div className="ctaRow"><button className="btn primary" onClick={()=>decide(p.id,true)}>Approve</button><button className="btn ghost" onClick={()=>decide(p.id,false)}>Reject</button><a className="btn ghost" href={p.shareUrl} target="_blank" rel="noreferrer">Preview</a></div></li>)}</ul>}
    {list!==null&&<><h2 style={{marginTop:28}}>Held for quality review</h2>
-    <p className="muted">Ingested listings the quality gate held instead of publishing: borrowed pictures, Family/Kids labels with no family signal, and every new source's first batch.</p>
+    <p className="muted">Ingested listings the quality gate held instead of publishing: borrowed pictures and Family/Kids labels with no family signal. A new source's first events publish unless flagged.</p>
     {held===null?<p className="muted">Loading…</p>:held.length===0?<p>Nothing held. 🎉</p>
     :<><div className="ctaRow"><button className="btn primary" onClick={approveAllQ}>Approve all</button></div>
      <ul className="review">{held.map(q=><li key={q.id}><b>{q.title}</b><span>{String(q.date||"").slice(0,10)} · {[q.venue,q.city].filter(Boolean).join(", ")}{q.source?` · ${q.source}`:""}</span>
