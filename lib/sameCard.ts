@@ -52,6 +52,8 @@ export function sameEventCard(a:CardLike,b:CardLike,W:(e:CardLike)=>Set<string>=
  const bothTowns=!!town(a.city)&&!!town(b.city);
  const near=sameTown||(miles!=null?miles<1.5:!bothTowns&&typeof a.distanceMiles==="number"&&typeof b.distanceMiles==="number"&&Math.abs(a.distanceMiles-b.distanceMiles)<1);
  if(!near||placesConflict(a,b,miles))return false;
+ // (c2) One listing cut the title off ("The Carpenters Songbook - A Live Celebrati") — any two listers, same area.
+ if(fa.length>=15&&fb.length>=15&&(fa.startsWith(fb)||fb.startsWith(fa)))return true;
  // (b) A post (Instagram) about an event listed elsewhere: same area, titles mostly match.
  if(isIg(a)||isIg(b)){
   const small=Math.min(wa.size,wb.size);

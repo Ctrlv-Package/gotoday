@@ -75,6 +75,8 @@ export function discoveryRejection(e:EventRecord):DiscoveryReason|null{
  // A title that is only a status message (the organizer renamed a full program "Event Full. No longer accepting…").
  if(/^\W*(event (is )?full|(this )?(event|program|class) is full|no longer accepting|registration (is )?(closed|full)|sold out|waitlist (only|full)|full\b)\W*([.!]|$|no longer|\s*-)/i.test(title.trim()))return"announcement";
  if(ANNOUNCEMENT.test(title.trim())||CAPTION.test(title.trim()))return"announcement";
+ // Ticket products and bookings listed as if they were events: daily admission, birthday-party packages, rentals.
+ if(/^(general |museum |daily |timed[- ]entry |online )?(admission|tickets?)$|^birthday part(y|ies)( packages?| booking)?$|^(private|facility|room) (event|rental|booking)s?\b|^(closed|museum closed)\b/i.test(title.trim()))return"announcement";
  if(MEETING.test(title))return"meeting";
  // Election notices ("West Regional Library serves as a general election site") aren't events.
  if(/\b(general|primary|special|municipal|presidential|midterm|run-?off) election\b|\bearly voting\b|\bpolling (place|site|location)\b|\belection day\b|\bvote here\b/i.test(`${title} ${String(e.desc||"").slice(0,200)}`)&&!/\b(watch party|forum|debate|candidate|registration drive)\b/i.test(title))return"announcement";

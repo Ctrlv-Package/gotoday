@@ -55,3 +55,7 @@ test("a rare event name at the same place matches; ordinary words don't", () => 
 test("& and 'and' read the same", () => {
   assert.equal(same(ev("Coffee & Beats",{venue:"",city:"Fort Lauderdale, FL",source:"The Broward Scene · Instagram",time:"10:00:00"}),ev("Coffee and Beats",{venue:"",city:"Fort Lauderdale, FL",source:"Downtown Fort Lauderdale · Instagram",time:"10:00:00"})),true);
 });
+test("a title cut off by one lister matches the full title from another", () => {
+  assert.equal(same(ev("The Carpenters Songbook: A Live Celebration",{venue:"Florida Theatre",city:"Jacksonville, FL",source:"Ticketmaster",time:"19:30:00"}),
+    ev("The Carpenters Songbook - A Live Celebrati",{venue:"Florida Theatre",city:"Jacksonville, FL",source:"Downtown Vision Jacksonville",time:"19:30:00"})),true);
+});

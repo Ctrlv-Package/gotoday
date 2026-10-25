@@ -3,6 +3,8 @@ import type {EventRecord} from "../ingestion/types";
 // Ticketmaster Discovery API: supplemental ticketed inventory (concerts, sports, theatre, comedy).
 // Market 15 = South Florida (Broward, Miami-Dade, Palm Beach). Free tier: 5,000 calls/day, 5 req/s,
 // and at most 1,000 results per query (size * page < 1000).
+// Multi-day passes and bundles of a show that's also listed day by day ("2-Day Ticket (10/30-31) Valid Both Days").
+const PASS=/\b(\d+|two|three)[- ]day (ticket|pass)\b|\bvalid (both|all) days\b|\bcannot split\b|\b(weekend|festival|season) pass\b|\bpackage\b.*\b(tickets?|pass)\b/i;
 const JUNK=/(^(luxury|premium|club)\s*(&|and)?\s*suites?\b|\bsuites?:|\bhospitality\b)|\b(parking|upgrade|vip package|ride and dine|big bus tours?|(pregame|stadium|ballpark|arena|behind the scenes) tours?|speedboat|gift card|voucher|season tickets?)\b/i;
 
 /** Either a Ticketmaster market (15 = South Florida) or a center point + radius in miles. */
@@ -38,7 +40,7 @@ export async function fetchTicketmasterEvents(startDate:string,endDate:string,cf
   for(const ev of d?._embedded?.events||[]){
    const title=String(ev.name||"").trim(),date=ev.dates?.start?.localDate||"";
    const seg=ev.classifications?.[0]?.segment?.name,genre=ev.classifications?.[0]?.genre?.name;
-   if(!ev.id||seen.has(ev.id)||!title||!date||!ev.url||JUNK.test(title)||!seg||seg==="Undefined"||seg==="Miscellaneous")continue;
+   if(!ev.id||seen.has(ev.id)||!title||!date||!ev.url||JUNK.test(title)||PASS.test(title)||!seg||seg==="Undefined"||seg==="Miscellaneous")continue;
    if(ev.dates?.status?.code==="cancelled")continue;
    seen.add(ev.id);
    const v=ev._embedded?.venues?.[0]||{},lat=Number(v.location?.latitude),lng=Number(v.location?.longitude);

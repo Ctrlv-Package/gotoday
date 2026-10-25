@@ -13,3 +13,7 @@ test("public campus events stay", () => {
   for(const t of ["Jazz III Performance","Senior Recital of Ms Haley Ann ONeill, oboe","Dirac-ula Fall Festival","Nightcrawler (2014) Film Screening","48 Hour Film Festival","Alumni Hall of Fame Gala","Climate Change - Four Basic Questions and The Current Debate"])
     assert.equal(discoveryRejection(ev(t,["Arts/Entertainment"])),null,t);
 });
+test("admission and party bookings aren't events", () => {
+  for(const t of ["Museum Admission","Birthday Party","Birthday Parties","General Admission"])assert.notEqual(discoveryRejection(ev(t)),null,t);
+  assert.equal(discoveryRejection(ev("Birthday Party for Smokey Bear")),null);
+});
