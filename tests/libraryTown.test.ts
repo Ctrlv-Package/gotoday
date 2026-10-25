@@ -6,6 +6,7 @@ test("consortium library names give the library's own town", ()=>{
  assert.equal(t("Montclair Public Library","South Orange, NJ"),"Montclair, NJ");
  assert.equal(t("Fair Lawn's Maurice M. Pine Library","South Orange, NJ"),"Fair Lawn, NJ");
  assert.equal(t("Palisades Park - Meeting Room","South Orange, NJ"),"Palisades Park, NJ");
+ assert.equal(t("Montclair Main - Auditorium","South Orange, NJ"),"Montclair, NJ");
  assert.equal(t("Ridgefield Park Free Public Library","South Orange, NJ"),"Ridgefield Park, NJ");
 });
 test("branch rooms and generic names keep the home town", ()=>{

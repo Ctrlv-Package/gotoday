@@ -50,8 +50,9 @@ export function townFromLibrary(venue:string,defaultCity?:string):string{
  const m=v.match(/^(?:the\s+)?([A-Z][A-Za-z.\-]*(?:\s+[A-Z][A-Za-z.\-]*){0,2}?)(?:'s\s|\s+(?:Free\s+)?(?:Public\s+)?(?:Memorial\s+)?(?:Township\s+|Borough\s+|Town\s+|City\s+|Village\s+)?Library\b)/)
   ||v.match(/^([A-Z][A-Za-z.\-]*(?:\s+[A-Z][A-Za-z.\-]*){0,2})\s+[-–—:]\s+\S/);   // "Palisades Park - Meeting Room"
  if(!m)return"";
- const town=m[1].replace(/\s+(Twp|Township|Borough|Boro|Town|City|Village)\.?$/i,"").trim();
- if(town.length<3||/county|university|college|school|district|library/i.test(town)||town.split(" ").some(w=>NOT_TOWN.test(w)))return"";
+ if(/\sBranch$/.test(m[1]))return"";                        // "Northwest Branch": a branch, not a town
+ const town=m[1].replace(/\s+Main$/,"").replace(/\s+(Twp|Township|Borough|Boro|Town|City|Village)\.?$/i,"").trim();
+ if(town.length<3||/^(north|south|east|west|northeast|northwest|southeast|southwest|mid|midtown|uptown)$/i.test(town)||/county|university|college|school|district|library/i.test(town)||town.split(" ").some(w=>NOT_TOWN.test(w)))return"";
  if(town.toLowerCase()===String(defaultCity).replace(/,.*$/,"").trim().toLowerCase())return"";
  return `${town}, ${st}`;
 }
