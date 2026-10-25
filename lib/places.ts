@@ -31,7 +31,7 @@ export function streetOnly(address:string,city:string){
  if(out.toLowerCase()===full.toLowerCase()||(town&&out.toLowerCase()===town.toLowerCase()))return ""; // the address is just the town
  return out;
 }
-export type PlaceSuggestion={name:string;address:string;city:string};
+export type PlaceSuggestion={name:string;address:string;city:string;lat?:number|null;lon?:number|null};
 const STREET_NAME=/^\d{2,6}\s+\S+.*\b(St|Street|Ave|Avenue|Blvd|Boulevard|Rd|Road|Ln|Lane|Dr|Drive|Way|Ct|Court|Pl|Place|Hwy|Highway|Ter|Terrace)\b/i;
 /** Rank venue rows for the create form's place suggestions. Every word the user typed must
  *  appear somewhere in the row's name, address or town ("flying squirrel weston" matches
@@ -39,7 +39,7 @@ const STREET_NAME=/^\d{2,6}\s+\S+.*\b(St|Street|Ave|Avenue|Blvd|Boulevard|Rd|Roa
  *  The user's town ranks first, then a name that starts with the first word, then a name
  *  that contains it, then an address/town match. A bare street address ranks last (it's a
  *  place without a name). Dedupes by name+town. */
-export function rankPlaceSuggestions(q:string,city:string,rows:PlaceSuggestion[]):PlaceSuggestion[]{
+export function rankPlaceSuggestions(q:string,city:string,rows:PlaceSuggestion[],limit=8):PlaceSuggestion[]{
  const query=q.trim().toLowerCase();if(query.length<2)return[];
  const words=query.split(/\s+/).filter(Boolean),town=city.trim().toLowerCase().split(",")[0];
  const matching=rows.filter(r=>{
@@ -54,7 +54,7 @@ export function rankPlaceSuggestions(q:string,city:string,rows:PlaceSuggestion[]
   return{...r,sc,hasAddr:!!r.address.trim()};
  }).sort((a,b)=>b.sc-a.sc||(b.hasAddr?1:0)-(a.hasAddr?1:0)||a.name.length-b.name.length);
  const seen=new Set<string>(),out:PlaceSuggestion[]=[];
- for(const r of scored){const k=`${r.name.trim().toLowerCase()}|${r.city.trim().toLowerCase()}`;if(seen.has(k))continue;seen.add(k);out.push({name:r.name,address:r.address,city:r.city});if(out.length>=8)break}
+ for(const r of scored){const k=`${r.name.trim().toLowerCase()}|${r.city.trim().toLowerCase()}`;if(seen.has(k))continue;seen.add(k);out.push({name:r.name,address:r.address,city:r.city,...(r.lat!=null?{lat:r.lat}:{}),...(r.lon!=null?{lon:r.lon}:{})});if(out.length>=limit)break}
  return out;
 }
 // US state names -> abbreviations, so an outside result's "Weston, Florida" fills the City
@@ -88,7 +88,23 @@ export function photonSuggestion(f:any):PlaceSuggestion|null{
  const town=String(p.city||p.town||p.village||"").trim();
  const state=String(p.state||"").trim();
  const suffix=p.countrycode==="US"&&state?(US_STATE_ABBR[state]||state):state;
- return{name:String(p.name).trim(),address:street,city:town&&suffix?`${town}, ${suffix}`:town};
+ const s:PlaceSuggestion={name:String(p.name).trim(),address:street,city:town&&suffix?`${town}, ${suffix}`:town};
+ const gc=f?.geometry?.coordinates,glon=Array.isArray(gc)?Number(gc[0]):NaN,glat=Array.isArray(gc)?Number(gc[1]):NaN;
+ if(Number.isFinite(glat)&&Number.isFinite(glon)){s.lat=glat;s.lon=glon}
+ return s;
+}
+/** Great-circle distance in km between two points. */
+export function haversineKm(aLat:number,aLon:number,bLat:number,bLon:number){
+ const r=6371,dLa=(bLat-aLat)*Math.PI/180,dLo=(bLon-aLon)*Math.PI/180;
+ const h=Math.sin(dLa/2)**2+Math.cos(aLat*Math.PI/180)*Math.cos(bLat*Math.PI/180)*Math.sin(dLo/2)**2;
+ return 2*r*Math.asin(Math.sqrt(h));
+}
+/** Nearby ranking: rows with coordinates nearest-first; rows without coordinates keep
+ *  their order at the end (they're never dropped — a venue without coordinates can still
+ *  be the right pick). Stable: equal distances keep their input order. */
+export function distanceRank(rows:PlaceSuggestion[],lat:number,lon:number):PlaceSuggestion[]{
+ const withD=rows.map((r,i)=>({r,i,d:r.lat!=null&&r.lon!=null?haversineKm(lat,lon,r.lat,r.lon):null}));
+ return withD.sort((a,b)=>(a.d==null?1:0)-(b.d==null?1:0)||(a.d??0)-(b.d??0)||a.i-b.i).map(x=>x.r);
 }
 /** The place an event shows, from all its listings (cards and event pages use this same choice): the most specific
  *  (street address > named place > town only), ties to the oldest listing; a bare street address takes the place name
