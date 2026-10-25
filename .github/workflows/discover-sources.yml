@@ -16,6 +16,10 @@ on:
         description: "Save confirmed sources to GoToday"
         type: boolean
         default: true
+      instagram_scan:
+        description: "Only look for each site's Instagram account (also on sites that are already sources)"
+        type: boolean
+        default: false
 
 permissions:
   contents: write
@@ -49,6 +53,7 @@ jobs:
           SAVE: ${{ (github.event_name == 'push' || inputs.save) && '1' || '0' }}
           GOTODAY_URL: ${{ secrets.GOTODAY_URL }}
           INGESTION_SECRET: ${{ secrets.INGESTION_SECRET }}
+          IG_SCAN: ${{ inputs.instagram_scan && '1' || '0' }}
       # The results table, readable without opening the Actions page (branch "discovery-results", no deploy).
       - name: Save results
         if: always()
