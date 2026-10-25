@@ -5,6 +5,7 @@ import Link from "next/link";
 import SiteHeader from "../../components/SiteHeader";
 import EventForm,{type FormValues} from "../../components/EventForm";
 import CopyLink from "../../components/CopyLink";
+import NotifyButton from "../../components/NotifyButton";
 import {rememberEvent,forgetEvent} from "../../components/myEvents";
 
 type Data={event:FormValues&{status:string;reviewReason:string|null;shareToken:string;date:string};rsvps:{id:number;name:string;status:string;guests:number;note:string}[];counts:{going:number;maybe:number;no:number};shareUrl:string};
@@ -47,6 +48,7 @@ export default function ManagePage(){
     {(e.rsvp?e.rsvp.onSite:e.visibility==="private")&&<section className="related"><h2>Guest list · {data.counts.going} going{data.counts.maybe?` · ${data.counts.maybe} maybe`:""}{data.counts.no?` · ${data.counts.no} can't go`:""}</h2>
      {data.rsvps.length===0?<p className="muted">No RSVPs yet. Send your invite link to guests.</p>
      :<ul className="guests">{data.rsvps.map(r=><li key={r.id}><b>{r.name}</b><span className={`g ${r.status}`}>{r.status==="going"?"Going":r.status==="maybe"?"Maybe":"Can't go"}{r.guests>0&&r.status!=="no"?` +${r.guests}`:""}</span>{r.note&&<span className="muted">“{r.note}”</span>}</li>)}</ul>}
+     <NotifyButton manageToken={token}/>
     </section>}
 
     <section className="related"><h2>Edit details</h2>

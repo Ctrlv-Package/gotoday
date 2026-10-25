@@ -83,6 +83,10 @@ const STATEMENTS=[
  `alter table community_events add column if not exists categories text[]`,
  `alter table community_events add column if not exists repeat jsonb`,
  `alter table community_events add column if not exists rsvp jsonb`,
+ `alter table community_events add column if not exists rsvp_seen_at timestamptz`,
+ `create table if not exists push_subs(endpoint text primary key,keys jsonb not null,user_id int,manage_hash text,created_at timestamptz default now())`,
+ `create index if not exists push_subs_user_idx on push_subs(user_id)`,
+ `create index if not exists push_subs_manage_idx on push_subs(manage_hash)`,
  `create table if not exists follows(user_id int not null references users(id) on delete cascade,series_id int not null references event_series(id) on delete cascade,
    created_at timestamptz default now(),primary key(user_id,series_id))`,
  // Quarantine (quality system): why a held listing is held; null means it published normally.

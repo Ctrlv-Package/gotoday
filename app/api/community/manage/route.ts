@@ -1,5 +1,6 @@
 import {NextRequest,NextResponse} from "next/server";
 import {eventByManage,validate,updateEvent,deleteEvent,transferEvent,rsvpsFor,rsvpCounts} from "../../../../lib/community";
+import {db} from "../../../../lib/db";
 export const dynamic="force-dynamic";
 export const maxDuration=60;
 // The manage token travels in the Authorization header, never in a URL the server logs.
@@ -9,6 +10,7 @@ const nf=()=>NextResponse.json({ok:false,errors:["This manage link isn't valid (
 export async function GET(req:NextRequest){
  const t=tokenOf(req);const e=t?await eventByManage(t):null;if(!e)return nf();
  const [rsvps,counts]=await Promise.all([rsvpsFor(e.id),rsvpCounts(e.id)]);
+ await db.query("update community_events set rsvp_seen_at=now() where id=$1",[e.id]).catch(()=>{});   // the host has seen the replies
  const {id:_,eventId:__,...pub}=e;
  return NextResponse.json({ok:true,event:pub,rsvps,counts,shareUrl:`${req.nextUrl.origin}/e/${e.shareToken}`});
 }

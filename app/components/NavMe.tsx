@@ -7,13 +7,13 @@ import {loadMe} from "./saved";
  *  Signed out: a person icon and "Sign in" (goes to sign-in, then My GoToday). */
 export default function NavMe(){
  const {t}=useT();
- const [me,setMe]=useState<{signedIn:boolean;name?:string|null;image?:string|null;email?:string}|null>(null);
+ const [me,setMe]=useState<{signedIn:boolean;name?:string|null;image?:string|null;email?:string;newReplies?:number}|null>(null);
  useEffect(()=>{loadMe().then(setMe)},[]);
  if(me?.signedIn){
   const first=(me.name||me.email||"").split(/[\s@]/)[0]||"Me";
   return <a className="meLink signed" href="/me" title={`${me.email?t("Signed in as {email}",{email:me.email}):t("Signed in")} — ${t("My GoToday")}`}>
    {me.image?<img src={me.image} alt="" width={24} height={24} referrerPolicy="no-referrer"/>:<span className="initial" aria-hidden>{first[0]?.toUpperCase()}</span>}
-   <span>{first}</span>
+   <span>{first}</span>{(me.newReplies||0)>0&&<span className="replyDot" title={t("New replies to your events")}>{me.newReplies}</span>}
   </a>;
  }
  return <a className="meLink" href="/signin?next=/me" title={t("Sign in or create an account")}>

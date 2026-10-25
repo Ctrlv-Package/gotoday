@@ -1,7 +1,7 @@
 // GoToday's service worker: makes the site installable and gives a graceful offline page.
 // Deliberately conservative — signed-in, admin and API traffic is never cached, listing pages
 // are network-first so events are never stale, and only static files are cache-first.
-const VERSION = "v1";
+const VERSION = "v2";
 const STATIC_CACHE = `gotoday-static-${VERSION}`;
 const PAGE_CACHE = `gotoday-pages-${VERSION}`;
 const PRECACHE = ["/offline", "/icons/icon-192.png", "/icons/icon-512.png", "/manifest.webmanifest"];
@@ -57,4 +57,22 @@ self.addEventListener("fetch", (event) => {
       return fresh;
     })());
   }
+});
+
+// Notifications for hosts ("New RSVP · Matteo's Birthday — Elena: Going (+2)"); tapping opens the event.
+self.addEventListener("push", (event) => {
+  let d = {};
+  try { d = event.data ? event.data.json() : {}; } catch { d = {title: "GoToday", body: event.data ? event.data.text() : ""}; }
+  event.waitUntil(self.registration.showNotification(d.title || "GoToday", {
+    body: d.body || "", icon: "/icons/icon-192.png", badge: "/icons/icon-192.png", data: {url: d.url || "/me"}, tag: d.url || "gotoday",
+  }));
+});
+self.addEventListener("notificationclick", (event) => {
+  event.notification.close();
+  const url = (event.notification.data && event.notification.data.url) || "/me";
+  event.waitUntil((async () => {
+    const all = await self.clients.matchAll({type: "window", includeUncontrolled: true});
+    for (const c of all) if (new URL(c.url).pathname === url && "focus" in c) return c.focus();
+    return self.clients.openWindow(url);
+  })());
 });

@@ -83,8 +83,8 @@ export default async function Me({searchParams}:{searchParams?:Promise<{deleted?
      {created.length===0?<p className="muted">{t("Events you create on GoToday show up here, with links to share and manage them.")} <Link href="/create" className="inlineLink">{t("Create an event →")}</Link></p>
      :<><ul className="meList">{created.map(c=><li key={c.id}>
        <a href={`/e/${c.shareToken}`}><b>{c.title}</b><span>{longDate(c.date,loc)}{c.startTime?` · ${c.startTime}`:""}{c.venue?` · ${c.venue}`:""}</span>
+        {c.rsvpCounts&&(c.rsvpCounts.going+c.rsvpCounts.maybe+c.rsvpCounts.no)>0&&<span className="rsvpCount">👥 {c.rsvpCounts.going} {t("going")}{c.rsvpCounts.maybe?` · ${c.rsvpCounts.maybe} ${t("maybe")}`:""}{c.rsvpCounts.no?` · ${c.rsvpCounts.no} ${t("can't go")}`:""}{c.newReplies>0&&<em className="newBadge">{c.newReplies} {t("new")}</em>}</span>}
         <span className={`stat ${c.status}`}>{c.visibility==="private"?t("Private · link only"):c.status==="live"?t("Live on GoToday"):c.status==="pending"?t("Waiting for review"):c.status==="rejected"?t("Not approved"):c.status}</span></a>
-       {c.rsvpCounts&&(c.rsvpCounts.going+c.rsvpCounts.maybe+c.rsvpCounts.no)>0&&<Link className="rsvpCount" href={`/e/${c.shareToken}`}>👥 {c.rsvpCounts.going} {t("going")}{c.rsvpCounts.maybe?` · ${c.rsvpCounts.maybe} ${t("maybe")}`:""}{c.rsvpCounts.no?` · ${c.rsvpCounts.no} ${t("can't go")}`:""}</Link>}
        {c.ownerToken&&<Link className="btn ghost small" href={`/manage/${c.ownerToken}`}>{t("Manage")}</Link>}
       </li>)}</ul>
       <p className="muted small" style={{marginTop:8}}><Link href="/create" className="inlineLink">{t("+ Create another event")}</Link></p></>}

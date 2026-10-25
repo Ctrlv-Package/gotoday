@@ -8,6 +8,7 @@ import AddToCalendar from "../../components/AddToCalendar";
 import ExpandableImage from "../../components/ExpandableImage";
 import Rsvp from "./Rsvp";
 import HostLink from "./HostLink";
+import NotifyButton from "../../components/NotifyButton";
 import {rsvpsFor} from "../../../lib/community";
 import SaveButton from "../../components/SaveButton";
 import CalendarChoice from "../../components/CalendarChoice";
@@ -55,6 +56,7 @@ export default async function CommunityEventPage({params,searchParams}:{params:P
  // The host (signed in) sees who replied right here, with a link to manage the event.
  const own=user?(await db.query("select owner_token from community_events where id=$1 and user_id=$2",[e.id,user.id]).catch(()=>({rows:[]}))).rows[0]:null;
  const guests=own&&e.rsvp.onSite?await rsvpsFor(e.id).catch(()=>[]):[];
+ if(own)await db.query("update community_events set rsvp_seen_at=now() where id=$1",[e.id]).catch(()=>{});
  const map=`https://maps.google.com/maps?q=${encodeURIComponent(e.latitude!=null&&e.longitude!=null&&!e.address?`${e.latitude},${e.longitude}`:where)}&z=15&output=embed`;
  const dir=`https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(where)}`;
  return shell(<article className="detailCard">{photo&&<div className="heroWrap"><ExpandableImage className="detailHero" src={photo} alt=""/>{stock&&<span className="stockNote">Illustrative photo</span>}</div>}<div className="detailBody">
@@ -85,7 +87,7 @@ export default async function CommunityEventPage({params,searchParams}:{params:P
      {guests.length===0?<p className="muted">No replies yet. Share the link with your guests.</p>
      :<ul className="guests">{guests.map(r=><li key={r.id}><b>{r.name}</b><span className={`g ${r.status}`}>{r.status==="going"?"Going":r.status==="maybe"?"Maybe":"Can't go"}{r.guests>0&&r.status!=="no"?` +${r.guests}`:""}</span>{r.note&&<span className="muted">“{r.note}”</span>}</li>)}</ul>}</>
     :<p className="muted">Guests reply to you by {[e.rsvp.phone&&"text or call",e.rsvp.email&&"email"].filter(Boolean).join(" or ")||"the contact you gave"}. Turn on “Guests reply on GoToday” in Manage to keep a guest list here.</p>}
-    {own.owner_token&&<a className="btn ghost small" href={`/manage/${own.owner_token}`}>Manage event</a>}
+    <div className="hostActions">{e.rsvp.onSite&&<NotifyButton manageToken={own.owner_token||undefined}/>}{own.owner_token&&<a className="btn ghost small" href={`/manage/${own.owner_token}`}>Manage event</a>}</div>
    </section>
   :<>{!ended&&<HostLink share={token}/>}{!ended&&(counts||e.rsvp.phone||e.rsvp.email)&&<RsvpBox e={e} date={w.date} counts={counts} share={token}/>}</>}
   <section className="mapBox"><h2>Location</h2><p className="muted">{where}</p><iframe title={`Map of ${e.venue||e.city}`} src={map} loading="lazy" referrerPolicy="no-referrer-when-downgrade"/></section>

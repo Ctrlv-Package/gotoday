@@ -1,3 +1,4 @@
+import {notifyHost} from "./push";
 import crypto from "node:crypto";
 import {db} from "./db";
 import {ensureSchema} from "./schema";
@@ -259,6 +260,9 @@ export async function addRsvp(shareToken:string,raw:any){
  // Same name again = update their answer instead of a duplicate row.
  const {rows}=await db.query(`insert into rsvps(community_event_id,name,status,guests,note) values($1,$2,$3,$4,$5)
   on conflict(community_event_id,lower(name)) do update set status=excluded.status,guests=excluded.guests,note=excluded.note,created_at=now() returning *`,[e.id,name,status,guests,note||null]);
+ // Tell the host right away on their phone (if they turned notifications on).
+ const label=status==="going"?"Going":status==="maybe"?"Maybe":"Can't go";
+ notifyHost(e,{title:`New RSVP · ${e.title}`.slice(0,90),body:`${name}: ${label}${guests&&status!=="no"?` (+${guests})`:""}${note?` · “${note.slice(0,80)}”`:""}`,url:`/e/${e.shareToken}`}).catch(()=>{});
  return{rsvp:rows[0]};
 }
 export async function rsvpsFor(eventId:number):Promise<Rsvp[]>{
@@ -275,10 +279,12 @@ export async function eventsOfUser(userId:number){
  await ensureSchema();
  const {rows}=await db.query("select * from community_events where user_id=$1 and status<>'deleted' order by start_date desc,id desc limit 100",[userId]);
  // Replies so far (going / maybe / can't go), so the host sees them in My GoToday.
- const ids=rows.map((r:any)=>r.id);const c=new Map<number,{going:number;maybe:number;no:number}>();
+ const ids=rows.map((r:any)=>r.id);const c=new Map<number,{going:number;maybe:number;no:number}>(),fresh=new Map<number,number>();
  if(ids.length){const q=await db.query("select community_event_id as id,status,count(*)::int as n,coalesce(sum(guests),0)::int as g from rsvps where community_event_id=any($1) group by 1,2",[ids]).catch(()=>({rows:[]}));
+  const nq=await db.query("select r.community_event_id as id,count(*)::int as n from rsvps r join community_events c on c.id=r.community_event_id where r.community_event_id=any($1) and r.created_at>coalesce(c.rsvp_seen_at,'epoch') group by 1",[ids]).catch(()=>({rows:[]}));
+  for(const x of nq.rows as any[])fresh.set(x.id,x.n);
   for(const x of q.rows as any[]){const o=c.get(x.id)||{going:0,maybe:0,no:0};(o as any)[x.status]=x.status==="no"?x.n:x.n+x.g;c.set(x.id,o)}}
- return rows.map((r:any)=>({...rowToEvent(r),ownerToken:r.owner_token as string|null,rsvpCounts:c.get(r.id)||null}));
+ return rows.map((r:any)=>({...rowToEvent(r),ownerToken:r.owner_token as string|null,rsvpCounts:c.get(r.id)||null,newReplies:fresh.get(r.id)||0}));
 }
 /** Attach events made on this device before signing in (proved by their manage links) to the account. */
 export async function claimEvents(userId:number,manageTokens:string[]){
