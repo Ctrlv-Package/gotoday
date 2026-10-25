@@ -62,7 +62,7 @@ export async function runSource(s:EventSource,getRaw:()=>Promise<EventRecord[]>)
   if(accepted>0)await db.query("update events set status='stale',updated_at=now() where source_id=$1 and status='active' and last_verified_at < $2",[sourceId,runStarted]);
   await db.query("update ingestion_runs set finished_at=now(),status='success',records_found=$1,records_accepted=$2,records_rejected=$3 where id=$4",[found,accepted,rejected,runId]);
   await db.query("update sources set last_success_at=now(),last_error=null,updated_at=now() where id=$1",[sourceId]);
-  const reasons=await db.query("select rejection_reason,count(*)::int as count from rejected_events where ingestion_run_id=$1 group by rejection_reason order by count(*) desc",[runId]);
+  const reasons=await db.query("select rejection_reason,count(*)::int as count,(array_agg(left(raw_title,90)))[1:4] as examples from rejected_events where ingestion_run_id=$1 group by rejection_reason order by count(*) desc",[runId]);
   return{source:s.name,found,accepted,quarantined,rejected,status:"success",rejectionReasons:reasons.rows};
  }catch(err){
   const msg=err instanceof Error?err.message:String(err);
