@@ -4,6 +4,7 @@ import {mkdirSync,writeFileSync,appendFileSync} from "fs";
 import {installBrowserFetch,closeBrowserFetch} from "./browser-fetch";
 const urls=String(process.env.BROWSER_URLS||"").split(/\s+/).filter(Boolean);
 mkdirSync("out",{recursive:true});
+async function main(){
 await installBrowserFetch();
 let i=0;
 for(const u of urls){i++;
@@ -12,3 +13,5 @@ for(const u of urls){i++;
  appendFileSync("out/index.txt",`${i} ${u}\n`);
 }
 await closeBrowserFetch();
+}
+main().catch(e=>{console.error(e);process.exit(1)});
