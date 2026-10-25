@@ -145,11 +145,11 @@ async function main(){
  const all:(Found&{saved?:string})[]=[];
  // Sites already covered (a saved source on the same host) are skipped, so adding lines for a new state doesn't
  // re-check and re-save every earlier state. REDISCOVER=1 checks everything again.
- const known=new Set<string>(),savedSigs=new Map<string,string>();
+ const known=new Set<string>(),savedSigs=new Map<string,string>(),knownNames=new Set<string>();
  if(doSave&&process.env.REDISCOVER!=="1"){
   const host=(u:unknown)=>{try{return new URL(String(u)).hostname.replace(/^www\./,"")}catch{return""}};
   try{const r=await fetch(`${await siteBase()}/api/admin/sources`,{headers:{authorization:`Bearer ${process.env.INGESTION_SECRET}`}});const j:any=await r.json();
-   for(const c of (j.sources||j.configs||[])){for(const u of [c.url,c.params?.url,c.params?.site,c.params?.baseUrl,c.params?.listUrl])if(host(u))known.add(host(u));savedSigs.set(sigOf(c.platform,c.params),c.name)}}catch(e){console.log("Couldn't read saved sources:",String(e))}
+   for(const c of (j.sources||j.configs||[])){for(const u of [c.url,c.params?.url,c.params?.site,c.params?.baseUrl,c.params?.listUrl])if(host(u))known.add(host(u));savedSigs.set(sigOf(c.platform,c.params),c.name);knownNames.add(c.name)}}catch(e){console.log("Couldn't read saved sources:",String(e))}
  }
  for(const c of cands){
   {const h=(()=>{try{return new URL(c.url).hostname.replace(/^www\./,"")}catch{return""}})();if(h&&known.has(h)){console.log(`skip (already a source) ${c.name||c.url}`);continue}}
@@ -161,6 +161,8 @@ async function main(){
    // One calendar found from two sites (a county page and its library page both pointing at the same LibCal) is saved once.
    const sig=x.config?sigOf(x.platform,x.config.params):"";
    if(x.config&&savedSigs.has(sig)){console.log(`skip (same calendar as ${savedSigs.get(sig)}) ${x.input}`);continue}
+   // A source already saved under this name keeps its settings (a re-check never swaps a working calendar for another).
+   if(x.config&&knownNames.has(x.config.name)&&process.env.REDISCOVER!=="1"){console.log(`skip (already saved as ${x.config.name}) ${x.input}`);continue}
    if(doSave&&x.config&&x.confidence==="confirmed")saved=await save(x,c).catch(e=>`not saved: ${e?.message||e}`);
    if(x.config&&saved?.startsWith("saved"))savedSigs.set(sig,x.config.name);
    all.push({...x,saved});console.log(`${x.platform.padEnd(14)} ${x.confidence.padEnd(9)} ${x.input}  — ${x.note}${saved?`  [${saved}]`:""}`);
