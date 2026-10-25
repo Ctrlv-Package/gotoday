@@ -264,9 +264,16 @@ export async function fetchInstagram(cfg:InstagramConfig,startDate:string,endDat
  // with none, no picture here (the card gets a matching library photo instead).
  const WORD=(t:string)=>new Set(t.toLowerCase().replace(/[^a-z0-9 ]+/g," ").split(" ").filter(w=>w.length>=5&&!/^(event|events|night|today|tomorrow|weekend|join|celebrat\w*|happening\w*|downtown|annual|free|family|october|november|december|january|february|march|april|august|september|saturday|sunday|friday|monday|tuesday|wednesday|thursday)$/.test(w)));
  const flyerFor=(e:any):string|undefined=>{
-  const mine=WORD(`${e.title} ${e.summary||""}`);
+  // Only the event's own name words count: not the town, county or a place word ("Broward" is in the early-voting
+  // post too, which is no reason to show its flyer on "Broward County Plant Affair").
+  const PLACEY=/^(county|broward|miami|dade|beach|palm|florida|park|parks|center|centre|library|city|town|village|north|south|east|west|central|plaza|street|avenue|recreation|community)$/;
+  const name=(t:string)=>new Set([...WORD(t)].filter(w=>!townWords.has(w)&&!PLACEY.test(w)&&!GENERIC.has(w)));
+  const mine=name(e.title);
   const cands=found.filter((f:any)=>f.post.id!==e.post.id&&f.post.media_type!=="VIDEO"&&f.date===e.date);
-  const best=cands.find((f:any)=>sameEvent(f.title)===sameEvent(e.title))||cands.find((f:any)=>{const w=WORD(`${f.title} ${f.summary||""} ${(f.post.caption||"").slice(0,600)}`);for(const x of mine)if(w.has(x))return true;return false});
+  const best=cands.find((f:any)=>sameEvent(f.title)===sameEvent(e.title))||cands.find((f:any)=>{
+   // The other post's own event title must share the name: two words, or one long distinctive one ("Hollyweird").
+   const w=name(f.title);let hit=0,long=false;for(const x of mine)if(w.has(x)){hit++;if(x.length>=7)long=true}
+   return hit>=2||(hit===1&&long&&mine.size<=2)});
   return best?(best.post.media_type==="CAROUSEL_ALBUM"?(best.slide&&slides(best.post)[best.slide-1])||slides(best.post)[0]:best.post.media_url):undefined;
  };
  const pictureFor=(e:any)=>{
