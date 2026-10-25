@@ -626,8 +626,8 @@ a.linkBtn{text-decoration:none}
 .lightboxX{position:fixed;top:14px;right:14px;width:44px;height:44px;border-radius:50%;border:0;background:rgba(255,255,255,.92);color:#111;font-size:20px;font-weight:700;cursor:pointer}
 .hostBox{margin:18px 0 0;padding:12px 14px;border-radius:14px;background:#f5f3ff;border:1px solid #ddd6fe;display:flex;flex-wrap:wrap;gap:10px;align-items:center;justify-content:space-between}
 .hostView .btn{margin-top:10px}
-.rsvpCount{display:block;font-size:14px;font-weight:700;color:#5b21b6;margin-top:4px}
-.newBadge{font-style:normal;margin-left:8px;padding:2px 8px;border-radius:999px;background:#ef4444;color:#fff;font-size:12px;font-weight:800}
+.rsvpCount{display:block;line-height:1.6;font-size:14px;font-weight:700;color:#5b21b6;margin-top:4px}
+.newBadge{display:inline-block;white-space:nowrap;vertical-align:middle;line-height:1.4;font-style:normal;margin-left:6px;padding:2px 8px;border-radius:999px;background:#ef4444;color:#fff;font-size:12px;font-weight:800}
 .notifyBtn{margin-top:10px}
 .notifyNote{font-size:14px;color:#5b21b6;margin:10px 0 0}
 .hostActions{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
