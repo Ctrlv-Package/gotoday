@@ -28,6 +28,7 @@ jobs:
         env:
           GOTODAY_URL: ${{ secrets.GOTODAY_URL }}
           INGESTION_SECRET: ${{ secrets.INGESTION_SECRET }}
+          MODE: sites   # Instagram has its own hourly job (instagram.yml)
       # If the run fails, keep the end of its log on the probe-results branch so it can be read without the Actions UI.
       - name: Save log on failure
         if: failure()

@@ -20,6 +20,9 @@ async function main(){
 base=await resolveBase(base);console.log(`GoToday site: ${base}`);
 if(process.env.USE_BROWSER!=="0"){await installBrowserFetch();console.log("Fetching city pages with headless Chrome")}
 let failures=0;const rows:string[]=[],problems:string[]=[];const startedAt=new Date().toISOString();
+// MODE=instagram: only the Instagram accounts (an hourly job, to spread Meta's hourly budget across the day).
+// MODE=sites: everything except Instagram (the main job). Unset: everything.
+const MODE=process.env.MODE||"";
 // Send results to the site; if the site hiccups (deploy in progress, timeout), wait and try once more.
 async function push(payload:any){
  for(let i=0;i<2;i++){
@@ -49,7 +52,7 @@ console.log(`Remote sources: ${configs.map(c=>c.name).join(", ")||"(none)"}`);
 // failed right away: they're retried at the end, after a pause, with a fresh browser profile.
 const isBlock=(m:string)=>/HTTP (403|429)\b/.test(m);
 const deferred:{s:ReturnType<typeof sourceFromConfig>;error:string}[]=[];
-const queue:{s:ReturnType<typeof sourceFromConfig>;retry:boolean}[]=configs.map(c=>({s:sourceFromConfig(c),retry:false}));
+const queue:{s:ReturnType<typeof sourceFromConfig>;retry:boolean}[]=(MODE==="instagram"?[]:configs.filter(c=>MODE!=="sites"||c.platform!=="instagram")).map(c=>({s:sourceFromConfig(c),retry:false}));
 // Instagram's hourly Meta budget: once accounts start being rate-limit skipped, stop feeding the full
 // bucket — the remaining accounts keep their place at the front of the next run (stalest first).
 let igSkips=0,igStopped=false;
@@ -76,7 +79,7 @@ for(let i=0;i<queue.length;i++){
 console.log(failures?`${failures} source(s) did not succeed`:"All remote sources succeeded");
  // Website sources Vercel couldn't reach on their last try (city firewalls): fetch them from here and push.
  const fbRows:string[]=[];let fbTried=0,fbFailed=0;
- try{
+ if(MODE!=="instagram")try{
   const lr=await fetch(`${base}/api/ingest?list=fallback`,{headers:{authorization:`Bearer ${secret}`}});
   const fbNames:string[]=((await lr.json().catch(()=>({}))).sources)||[];
   if(fbNames.length){
@@ -96,7 +99,7 @@ console.log(failures?`${failures} source(s) did not succeed`:"All remote sources
  }catch(e:any){console.log(`Retry step failed: ${e?.message||e}`)}
 
  // Website sources the site's own daily run hasn't refreshed in 6 hours: run them here one by one, 4 at a time.
- try{
+ if(MODE!=="instagram")try{
   const lr=await fetch(`${base}/api/ingest?list=stale&hours=6`,{headers:{authorization:`Bearer ${secret}`}});
   const names:string[]=((await lr.json().catch(()=>({}))).sources)||[];let ok=0,bad=0,next=0;
   console.log(`Website sources to refresh: ${names.length}`);
@@ -112,7 +115,7 @@ console.log(failures?`${failures} source(s) did not succeed`:"All remote sources
 
  // Instagram accounts: the site does the work (Instagram API + flyer reading); we just call each one, 3 at a time.
  const igRows:string[]=[];let igEvents=0,igFailed=0,igTotal=0;
- try{
+ if(MODE!=="sites")try{
   const lr=await fetch(`${base}/api/ingest?list=instagram`,{headers:{authorization:`Bearer ${secret}`}});
   const names:string[]=((await lr.json().catch(()=>({}))).sources)||[];
   console.log(`Instagram accounts: ${names.length}`);igTotal=names.length;if(!names.length)problems.push(`Instagram list came back empty (HTTP ${lr.status})`);
@@ -134,8 +137,8 @@ console.log(failures?`${failures} source(s) did not succeed`:"All remote sources
  // Check what visitors now see in every area (duplicates, borrowed photos, wrong labels) and save it for the status page.
  // Photo types for new event titles (AI reads them; free tier, paced on the site).
  // Twice: many new event titles as areas are added (each call is one site run of up to 12 AI batches).
- for(let k=0;k<2;k++){try{const pr=await fetch(`${base}/api/admin/phototopics?run=12`,{method:"POST",headers:{authorization:`Bearer ${secret}`},signal:AbortSignal.timeout(290000)});console.log("photo types:",JSON.stringify(await pr.json().catch(()=>({}))).slice(0,300))}catch(e:any){console.log(`photo types: ${e?.message||e}`)}}
- try{const qr=await fetch(`${base}/api/admin/audit?save=1`,{headers:{authorization:`Bearer ${secret}`},signal:AbortSignal.timeout(280000)});const q:any=await qr.json().catch(()=>({}));
+ if(MODE!=="instagram")for(let k=0;k<2;k++){try{const pr=await fetch(`${base}/api/admin/phototopics?run=12`,{method:"POST",headers:{authorization:`Bearer ${secret}`},signal:AbortSignal.timeout(290000)});console.log("photo types:",JSON.stringify(await pr.json().catch(()=>({}))).slice(0,300))}catch(e:any){console.log(`photo types: ${e?.message||e}`)}}
+ if(MODE!=="instagram")try{const qr=await fetch(`${base}/api/admin/audit?save=1`,{headers:{authorization:`Bearer ${secret}`},signal:AbortSignal.timeout(280000)});const q:any=await qr.json().catch(()=>({}));
   if(q.ok){console.log(`Quality check: ${q.problems} to look at across ${q.cards} cards ${JSON.stringify(q.summary)}`);if(q.problems>25)problems.push(`Quality check: ${q.problems} display problems (see status page)`)}
   else console.log(`Quality check failed: HTTP ${qr.status}`)}catch(e:any){console.log(`Quality check failed: ${e?.message||e}`)}
  // Tell the site how this run went (shown on the status page).

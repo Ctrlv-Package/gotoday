@@ -23,6 +23,12 @@ async function probe(c:Cand):Promise<Found[]>{
  const home=await get(url),html=home.text,out:Found[]=[];
  if(!html)return[{input:arg,platform:"unreachable",confidence:"likely",note:`HTTP ${home.status||"error"} ${(home as any).error||""}`}];
  const name=c.name||titleName(html,host);
+ // The site's own Instagram (footer/header link): towns, libraries, parks and downtowns post weekend and holiday events
+ // there that never reach their calendars. Saved as an Instagram source for the same area.
+ const igHandles=[...new Set([...html.matchAll(/instagram\.com\/([A-Za-z0-9_.]{3,30})\/?["'?#]/g)].map(m=>m[1].toLowerCase()).filter(h=>!/^(p|reel|reels|explore|accounts|stories|tv|instagram|direct|about|legal|developer|share)$/.test(h)&&!/\.(com|org|net|gov)$/.test(h)))].slice(0,2);
+ const igFound:Found[]=[];
+ for(const h of igHandles)igFound.push({input:arg,platform:"instagram",confidence:"confirmed",note:`@${h}`,config:{name:`${name.replace(/\s*[|–-].*$/,"").trim()} · Instagram`,platform:"instagram",params:{username:h,city,venue:name.replace(/\s*[|–-].*$/,"").trim()},source_type:"venue",url:`https://www.instagram.com/${h}/`,priority:80}});
+ if(process.env.IG_SCAN==="1")return igFound;   // Instagram-only pass over sites that are already sources
 
  // Library calendar products, looked for on the home page and then on its Events/Calendar page (a library home page
  // often links "Events" without naming the product; e.g. bpl.org → bpl.bibliocommons.com only on /events).
@@ -122,7 +128,7 @@ async function probe(c:Cand):Promise<Found[]>{
     if(n)out.push({input:arg,platform:"ical",confidence:"confirmed",note:`${n} events in iCal feed`,config:{name,platform:"ical",params:{url:u,city},source_type:"official-city",url:evUrl||origin}})}}
  }
  if(!out.length)out.push({input:arg,platform:"unknown",confidence:"likely",note:"No known calendar product detected on the home page; try the site's Events page URL instead"});
- return out;
+ return [...out,...igFound];
 }
 
 // Resolve redirects once (apex -> www): the password header is dropped on a redirect to another host.
@@ -133,7 +139,7 @@ async function save(f:Found,c:Cand){
  const body={...f.config,region:c.region,timezone:c.tz||"America/New_York"};
  if(c.tz&&["ical","tribe","localist"].includes(String(body.platform)))body.params={...(body.params||{}),tz:c.tz};   // Panhandle west of the Apalachicola is Central time
  const post=async(extra:any)=>{const r=await fetch(`${base}/api/admin/sources`,{method:"POST",headers:{"content-type":"application/json",authorization:`Bearer ${secret}`},body:JSON.stringify({...body,...extra})});return{status:r.status,json:await r.json().catch(()=>({}))}};
- let r=await post({test:true});
+ let r=await post({test:body.platform!=="instagram"});
  if(r.status===422)r=await post({remote:true,test:false}).then(x=>({...x,json:{...x.json,remote:true}}));
  return r.status===200?(r.json.remote?"saved (remote)":`saved (${r.json.sample?.count??"?"} events in 14 days)`):`not saved: ${r.json.error||r.status}`;
 }
@@ -159,7 +165,7 @@ async function main(){
    for(const c of (j.sources||j.configs||[])){for(const u of [c.url,c.params?.url,c.params?.site,c.params?.baseUrl,c.params?.listUrl])if(host(u))known.add(host(u));savedSigs.set(sigOf(c.platform,c.params),c.name);knownNames.add(c.name)}}catch(e){console.log("Couldn't read saved sources:",String(e))}
  }
  for(const c of cands){
-  {const h=(()=>{try{return new URL(c.url).hostname.replace(/^www\./,"")}catch{return""}})();if(h&&known.has(h)){console.log(`skip (already a source) ${c.name||c.url}`);continue}}
+  {const h=(()=>{try{return new URL(c.url).hostname.replace(/^www\./,"")}catch{return""}})();if(h&&known.has(h)&&process.env.IG_SCAN!=="1"){console.log(`skip (already a source) ${c.name||c.url}`);continue}}
   const f:Found[]=await probe(c).catch(e=>[{input:c.name||c.url,platform:"error",confidence:"likely",note:String(e?.message||e)}]);
   // One site can run several products (a city calendar plus its library's); keep their saved names distinct.
   if(f.filter(x=>x.config).length>1)for(const x of f)if(x.config&&/^(communico|bibliocommons|libcal)$/.test(x.platform)&&!/librar/i.test(x.config.name))x.config.name=`${x.config.name.replace(/^(City|Town|Village) of /i,"")} Public Library`;

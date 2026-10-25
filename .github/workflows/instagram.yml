@@ -1,0 +1,29 @@
+name: Instagram accounts (hourly)
+
+# Meta allows a limited number of account reads per hour. Reading a slice every hour — stalest accounts first —
+# lets hundreds of town, library, parks and downtown accounts from Florida to Maine stay fresh through the day.
+on:
+  schedule:
+    - cron: "45 * * * *"
+  workflow_dispatch: {}
+
+concurrency:
+  group: instagram
+  cancel-in-progress: false
+
+jobs:
+  instagram:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 55
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 22
+      - run: npm install --no-audit --no-fund
+      - run: npx tsx scripts/remote-ingest.ts
+        env:
+          GOTODAY_URL: ${{ secrets.GOTODAY_URL }}
+          INGESTION_SECRET: ${{ secrets.INGESTION_SECRET }}
+          MODE: instagram
+          USE_BROWSER: "0"   # Instagram goes through the Meta API; no browser needed
