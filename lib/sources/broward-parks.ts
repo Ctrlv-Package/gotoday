@@ -1,5 +1,6 @@
 import type {EventRecord} from "../ingestion/types";
 import {stripHtml,richText} from "../ingestion/utils";
+import {expandDates} from "../ingestion/expand";
 
 // Broward County Parks: the county's own site (broward.org/parks/Events) loads its calendar from
 //   POST https://www.broward.org/api/event-calendar  {datasource, language, first, after}
@@ -8,42 +9,15 @@ import {stripHtml,richText} from "../ingestion/utils";
 const API="https://www.broward.org/api/event-calendar";
 const DATASOURCE="664bd9fb-a5e7-4dba-aa32-874cc2a8ba51"; // "Broward County Park Events" calendar component
 const PAGE="https://www.broward.org/parks/Events";
-const DAYS=["sunday","monday","tuesday","wednesday","thursday","friday","saturday"];
-const NTH:Record<string,number>={first:1,second:2,third:3,fourth:4,last:-1};
 // Not "things to go do": standing hours of attractions, ranges, and public meetings.
 const INELIGIBLE=/^(meetings?|waterparks?|target practice)$/i;
 
 const v=(e:any,k:string)=>e?.[k]?.jsonValue?.value;
-const ymd=(d:Date)=>d.toISOString().slice(0,10);
 /** broward.org builds event links from the title ("55+ Walking Club" -> "55-walking-club"), plus the
  *  occurrence date for recurring programs: /parks/Events?event=55-walking-club-2026-09-27 */
 export function parksEventUrl(title:string,date:string,recurring:boolean){
  const s=title.toLowerCase().normalize("NFKD").replace(/[\u0300-\u036f]/g,"").replace(/[^a-z0-9]+/g,"-").replace(/^-+|-+$/g,"");
  return `${PAGE}?event=${recurring?`${s}-${date}`:s}`;
-}
-
-/** Dates in [from,to] that match the recurrence rules (UTC-safe; dates only). */
-export function expandDates(start:string,end:string,rules:string[],from:string,to:string):string[]{
- const s=start>from?start:from,e=(end||start)<to?(end||start):to;
- if(s>e)return[];
- const out:string[]=[];
- for(let d=new Date(s+"T12:00:00Z");ymd(d)<=e;d.setUTCDate(d.getUTCDate()+1)){
-  const date=ymd(d),dow=d.getUTCDay(),dom=d.getUTCDate();
-  const dim=new Date(Date.UTC(d.getUTCFullYear(),d.getUTCMonth()+1,0)).getUTCDate();
-  const ok=rules.length===0||rules.some(r=>{
-   const x=r.toLowerCase().trim();
-   if(/every\s*day|everyday|daily/.test(x))return true;
-   if(/weekdays?/.test(x)&&!/weekends?/.test(x))return dow>=1&&dow<=5;
-   if(/weekends?/.test(x))return dow===0||dow===6;
-   const m=x.match(/every\s+(?:(first|second|third|fourth|last)\s+)?(sunday|monday|tuesday|wednesday|thursday|friday|saturday)/);
-   if(!m||DAYS.indexOf(m[2])!==dow)return false;
-   if(!m[1])return true;
-   const n=NTH[m[1]];
-   return n===-1?dom+7>dim:Math.ceil(dom/7)===n;
-  });
-  if(ok)out.push(date);
- }
- return out;
 }
 
 /** "4-5:30PM" -> ["16:00:00","17:30:00"], "11AM-Noon", "10:30 - 11:45AM", "8PM", "10:00AM". */
