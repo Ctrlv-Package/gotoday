@@ -113,6 +113,11 @@ export const NEARBY_RADIUS_KM=80;
 export function withinRadiusKm(rows:PlaceSuggestion[],lat:number,lon:number,km:number):PlaceSuggestion[]{
  return rows.filter(r=>r.lat!=null&&r.lon!=null&&haversineKm(lat,lon,r.lat,r.lon)<=km);
 }
+/** Strict nearby list: distance-ranked, then only rows within km survive. When none
+ *  qualify the list is empty — a far result must never pose as a nearby one. */
+export function nearbyRank(rows:PlaceSuggestion[],lat:number,lon:number,km=NEARBY_RADIUS_KM):PlaceSuggestion[]{
+ return withinRadiusKm(distanceRank(rows,lat,lon),lat,lon,km);
+}
 /** Merge suggestion lists from several sources, first source wins on duplicates
  *  (same place name in the same town, case-insensitive). */
 export function mergeSuggestions(lists:PlaceSuggestion[][]):PlaceSuggestion[]{

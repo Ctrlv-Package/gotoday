@@ -1,6 +1,6 @@
 import {test} from "node:test";
 import assert from "node:assert/strict";
-import {rankPlaceSuggestions,streetOnly,photonSuggestion,filterOutsideSuggestions,photonQuery,haversineKm,distanceRank,mergeSuggestions,withinRadiusKm,tomtomSuggestion,mapboxSuggestion} from "../lib/places";
+import {rankPlaceSuggestions,streetOnly,photonSuggestion,filterOutsideSuggestions,photonQuery,haversineKm,distanceRank,mergeSuggestions,withinRadiusKm,nearbyRank,tomtomSuggestion,mapboxSuggestion} from "../lib/places";
 
 const rows=[
  {name:"Weston Town Center",address:"1675 Market St",city:"Weston, FL"},
@@ -95,6 +95,15 @@ test("merging keeps the first source's copy of a duplicate; radius keeps only ne
  assert.deepEqual(mergeSuggestions([a,b]).map(r=>r.name),["A","B","C"]);
  const rows=[{name:"Near",address:"",city:"",lat:26.30,lon:-80.30},{name:"Far",address:"",city:"",lat:32.08,lon:-81.09},{name:"NoCoord",address:"",city:""}];
  assert.deepEqual(withinRadiusKm(rows,26.10,-80.39,80).map(r=>r.name),["Near"]);
+});
+test("strict nearby: only rows within range survive, nearest first, empty when none near",()=>{
+ const rows=[
+  {name:"Far",address:"",city:"",lat:32.08,lon:-81.09},
+  {name:"Near",address:"",city:"",lat:26.30,lon:-80.30},
+  {name:"NoCoord",address:"",city:""},
+ ];
+ assert.deepEqual(nearbyRank(rows,26.10,-80.39).map(r=>r.name),["Near"]);
+ assert.deepEqual(nearbyRank([rows[0],rows[2]],26.10,-80.39),[]);
 });
 test("short queries return nothing",()=>{
  assert.deepEqual(rankPlaceSuggestions("p","Weston, FL",rows),[]);
