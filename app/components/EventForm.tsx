@@ -18,16 +18,29 @@ export default function EventForm({initial,submitLabel,onSubmit,busy}:{initial:F
  // No external API or key: the venues table already holds every public listing's place.
  type PlaceSug={name:string;address:string;city:string};
  const [placeSug,setPlaceSug]=useState<PlaceSug[]>([]),[placeOpen,setPlaceOpen]=useState(false),placePicked=useRef(false),placeBox=useRef<HTMLDivElement>(null);
+ // "Use my location": one tap shares the device's coordinates for this search only — they
+ // rank the suggestions by distance and are never saved to the event. Tapping again turns it off.
+ const [loc,setLoc]=useState<{lat:number;lon:number}|null>(null),[locating,setLocating]=useState(false),[locDenied,setLocDenied]=useState(false);
+ const useMyLocation=()=>{
+  if(loc){setLoc(null);return}
+  if(!("geolocation" in navigator)){setLocDenied(true);return}
+  setLocating(true);
+  navigator.geolocation.getCurrentPosition(
+   p=>{setLoc({lat:p.coords.latitude,lon:p.coords.longitude});setLocDenied(false);setLocating(false)},
+   ()=>{setLocDenied(true);setLocating(false)},
+   {timeout:10000,maximumAge:60000});
+ };
  useEffect(()=>{
   const q=v.venue.trim();
   if(placePicked.current){placePicked.current=false;return}
   if(q.length<2){setPlaceSug([]);setPlaceOpen(false);return}
   const ctl=new AbortController(),t=setTimeout(async()=>{
-   try{const r=await fetch(`/api/places/suggest?q=${encodeURIComponent(q)}&city=${encodeURIComponent(v.city)}`,{signal:ctl.signal});
+   try{const qs=loc?`&lat=${loc.lat}&lon=${loc.lon}`:"";
+    const r=await fetch(`/api/places/suggest?q=${encodeURIComponent(q)}&city=${encodeURIComponent(v.city)}${qs}`,{signal:ctl.signal});
     const d=await r.json().catch(()=>({}));if(Array.isArray(d.suggestions)){setPlaceSug(d.suggestions);setPlaceOpen(true)}}catch{}
   },250);
   return()=>{clearTimeout(t);ctl.abort()};
- },[v.venue,v.city]);
+ },[v.venue,v.city,loc]);
  const pickPlace=(s:PlaceSug)=>{placePicked.current=true;setV(o=>({...o,venue:s.name,address:streetOnly(s.address,s.city)||o.address,city:s.city||o.city}));setPlaceSug([]);setPlaceOpen(false)};
  // The list stays open while the user scrolls it: it closes on a tap outside it or on
  // Escape, not on losing focus (which used to shut it mid-scroll).
@@ -67,6 +80,7 @@ export default function EventForm({initial,submitLabel,onSubmit,busy}:{initial:F
 
   <div className="placeSuggest" ref={placeBox}>
    <label className="efField">Place name<input maxLength={120} value={v.venue} onChange={e=>set("venue",e.target.value)} placeholder="Weston Town Center, Vista Park, our house…" autoComplete="off" onFocus={()=>{if(placeSug.length)setPlaceOpen(true)}} onKeyDown={e=>{if(e.key==="Escape")setPlaceOpen(false)}}/></label>
+   <button type="button" className="placeLocBtn" onClick={useMyLocation} title={loc?"Stop ranking by distance":"Rank suggestions by distance from you"}>{locating?"Locating…":loc?"✓ Near you":locDenied?"Location unavailable — try again":"Use my location"}</button>
    {placeOpen&&placeSug.length>0&&<ul className="placeSuggestList">{placeSug.map((s,i)=><li key={`${s.name}|${s.address}|${s.city}|${i}`}><button type="button" onMouseDown={e=>{e.preventDefault();pickPlace(s)}}><b>{s.name}</b>{(streetOnly(s.address,s.city)||s.city)&&<span>{[streetOnly(s.address,s.city),s.city].filter(Boolean).join(", ")}</span>}</button></li>)}</ul>}
   </div>
   <div className="efRow">
