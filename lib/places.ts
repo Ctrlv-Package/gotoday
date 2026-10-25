@@ -18,6 +18,27 @@ export function placeScore(p:{venue?:string|null;address?:string|null;city?:stri
 }
 
 export type Place={id:number;venue?:string|null;address?:string|null;city?:string|null;source?:string|null;lat?:number|null;lng?:number|null};
+export type PlaceSuggestion={name:string;address:string;city:string};
+const STREET_NAME=/^\d{2,6}\s+\S+.*\b(St|Street|Ave|Avenue|Blvd|Boulevard|Rd|Road|Ln|Lane|Dr|Drive|Way|Ct|Court|Pl|Place|Hwy|Highway|Ter|Terrace)\b/i;
+/** Rank venue rows for the create form's place suggestions: the user's town first, then a
+ *  name that starts with what they typed, then a name that contains it, then an address match.
+ *  A bare street address ranks last (it's a place without a name). Dedupes by name+town. */
+export function rankPlaceSuggestions(q:string,city:string,rows:PlaceSuggestion[]):PlaceSuggestion[]{
+ const query=q.trim().toLowerCase();if(query.length<2)return[];
+ const town=city.trim().toLowerCase().split(",")[0];
+ // Only rows that actually match the typed text rank at all; the town is a bonus, not a pass.
+ const matching=rows.filter(r=>{const name=r.name.trim().toLowerCase(),addr=(r.address||"").trim().toLowerCase();return name.includes(query)||addr.includes(query)});
+ const scored=matching.filter(r=>r.name.trim()).map(r=>{
+  const name=r.name.trim().toLowerCase(),addr=(r.address||"").trim().toLowerCase();
+  let sc=name.startsWith(query)?5:name.includes(query)?3:1;
+  if(town&&r.city.trim().toLowerCase().startsWith(town))sc+=10;
+  if(STREET_NAME.test(r.name.trim()))sc-=2;
+  return{...r,sc,hasAddr:!!r.address.trim()};
+ }).sort((a,b)=>b.sc-a.sc||(b.hasAddr?1:0)-(a.hasAddr?1:0)||a.name.length-b.name.length);
+ const seen=new Set<string>(),out:PlaceSuggestion[]=[];
+ for(const r of scored){const k=`${r.name.trim().toLowerCase()}|${r.city.trim().toLowerCase()}`;if(seen.has(k))continue;seen.add(k);out.push({name:r.name,address:r.address,city:r.city});if(out.length>=8)break}
+ return out;
+}
 /** The place an event shows, from all its listings (cards and event pages use this same choice): the most specific
  *  (street address > named place > town only), ties to the oldest listing; a bare street address takes the place name
  *  another listing gives ("Sanctuary Park" + "16290 Griffin Road"). */
