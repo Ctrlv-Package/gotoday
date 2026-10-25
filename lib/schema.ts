@@ -85,6 +85,9 @@ const STATEMENTS=[
  `alter table community_events add column if not exists rsvp jsonb`,
  `create table if not exists follows(user_id int not null references users(id) on delete cascade,series_id int not null references event_series(id) on delete cascade,
    created_at timestamptz default now(),primary key(user_id,series_id))`,
+ // Quarantine (quality system): why a held listing is held; null means it published normally.
+ // Public queries only read status='active', so a 'quarantine' row is invisible until approved.
+ `alter table events add column if not exists quarantine_reason text`,
 ];
 export function ensureSchema(){
  if(!ready)ready=(async()=>{for(const s of STATEMENTS)await db.query(s)})().catch(e=>{ready=null;throw e});
