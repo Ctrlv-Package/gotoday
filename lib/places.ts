@@ -72,6 +72,14 @@ export function filterOutsideSuggestions(rows:PlaceSuggestion[],city:string):Pla
   return r.city.trim().toLowerCase().split(",")[0]===town;
  });
 }
+/** The query sent to Photon: the typed text plus the form's town, when one is given and not
+ *  already typed. Photon ranks globally, and a bare "Flying" never returns the user's town
+ *  even in 50 candidates — while "Flying Weston" puts its trampoline park first. */
+export function photonQuery(q:string,city:string){
+ const town=city.trim().split(",")[0].trim();
+ if(!town||q.toLowerCase().includes(town.toLowerCase()))return q;
+ return `${q} ${town}`;
+}
 /** A Photon (OpenStreetMap) feature -> the suggestion shape the create form fills. Null when
  *  the feature has no usable name. Outside the US the state name is kept as-is. */
 export function photonSuggestion(f:any):PlaceSuggestion|null{

@@ -1,6 +1,6 @@
 import {NextResponse} from "next/server";
 import {db} from "../../../../lib/db";
-import {rankPlaceSuggestions,photonSuggestion,filterOutsideSuggestions,type PlaceSuggestion} from "../../../../lib/places";
+import {rankPlaceSuggestions,photonSuggestion,filterOutsideSuggestions,photonQuery,type PlaceSuggestion} from "../../../../lib/places";
 export const dynamic="force-dynamic";
 // Suggest real places as the user types a place name in the create form.
 // First GoToday's own venues table (public listings only: private events never reach it).
@@ -22,7 +22,7 @@ export async function GET(req:Request){
  const out=rankPlaceSuggestions(q,city,rows);
  if(out.length<8){
   try{
-   const res=await fetch(`https://photon.komoot.io/api/?q=${encodeURIComponent(q)}&limit=50&lang=en`,{signal:AbortSignal.timeout(3000)});
+   const res=await fetch(`https://photon.komoot.io/api/?q=${encodeURIComponent(photonQuery(q,city))}&limit=50&lang=en`,{signal:AbortSignal.timeout(3000)});
    const d=await res.json().catch(()=>({}));
    const mapped:PlaceSuggestion[]=[];
    for(const f of Array.isArray(d.features)?d.features:[]){const s=photonSuggestion(f);if(s)mapped.push(s)}
