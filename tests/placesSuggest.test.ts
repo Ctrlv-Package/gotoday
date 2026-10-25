@@ -1,6 +1,6 @@
 import {test} from "node:test";
 import assert from "node:assert/strict";
-import {rankPlaceSuggestions,streetOnly,photonSuggestion,filterOutsideSuggestions,photonQuery,haversineKm,distanceRank} from "../lib/places";
+import {rankPlaceSuggestions,streetOnly,photonSuggestion,filterOutsideSuggestions,photonQuery,haversineKm,distanceRank,mergeSuggestions,withinRadiusKm,tomtomSuggestion,mapboxSuggestion} from "../lib/places";
 
 const rows=[
  {name:"Weston Town Center",address:"1675 Market St",city:"Weston, FL"},
@@ -75,6 +75,26 @@ test("nearby ranking: nearest first, places without coordinates last in order",(
  assert.equal(haversineKm(26.10,-80.39,26.10,-80.39),0);
  const ranked=rankPlaceSuggestions("flying","",rows);
  assert.equal(ranked.find(r=>r.name==="Flying Squirrel Trampoline Park")?.lat,26.10);
+});
+test("a TomTom POI maps to the form's fields; non-POIs are dropped",()=>{
+ const tom={type:"POI",poi:{name:"Recess Kids Club"},address:{streetNumber:"16098",streetName:"W State Rd 84",municipality:"Weston",countrySubdivision:"Florida",countryCode:"US"},position:{lat:26.10,lon:-80.28},score:5};
+ assert.deepEqual(tomtomSuggestion(tom),{name:"Recess Kids Club",address:"16098 W State Rd 84",city:"Weston, FL",lat:26.10,lon:-80.28});
+ assert.equal(tomtomSuggestion({...tom,type:"Street"}),null);
+ assert.equal(tomtomSuggestion({type:"POI",poi:{},address:{},position:{}}),null);
+});
+test("a Mapbox POI maps to the form's fields, with or without properties.address",()=>{
+ const ctx=[{id:"place.123",text:"Weston"},{id:"region.456",short_code:"US-FL",text:"Florida"},{id:"country.789",short_code:"us",text:"United States"}];
+ const mb={text:"Recess Kids Club",place_name:"Recess Kids Club, 16098 W State Rd 84 #2, Weston, Florida 33326, United States",center:[-80.28,26.10],geometry:{coordinates:[-80.28,26.10]},properties:{address:"16098 W State Rd 84 #2"},context:ctx};
+ assert.deepEqual(mapboxSuggestion(mb),{name:"Recess Kids Club",address:"16098 W State Rd 84 #2",city:"Weston, FL",lat:26.10,lon:-80.28});
+ assert.equal(mapboxSuggestion({...mb,properties:{}})?.address,"16098 W State Rd 84 #2");
+ assert.equal(mapboxSuggestion({text:"",place_name:"",context:[]}),null);
+});
+test("merging keeps the first source's copy of a duplicate; radius keeps only near rows",()=>{
+ const a=[{name:"A",address:"",city:"Weston, FL"},{name:"B",address:"",city:"Weston, FL"}];
+ const b=[{name:"a",address:"",city:"weston, fl"},{name:"C",address:"",city:"Davie, FL"}];
+ assert.deepEqual(mergeSuggestions([a,b]).map(r=>r.name),["A","B","C"]);
+ const rows=[{name:"Near",address:"",city:"",lat:26.30,lon:-80.30},{name:"Far",address:"",city:"",lat:32.08,lon:-81.09},{name:"NoCoord",address:"",city:""}];
+ assert.deepEqual(withinRadiusKm(rows,26.10,-80.39,80).map(r=>r.name),["Near"]);
 });
 test("short queries return nothing",()=>{
  assert.deepEqual(rankPlaceSuggestions("p","Weston, FL",rows),[]);
