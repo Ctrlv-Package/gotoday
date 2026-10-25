@@ -47,7 +47,8 @@ async function realTowns(events:EventRecord[],p:Params):Promise<EventRecord[]>{
 export function townFromLibrary(venue:string,defaultCity?:string):string{
  const st=String(defaultCity||"").match(/,\s*([A-Z]{2})$/)?.[1];if(!st)return"";
  const v=String(venue||"").replace(/\s+/g," ").trim();
- const m=v.match(/^(?:the\s+)?([A-Z][A-Za-z.\-]*(?:\s+[A-Z][A-Za-z.\-]*){0,2}?)(?:'s\s|\s+(?:Free\s+)?(?:Public\s+)?(?:Memorial\s+)?(?:Township\s+|Borough\s+|Town\s+|City\s+|Village\s+)?Library\b)/);
+ const m=v.match(/^(?:the\s+)?([A-Z][A-Za-z.\-]*(?:\s+[A-Z][A-Za-z.\-]*){0,2}?)(?:'s\s|\s+(?:Free\s+)?(?:Public\s+)?(?:Memorial\s+)?(?:Township\s+|Borough\s+|Town\s+|City\s+|Village\s+)?Library\b)/)
+  ||v.match(/^([A-Z][A-Za-z.\-]*(?:\s+[A-Z][A-Za-z.\-]*){0,2})\s+[-–—:]\s+\S/);   // "Palisades Park - Meeting Room"
  if(!m)return"";
  const town=m[1].replace(/\s+(Twp|Township|Borough|Boro|Town|City|Village)\.?$/i,"").trim();
  if(town.length<3||/county|university|college|school|district|library/i.test(town)||town.split(" ").some(w=>NOT_TOWN.test(w)))return"";
