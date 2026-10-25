@@ -9,7 +9,9 @@ export const maxDuration=300;
 // results the page shows — for every area on the start screen, today plus the next 6 days, and counts each kind
 // of problem found so far (duplicates, borrowed photos, labels that contradict the title, captions as titles…).
 // ?save=1 stores the summary for the status page.
-const AREAS:[string,string][]=[["Fort Lauderdale","33301"],["Weston","33326"],["Miami","33130"],["Boca Raton","33432"],["West Palm Beach","33401"],["Orlando","32801"],["Tampa","33602"],["St. Petersburg","33701"],["Manhattan","10001"],["Brooklyn","11201"]];
+const AREAS:[string,string][]=[["Fort Lauderdale","33301"],["Weston","33326"],["Miami","33130"],["Boca Raton","33432"],["West Palm Beach","33401"],["Orlando","32801"],["Tampa","33602"],["St. Petersburg","33701"],["Manhattan","10001"],["Brooklyn","11201"],
+ ["Jacksonville","32202"],["Tallahassee","32301"],["Atlanta","30303"],["Savannah","31401"],["Charlotte","28202"],["Raleigh","27601"],["Charleston","29401"],
+ ["Washington DC","20001"],["Baltimore","21202"],["Richmond","23219"],["Philadelphia","19103"],["Pittsburgh","15222"],["Jersey City","07302"],["Boston","02108"],["Providence","02903"],["Portland ME","04101"]];
 const STOP=new Set(["the","and","of","a","at","in","on","for","with","to","annual","city","town","village","free","fl","event","day","night","2025","2026","2027","park","library","branch","center"]);
 const words=(t:string)=>new Set(t.toLowerCase().replace(/&/g," and ").replace(/[^a-z0-9]+/g," ").split(" ").filter(w=>w.length>2&&!STOP.has(w)));
 const town=(x:string)=>String(x||"").toLowerCase().replace(/^ft\.?\s/,"fort ").replace(/,.*$/,"").trim();
@@ -24,7 +26,7 @@ export async function GET(req:NextRequest){
  const jobs=AREAS.flatMap(([area,zip])=>days.map(day=>({area,zip,day})));
  const results:{area:string;day:string;events:any[]}[]=[];
  let next=0;
- await Promise.all(Array.from({length:6},async()=>{while(next<jobs.length){const j=jobs[next++];
+ await Promise.all(Array.from({length:10},async()=>{while(next<jobs.length){const j=jobs[next++];
   try{const r=await fetch(`${origin}/api/events?postalCode=${j.zip}&radius=25&range=${j.day}&today=${days[0]}`,{cache:"no-store"});const d:any=await r.json();results.push({area:j.area,day:j.day,events:d.events||[]})}catch{results.push({area:j.area,day:j.day,events:[]})}}}));
 
  const found:Record<string,Hit[]>={freeButPriced:[],duplicates:[],sharedPhoto:[],kidsTitleNotKids:[],kidsButGeneral:[],freeTitleNotFree:[],adultTitleFamily:[],outdoorTitleIndoor:[],captionTitle:[],venueIsAccount:[],noSetting:[],kidsNoAgesNarrowed:[]};
