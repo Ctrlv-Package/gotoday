@@ -61,10 +61,11 @@ export function validate(raw:any):{ok:true;v:CommunityInput}|{ok:false;errors:st
   visibility:raw.visibility==="private"?"private":"public",isFree:raw.isFree!==false,priceText:s(raw.priceText,120),ageMin:age(raw.ageMin),ageMax:age(raw.ageMax),
   repeat:NO_REPEAT,
   ...(()=>{const cats=[...new Set((Array.isArray(raw.categories)?raw.categories:[raw.category]).map((x:any)=>String(x||"")).filter((x:string)=>CATEGORIES.includes(x)))].slice(0,4) as string[];
-   return{categories:cats.length?cats:["Community"],category:cats[0]||"Community"}})(),link:/^https?:\/\/\S+$/i.test(link)?link:"",hostName:s(raw.hostName,80),
+   return{categories:cats,category:cats[0]||""}})(),link:/^https?:\/\/\S+$/i.test(link)?link:"",hostName:s(raw.hostName,80),
   image:/^\/img\/[0-9a-f]{24}$/.test(String(raw.image||""))?String(raw.image):"",rsvp:rsvpDefaults("public")};
  const errors:string[]=[];
  {const r=cleanRsvp(raw.rsvp,v.visibility,v.date);v.rsvp=r.rsvp;errors.push(...r.errors)}
+ if(!v.categories.length)errors.push("Pick at least one category.");
  if(v.title.length<3)errors.push("Add a title.");
  if(!/^\d{4}-\d{2}-\d{2}$/.test(v.date))errors.push("Pick a date.");
  else{const today=new Date(Date.now()-86400e3).toISOString().slice(0,10),max=new Date(Date.now()+400*86400e3).toISOString().slice(0,10);if(v.date<today)errors.push("The date has already passed.");if(v.date>max)errors.push("Pick a date within the next year.")}
@@ -274,7 +275,11 @@ export async function rsvpCounts(eventId:number){
 export async function eventsOfUser(userId:number){
  await ensureSchema();
  const {rows}=await db.query("select * from community_events where user_id=$1 and status<>'deleted' order by start_date desc,id desc limit 100",[userId]);
- return rows.map((r:any)=>({...rowToEvent(r),ownerToken:r.owner_token as string|null}));
+ // Replies so far (going / maybe / can't go), so the host sees them in My GoToday.
+ const ids=rows.map((r:any)=>r.id);const c=new Map<number,{going:number;maybe:number;no:number}>();
+ if(ids.length){const q=await db.query("select community_event_id as id,status,count(*)::int as n,coalesce(sum(guests),0)::int as g from rsvps where community_event_id=any($1) group by 1,2",[ids]).catch(()=>({rows:[]}));
+  for(const x of q.rows as any[]){const o=c.get(x.id)||{going:0,maybe:0,no:0};(o as any)[x.status]=x.status==="no"?x.n:x.n+x.g;c.set(x.id,o)}}
+ return rows.map((r:any)=>({...rowToEvent(r),ownerToken:r.owner_token as string|null,rsvpCounts:c.get(r.id)||null}));
 }
 /** Attach events made on this device before signing in (proved by their manage links) to the account. */
 export async function claimEvents(userId:number,manageTokens:string[]){
