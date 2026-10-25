@@ -17,6 +17,8 @@ export async function GET(req:NextRequest){
 export async function POST(req:NextRequest){
  if(!authed(req))return NextResponse.json({ok:false,error:"Unauthorized"},{status:401});
  const b=await req.json().catch(()=>({}));
+ // Release everything held for one reason only (e.g. "new-source", no longer a hold reason).
+ if(typeof b.approveReason==="string"&&/^[a-z-]+$/.test(b.approveReason)){const r=await db.query(`update events set status='active',quarantine_reason=null where status='quarantine' and quarantine_reason=$1`,[b.approveReason]);return NextResponse.json({ok:true,released:r.rowCount})}
  if(b.approveAll){await db.query(`update events set status='active',quarantine_reason=null where status='quarantine'`);return NextResponse.json({ok:true})}
  const id=Number(b.id);if(!id)return NextResponse.json({ok:false},{status:400});
  if(b.approve===true)await db.query(`update events set status='active',quarantine_reason=null where id=$1`,[id]);
