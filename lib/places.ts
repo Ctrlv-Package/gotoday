@@ -60,6 +60,18 @@ export function rankPlaceSuggestions(q:string,city:string,rows:PlaceSuggestion[]
 // US state names -> abbreviations, so an outside result's "Weston, Florida" fills the City
 // field in the site's "Weston, FL" form (the time-zone lookup reads the abbreviation).
 const US_STATE_ABBR:Record<string,string>={Alabama:"AL",Alaska:"AK",Arizona:"AZ",Arkansas:"AR",California:"CA",Colorado:"CO",Connecticut:"CT",Delaware:"DE","District of Columbia":"DC",Florida:"FL",Georgia:"GA",Hawaii:"HI",Idaho:"ID",Illinois:"IL",Indiana:"IN",Iowa:"IA",Kansas:"KS",Kentucky:"KY",Louisiana:"LA",Maine:"ME",Maryland:"MD",Massachusetts:"MA",Michigan:"MI",Minnesota:"MN",Mississippi:"MS",Missouri:"MO",Montana:"MT",Nebraska:"NE",Nevada:"NV","New Hampshire":"NH","New Jersey":"NJ","New Mexico":"NM","New York":"NY","North Carolina":"NC","North Dakota":"ND",Ohio:"OH",Oklahoma:"OK",Oregon:"OR",Pennsylvania:"PA","Rhode Island":"RI","South Carolina":"SC","South Dakota":"SD",Tennessee:"TN",Texas:"TX",Utah:"UT",Vermont:"VT",Virginia:"VA",Washington:"WA","West Virginia":"WV",Wisconsin:"WI",Wyoming:"WY"};
+/** Outside (Photon) suggestions, cleaned up for the create form: drops results that are
+ *  neither a street nor a town (a creek, a rock formation), and — when the form's City
+ *  field names a town — keeps only results from that town, so a bare "Flying sq" doesn't
+ *  bury the user's own town under Chicago and China. No town given: no town filter. */
+export function filterOutsideSuggestions(rows:PlaceSuggestion[],city:string):PlaceSuggestion[]{
+ const town=city.trim().toLowerCase().split(",")[0];
+ return rows.filter(r=>{
+  if(!r.address.trim()&&!r.city.trim())return false;
+  if(!town)return true;
+  return r.city.trim().toLowerCase().split(",")[0]===town;
+ });
+}
 /** A Photon (OpenStreetMap) feature -> the suggestion shape the create form fills. Null when
  *  the feature has no usable name. Outside the US the state name is kept as-is. */
 export function photonSuggestion(f:any):PlaceSuggestion|null{
