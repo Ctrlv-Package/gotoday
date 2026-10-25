@@ -7,6 +7,9 @@ on:
     - cron: "45 * * * *"
   workflow_dispatch: {}
 
+permissions:
+  contents: write
+
 concurrency:
   group: instagram
   cancel-in-progress: false
@@ -21,9 +24,18 @@ jobs:
         with:
           node-version: 22
       - run: npm install --no-audit --no-fund
-      - run: npx tsx scripts/remote-ingest.ts
+      - run: set -o pipefail; npx tsx scripts/remote-ingest.ts 2>&1 | sed -E 's#(Bearer )[A-Za-z0-9._-]+#\1***#g' | tee ig.log
         env:
           GOTODAY_URL: ${{ secrets.GOTODAY_URL }}
           INGESTION_SECRET: ${{ secrets.INGESTION_SECRET }}
           MODE: instagram
           USE_BROWSER: "0"   # Instagram goes through the Meta API; no browser needed
+      # The run's log, readable without the Actions page (branch "instagram-results", no deploy).
+      - name: Save log
+        if: always()
+        run: |
+          mkdir -p out && tail -n 400 ig.log > out/ig.log 2>/dev/null || echo "no log" > out/ig.log
+          cd out && echo '{"git":{"deploymentEnabled":false}}' > vercel.json
+          git init -q -b instagram-results && git config user.name ig && git config user.email ig@users.noreply.github.com
+          git add -A && git commit -qm "instagram run $(date -u +%FT%TZ)"
+          git push -qf "https://x-access-token:${{ github.token }}@github.com/${{ github.repository }}.git" instagram-results
