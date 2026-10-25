@@ -555,6 +555,8 @@ a.linkBtn{text-decoration:none}
 /* Create/edit event: category chips (several allowed) */
 .efCats{border:0;padding:0;margin:0}.efCats legend{font-weight:700;margin-bottom:8px;padding:0}
 .placeSuggest{position:relative}
+.placeLocBtn{display:inline-block;margin:2px 0 0;padding:2px 0;background:none;border:0;cursor:pointer;font-size:13px;font-weight:700;color:var(--accent)}
+.placeLocBtn:hover{text-decoration:underline}
 .placeSuggestList{position:absolute;left:0;right:0;top:100%;z-index:20;margin:4px 0 0;padding:6px;background:#fff;border:1px solid var(--line);border-radius:12px;list-style:none;box-shadow:0 8px 24px rgba(0,0,0,.12);max-height:280px;overflow:auto}
 .placeSuggestList button{display:block;width:100%;text-align:left;background:none;border:0;cursor:pointer;padding:8px 10px;border-radius:8px}
 .placeSuggestList button:hover{background:#f5f3ff}

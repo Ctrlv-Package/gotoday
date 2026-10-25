@@ -1,6 +1,6 @@
 import {test} from "node:test";
 import assert from "node:assert/strict";
-import {rankPlaceSuggestions,streetOnly,photonSuggestion,filterOutsideSuggestions,photonQuery} from "../lib/places";
+import {rankPlaceSuggestions,streetOnly,photonSuggestion,filterOutsideSuggestions,photonQuery,haversineKm,distanceRank} from "../lib/places";
 
 const rows=[
  {name:"Weston Town Center",address:"1675 Market St",city:"Weston, FL"},
@@ -63,6 +63,18 @@ test("the Photon query carries the form's town when it isn't already typed",()=>
  assert.equal(photonQuery("Flying sq","Weston, FL"),"Flying sq Weston");
  assert.equal(photonQuery("flying squirrel weston","Weston, FL"),"flying squirrel weston");
  assert.equal(photonQuery("Flying",""),"Flying");
+});
+test("nearby ranking: nearest first, places without coordinates last in order",()=>{
+ const rows=[
+  {name:"Flying Fish Bar & Grill",address:"7906 US-80",city:"Savannah, GA",lat:32.08,lon:-81.09},
+  {name:"Flying Squirrel Trampoline Park",address:"3305 Corporate Avenue",city:"Weston, FL",lat:26.10,lon:-80.39},
+  {name:"Flying Squirrel Court",address:"",city:"Bayonet Point, FL"},
+ ];
+ assert.deepEqual(distanceRank(rows,26.10,-80.39).map(r=>r.name),["Flying Squirrel Trampoline Park","Flying Fish Bar & Grill","Flying Squirrel Court"]);
+ assert.ok(Math.abs(haversineKm(0,0,0,1)-111.2)<0.5);
+ assert.equal(haversineKm(26.10,-80.39,26.10,-80.39),0);
+ const ranked=rankPlaceSuggestions("flying","",rows);
+ assert.equal(ranked.find(r=>r.name==="Flying Squirrel Trampoline Park")?.lat,26.10);
 });
 test("short queries return nothing",()=>{
  assert.deepEqual(rankPlaceSuggestions("p","Weston, FL",rows),[]);
