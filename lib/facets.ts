@@ -74,7 +74,7 @@ export function settingFor(e:{title?:string;venue?:string;source?:string;desc?:s
 }
 
 // City, town and parks sources (not libraries, Ticketmaster or round-up accounts that repost anyone's events).
-const CITY_SOURCE=(s?:string)=>!!s&&s!=="Ticketmaster"&&!/library/i.test(s)&&!/^(Miami Residents|Weekend Broward|The Broward Scene|To Do with Kids (Broward|Miami)) · Instagram$/.test(s);
+export const CITY_SOURCE=(s?:string)=>!!s&&s!=="Ticketmaster"&&!/library/i.test(s)&&!/^(Miami Residents|Weekend Broward|The Broward Scene|To Do with Kids (Broward|Miami)) · Instagram$/.test(s);
 
 // Ticket/admission rules ("Children 2 and older must have a ticket", "Kids under 3 free on a lap") say who needs a
 // ticket, not who the event is for, so they never make an event a Kids or Family event.
