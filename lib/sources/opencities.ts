@@ -26,6 +26,18 @@ export function parseDate(s:string){
  return "";
 }
 
+/** A card date with no year ("Saturday, October 31", "Oct 31", "31 Oct"): the next such date from `from`. */
+export function parseDateNoYear(s:string,from:string){
+ let m=s.match(new RegExp(`\\b${MONTH_RX}\\s+(\\d{1,2})\\b(?!\\s*,?\\s*20\\d{2})`,"i")),mo=0,d=0;
+ if(m){mo=MON.indexOf(m[1].slice(0,3).toLowerCase())+1;d=+m[2]}
+ else{m=s.match(new RegExp(`\\b(\\d{1,2})\\s+${MONTH_RX}\\b`,"i"));if(m){d=+m[1];mo=MON.indexOf(m[2].slice(0,3).toLowerCase())+1}}
+ if(!mo||!d||d>31)return "";
+ let y=+from.slice(0,4);const mk=(yy:number)=>`${yy}-${String(mo).padStart(2,"0")}-${String(d).padStart(2,"0")}`;
+ // A date more than two months back means next year's ("Jan 10" seen in November).
+ if(mk(y)<new Date(Date.parse(from)-60*864e5).toISOString().slice(0,10))y++;
+ return mk(y);
+}
+
 export function parseTime(s:string){
  const m=s.match(/\b(\d{1,2})(?::(\d{2}))?\s*([AP])\.?M\.?\b/i);
  if(!m)return "";
@@ -130,20 +142,23 @@ export async function fetchOpenCities(cfg:OpenCitiesConfig,startDate:string,endD
  const block=cfg.block||DEFAULT_BLOCK;
  const listPath=new URL(listBase).pathname; // only the part of an event URL after the list path says its category
  const out:EventRecord[]=[],seenHref=new Set<string>();
- let linksSeen=0;
+ let linksSeen=0;const undated:Item[]=[];
  for(let page=1;page<=(cfg.maxPages??8);page++){
   const url=page===1?cfg.listUrl:pageUrl(page);
   const r=await fetchRetry(url,{headers:BROWSER_HEADERS,cache:"no-store"});
   if(!r.ok){if(page===1)throw new Error(`HTTP ${r.status} from ${url}`);break}
   const html=await r.text();
   let items=articleItems(html,origin);
-  if(!items.length&&cfg.eventPath)items=anchorItems(html,origin,cfg.eventPath);
+  // No <article> cards: event links under the list's own folder (or the configured path).
+  if(!items.length)items=anchorItems(html,origin,cfg.eventPath||listPath);
   linksSeen+=items.length;
 
   let newOnPage=0,allPastEnd=items.length>0;
   for(const it of items){
    const text=stripHtml(it.html);
-   const date=parseDate(text);
+   const date=parseDate(text)||parseDateNoYear(text,startDate);
+   // No date on the card at all: its own page lists the dates (read below, a few per run).
+   if(!date){if(!undated.some(u=>u.href===it.href)&&!block.test(it.title))undated.push(it);continue}
    const key=it.href+"|"+date;
    if(seenHref.has(key))continue;
    seenHref.add(key);newOnPage++;
@@ -168,6 +183,17 @@ export async function fetchOpenCities(cfg:OpenCitiesConfig,startDate:string,endD
   }
   // Stop when a page adds nothing new or the list has moved past the window.
   if(newOnPage===0||allPastEnd)break;
+ }
+ for(const it of undated.slice(0,40)){
+  try{const r=await fetchRetry(it.href,{headers:BROWSER_HEADERS,cache:"no-store"});if(!r.ok)continue;const h=await r.text();
+   const title=it.title;if(title.length<4||title.length>140)continue;
+   const desc=(it.desc||h.match(/<meta name=["']description["'] content=["']([^"']+)["']/i)?.[1]||`Official ${cfg.source} event.`).slice(0,500);
+   const blob=(title+" "+desc).toLowerCase(),family=/kids?|family|festival|parade|block party|children|story|pumpkin|halloween|trunk|egg hunt|holiday/.test(blob),free=/\bfree\b/.test(blob);
+   for(const o of detailOccurrences(h).filter(o=>o.date>=startDate&&o.date<=endDate))
+    out.push({id:`${cfg.idPrefix}-${slug(title+"-"+o.date)}`,title,city:cfg.city,venue:it.address?.split(",")[0].trim()||cfg.venue,address:streetAddress(it.address,cfg.city),
+     date:o.date,time:o.time,endTime:o.endTime,url:it.href,sourceUrl:cfg.listUrl,category:family?"Family":"Local",genre:"Local Event",desc:stripHtml(desc),
+     tags:[...(it.tags||[]),...(family?["Family"]:[]),...(free?["Free"]:[]),"Local"],emoji:family?"🎉":"📍",source:cfg.source,isFree:free,eventType:"event"});
+  }catch{}
  }
  if(out.length===0)throw new Error(`No events in ${startDate}..${endDate} (found ${linksSeen} event cards on ${cfg.listUrl})`);
  return expandFromDetails(out,startDate,endDate,cfg.detailLimit??120);
