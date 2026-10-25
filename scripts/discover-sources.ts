@@ -57,7 +57,8 @@ async function probe(c:Cand):Promise<Found[]>{
  const lcName=(re:RegExp)=>[...h.matchAll(re)].map(m=>m[1].toLowerCase()).find(x=>!/^(static|assets?|cdn|www|api|libapps|lib\d*|login)\b|static|assets/.test(x));
  const libcal=(host.endsWith(".libcal.com")?host.split(".")[0]:"")||lcName(/https?:\/\/([a-z0-9-]+)\.libcal\.com/gi)||lcName(/https?:\/\/([a-z0-9-]+)\.libapps\.com/gi);
  // LibCal on a library's own domain: links like https://calendar.libraryweb.org/calendar/RPL/?cid=4901
- const lcOwn=!libcal?h.match(/https?:\/\/([a-z0-9.-]+)\/calendar\/[A-Za-z0-9_-]+\/?\?cid=(\d+)/i):null;
+ const lcOwn=!libcal?(h.match(/https?:\/\/([a-z0-9.-]+)\/calendar\/[A-Za-z0-9_-]+\/?\?cid=(\d+)/i)
+  ||(/springshare|libcal/i.test(h)?((m)=>m?[m[0],host,m[1]]:null)(h.match(/[?&;]cid=(\d{2,})/)):null)):null;   // the page itself is LibCal (calendar.buckslib.org)
  if(lcOwn){const t=await get(`https://${lcOwn[1]}/ajax/calendar/list?c=${lcOwn[2]}&date=0000-00-00&perpage=1&page=1&audience=&cats=&camps=&inc=0`);
   const n=(()=>{try{return Number(JSON.parse(t.text)?.total_results)||0}catch{return 0}})();
   if(n)out.push({input:arg,platform:"libcal",confidence:"confirmed",note:`${n} upcoming events (LibCal at ${lcOwn[1]})`,config:{name,platform:"libcal",params:{site:lcOwn[1],calendarId:Number(lcOwn[2]),defaultVenue:name,defaultCity:city||undefined},source_type:"official-city",url:`https://${lcOwn[1]}/calendar?cid=${lcOwn[2]}`}})}
@@ -67,8 +68,14 @@ async function probe(c:Cand):Promise<Found[]>{
 
  };
  await libs(html,url);
- const evPage=(h:string)=>{const l=[...h.matchAll(/href="([^"#]*(?:\/events?|\/calendar|event-calendar|community-calendar|programs)[^"#]*)"/gi)].map(x=>x[1]).find(x=>!/\.(pdf|jpg|png)$/i.test(x));try{return l?new URL(l,origin).toString():""}catch{return""}};
- if(!out.length){const ev=evPage(html);if(ev&&ev!==url){const eh=(await get(ev)).text;if(eh)await libs(eh,ev)}}
+ // Events pages linked from the home page, best first: a separate events./calendar. site (events.chesapeakelibrary.org,
+ // calendar.buckslib.org) usually is the calendar product itself.
+ const evPages=(h:string)=>{const ls=[...h.matchAll(/href="([^"#]*?)(?:#[^"]*)?"/gi)].map(x=>x[1]).filter(x=>x&&!/\.(pdf|jpg|png|css|js)$/i.test(x))
+   .map(x=>{try{return new URL(x,origin)}catch{return null}}).filter((u):u is URL=>!!u&&/^https?:$/.test(u.protocol));
+  const sub=ls.filter(u=>/^(events?|calendar|programs)\./i.test(u.hostname)&&u.hostname.split(".").slice(-2).join(".")===new URL(origin).hostname.split(".").slice(-2).join("."));
+  const path=ls.filter(u=>/(\/events?|\/calendar|event-calendar|community-calendar|programs)/i.test(u.pathname));
+  return [...new Set([...sub,...path].map(u=>u.toString()))].filter(u=>u!==url).slice(0,2)};
+ if(!out.length)for(const ev of evPages(html)){if(out.length)break;const eh=(await get(ev)).text;if(eh)await libs(eh,ev)}
 
  // CivicPlus / CivicEngage: calendar RSS feed
  {const t=await get(`${origin}/RSSFeed.aspx?ModID=58&CID=All-calendar.xml`),items=(t.text.match(/<item\b/gi)||[]).length;
@@ -97,17 +104,16 @@ async function probe(c:Cand):Promise<Found[]>{
 
  // Generic products (any city, museum, downtown group): look on the home page and its Events/Calendar page.
  if(!out.length){
-  const evLink=[...html.matchAll(/href="([^"#]*(?:\/events?|\/calendar|event-calendar|community-calendar)[^"#]*)"/gi)].map(x=>x[1]).find(h=>!/\.(pdf|jpg|png)$/i.test(h));
-  const evUrl=evLink?(()=>{try{return new URL(evLink,origin).toString()}catch{return""}})():"";
+  const evUrl=evPages(html)[0]||"";
   const evHtml=evUrl?(await get(evUrl)).text:"";const both=html+"\n"+evHtml;
   // LibraryMarket "LibraryCalendar" (many public libraries: *.librarycalendar.com), which publishes an iCal feed.
-  {const lc=new URL(origin).hostname.endsWith(".librarycalendar.com")?origin:both.match(/https?:\/\/[a-z0-9-]+\.librarycalendar\.com/i)?.[0];
+  {const lc=/\.(librarycalendar|librarymarket)\.com$/.test(new URL(origin).hostname)?origin:both.match(/https?:\/\/[a-z0-9-]+\.(?:librarycalendar|librarymarket)\.com/i)?.[0];
    if(lc){const u=`${lc}/events/feed/ical`,t=await get(u);const n=(String(t.text).match(/BEGIN:VEVENT/g)||[]).length;
     if(n)out.push({input:arg,platform:"ical",confidence:"confirmed",note:`${n} events (LibraryCalendar iCal)`,config:{name,platform:"ical",params:{url:u,city},source_type:"official-county",url:`${lc}/events/month`}})}}
   // Assabet Interactive library calendars (<name>.assabetinteractive.com) and LibraryCalendar run on the library's own
   // Drupal site (/modules/custom/library_calendar/): both publish an iCal feed.
   if(!out.length){const as=both.match(/https?:\/\/([a-z0-9-]+)\.assabetinteractive\.com/i)?.[1];
-   const lcSelf=/\/modules\/custom\/library_calendar\//i.test(both)?origin:"";
+   const lcSelf=/\/modules\/custom\/library_calendar\//i.test(evHtml)&&evUrl?new URL(evUrl).origin:/\/modules\/custom\/library_calendar\//i.test(html)?origin:"";
    for(const [u,what] of [[as?`https://${as}.assabetinteractive.com/calendar/upcoming-events.ics`:"","Assabet iCal"],[lcSelf?`${lcSelf}/events/feed/ical`:"","LibraryCalendar iCal"]] as [string,string][]){
     if(!u||out.length)continue;const t=await get(u);const n=(String(t.text).match(/BEGIN:VEVENT/g)||[]).length;
     if(n)out.push({input:arg,platform:"ical",confidence:"confirmed",note:`${n} events (${what})`,config:{name,platform:"ical",params:{url:u,city},source_type:"official-county",url:evUrl||origin}})}}

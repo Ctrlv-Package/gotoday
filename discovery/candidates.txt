@@ -1097,3 +1097,158 @@ Township of Howell | Howell, NJ | https://www.twp.howell.nj.us | jersey-shore
 Township of Toms River | Toms River, NJ | https://www.tomsrivertownship.com | jersey-shore
 Township of Brick | Brick, NJ | https://www.bricktownship.net | jersey-shore
 Point Pleasant Beach | Point Pleasant Beach, NJ | https://www.pointpleasantbeach.org | jersey-shore
+
+# ---- re-check (2026-10-25): libraries not yet saved, with the events-subdomain / LibCal / LibraryCalendar detectors ----
+Delray Beach Public Library | Delray Beach, FL | https://www.delraylibrary.org | palm-beach
+West Palm Beach Library | West Palm Beach, FL | https://www.wpbcitylibrary.org | palm-beach
+Seminole County Public Library | Sanford, FL | https://www.seminolecountyfl.gov | orlando
+Largo Public Library | Largo, FL | https://www.largo.com/library | tampa
+Clay County Public Library | Orange Park, FL | https://www.claycountygov.com/community/library | jacksonville
+Flagler County Public Library | Palm Coast, FL | https://www.flaglercounty.gov/departments/library | volusia
+Brevard County Public Libraries | Cocoa, FL | https://www.brevardfl.gov/PublicLibraries | spacecoast
+St. Lucie County Library | Fort Pierce, FL | https://www.stlucieco.gov/departments-services/a-z/library | treasurecoast
+Martin County Library System | Stuart, FL | https://www.library.martin.fl.us | treasurecoast
+Indian River County Library | Vero Beach, FL | https://www.irclibrary.org | treasurecoast
+Sarasota County Libraries | Sarasota, FL | https://www.scgov.net/government/libraries | sarasota
+Manatee County Public Library | Bradenton, FL | https://www.mymanatee.org/departments/library | sarasota
+Alachua County Library District | Gainesville, FL | https://aclib.us | gainesville
+Marion County Public Library System | Ocala, FL | https://library.marioncountyfl.org | gainesville
+Marion County Public Library | Ocala, FL | https://marioncountyfl.libcal.com/calendar | gainesville
+Cobb County Public Library | Marietta, GA | https://www.cobbcounty.org/library | atlanta
+Sequoyah Regional Library | Canton, GA | https://www.sequoyahregionallibrary.org | atlanta
+Fayette County Public Library | Fayetteville, GA | https://www.fayettecountyga.gov/public_library | atlanta
+Peachtree City Library | Peachtree City, GA | https://www.peachtree-city.org/library | atlanta
+Middle Georgia Regional Library | Macon, GA | https://www.bibblib.org | macon
+Cabarrus County Public Library | Concord, NC | https://www.cabarruscounty.us/library | charlotte
+Wake County Public Libraries | Raleigh, NC | https://www.wake.gov/departments-government/wake-county-public-libraries | triangle
+Chapel Hill Public Library | Chapel Hill, NC | https://chapelhillpubliclibrary.org | triangle
+Greensboro Public Library | Greensboro, NC | https://library.greensboro-nc.gov | triad
+New Hanover County Public Library | Wilmington, NC | https://libraries.nhcgov.com | wilmington
+Cumberland County Public Library | Fayetteville, NC | https://www.cumberland.lib.nc.us | fayetteville
+Sheppard Memorial Library | Greenville, NC | https://www.sheppardlibrary.org | easternnc
+Dorchester County Library | Summerville, SC | https://www.dcl.lib.sc.us | charleston
+Richland Library | Columbia, SC | https://www.richlandlibrary.com | columbia
+Greenville County Library System | Greenville, SC | https://www.greenvillelibrary.org | upstate
+Horry County Memorial Library | Conway, SC | https://www.horrycountysc.gov/departments/libraries | myrtle
+Fairfax County Public Library | Fairfax, VA | https://www.fairfaxcounty.gov/library | dcmetro
+Virginia Beach Public Library | Virginia Beach, VA | https://libraries.virginiabeach.gov | hamptonroads
+Chesapeake Public Library | Chesapeake, VA | https://www.chesapeakelibrary.org | hamptonroads
+Newport News Public Library | Newport News, VA | https://library.nnva.gov | hamptonroads
+Williamsburg Regional Library | Williamsburg, VA | https://www.wrl.org | hamptonroads
+Jefferson-Madison Regional Library | Charlottesville, VA | https://www.jmrl.org | cville
+Baltimore County Public Library | Towson, MD | https://www.bcpl.info | baltimore
+Carroll County Public Library | Westminster, MD | https://library.carr.org | baltimore
+Washington County Free Library | Hagerstown, MD | https://www.washcolibrary.org | dcmetro
+Free Library of Philadelphia | Philadelphia, PA | https://www.freelibrary.org | philly
+Chester County Library | Exton, PA | https://www.chescolibraries.org | philly
+Carnegie Library of Pittsburgh | Pittsburgh, PA | https://www.carnegielibrary.org | pittsburgh
+Allentown Public Library | Allentown, PA | https://www.allentownpl.org | lehigh
+Lancaster Public Library | Lancaster, PA | https://lancasterpubliclibrary.org | lancaster
+York County Libraries PA | York, PA | https://www.yorklibraries.org | lancaster
+Schlow Centre Region Library | State College, PA | https://www.schlowlibrary.org | central-pa
+Erie County Public Library | Erie, PA | https://www.erielibrary.org | erie
+Jersey City Free Public Library | Jersey City, NJ | https://www.jclibrary.org | nyc
+Montclair Public Library | Montclair, NJ | https://www.montclairlibrary.org | nyc
+Hackensack Public Library | Hackensack, NJ | https://www.hackensacklibrary.org | nyc
+Paramus Public Library | Paramus, NJ | https://www.paramuslibrary.org | nyc
+Cape May County Library | Cape May Court House, NJ | https://www.cmclibrary.org | south-jersey
+Camden County Library System | Voorhees, NJ | https://www.camdencountylibrary.org | philly
+New York Public Library | New York, NY | https://www.nypl.org | nyc
+Brooklyn Public Library | Brooklyn, NY | https://www.bklynlibrary.org | nyc
+Queens Public Library | Queens, NY | https://www.queenslibrary.org | nyc
+Patchogue-Medford Library | Patchogue, NY | https://www.pmlib.org | longisland
+Fairfield Public Library | Fairfield, CT | https://www.fairfieldpubliclibrary.org | fairfield-ct
+West Hartford Public Library | West Hartford, CT | https://www.westhartfordlibrary.org | hartford
+Providence Public Library | Providence, RI | https://www.provlib.org | providence
+Cambridge Public Library | Cambridge, MA | https://www.cambridgema.gov/cpl | boston
+Springfield City Library | Springfield, MA | https://springfieldlibrary.org | springfield-ma
+Portsmouth Public Library | Portsmouth, NH | https://www.cityofportsmouth.com/library | seacoast-nh
+Rochester Public Library (LibCal) | Rochester, NY | https://roccitylibrary.org | rochester
+Hyannis Public Library | Hyannis, MA | https://www.hyannislibrary.org/events | capecod
+Orleans Snow Library | Orleans, MA | https://www.snowlibrary.org | capecod
+Clams Libraries | Hyannis, MA | https://www.clamsnet.org | capecod
+Union Public Library | Union, NJ | https://www.uplnj.org | nyc
+Elizabeth Public Library | Elizabeth, NJ | https://www.elizpl.org | nyc
+Cranford Public Library | Cranford, NJ | https://www.cranfordlibrary.org | nyc
+Linden Public Library | Linden, NJ | https://www.lindenpl.org | nyc
+Springfield Free Public Library | Springfield, NJ | https://www.springfieldpubliclibrary.com | nyc
+Kenilworth Public Library | Kenilworth, NJ | https://www.kenilworthlibrary.org | nyc
+Rahway Public Library | Rahway, NJ | https://www.rahwaylibrary.org | nyc
+Scotch Plains Public Library | Scotch Plains, NJ | https://www.scotlib.org | nyc
+New Providence Memorial Library | New Providence, NJ | https://www.newprovidencelibrary.org | nyc
+Clark Public Library | Clark, NJ | https://www.clarklibrary.org | nyc
+Mountainside Public Library | Mountainside, NJ | https://www.mountainsidelibrary.org | nyc
+West Orange Public Library | West Orange, NJ | https://www.westorangelibrary.org | nyc
+Bloomfield Public Library | Bloomfield, NJ | https://www.bplnj.org | nyc
+Nutley Public Library | Nutley, NJ | https://www.nutleypubliclibrary.org | nyc
+Verona Public Library | Verona, NJ | https://www.veronalibrary.org | nyc
+Glen Ridge Public Library | Glen Ridge, NJ | https://www.glenridgelibrary.org | nyc
+East Orange Public Library | East Orange, NJ | https://www.eopl.org | nyc
+Caldwell Public Library | Caldwell, NJ | https://www.caldwellpubliclibrary.org | nyc
+Bayonne Public Library | Bayonne, NJ | https://www.bayonnelibrary.org | nyc
+Secaucus Public Library | Secaucus, NJ | https://www.secaucuslibrary.org | nyc
+Weehawken Public Library | Weehawken, NJ | https://www.weehawkenlibrary.org | nyc
+Union City Public Library | Union City, NJ | https://www.ucpl.org | nyc
+Teaneck Public Library | Teaneck, NJ | https://www.teanecklibrary.org | nyc
+Englewood Public Library | Englewood, NJ | https://www.englewoodlibrary.org | nyc
+Fair Lawn Public Library | Fair Lawn, NJ | https://www.fairlawnlibrary.org | nyc
+Ramsey Free Public Library | Ramsey, NJ | https://www.ramseylibrary.org | nyc
+Wyckoff Public Library | Wyckoff, NJ | https://www.wyckofflibrary.org | nyc
+Glen Rock Public Library | Glen Rock, NJ | https://www.glenrocklibrary.org | nyc
+Westwood Public Library | Westwood, NJ | https://www.westwoodpl.org | nyc
+Bergenfield Public Library | Bergenfield, NJ | https://www.bergenfieldlibrary.org | nyc
+Madison Public Library | Madison, NJ | https://www.madisonpubliclibrary.org | nyc
+Roxbury Public Library | Succasunna, NJ | https://www.roxburynjlibrary.org | nyc
+New Brunswick Free Public Library | New Brunswick, NJ | https://www.nbfpl.org | central-nj
+East Brunswick Public Library | East Brunswick, NJ | https://www.ebpl.org | central-nj
+North Brunswick Public Library | North Brunswick, NJ | https://www.northbrunswicklibrary.org | central-nj
+Old Bridge Public Library | Old Bridge, NJ | https://www.oldbridgelibrary.org | central-nj
+Metuchen Public Library | Metuchen, NJ | https://www.metuchenlibrary.org | central-nj
+Highland Park Public Library | Highland Park, NJ | https://www.hppl.org | central-nj
+Plainsboro Public Library | Plainsboro, NJ | https://www.plainsborolibrary.org | central-nj
+Monroe Township Public Library | Monroe Township, NJ | https://www.monroetwplibrary.org | central-nj
+Sayreville Public Library | Sayreville, NJ | https://www.sayrevillelibrary.org | central-nj
+South Plainfield Public Library | South Plainfield, NJ | https://www.spplnj.org | central-nj
+Bernardsville Public Library | Bernardsville, NJ | https://www.bernardsvillelibrary.org | central-nj
+Bernards Township Library | Basking Ridge, NJ | https://www.bernardslibrary.org | central-nj
+Red Bank Public Library | Red Bank, NJ | https://www.redbanklibrary.org | jersey-shore
+Long Branch Free Public Library | Long Branch, NJ | https://www.longbranchlib.org | jersey-shore
+Asbury Park Public Library | Asbury Park, NJ | https://www.asburyparklibrary.org | jersey-shore
+Port Washington Public Library | Port Washington, NY | https://www.pwpl.org | longisland
+Syosset Public Library | Syosset, NY | https://www.syossetlibrary.org | longisland
+Rockville Centre Public Library | Rockville Centre, NY | https://www.rvclibrary.org | longisland
+Oceanside Library | Oceanside, NY | https://www.oceansidelibrary.com | longisland
+Bethpage Public Library | Bethpage, NY | https://www.bethpagelibrary.info | longisland
+Farmingdale Public Library | Farmingdale, NY | https://www.farmingdalelibrary.org | longisland
+West Babylon Public Library | West Babylon, NY | https://www.wbpl.org | longisland
+Commack Public Library | Commack, NY | https://www.commackpl.org | longisland
+Middle Country Public Library | Centereach, NY | https://www.mcpl.lib.ny.us | longisland
+Westhampton Free Library | Westhampton Beach, NY | https://www.westhamptonlibrary.org | longisland
+Warner Library | Tarrytown, NY | https://www.warnerlibrary.org | westchester
+Mount Kisco Public Library | Mount Kisco, NY | https://www.mountkiscolibrary.org | westchester
+Mount Vernon Public Library | Mount Vernon, NY | https://www.mountvernonpubliclibrary.org | westchester
+Field Library | Peekskill, NY | https://www.peekskill.org | westchester
+Pelham Public Library | Pelham, NY | https://www.pelhamlibrary.org | westchester
+Radnor Memorial Library | Wayne, PA | https://www.radnorlibrary.org | philly
+Tredyffrin Public Library | Strafford, PA | https://www.tredyffrinlibraries.org | philly
+Haverford Township Free Library | Havertown, PA | https://www.haverfordlibrary.org | philly
+Upper Darby Free Public Library | Upper Darby, PA | https://www.udlibraries.org | philly
+Wissahickon Valley Public Library | Blue Bell, PA | https://www.wvpl.org | philly
+Upper Dublin Public Library | Dresher, PA | https://www.upperdublinlibrary.org | philly
+Conshohocken Free Library | Conshohocken, PA | https://www.conshohockenlibrary.org | philly
+New Canaan Library | New Canaan, CT | https://www.newcanaanlibrary.org | fairfield-ct
+Ridgefield Library | Ridgefield, CT | https://www.ridgefieldlibrary.org | fairfield-ct
+Milford Public Library | Milford, CT | https://www.milfordlibrary.org | newhaven
+Guilford Free Library | Guilford, CT | https://www.guilfordfreelibrary.org | newhaven
+E.C. Scranton Memorial Library | Madison, CT | https://www.scrantonlibrary.org | newhaven
+Blackstone Library | Branford, CT | https://www.blackstonelibrary.org | newhaven
+Welles-Turner Memorial Library | Glastonbury, CT | https://www.wellesturner.org | hartford
+Manchester Public Library CT | Manchester, CT | https://library.manchesterct.gov | hartford
+Southington Public Library | Southington, CT | https://www.southingtonlibrary.org | hartford
+Morse Institute Library | Natick, MA | https://www.morseinstitute.org | boston
+Robbins Library | Arlington, MA | https://www.robbinslibrary.org | boston
+Watertown Free Public Library | Watertown, MA | https://www.watertownlib.org | boston
+Abbot Public Library | Marblehead, MA | https://www.abbotlibrary.org | boston
+Dedham Public Library | Dedham, MA | https://www.dedhamlibrary.org | boston
+Woburn Public Library | Woburn, MA | https://www.woburnpubliclibrary.org | boston
+Burlington Public Library MA | Burlington, MA | https://www.burlingtonpubliclibrary.org | boston
