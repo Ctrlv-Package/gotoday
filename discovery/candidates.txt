@@ -902,3 +902,102 @@ Red Bank RiverCenter | Red Bank, NJ | https://www.redbank.org | jersey-shore
 Princeton Merchants | Princeton, NJ | https://www.princetonmerchants.org | central-nj
 Trenton Free Public Library | Trenton, NJ | https://www.trentonlib.org | central-nj
 Hopewell Valley | Pennington, NJ | https://www.hopewelltwp.org | central-nj
+
+# ==== Suburban town libraries: Long Island, Westchester, Philadelphia suburbs, Connecticut, Boston suburbs ====
+Garden City Public Library | Garden City, NY | https://www.gardencitypl.org | longisland
+Great Neck Library | Great Neck, NY | https://www.greatnecklibrary.org | longisland
+Port Washington Public Library | Port Washington, NY | https://www.pwpl.org | longisland
+Manhasset Public Library | Manhasset, NY | https://www.manhassetlibrary.org | longisland
+Syosset Public Library | Syosset, NY | https://www.syossetlibrary.org | longisland
+Massapequa Public Library | Massapequa, NY | https://www.massapequalibrary.org | longisland
+Freeport Memorial Library | Freeport, NY | https://www.freeportlibrary.info | longisland
+Rockville Centre Public Library | Rockville Centre, NY | https://www.rvclibrary.org | longisland
+Oceanside Library | Oceanside, NY | https://www.oceansidelibrary.com | longisland
+East Meadow Public Library | East Meadow, NY | https://www.eastmeadow.info | longisland
+Hicksville Public Library | Hicksville, NY | https://www.hicksvillelibrary.org | longisland
+Plainview-Old Bethpage Public Library | Plainview, NY | https://www.poblib.org | longisland
+Bethpage Public Library | Bethpage, NY | https://www.bethpagelibrary.info | longisland
+Farmingdale Public Library | Farmingdale, NY | https://www.farmingdalelibrary.org | longisland
+Babylon Public Library | Babylon, NY | https://www.babylonlibrary.org | longisland
+West Babylon Public Library | West Babylon, NY | https://www.wbpl.org | longisland
+Lindenhurst Memorial Library | Lindenhurst, NY | https://www.lindenhurstlibrary.org | longisland
+Smithtown Library | Smithtown, NY | https://www.smithlib.org | longisland
+Northport-East Northport Public Library | Northport, NY | https://www.nenpl.org | longisland
+Half Hollow Hills Community Library | Dix Hills, NY | https://www.hhhlibrary.org | longisland
+Commack Public Library | Commack, NY | https://www.commackpl.org | longisland
+Sachem Public Library | Holbrook, NY | https://www.sachemlibrary.org | longisland
+Middle Country Public Library | Centereach, NY | https://www.mcpl.lib.ny.us | longisland
+Port Jefferson Free Library | Port Jefferson, NY | https://www.portjefflibrary.org | longisland
+Riverhead Free Library | Riverhead, NY | https://www.riverheadlibrary.org | longisland
+Rogers Memorial Library | Southampton, NY | https://www.myrml.org | longisland
+East Hampton Library | East Hampton, NY | https://www.easthamptonlibrary.org | longisland
+Westhampton Free Library | Westhampton Beach, NY | https://www.westhamptonlibrary.org | longisland
+Scarsdale Public Library | Scarsdale, NY | https://www.scarsdalelibrary.org | westchester
+Rye Free Reading Room | Rye, NY | https://www.ryelibrary.org | westchester
+Larchmont Public Library | Larchmont, NY | https://www.larchmontlibrary.org | westchester
+Mamaroneck Public Library | Mamaroneck, NY | https://www.mamaronecklibrary.org | westchester
+Port Chester-Rye Brook Public Library | Port Chester, NY | https://www.pclib.org | westchester
+Ossining Public Library | Ossining, NY | https://www.ossininglibrary.org | westchester
+Warner Library | Tarrytown, NY | https://www.warnerlibrary.org | westchester
+Chappaqua Library | Chappaqua, NY | https://www.chappaqualibrary.org | westchester
+Mount Kisco Public Library | Mount Kisco, NY | https://www.mountkiscolibrary.org | westchester
+Bronxville Public Library | Bronxville, NY | https://www.bronxvillelibrary.org | westchester
+Greenburgh Public Library | Elmsford, NY | https://www.greenburghlibrary.org | westchester
+Mount Vernon Public Library | Mount Vernon, NY | https://www.mountvernonpubliclibrary.org | westchester
+Field Library | Peekskill, NY | https://www.peekskill.org | westchester
+Harrison Public Library | Harrison, NY | https://www.harrisonpl.org | westchester
+Eastchester Public Library | Eastchester, NY | https://www.eastchesterlibrary.org | westchester
+Pelham Public Library | Pelham, NY | https://www.pelhamlibrary.org | westchester
+Westchester County Parks | White Plains, NY | https://parks.westchestergov.com | westchester
+Cheltenham Township Libraries | Glenside, PA | https://www.cheltenhamlibraries.org | philly
+Abington Free Library | Jenkintown, PA | https://www.abingtonfreelibrary.org | philly
+Lower Merion Library System | Ardmore, PA | https://www.lmls.org | philly
+Radnor Memorial Library | Wayne, PA | https://www.radnorlibrary.org | philly
+Tredyffrin Public Library | Strafford, PA | https://www.tredyffrinlibraries.org | philly
+Haverford Township Free Library | Havertown, PA | https://www.haverfordlibrary.org | philly
+Upper Darby Free Public Library | Upper Darby, PA | https://www.udlibraries.org | philly
+Wissahickon Valley Public Library | Blue Bell, PA | https://www.wvpl.org | philly
+Horsham Township Library | Horsham, PA | https://www.horshamlibrary.org | philly
+Upper Dublin Public Library | Dresher, PA | https://www.upperdublinlibrary.org | philly
+Upper Merion Township Library | King of Prussia, PA | https://www.umtownship.org/library | philly
+Phoenixville Public Library | Phoenixville, PA | https://www.phoenixvillelibrary.org | philly
+Conshohocken Free Library | Conshohocken, PA | https://www.conshohockenlibrary.org | philly
+Darien Library | Darien, CT | https://www.darienlibrary.org | fairfield-ct
+New Canaan Library | New Canaan, CT | https://www.newcanaanlibrary.org | fairfield-ct
+Ridgefield Library | Ridgefield, CT | https://www.ridgefieldlibrary.org | fairfield-ct
+Wilton Library | Wilton, CT | https://www.wiltonlibrary.org | fairfield-ct
+Trumbull Library | Trumbull, CT | https://www.trumbullct-library.org | fairfield-ct
+Milford Public Library | Milford, CT | https://www.milfordlibrary.org | newhaven
+Guilford Free Library | Guilford, CT | https://www.guilfordfreelibrary.org | newhaven
+E.C. Scranton Memorial Library | Madison, CT | https://www.scrantonlibrary.org | newhaven
+Blackstone Library | Branford, CT | https://www.blackstonelibrary.org | newhaven
+Hamden Public Library | Hamden, CT | https://www.hamdenlibrary.org | newhaven
+Welles-Turner Memorial Library | Glastonbury, CT | https://www.wellesturner.org | hartford
+Simsbury Public Library | Simsbury, CT | https://www.simsburylibrary.info | hartford
+Avon Free Public Library | Avon, CT | https://www.avonctlibrary.info | hartford
+Farmington Libraries | Farmington, CT | https://www.farmingtonlibraries.org | hartford
+Manchester Public Library CT | Manchester, CT | https://library.manchesterct.gov | hartford
+Southington Public Library | Southington, CT | https://www.southingtonlibrary.org | hartford
+Cheshire Public Library | Cheshire, CT | https://www.cheshirelibrary.org | newhaven
+Wellesley Free Library | Wellesley, MA | https://www.wellesleyfreelibrary.org | boston
+Needham Free Public Library | Needham, MA | https://www.needhamma.gov/library | boston
+Morse Institute Library | Natick, MA | https://www.morseinstitute.org | boston
+Framingham Public Library | Framingham, MA | https://www.framinghamlibrary.org | boston
+Robbins Library | Arlington, MA | https://www.robbinslibrary.org | boston
+Belmont Public Library | Belmont, MA | https://www.belmontpubliclibrary.net | boston
+Concord Free Public Library | Concord, MA | https://www.concordlibrary.org | boston
+Winchester Public Library | Winchester, MA | https://www.winpublib.org | boston
+Medford Public Library | Medford, MA | https://www.medfordlibrary.org | boston
+Melrose Public Library | Melrose, MA | https://www.melrosepubliclibrary.org | boston
+Watertown Free Public Library | Watertown, MA | https://www.watertownlib.org | boston
+Waltham Public Library | Waltham, MA | https://www.waltham.lib.ma.us | boston
+Memorial Hall Library | Andover, MA | https://www.mhl.org | boston
+Abbot Public Library | Marblehead, MA | https://www.abbotlibrary.org | boston
+Beverly Public Library | Beverly, MA | https://www.beverlypubliclibrary.org | boston
+Hingham Public Library | Hingham, MA | https://www.hinghamlibrary.org | boston
+Milton Public Library | Milton, MA | https://www.miltonlibrary.org | boston
+Dedham Public Library | Dedham, MA | https://www.dedhamlibrary.org | boston
+Goodnow Library | Sudbury, MA | https://www.goodnowlibrary.org | boston
+Acton Memorial Library | Acton, MA | https://www.actonmemoriallibrary.org | boston
+Woburn Public Library | Woburn, MA | https://www.woburnpubliclibrary.org | boston
+Burlington Public Library MA | Burlington, MA | https://www.burlingtonpubliclibrary.org | boston
