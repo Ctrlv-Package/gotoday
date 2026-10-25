@@ -4,7 +4,7 @@ name: Instagram accounts (hourly)
 # lets hundreds of town, library, parks and downtown accounts from Florida to Maine stay fresh through the day.
 on:
   schedule:
-    - cron: "45 * * * *"
+    - cron: "5 */5 * * *"   # each run reads a batch every hour for ~5 hours (GitHub skips many hourly schedules)
   workflow_dispatch: {}
 
 permissions:
@@ -17,14 +17,21 @@ concurrency:
 jobs:
   instagram:
     runs-on: ubuntu-24.04
-    timeout-minutes: 55
+    timeout-minutes: 330
     steps:
       - uses: actions/checkout@v5
       - uses: actions/setup-node@v5
         with:
           node-version: 22
       - run: npm install --no-audit --no-fund
-      - run: set -o pipefail; npx tsx scripts/remote-ingest.ts 2>&1 | sed -E 's#(Bearer )[A-Za-z0-9._-]+#\1***#g' | tee ig.log
+      # Five rounds, one per hour: Meta's hourly read budget refills between rounds.
+      - run: |
+          set -o pipefail
+          for round in 1 2 3 4 5; do
+            echo "=== round $round $(date -u +%H:%M)" | tee -a ig.log
+            npx tsx scripts/remote-ingest.ts 2>&1 | sed -E 's#(Bearer )[A-Za-z0-9._-]+#\1***#g' | tee -a ig.log || true
+            if [ $round -lt 5 ]; then sleep 3300; fi
+          done
         env:
           GOTODAY_URL: ${{ secrets.GOTODAY_URL }}
           INGESTION_SECRET: ${{ secrets.INGESTION_SECRET }}
@@ -34,7 +41,7 @@ jobs:
       - name: Save log
         if: always()
         run: |
-          mkdir -p out && tail -n 400 ig.log > out/ig.log 2>/dev/null || echo "no log" > out/ig.log
+          mkdir -p out && tail -n 2000 ig.log > out/ig.log 2>/dev/null || echo "no log" > out/ig.log
           cd out && echo '{"git":{"deploymentEnabled":false}}' > vercel.json
           git init -q -b instagram-results && git config user.name ig && git config user.email ig@users.noreply.github.com
           git add -A && git commit -qm "instagram run $(date -u +%FT%TZ)"

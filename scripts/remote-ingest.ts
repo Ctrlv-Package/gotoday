@@ -120,7 +120,9 @@ console.log(failures?`${failures} source(s) did not succeed`:"All remote sources
   const names:string[]=((await lr.json().catch(()=>({}))).sources)||[];
   console.log(`Instagram accounts: ${names.length}`);igTotal=names.length;if(!names.length)problems.push(`Instagram list came back empty (HTTP ${lr.status})`);
   let next=0;
-  await Promise.all(Array.from({length:3},async()=>{while(next<names.length){const name=names[next++];
+  // One account at a time unless told otherwise: each new post is an AI reading, and the free AI tier allows only a
+  // few readings a minute (IG_CONCURRENCY=3 once the AI key has billing).
+  await Promise.all(Array.from({length:Math.max(1,Number(process.env.IG_CONCURRENCY||1))},async()=>{while(next<names.length){const name=names[next++];
    try{const r=await fetch(`${base}/api/ingest?source=${encodeURIComponent(name)}`,{method:"POST",headers:{authorization:`Bearer ${secret}`},signal:AbortSignal.timeout(310000)});
     const d:any=await r.json().catch(()=>({}));const sm=d?.sources?.[0]||{status:"error",error:d?.error||`HTTP ${r.status}`};
     // Instagram's hourly limit: stop here; the rest are read on the next run (nothing is lost).
