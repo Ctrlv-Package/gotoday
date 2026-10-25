@@ -276,12 +276,15 @@ export async function fetchInstagram(cfg:InstagramConfig,startDate:string,endDat
    return hit>=2||(hit===1&&long&&mine.size<=2)});
   return best?(best.post.media_type==="CAROUSEL_ALBUM"?(best.slide&&slides(best.post)[best.slide-1])||slides(best.post)[0]:best.post.media_url):undefined;
  };
- const pictureFor=(e:any)=>{
+ // A video's own cover is a talking head, so a video event borrows a flyer from another post:
+ // that borrow is exactly the "wrong picture on the card" failure, so it is marked here and the
+ // quarantine gate holds it for review instead of publishing on the guess.
+ const pictureFor=(e:any):{url?:string;borrowed:boolean}=>{
   const many=(perPost.get(e.post.id)||0)>=3||ROUNDUPS.has(cfg.username)&&(perPost.get(e.post.id)||0)>=2;
   const own=e.slide&&e.post.media_type==="CAROUSEL_ALBUM"&&(perSlide.get(`${e.post.id}#${e.slide}`)||0)===1&&!(many&&e.slide===1)?slides(e.post)[e.slide-1]:undefined;
-  if(own)return own;
-  if(e.post.media_type==="VIDEO")return flyerFor(e);
-  return many?undefined:imageOf(e.post);
+  if(own)return{url:own,borrowed:false};
+  if(e.post.media_type==="VIDEO"){const url=flyerFor(e);return{url,borrowed:!!url}}
+  return{url:many?undefined:imageOf(e.post),borrowed:false};
  };
  for(const e of found){
   const k=key(e);if(e.cancelled||cancelled.has(k)||partOfCancelled(e)||seen.has(k)||e.date<startDate||e.date>endDate)continue;seen.add(k);
@@ -296,10 +299,11 @@ export async function fetchInstagram(cfg:InstagramConfig,startDate:string,endDat
   const time=e.start&&/^\d{2}:\d{2}$/.test(e.start)?e.start+":00":"";
   const end=e.end&&/^\d{2}:\d{2}$/.test(e.end)?e.end+":00":undefined;
   const town=(e.town||"").trim().replace(/,?\s*(FL|Florida)$/i,"");
+  const pic=pictureFor(e);
   out.push({id:`${cfg.idPrefix}-${slug(e.title)}-${e.date}`,title:e.title.trim(),city:town&&/^[A-Za-z .'-]{3,40}$/.test(town)?`${town}, FL`:cfg.city,
    // City and parks accounts post events all over town: use the place the post names, else the account's own venue.
    venue:(e.place||"").split(",")[0].trim().slice(0,120)||cfg.venue,address:e.place&&/\d/.test(e.place)?e.place.split(",").slice(1).join(",").trim()||e.place:e.place?undefined:cfg.address,date:e.date,time,endTime:end&&time&&end>time?end:undefined,
-   url:e.post.permalink,sourceUrl:`https://www.instagram.com/${cfg.username}/`,image:pictureFor(e),
+   url:e.post.permalink,sourceUrl:`https://www.instagram.com/${cfg.username}/`,image:pic.url,imageBorrowed:pic.borrowed||undefined,
    category:family?"Family":arts?"Arts & Theatre":"Local",genre:"Venue Event",desc:(e.summary||"").trim()||`Posted by @${cfg.username}.`,
    tags:[...(family?["Family"]:[]),...(forKids?["Kids"]:[]),...(arts?["Arts & Theatre"]:[]),...(e.free?["Free"]:e.free===false?["Paid"]:[]),"Local"],
    emoji:family?"🎉":arts?"🎨":"📍",source:cfg.source,isFree:e.free===true||undefined,eventType:"event"});
