@@ -106,6 +106,63 @@ export function distanceRank(rows:PlaceSuggestion[],lat:number,lon:number):Place
  const withD=rows.map((r,i)=>({r,i,d:r.lat!=null&&r.lon!=null?haversineKm(lat,lon,r.lat,r.lon):null}));
  return withD.sort((a,b)=>(a.d==null?1:0)-(b.d==null?1:0)||(a.d??0)-(b.d??0)||a.i-b.i).map(x=>x.r);
 }
+/** "Near you" radius: 80 km covers the tri-county area (Weston to Miami is ~55 km, to
+ *  Palm Beach ~70 km) while keeping Kissimmee, the Panhandle and Cuba out of a nearby list. */
+export const NEARBY_RADIUS_KM=80;
+/** The rows within km of a point, in input order. Rows without coordinates never qualify. */
+export function withinRadiusKm(rows:PlaceSuggestion[],lat:number,lon:number,km:number):PlaceSuggestion[]{
+ return rows.filter(r=>r.lat!=null&&r.lon!=null&&haversineKm(lat,lon,r.lat,r.lon)<=km);
+}
+/** Merge suggestion lists from several sources, first source wins on duplicates
+ *  (same place name in the same town, case-insensitive). */
+export function mergeSuggestions(lists:PlaceSuggestion[][]):PlaceSuggestion[]{
+ const seen=new Set<string>(),out:PlaceSuggestion[]=[];
+ for(const list of lists)for(const s of list){
+  const k=`${s.name.trim().toLowerCase()}|${s.city.trim().toLowerCase()}`;if(seen.has(k))continue;seen.add(k);out.push(s);
+ }
+ return out;
+}
+/** A TomTom Fuzzy Search result -> the suggestion shape. Only real POIs (type POI):
+ *  streets, geographies and bare addresses are what the form's own Street box is for.
+ *  The state name maps to its abbreviation through the same table Photon uses. */
+export function tomtomSuggestion(r:any):PlaceSuggestion|null{
+ if(!r||r.type!=="POI")return null;
+ const name=String(r.poi?.name||"").trim();if(!name)return null;
+ const a=r.address||{};
+ const street=[a.streetNumber,a.streetName].filter(Boolean).join(" ").trim()||String(a.freeformAddress||"").trim();
+ const town=String(a.municipality||"").trim();
+ const stateRaw=String(a.countrySubdivision||"").trim();
+ const suffix=stateRaw?(US_STATE_ABBR[stateRaw]||stateRaw):"";
+ const s:PlaceSuggestion={name,address:street,city:town&&suffix?`${town}, ${suffix}`:town};
+ const la=Number(r.position?.lat),lo=Number(r.position?.lon);
+ if(Number.isFinite(la)&&Number.isFinite(lo)){s.lat=la;s.lon=lo}
+ return s;
+}
+/** A Mapbox Geocoding v5 feature -> the suggestion shape. Only the name, street and
+ *  town/state are used. The street comes from properties.address when present, else the
+ *  first place_name segment after the name itself (place_name runs name, street, town,
+ *  state, country). The town/state come from the context's place and region entries. */
+export function mapboxSuggestion(f:any):PlaceSuggestion|null{
+ const name=String(f?.text||"").trim();if(!name)return null;
+ const props=f?.properties||{};
+ let street=String(props.address||"").trim();
+ const ctx=Array.isArray(f?.context)?f.context:[];
+ const place=ctx.find((c:any)=>String(c?.id||"").startsWith("place."));
+ const region=ctx.find((c:any)=>String(c?.id||"").startsWith("region."));
+ const town=String(place?.text||"").trim();
+ if(!street){
+  const parts=String(f?.place_name||"").split(",").map((s:string)=>s.trim()).filter(Boolean);
+  if(parts.length>1&&parts[0].toLowerCase()===name.toLowerCase())parts.shift();
+  street=parts.length&&parts[0].toLowerCase()!==town.toLowerCase()?parts[0]:"";
+ }
+ const regCode=String(region?.short_code||"").trim();
+ const suffix=regCode?regCode.split("-").pop()!:String(region?.text||"").trim();
+ const s:PlaceSuggestion={name,address:street,city:town&&suffix?`${town}, ${suffix}`:town};
+ const c=f?.center||f?.geometry?.coordinates;
+ const lo=Array.isArray(c)?Number(c[0]):NaN,la=Array.isArray(c)?Number(c[1]):NaN;
+ if(Number.isFinite(la)&&Number.isFinite(lo)){s.lat=la;s.lon=lo}
+ return s;
+}
 /** The place an event shows, from all its listings (cards and event pages use this same choice): the most specific
  *  (street address > named place > town only), ties to the oldest listing; a bare street address takes the place name
  *  another listing gives ("Sanctuary Park" + "16290 Griffin Road"). */
