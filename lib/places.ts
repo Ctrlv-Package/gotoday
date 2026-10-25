@@ -18,6 +18,19 @@ export function placeScore(p:{venue?:string|null;address?:string|null;city?:stri
 }
 
 export type Place={id:number;venue?:string|null;address?:string|null;city?:string|null;source?:string|null;lat?:number|null;lng?:number|null};
+/** The street part of a venue address: venues often store the full address ("1675 Market St,
+ *  Weston, FL 33326") next to the town, so the street box and the suggestion line strip the
+ *  town/state/zip tail instead of showing it twice. A clean street address passes through. */
+export function streetOnly(address:string,city:string){
+ const town=String(city||"").split(",")[0].trim(),full=String(city||"").trim();
+ const parts=String(address||"").split(",").map(s=>s.trim()).filter(Boolean);
+ const GEO=/^([A-Z]{2}(\s+\d{5}(-\d{4})?)?|\d{5}(-\d{4})?)$/; // "FL", "FL 33326", "33326"
+ while(parts.length>1&&GEO.test(parts[parts.length-1]))parts.pop();
+ while(parts.length>1&&!/\d/.test(parts[parts.length-1]))parts.pop(); // a trailing town name (even a different town)
+ const out=parts.join(", ");
+ if(out.toLowerCase()===full.toLowerCase()||(town&&out.toLowerCase()===town.toLowerCase()))return ""; // the address is just the town
+ return out;
+}
 export type PlaceSuggestion={name:string;address:string;city:string};
 const STREET_NAME=/^\d{2,6}\s+\S+.*\b(St|Street|Ave|Avenue|Blvd|Boulevard|Rd|Road|Ln|Lane|Dr|Drive|Way|Ct|Court|Pl|Place|Hwy|Highway|Ter|Terrace)\b/i;
 /** Rank venue rows for the create form's place suggestions: the user's town first, then a
