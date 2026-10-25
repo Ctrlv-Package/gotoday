@@ -1,21 +1,38 @@
 "use client";
-import {useState} from "react";
+import {useEffect,useRef,useState} from "react";
 import {byOptions,describe,type Repeat,NO_REPEAT} from "../../lib/repeat";
 
 export type FormValues={title:string;description:string;date:string;startTime:string;endTime:string;allDay:boolean;venue:string;address:string;city:string;
  visibility:"public"|"private";isFree:boolean;priceText:string;ageMin:number|null;ageMax:number|null;category:string;categories?:string[];link:string;hostName:string;image?:string;repeat?:Repeat;rsvp?:RsvpValues};
 export type RsvpValues={onSite:boolean;name:string;phone:string;email:string;by:string};
 export const EMPTY:FormValues={title:"",description:"",date:"",startTime:"",endTime:"",allDay:false,venue:"",address:"",city:"",visibility:"public",isFree:true,priceText:"",
- ageMin:null,ageMax:null,category:"Community",categories:["Community"],link:"",hostName:"",image:""};
+ ageMin:null,ageMax:null,category:"",categories:[],link:"",hostName:"",image:""};
 const CATEGORIES=["Community","Family","Kids","Music","Arts & Theatre","Sports","Food & Drink","Market","Party","Outdoors","Other"];
 const AGES:[string,number|null,number|null][]=[["All ages",null,null],["Kids (0–12)",0,12],["Teens (13–17)",13,17],["Adults 18+",18,null],["21+",21,null]];
 
 export default function EventForm({initial,submitLabel,onSubmit,busy}:{initial:FormValues;submitLabel:string;busy?:boolean;onSubmit:(v:FormValues)=>Promise<string[]|null>}){
  const [v,setV]=useState<FormValues>(initial),[errors,setErrors]=useState<string[]>([]);
  const set=<K extends keyof FormValues>(k:K,x:FormValues[K])=>setV(o=>({...o,[k]:x}));
+ // Place suggestions: real venues from GoToday's own list, as the user types the place name.
+ // No external API or key: the venues table already holds every public listing's place.
+ type PlaceSug={name:string;address:string;city:string};
+ const [placeSug,setPlaceSug]=useState<PlaceSug[]>([]),[placeOpen,setPlaceOpen]=useState(false),placePicked=useRef(false);
+ useEffect(()=>{
+  const q=v.venue.trim();
+  if(placePicked.current){placePicked.current=false;return}
+  if(q.length<2){setPlaceSug([]);setPlaceOpen(false);return}
+  const ctl=new AbortController(),t=setTimeout(async()=>{
+   try{const r=await fetch(`/api/places/suggest?q=${encodeURIComponent(q)}&city=${encodeURIComponent(v.city)}`,{signal:ctl.signal});
+    const d=await r.json().catch(()=>({}));if(Array.isArray(d.suggestions)){setPlaceSug(d.suggestions);setPlaceOpen(true)}}catch{}
+  },250);
+  return()=>{clearTimeout(t);ctl.abort()};
+ },[v.venue,v.city]);
+ const pickPlace=(s:PlaceSug)=>{placePicked.current=true;setV(o=>({...o,venue:s.name,address:s.address||o.address,city:s.city||o.city}));setPlaceSug([]);setPlaceOpen(false)};
  const ageKey=AGES.find(([,a,b])=>a===v.ageMin&&b===v.ageMax)?.[0]||"custom";
  const today=new Date(Date.now()-new Date().getTimezoneOffset()*60000).toISOString().slice(0,10);
- async function submit(ev:React.FormEvent){ev.preventDefault();setErrors([]);const errs=await onSubmit(v);if(errs?.length){setErrors(errs);window.scrollTo({top:0,behavior:"smooth"})}}
+ async function submit(ev:React.FormEvent){ev.preventDefault();setErrors([]);
+  if(!v.categories?.length&&!v.category){setErrors(["Pick at least one category."]);window.scrollTo({top:0,behavior:"smooth"});return}
+  const errs=await onSubmit(v);if(errs?.length){setErrors(errs);window.scrollTo({top:0,behavior:"smooth"})}}
 
  return <form className="ef" onSubmit={submit}>
   {errors.length>0&&<div className="efErrors" role="alert">{errors.map(e=><div key={e}>• {e}</div>)}</div>}
@@ -38,7 +55,10 @@ export default function EventForm({initial,submitLabel,onSubmit,busy}:{initial:F
   <label className="efCheck"><input type="checkbox" checked={v.allDay} onChange={e=>set("allDay",e.target.checked)}/> All day</label>
   <RepeatField date={v.date} value={v.repeat||NO_REPEAT} onChange={x=>set("repeat",x)}/>
 
-  <label className="efField">Place name<input maxLength={120} value={v.venue} onChange={e=>set("venue",e.target.value)} placeholder="Weston Town Center, Vista Park, our house…"/></label>
+  <div className="placeSuggest">
+   <label className="efField">Place name<input maxLength={120} value={v.venue} onChange={e=>set("venue",e.target.value)} placeholder="Weston Town Center, Vista Park, our house…" autoComplete="off" onFocus={()=>{if(placeSug.length)setPlaceOpen(true)}} onBlur={()=>setTimeout(()=>setPlaceOpen(false),150)} onKeyDown={e=>{if(e.key==="Escape")setPlaceOpen(false)}}/></label>
+   {placeOpen&&placeSug.length>0&&<ul className="placeSuggestList">{placeSug.map((s,i)=><li key={`${s.name}|${s.address}|${s.city}|${i}`}><button type="button" onMouseDown={e=>{e.preventDefault();pickPlace(s)}}><b>{s.name}</b>{(s.address||s.city)&&<span>{[s.address,s.city].filter(Boolean).join(", ")}</span>}</button></li>)}</ul>}
+  </div>
   <div className="efRow">
    <label className="efField grow"><span>Street address {v.visibility==="private"?<small>(only guests with the link see it)</small>:<small>(helps people find it)</small>}</span><input maxLength={200} value={v.address} onChange={e=>set("address",e.target.value)} placeholder="1675 Market St" autoComplete="street-address"/></label>
    <label className="efField">City<input required maxLength={80} value={v.city} onChange={e=>set("city",e.target.value)} placeholder="Weston, FL"/></label>
@@ -49,8 +69,8 @@ export default function EventForm({initial,submitLabel,onSubmit,busy}:{initial:F
   <label className="efField">What's happening?<textarea rows={5} maxLength={4000} value={v.description} onChange={e=>set("description",e.target.value)} placeholder={v.visibility==="private"?"Pizza, cake and a bounce house! Bring a swimsuit.":"Local artisans, live music and food trucks by the bell tower."}/></label>
 
   <fieldset className="efField efCats"><legend>Categories <small>(pick up to 4)</small></legend>
-   <div className="efCatChips">{CATEGORIES.map(c=>{const cats=v.categories?.length?v.categories:[v.category],on=cats.includes(c);
-    return <button type="button" key={c} className={on?"on":""} aria-pressed={on} onClick={()=>{let n=on?cats.filter(x=>x!==c):[...cats,c].slice(-4);if(!n.length)n=["Community"];setV(o=>({...o,categories:n,category:n[0]}))}}>{on?"✓ ":""}{c}</button>})}</div>
+   <div className="efCatChips">{CATEGORIES.map(c=>{const cats=v.categories?.length?v.categories:(v.category?[v.category]:[]),on=cats.includes(c);
+    return <button type="button" key={c} className={on?"on":""} aria-pressed={on} onClick={()=>{let n=on?cats.filter(x=>x!==c):[...cats,c].slice(-4);setV(o=>({...o,categories:n,category:n[0]||""}))}}>{on?"✓ ":""}{c}</button>})}</div>
   </fieldset>
 
   <div className="efRow">

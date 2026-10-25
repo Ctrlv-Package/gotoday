@@ -62,10 +62,11 @@ export function validate(raw:any):{ok:true;v:CommunityInput}|{ok:false;errors:st
   visibility:raw.visibility==="private"?"private":"public",isFree:raw.isFree!==false,priceText:s(raw.priceText,120),ageMin:age(raw.ageMin),ageMax:age(raw.ageMax),
   repeat:NO_REPEAT,
   ...(()=>{const cats=[...new Set((Array.isArray(raw.categories)?raw.categories:[raw.category]).map((x:any)=>String(x||"")).filter((x:string)=>CATEGORIES.includes(x)))].slice(0,4) as string[];
-   return{categories:cats.length?cats:["Community"],category:cats[0]||"Community"}})(),link:/^https?:\/\/\S+$/i.test(link)?link:"",hostName:s(raw.hostName,80),
+   return{categories:cats,category:cats[0]||""}})(),link:/^https?:\/\/\S+$/i.test(link)?link:"",hostName:s(raw.hostName,80),
   image:/^\/img\/[0-9a-f]{24}$/.test(String(raw.image||""))?String(raw.image):"",rsvp:rsvpDefaults("public")};
  const errors:string[]=[];
  {const r=cleanRsvp(raw.rsvp,v.visibility,v.date);v.rsvp=r.rsvp;errors.push(...r.errors)}
+ if(!v.categories.length)errors.push("Pick at least one category.");
  if(v.title.length<3)errors.push("Add a title.");
  if(!/^\d{4}-\d{2}-\d{2}$/.test(v.date))errors.push("Pick a date.");
  else{const today=new Date(Date.now()-86400e3).toISOString().slice(0,10),max=new Date(Date.now()+400*86400e3).toISOString().slice(0,10);if(v.date<today)errors.push("The date has already passed.");if(v.date>max)errors.push("Pick a date within the next year.")}
