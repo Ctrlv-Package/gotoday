@@ -790,3 +790,115 @@ Downtown Macon | Macon, GA | https://www.newtownmacon.com/events | macon
 Downtown Wilmington | Wilmington, NC | https://www.wilmingtondowntowninc.com/events | wilmington
 Erie Downtown Partnership | Erie, PA | https://www.downtownerie.com/events | erie
 Myrtle Beach Downtown | Myrtle Beach, SC | https://www.downtownmyrtlebeach.com/events | myrtle
+
+# ==== NEW JERSEY: town libraries, towns, downtowns (NJ runs on local libraries) ====
+# Union County
+Union Public Library | Union, NJ | https://www.uplnj.org | nyc
+Township of Union | Union, NJ | https://www.uniontownship.com | nyc
+Union County | Elizabeth, NJ | https://ucnj.org | nyc
+Elizabeth Public Library | Elizabeth, NJ | https://www.elizpl.org | nyc
+City of Elizabeth | Elizabeth, NJ | https://www.elizabethnj.org | nyc
+Westfield Memorial Library | Westfield, NJ | https://www.wmlnj.org | nyc
+Town of Westfield | Westfield, NJ | https://www.westfieldnj.gov | nyc
+Downtown Westfield | Westfield, NJ | https://www.westfielddowntown.com | nyc
+Summit Free Public Library | Summit, NJ | https://www.summitlibrary.org | nyc
+City of Summit | Summit, NJ | https://www.cityofsummit.org | nyc
+Summit Downtown | Summit, NJ | https://www.summitdowntown.org | nyc
+Cranford Public Library | Cranford, NJ | https://www.cranfordlibrary.org | nyc
+Township of Cranford | Cranford, NJ | https://www.cranfordnj.org | nyc
+Linden Public Library | Linden, NJ | https://www.lindenpl.org | nyc
+City of Linden | Linden, NJ | https://www.linden-nj.org | nyc
+Springfield Free Public Library | Springfield, NJ | https://www.springfieldpubliclibrary.com | nyc
+Kenilworth Public Library | Kenilworth, NJ | https://www.kenilworthlibrary.org | nyc
+Rahway Public Library | Rahway, NJ | https://www.rahwaylibrary.org | nyc
+City of Rahway | Rahway, NJ | https://www.cityofrahway.com | nyc
+Plainfield Public Library | Plainfield, NJ | https://www.plainfieldlibrary.info | central-nj
+Scotch Plains Public Library | Scotch Plains, NJ | https://www.scotlib.org | nyc
+Berkeley Heights Public Library | Berkeley Heights, NJ | https://www.bhplnj.org | nyc
+New Providence Memorial Library | New Providence, NJ | https://www.newprovidencelibrary.org | nyc
+Clark Public Library | Clark, NJ | https://www.clarklibrary.org | nyc
+Roselle Public Library | Roselle, NJ | https://www.rosellelibrary.org | nyc
+Mountainside Public Library | Mountainside, NJ | https://www.mountainsidelibrary.org | nyc
+Hillside Public Library | Hillside, NJ | https://www.hillsidelibrary.org | nyc
+# Essex County
+Maplewood Memorial Library | Maplewood, NJ | https://www.maplewoodlibrary.org | nyc
+Township of Maplewood | Maplewood, NJ | https://www.maplewoodnj.gov | nyc
+South Orange Public Library | South Orange, NJ | https://www.sopl.org | nyc
+Millburn Free Public Library | Millburn, NJ | https://www.millburnlibrary.org | nyc
+Livingston Public Library | Livingston, NJ | https://www.livingstonlibrary.org | nyc
+Township of Livingston | Livingston, NJ | https://www.livingstonnj.org | nyc
+West Orange Public Library | West Orange, NJ | https://www.westorangelibrary.org | nyc
+Bloomfield Public Library | Bloomfield, NJ | https://www.bplnj.org | nyc
+Nutley Public Library | Nutley, NJ | https://www.nutleypubliclibrary.org | nyc
+Verona Public Library | Verona, NJ | https://www.veronalibrary.org | nyc
+Glen Ridge Public Library | Glen Ridge, NJ | https://www.glenridgelibrary.org | nyc
+East Orange Public Library | East Orange, NJ | https://www.eopl.org | nyc
+Caldwell Public Library | Caldwell, NJ | https://www.caldwellpubliclibrary.org | nyc
+Essex County Parks | Newark, NJ | https://www.essexcountyparks.org | nyc
+Montclair Center | Montclair, NJ | https://www.montclaircenter.com | nyc
+# Hudson County
+Bayonne Public Library | Bayonne, NJ | https://www.bayonnelibrary.org | nyc
+Secaucus Public Library | Secaucus, NJ | https://www.secaucuslibrary.org | nyc
+North Bergen Free Public Library | North Bergen, NJ | https://www.nbpl.org | nyc
+Weehawken Public Library | Weehawken, NJ | https://www.weehawkenlibrary.org | nyc
+Union City Public Library | Union City, NJ | https://www.ucpl.org | nyc
+West New York Public Library | West New York, NJ | https://www.wnypl.org | nyc
+Kearny Public Library | Kearny, NJ | https://www.kearnylibrary.org | nyc
+Hudson County | Jersey City, NJ | https://www.hudsoncountynj.org | nyc
+# Bergen & Passaic
+Teaneck Public Library | Teaneck, NJ | https://www.teanecklibrary.org | nyc
+Englewood Public Library | Englewood, NJ | https://www.englewoodlibrary.org | nyc
+Fort Lee Public Library | Fort Lee, NJ | https://www.fortleelibrary.org | nyc
+Fair Lawn Public Library | Fair Lawn, NJ | https://www.fairlawnlibrary.org | nyc
+Mahwah Public Library | Mahwah, NJ | https://www.mahwahlibrary.org | nyc
+Ramsey Free Public Library | Ramsey, NJ | https://www.ramseylibrary.org | nyc
+Wyckoff Public Library | Wyckoff, NJ | https://www.wyckofflibrary.org | nyc
+Glen Rock Public Library | Glen Rock, NJ | https://www.glenrocklibrary.org | nyc
+Westwood Public Library | Westwood, NJ | https://www.westwoodpl.org | nyc
+Bergenfield Public Library | Bergenfield, NJ | https://www.bergenfieldlibrary.org | nyc
+Bergen County Parks | Paramus, NJ | https://www.co.bergen.nj.us/parks | nyc
+Wayne Public Library | Wayne, NJ | https://www.waynepubliclibrary.org | nyc
+Clifton Public Library | Clifton, NJ | https://www.cliftonpl.org | nyc
+Paterson Free Public Library | Paterson, NJ | https://www.patersonpl.org | nyc
+Little Falls Public Library | Little Falls, NJ | https://www.littlefallslibrary.org | nyc
+# Morris County
+Morristown & Morris Township Library | Morristown, NJ | https://www.jfpl.org | nyc
+Morristown Partnership | Morristown, NJ | https://www.morristown-nj.org | nyc
+Madison Public Library | Madison, NJ | https://www.madisonpubliclibrary.org | nyc
+Library of the Chathams | Chatham, NJ | https://www.chathamlibrary.org | nyc
+Florham Park Public Library | Florham Park, NJ | https://www.florhamparklib.org | nyc
+Parsippany-Troy Hills Library | Parsippany, NJ | https://www.parsippanylibrary.org | nyc
+Denville Free Public Library | Denville, NJ | https://www.denvillelibrary.org | nyc
+Randolph Township Free Public Library | Randolph, NJ | https://www.randolphnj.org/library | nyc
+Roxbury Public Library | Succasunna, NJ | https://www.roxburynjlibrary.org | nyc
+Mount Olive Public Library | Flanders, NJ | https://www.mopl.org | nyc
+Morris County Park Commission | Morristown, NJ | https://www.morrisparks.net | nyc
+# Middlesex & Somerset
+New Brunswick Free Public Library | New Brunswick, NJ | https://www.nbfpl.org | central-nj
+Piscataway Public Library | Piscataway, NJ | https://www.piscatawaylibrary.org | central-nj
+Woodbridge Public Library | Woodbridge, NJ | https://www.woodbridgelibrary.org | central-nj
+East Brunswick Public Library | East Brunswick, NJ | https://www.ebpl.org | central-nj
+South Brunswick Public Library | Monmouth Junction, NJ | https://www.sbpl.info | central-nj
+North Brunswick Public Library | North Brunswick, NJ | https://www.northbrunswicklibrary.org | central-nj
+Old Bridge Public Library | Old Bridge, NJ | https://www.oldbridgelibrary.org | central-nj
+Metuchen Public Library | Metuchen, NJ | https://www.metuchenlibrary.org | central-nj
+Highland Park Public Library | Highland Park, NJ | https://www.hppl.org | central-nj
+Plainsboro Public Library | Plainsboro, NJ | https://www.plainsborolibrary.org | central-nj
+Monroe Township Public Library | Monroe Township, NJ | https://www.monroetwplibrary.org | central-nj
+Sayreville Public Library | Sayreville, NJ | https://www.sayrevillelibrary.org | central-nj
+South Plainfield Public Library | South Plainfield, NJ | https://www.spplnj.org | central-nj
+Franklin Township Public Library | Somerset, NJ | https://www.franklintwp.org | central-nj
+Bernardsville Public Library | Bernardsville, NJ | https://www.bernardsvillelibrary.org | central-nj
+Bernards Township Library | Basking Ridge, NJ | https://www.bernardslibrary.org | central-nj
+Rutgers University | New Brunswick, NJ | https://events.rutgers.edu | central-nj
+Middlesex County Parks | New Brunswick, NJ | https://www.middlesexcountynj.gov/government/departments/department-of-parks-and-recreation | central-nj
+Somerset County Parks | Basking Ridge, NJ | https://www.somersetcountyparks.org | central-nj
+# Monmouth & Mercer
+Middletown Township Public Library | Middletown, NJ | https://www.mtpl.org | jersey-shore
+Red Bank Public Library | Red Bank, NJ | https://www.redbanklibrary.org | jersey-shore
+Long Branch Free Public Library | Long Branch, NJ | https://www.longbranchlib.org | jersey-shore
+Asbury Park Public Library | Asbury Park, NJ | https://www.asburyparklibrary.org | jersey-shore
+Red Bank RiverCenter | Red Bank, NJ | https://www.redbank.org | jersey-shore
+Princeton Merchants | Princeton, NJ | https://www.princetonmerchants.org | central-nj
+Trenton Free Public Library | Trenton, NJ | https://www.trentonlib.org | central-nj
+Hopewell Valley | Pennington, NJ | https://www.hopewelltwp.org | central-nj
