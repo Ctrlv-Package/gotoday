@@ -46,13 +46,15 @@ async function realTowns(events:EventRecord[],p:Params):Promise<EventRecord[]>{
 }
 export function townFromLibrary(venue:string,defaultCity?:string):string{
  const st=String(defaultCity||"").match(/,\s*([A-Z]{2})$/)?.[1];if(!st)return"";
- const v=String(venue||"").replace(/\s+/g," ").trim();
- const m=v.match(/^(?:the\s+)?([A-Z][A-Za-z.\-]*(?:\s+[A-Z][A-Za-z.\-]*){0,2}?)(?:'s\s|\s+(?:Free\s+)?(?:Public\s+)?(?:Memorial\s+)?(?:Township\s+|Borough\s+|Town\s+|City\s+|Village\s+)?Library\b)/)
-  ||v.match(/^([A-Z][A-Za-z.\-]*(?:\s+[A-Z][A-Za-z.\-]*){0,2})\s+[-–—:]\s+\S/);   // "Palisades Park - Meeting Room"
+ const v=String(venue||"").replace(/\s+/g," ").replace(/\s*\((?:[^)]*)\)\s*$/,"").trim();
+ if(/\bNeighborhood\b/i.test(v))return"";                    // a neighborhood branch is inside the home city
+ const NAME="([A-Z][A-Za-z.\\-]*(?:\\s+[A-Z][A-Za-z.\\-]*){0,2}?)";
+ const m=v.match(new RegExp(`^(?:the\\s+)?${NAME}(?:'s\\s|\\s+(?:(?:Free|Public|Memorial|Township|Borough|Town|City|Village|Branch|Regional|Area|Community)\\s+)*(?:Library|Branch|Regional)\\b)`))
+  ||v.match(new RegExp(`^${NAME}\\s+[-–—:]\\s+\\S`))       // "Palisades Park - Meeting Room"
+  ||v.match(/^([A-Z][A-Za-z.\-]*(?:\s+[A-Z][A-Za-z.\-]*){0,2})$/);   // county systems name a branch by its town: "Brick", "Ashburn"
  if(!m)return"";
- if(/\sBranch$/.test(m[1]))return"";                        // "Northwest Branch": a branch, not a town
  const town=m[1].replace(/\s+Main$/,"").replace(/\s+(Twp|Township|Borough|Boro|Town|City|Village)\.?$/i,"").trim();
- if(town.length<3||/^(north|south|east|west|northeast|northwest|southeast|southwest|mid|midtown|uptown)$/i.test(town)||/county|university|college|school|district|library/i.test(town)||town.split(" ").some(w=>NOT_TOWN.test(w)))return"";
+ if(town.length<3||/^(north|south|east|west|northeast|northwest|southeast|southwest|mid|midtown|uptown|downtown)$/i.test(town)||/county|university|college|school|district|library/i.test(town)||town.split(" ").some(w=>NOT_TOWN.test(w)))return"";
  if(town.toLowerCase()===String(defaultCity).replace(/,.*$/,"").trim().toLowerCase())return"";
  return `${town}, ${st}`;
 }
