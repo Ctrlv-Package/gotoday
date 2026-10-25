@@ -1,0 +1,30 @@
+name: Browser probe (developer tool)
+# Like "Probe URLs", but with headless Chrome — for sites that block plain requests. Results go to "probe-results".
+on:
+  workflow_dispatch:
+    inputs:
+      urls:
+        description: "URLs separated by spaces"
+        required: true
+permissions:
+  contents: write
+jobs:
+  probe:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 22
+      - run: npm install --no-audit --no-fund
+      - run: npx playwright install --with-deps chromium
+      - run: npx tsx scripts/browser-get.ts
+        env:
+          BROWSER_URLS: ${{ inputs.urls }}
+      - name: Save
+        run: |
+          cd out && echo '{"git":{"deploymentEnabled":false}}' > vercel.json
+          git init -q -b probe-results && git config user.name probe && git config user.email probe@users.noreply.github.com
+          git add -A && git commit -qm "browser probe $(date -u +%FT%TZ)"
+          git push -qf "https://x-access-token:${{ github.token }}@github.com/${{ github.repository }}.git" probe-results
