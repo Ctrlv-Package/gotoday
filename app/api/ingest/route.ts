@@ -62,7 +62,10 @@ async function run(req:NextRequest){
   const log=await db.query("insert into ingest_log(trigger,sources) values($1,$2) returning id",[trigger,names.length]).catch(()=>null);
   // Keep the database small (it's billed by size and memory): the log of filtered-out events only needs a week,
   // and run history a month.
-  await db.query("delete from rejected_events where ingestion_run_id in (select id from ingestion_runs where started_at<now()-interval '7 days')").catch(()=>{});
+  // (Two days of the filtered-out log is plenty for the status page; it was 200 MB at a week with ~1,500 sources.)
+  await db.query("delete from rejected_events where ingestion_run_id in (select id from ingestion_runs where started_at<now()-interval '2 days')").catch(()=>{});
+  // Events that ended over a month ago aren't shown anywhere; keep only those tied to a yearly series ("Remind me next year").
+  await db.query("delete from events where local_date<current_date-30 and series_id is null and id not in (select event_id from saved_events)").catch(()=>{});
   await db.query("delete from ingestion_runs where started_at<now()-interval '30 days'").catch(()=>{});
   await purgeImages().catch(()=>{});   // saved pictures of events that are over
   await buildLibrary(10).catch(()=>{});   // stock photo library: fill any event type still missing photos

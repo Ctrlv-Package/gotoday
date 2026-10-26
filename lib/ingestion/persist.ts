@@ -49,7 +49,7 @@ export async function runSource(s:EventSource,getRaw:()=>Promise<EventRecord[]>)
    const e=normalize(item);e.eventType=classifyEventType(e);
    const errors=validationErrors(e),why=discoveryRejection(e);
    if(why)errors.push(`not-discovery:${why}`);
-   if(errors.length){rejected++;await db.query("insert into rejected_events(source_id,ingestion_run_id,raw_title,raw_data,rejection_reason) values($1,$2,$3,$4,$5)",[sourceId,runId,e.title,JSON.stringify(e),Array.from(new Set(errors)).join(",")]);continue}
+   if(errors.length){rejected++;await db.query("insert into rejected_events(source_id,ingestion_run_id,raw_title,raw_data,rejection_reason) values($1,$2,$3,$4,$5)",[sourceId,runId,e.title,JSON.stringify({date:e.date,time:e.time,url:e.url,venue:e.venue,city:e.city}),Array.from(new Set(errors)).join(",")]);continue}
    good.push(e);
   }
   for(let i=0;i<good.length;i+=5){const batch=good.slice(i,i+5);
