@@ -24,6 +24,6 @@ export function quarantineReasons(e:EventRecord):string[]{
  const out:string[]=[];
  if(e.imageBorrowed)out.push("borrowed-image");
  const f=facetsFor(e);
- if(!CITY_SOURCE(e.source)&&(f.includes("Family")||f.includes("Kids"))&&!hasFamilySignal(e.title,e.desc,e.tags))out.push("family-no-signal");
+ if(!CITY_SOURCE(e.source)&&(f.includes("Family")||f.includes("Kids"))&&!hasFamilySignal(e.title,e.desc,e.tags,e.venue))out.push("family-no-signal");
  return out;
 }
