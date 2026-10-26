@@ -8,6 +8,7 @@ import {fetchCivicPlus} from "../sources/civicplus";
 import {fetchGovAccess} from "../sources/govaccess";
 import {fetchOpenCities} from "../sources/opencities";
 import {fetchLibCal} from "../sources/libcal";
+import {fetchJsonLd} from "../sources/jsonld";
 import {cityCoords} from "./geocode";
 import {fetchInstagram} from "../sources/instagram";
 import {fetchThrillshare} from "../sources/thrillshare";
@@ -89,6 +90,8 @@ export const PLATFORMS:Record<string,{describe:string;params:string;build:(p:Par
   build:(p,m)=>{need(p,"url","city");return(s,e)=>fetchIcal({url:p.url,source:m.name,idPrefix:p.idPrefix||m.name.toLowerCase().replace(/[^a-z]+/g,""),city:p.city,venue:p.venue||m.name,tz:p.tz},s,e)}},
  tribe:{describe:"WordPress 'The Events Calendar' (wp-json/tribe/events)",params:"url, city, venue?",
   build:(p,m)=>{need(p,"url","city");return(s,e)=>fetchTribe({url:p.url,source:m.name,idPrefix:p.idPrefix||m.name.toLowerCase().replace(/[^a-z]+/g,""),city:p.city,venue:p.venue||m.name},s,e)}},
+ jsonld:{describe:"Any page with schema.org Event data (theaters, venues, ticketing pages)",params:"url (events/shows page), city, venue?, tz?, maxPages?, linkPattern?",
+  build:(p,m)=>{need(p,"url","city");return(s,e)=>fetchJsonLd({url:p.url,source:m.name,idPrefix:p.idPrefix||m.name.toLowerCase().replace(/[^a-z]+/g,""),city:p.city,venue:p.venue||m.name,tz:p.tz,maxPages:p.maxPages,linkPattern:p.linkPattern},s,e)}},
  squarespace:{describe:"Squarespace events pages (?format=json)",params:"url (the events page), city, venue?, tz?",
   build:(p,m)=>{need(p,"url","city");return(s,e)=>fetchSquarespace({url:p.url,source:m.name,idPrefix:p.idPrefix||m.name.toLowerCase().replace(/[^a-z]+/g,""),city:p.city,venue:p.venue||m.name,tz:p.tz},s,e)}},
  localist:{describe:"Localist event calendars (/api/2/events)",params:"url, city, venue?, tz?",

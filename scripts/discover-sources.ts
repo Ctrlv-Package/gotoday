@@ -140,6 +140,14 @@ async function probe(c:Cand):Promise<Found[]>{
    for(const page of [...new Set([evUrl,`${origin}/events`,`${origin}/calendar`,`${origin}/upcoming-events`].filter(Boolean))]){
     const t=await get(`${page.replace(/[?#].*$/,"")}?format=json`);const n=(()=>{try{return(JSON.parse(t.text)?.upcoming||[]).length}catch{return 0}})();
     if(n){out.push({input:arg,platform:"squarespace",confidence:"confirmed",note:`${n} upcoming events (Squarespace)`,config:{name,platform:"squarespace",params:{url:page.replace(/[?#].*$/,""),city},source_type:"venue",url:page}});break}}}
+  // schema.org Event data (theaters, venues, ticketing pages): on the home page, the events page, or a linked show page.
+  if(!out.length){const {eventsInJsonLd}=await import("../lib/sources/jsonld");
+   const pages=[[url,html],...(evUrl?[[evUrl,evHtml]]:[])] as [string,string][];
+   for(const [pu,ph] of pages){const n=eventsInJsonLd(ph).length;
+    if(n){out.push({input:arg,platform:"jsonld",confidence:"confirmed",note:`${n} events (schema.org data)`,config:{name,platform:"jsonld",params:{url:pu,city},source_type:"venue",url:pu}});break}}
+   if(!out.length&&evUrl){const origin2=new URL(evUrl).origin;
+    const show=[...evHtml.matchAll(/href=["']([^"'#]+)["']/gi)].map(m=>{try{return new URL(m[1].replace(/&amp;/g,"&"),evUrl).toString()}catch{return""}}).find(u=>u.startsWith(origin2)&&u!==evUrl&&/\/(events?|shows?|productions?|performances?|tickets?|season)\/[^/]+/i.test(new URL(u).pathname));
+    if(show){const t=await get(show);if(eventsInJsonLd(t.text).length)out.push({input:arg,platform:"jsonld",confidence:"confirmed",note:`schema.org data on each show page (${show})`,config:{name,platform:"jsonld",params:{url:evUrl,city},source_type:"venue",url:evUrl}})}}}
   // iCal feed link (Trumba, Google Calendar, CMS export)
   if(!out.length){const ics=[...both.matchAll(/(?:href|src)="([^"]*(?:\.ics\b|webcal:|[?&]ical=1|iCalendar\.aspx|calendar\/ical)[^"]*)"/gi)].map(x=>x[1].replace(/&amp;/g,"&"))[0];
    if(ics){const u=(()=>{try{return new URL(ics.replace(/^webcal:/i,"https:"),evUrl||origin).toString()}catch{return""}})();const t=u?await get(u):{text:""} as any;const n=(String(t.text).match(/BEGIN:VEVENT/g)||[]).length;
