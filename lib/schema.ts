@@ -93,6 +93,16 @@ const STATEMENTS=[
  // Quarantine (quality system): why a held listing is held; null means it published normally.
  // Public queries only read status='active', so a 'quarantine' row is invisible until approved.
  `alter table events add column if not exists quarantine_reason text`,
+ // Email + password sign-in: the password is stored only as a scrypt hash (see lib/auth.ts),
+ // never in plain text. email_verified_at is set when the address is proven — by a verification
+ // link, a password reset link, or a Google sign-in for the same email. email_tokens holds the
+ // hashed one-time tokens for verification and reset links; a row is deleted when its link is used.
+ `alter table users add column if not exists password_hash text`,
+ `alter table users add column if not exists email_verified_at timestamptz`,
+ `alter table users add column if not exists failed_attempts int not null default 0`,
+ `alter table users add column if not exists locked_until timestamptz`,
+ `create table if not exists email_tokens(token_hash text primary key,user_id int not null references users(id) on delete cascade,
+   purpose text not null,expires_at timestamptz not null,created_at timestamptz default now())`,
 ];
 export function ensureSchema(){
  if(!ready)ready=(async()=>{for(const s of STATEMENTS)await db.query(s)})().catch(e=>{ready=null;throw e});
