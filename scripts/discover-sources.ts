@@ -140,6 +140,10 @@ async function probe(c:Cand):Promise<Found[]>{
    for(const page of [...new Set([evUrl,`${origin}/events`,`${origin}/calendar`,`${origin}/upcoming-events`].filter(Boolean))]){
     const t=await get(`${page.replace(/[?#].*$/,"")}?format=json`);const n=(()=>{try{return(JSON.parse(t.text)?.upcoming||[]).length}catch{return 0}})();
     if(n){out.push({input:arg,platform:"squarespace",confidence:"confirmed",note:`${n} upcoming events (Squarespace)`,config:{name,platform:"squarespace",params:{url:page.replace(/[?#].*$/,""),city},source_type:"venue",url:page}});break}}}
+  // OvationTix / AudienceView Professional box office linked from the site (many community theaters).
+  if(!out.length){const ovt=both.match(/(?:ci\.ovationtix\.com|web\.ovationtix\.com\/trs\/cal)\/(\d{2,7})/i)?.[1];
+   if(ovt){const t=await fetch("https://web.ovationtix.com/trs/api/rest/Production",{headers:{clientId:ovt,Accept:"application/json"}}).then(r=>r.ok?r.json():[]).catch(()=>[]);
+    if(Array.isArray(t)&&t.length)out.push({input:arg,platform:"ovationtix",confidence:"confirmed",note:`${t.length} productions (OvationTix ${ovt})`,config:{name,platform:"ovationtix",params:{clientId:Number(ovt),city},source_type:"venue",url:`https://ci.ovationtix.com/${ovt}`}})}}
   // schema.org Event data (theaters, venues, ticketing pages): on the home page, the events page, or a linked show page.
   if(!out.length){const {eventsInJsonLd}=await import("../lib/sources/jsonld");
    const pages=[[url,html],...(evUrl?[[evUrl,evHtml]]:[])] as [string,string][];
