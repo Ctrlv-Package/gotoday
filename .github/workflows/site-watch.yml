@@ -1,0 +1,63 @@
+name: Site watch
+
+# Every ~10 minutes: is mygotoday.com up, are events loading, and how big is the database?
+# A problem opens a GitHub issue that mentions the owner (GitHub sends that by email and to the GitHub app);
+# when it's fixed the issue gets a "back up" comment and closes. One issue per problem, never repeated alerts.
+on:
+  schedule:
+    - cron: "*/10 * * * *"
+  workflow_dispatch: {}
+
+permissions:
+  issues: write
+
+concurrency:
+  group: site-watch
+  cancel-in-progress: false
+
+jobs:
+  watch:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 8
+    steps:
+      - name: Check the site
+        env:
+          GOTODAY_URL: ${{ secrets.GOTODAY_URL }}
+          INGESTION_SECRET: ${{ secrets.INGESTION_SECRET }}
+          GH_TOKEN: ${{ github.token }}
+          REPO: ${{ github.repository }}
+          OWNER: ${{ github.repository_owner }}
+          # Database size warning: 80% of the 5 GB you're comfortable paying for.
+          DB_WARN_BYTES: "4000000000"
+        run: |
+          BASE="${GOTODAY_URL:-https://www.mygotoday.com}"
+          try() { for i in 1 2 3; do out=$(curl -sS -m 40 -w '\n%{http_code}' "$@" 2>&1) && code=$(echo "$out" | tail -n1) && [ "$code" = 200 ] && { echo "$out" | sed '$d'; return 0; }; sleep 20; done; echo "$out" | sed '$d' | head -c 400; echo; echo "HTTP ${code:-error}"; return 1; }
+          down=""
+          home=$(try "$BASE/") || down="The home page doesn't load: $(echo "$home" | tail -n1)"
+          ev=$(try "$BASE/api/events?postalCode=33326&radius=25&range=next7") || down="${down:+$down; }Events don't load: $(echo "$ev" | tail -n1)"
+          if [ -z "$down" ]; then
+            n=$(echo "$ev" | python3 -c "import sys,json;d=json.load(sys.stdin);print(len(d.get('events') or []))" 2>/dev/null || echo 0)
+            err=$(echo "$ev" | python3 -c "import sys,json;print(json.load(sys.stdin).get('error') or '')" 2>/dev/null)
+            if [ -n "$err" ] || [ "${n:-0}" = 0 ]; then down="Events are not showing (${err:-0 events for Weston this week})"; fi
+          fi
+          size=$(curl -sS -m 60 -H "Authorization: Bearer $INGESTION_SECRET" "$BASE/api/admin/images" | python3 -c "import sys,json;print(int(json.load(sys.stdin).get('db_bytes') or 0))" 2>/dev/null || echo 0)
+          big=""; if [ "${size:-0}" -ge "$DB_WARN_BYTES" ]; then big="The database is $(python3 -c "print(round($size/1e9,2))") GB, close to the 5 GB budget."; fi
+          echo "down: ${down:-no}"; echo "db bytes: $size"; echo "big: ${big:-no}"
+
+          # One open issue per kind; open it when the problem starts, close it when it's over.
+          issue() { # kind title body-if-problem
+            kind="$1"; title="$2"; problem="$3"
+            open=$(gh api "repos/$REPO/issues?state=open&labels=$kind&per_page=1" --jq '.[0].number // empty')
+            if [ -n "$problem" ] && [ -z "$open" ]; then
+              gh api "repos/$REPO/labels" -f name="$kind" -f color=d73a4a >/dev/null 2>&1 || true
+              gh api "repos/$REPO/issues" -f title="$title" -f body="@$OWNER $problem
+
+          Checked $(date -u '+%Y-%m-%d %H:%M UTC'). This issue closes by itself when it's fixed." -f "labels[]=$kind" >/dev/null && echo "opened $kind issue"
+            elif [ -z "$problem" ] && [ -n "$open" ]; then
+              gh api "repos/$REPO/issues/$open/comments" -f body="✅ Back to normal ($(date -u '+%Y-%m-%d %H:%M UTC'))." >/dev/null
+              gh api -X PATCH "repos/$REPO/issues/$open" -f state=closed >/dev/null && echo "closed $kind issue"
+            fi
+          }
+          issue site-down "🔴 GoToday is down" "$down"
+          issue db-size "🟠 Database close to its size budget" "$big"
+          [ -z "$down" ]
