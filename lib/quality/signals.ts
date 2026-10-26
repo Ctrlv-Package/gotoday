@@ -9,14 +9,20 @@
 // FAMILY words that still indicate a family outing: dogs, costumes, story time and the like).
 // The list is deliberately aligned with facets.ts: the check fires on DIVERGENCE (a Family/Kids
 // label granted some other way, e.g. by a round-up source's name), not on volume.
-const FAMILY_OUTING=/\b(festivals?|fests?|fairs?|parades?|carnivals?|halloween|trunk[- ]or[- ]treat|pumpkins?|egg hunt|movie|movies|picnic|open house|block party|celebration|holiday|tree lighting|santa|games?|bingo|crafts?|lego|magic|puppets?|circus|zoo|animals?|nature|garden|beach|park|play|music in the park|concert in the park|fireworks|dogs?|pets?|pony|costume|boo|ween|oktoberfest|bow ?wow|bounce houses?|face painting|story ?time)\b/i;
-const FAMILY_WORD=/\b(famil(y|ies)|kids|children|parents?|teens?|tweens?|youth)\b/i;
+const FAMILY_OUTING=/\b(festivals?|fests?|fairs?|parades?|carnivals?|halloween|trunk[- ]or[- ]treat|pumpkins?|egg hunt|movie|movies|picnic|open house|block party|celebration|holiday|tree lighting|santa|games?|bingo|crafts?|lego|magic|puppets?|circus|zoo|animals?|nature|garden|beach|park|play|music in the park|concert in the park|fireworks|dogs?|pets?|pony|costume|boo|ween|oktoberfest|bow ?wow|bounce houses?|face painting|story ?time|playtime)\b/i;
+const FAMILY_WORD=/\b(famil(y|ies)|kids|children|parents?|teens?|tweens?|youth|bab(y|ies)|toddlers?|preschool(ers)?|pre-k|homeschool|infants?)\b/i;
 
-/** True when the listing itself says it's family-type: an outing word in title/desc, or a
- *  family/kids/children tag (an age-based Kids tag counts: a kids' audience is a real signal). */
-export function hasFamilySignal(title:string,desc?:string,tags?:string[]){
+/** True when the listing itself says it's family-type: an outing word in title/desc, a
+ *  family/kids/children tag (an age-based Kids tag counts: a kids' audience is a real signal),
+ *  a kid word in the title/desc, or a kid word in the venue. The venue counts because the
+ *  room/place is part of what the listing says: a program in a Children's Area is a family
+ *  listing even when its title and description never say so. Only kid words count from the
+ *  venue — a "park" or "garden" in a place name is not a family signal, so the outing list
+ *  is deliberately not applied there. */
+export function hasFamilySignal(title:string,desc?:string,tags?:string[],venue?:string){
  const text=`${title||""} ${desc||""}`;
  if(FAMILY_OUTING.test(text)||FAMILY_WORD.test(text))return true;
+ if(venue&&FAMILY_WORD.test(venue))return true;
  return (tags||[]).some(t=>/^(family|families|kids|children)$/i.test(t.trim())||FAMILY_WORD.test(t));
 }
 

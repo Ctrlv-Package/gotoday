@@ -34,3 +34,6 @@ test("city theater shows aren't guessed free", async ()=>{
  assert.ok(!f.includes("Free"));assert.ok(!f.includes("Music"));assert.ok(f.includes("Arts & Theatre"));
  assert.ok(facetsFor({title:"Fall Festival",source:"City of Sunrise"} as any).includes("Free"));
 });
+test("a kid word only in the venue clears the family-no-signal flag",()=>{
+ assert.ok(!types({title:"Plant Sale",facets:["Kids"],source:"To Do with Kids Broward · Instagram",venue:"Children's Garden"}).includes("family-no-signal"));
+});

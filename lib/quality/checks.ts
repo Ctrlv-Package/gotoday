@@ -15,7 +15,7 @@ export type AuditFinding={type:FindingType;eventId?:string;title:string;source?:
 export function auditFindings(e:ApiEvent):AuditFinding[]{
  const out:AuditFinding[]=[];
  const facets=e.facets||[];
- if(!CITY_SOURCE(e.source)&&(facets.includes("Family")||facets.includes("Kids"))&&!hasFamilySignal(e.title,e.desc,e.tags))
+ if(!CITY_SOURCE(e.source)&&(facets.includes("Family")||facets.includes("Kids"))&&!hasFamilySignal(e.title,e.desc,e.tags,e.venue))
   out.push({type:"family-no-signal",eventId:e.id,title:e.title,source:e.source});
  if(looksLikeStreetAddress(e.venue,e.address))
   out.push({type:"venue-is-address",eventId:e.id,title:e.title,source:e.source,detail:e.venue});

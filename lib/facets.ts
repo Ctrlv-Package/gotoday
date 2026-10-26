@@ -19,7 +19,7 @@ const KID_TAGS=/^(kids|children|toddlers|preschool|babies|tweens?|teens?|young a
 const FAMILY=/\b(famil(y|ies)|all ages|everyone|kids|children|parents?|festivals?|fests?|fairs?|parades?|carnivals?|halloween|trunk[- ]or[- ]treat|pumpkin|egg hunt|movie night|movie in the park|open house|celebration|block party|oktoberfest|bow ?wow|ween|boo|costume|dogs?|pets?|petting zoo|pony|zoo|petting|picnic|santa|tree lighting|fireworks)\b/i;
 const KID_EVENT=/\b(trunk[- ]or[- ]treat|trick[- ]or[- ]treat\w*|egg hunts?|petting zoo|pony rides?|santa|pumpkin patch|bounce houses?|face painting|kids?'? (zone|area|corner|activities)|children'?s (activities|area)|puppet\w*|story ?time|magic show|character meet)\b/i;
 // What makes an "open to everyone" listing a family outing (not a lecture or recital that anyone may attend).
-const FAMILY_OUTING=/\b(festivals?|fests?|fairs?|parades?|carnivals?|halloween|trunk[- ]or[- ]treat|pumpkins?|egg hunt|movie|movies|picnic|open house|block party|celebration|holiday|tree lighting|santa|games?|bingo|crafts?|lego|magic|puppets?|circus|zoo|animals?|nature|garden|beach|park|play|music in the park|concert in the park|fireworks)\b/i;
+const FAMILY_OUTING=/\b(festivals?|fests?|fairs?|parades?|carnivals?|halloween|trunk[- ]or[- ]treat|pumpkins?|egg hunt|movie|movies|picnic|open house|block party|celebration|holiday|tree lighting|santa|games?|bingo|crafts?|lego|magic|puppets?|circus|zoo|animals?|nature|garden|beach|park|playtime|play|music in the park|concert in the park|fireworks)\b/i;
 const FAMILY_TAGS=/^(family|families)$/i;
 const ADULT=/\b(adults?|21\+|18\+|seniors?|older adults|55\+|50\+|wine|beer|brew(ery|ing)?|cocktails?|margarita|happy hour|bar crawl|pub|networking|career|job fair|resume|medicare|retirement|wealth|investing|taxes|estate planning|book club|singles|ladies night|date night)\b/i;
 const ADULT_TAGS=/^(adults?|adult \(|new adults|older adults|seniors|21\+|18\+)/i;
@@ -102,7 +102,14 @@ export function facetsFor(e:In):Facet[]{
  // Who it's for.
  const adultOnly=(ageMin!=null&&ageMin>=18)||noKids(e.desc||"");
  const kidAges=ageMax!=null&&ageMax<=17;
- const kids=!adultOnly&&(kidAges||/^to do with kids/i.test(e.source||"")||has(KIDS,t)||tagHas(KID_TAGS)&&!tagHas(/^local$/i)&&!(ageMax!=null&&ageMax>=18&&tagHas(/^(new )?adults?$|^seniors?$|^50\+$/i))||(has(KIDS,d)&&!has(ADULT,t)));
+ // Ticketmaster titles are performer/show names, not event descriptions: a "Baby", "Jr."
+ // or "Lil" there is usually the act (Wheeler Walker Jr., Cry Baby Tour), not a kids'
+ // event. For those titles only the stronger kid words count; a real Ticketmaster family
+ // show still qualifies through its Family category (kidEvent below) or a stated age range.
+ // Other sources' titles are event names, so their kid words count as before.
+ const titleWithoutNameTrap=t.replace(/\b(bab(y|ies)|junior|jr\.?|lil)\b/gi,"");
+ const titleKids=has(KIDS,t)&&!(e.source==="Ticketmaster"&&!has(KIDS,titleWithoutNameTrap));
+ const kids=!adultOnly&&(kidAges||/^to do with kids/i.test(e.source||"")||titleKids||tagHas(KID_TAGS)&&!tagHas(/^local$/i)&&!(ageMax!=null&&ageMax>=18&&tagHas(/^(new )?adults?$|^seniors?$|^50\+$/i))||(has(KIDS,d)&&!has(ADULT,t)));
  // Big family events (festivals, open houses, Halloween, "all ages") are great for kids too.
  // Kids = made for children, or built around things children come for (trick-or-treating, egg hunt, petting zoo,
  // Santa…). A market, plant sale, exhibit or block party that families may attend is Family, not Kids.
