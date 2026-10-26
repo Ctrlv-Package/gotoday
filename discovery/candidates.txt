@@ -1586,3 +1586,140 @@ Montshire Museum of Science | Norwich, VT | https://www.montshire.org | upper-va
 Children's Museum & Theatre of Maine | Portland, ME | https://www.kitetails.org | portland-me
 Portland Museum of Art | Portland, ME | https://www.portlandmuseum.org | portland-me
 Maine Discovery Museum | Bangor, ME | https://www.mainediscoverymuseum.org | bangor
+
+# ---- small and community theaters (2026-10-26) ----
+Sunrise Civic Center Theatre | Sunrise, FL | https://www.sunrisefl.gov/departments-services/leisure-services/theatre-art-gallery | broward
+Slow Burn Theatre Company | Fort Lauderdale, FL | https://slowburntheatre.org | broward
+Broward Stage Door Theatre | Coral Springs, FL | https://www.stagedoortheatre.com | broward
+Main Street Players | Miami Lakes, FL | https://www.mainstreetplayers.com | miami-dade
+Actors' Playhouse at the Miracle Theatre | Coral Gables, FL | https://www.actorsplayhouse.org | miami-dade
+GableStage | Coral Gables, FL | https://www.gablestage.org | miami-dade
+Miami New Drama | Miami Beach, FL | https://www.miaminewdrama.org | miami-dade
+Area Stage Company | Miami, FL | https://www.areastagecompany.com | miami-dade
+Zoetic Stage | Miami, FL | https://www.zoeticstage.org | miami-dade
+Island City Stage | Wilton Manors, FL | https://islandcitystage.org | broward
+Pembroke Pines Theatre of the Performing Arts | Pembroke Pines, FL | https://www.pptpa.org | broward
+Plantation Theatre Company | Plantation, FL | https://plantationtheatre.org | broward
+Curtain Call Playhouse | Davie, FL | https://www.curtaincallplayhouse.com | broward
+Lake Worth Playhouse | Lake Worth Beach, FL | https://lakeworthplayhouse.org | palm-beach
+Delray Beach Playhouse | Delray Beach, FL | https://www.delraybeachplayhouse.com | palm-beach
+Boca Raton Theatre Guild | Boca Raton, FL | https://www.brtg.org | palm-beach
+Maltz Jupiter Theatre | Jupiter, FL | https://www.jupitertheatre.org | palm-beach
+Palm Beach Dramaworks | West Palm Beach, FL | https://www.palmbeachdramaworks.org | palm-beach
+Wick Theatre | Boca Raton, FL | https://www.thewick.org | palm-beach
+Garden Theatre | Winter Garden, FL | https://gardentheatre.org | orlando
+Orlando Shakes | Orlando, FL | https://www.orlandoshakes.org | orlando
+Theatre Winter Haven | Winter Haven, FL | https://www.theatrewinterhaven.com | polk
+American Stage | St. Petersburg, FL | https://www.americanstage.org | tampa
+Stageworks Theatre | Tampa, FL | https://www.stageworkstheatre.org | tampa
+Francis Wilson Playhouse | Clearwater, FL | https://www.franciswilsonplayhouse.org | tampa
+Players Centre for Performing Arts | Sarasota, FL | https://theplayers.org | sarasota
+Florida Studio Theatre | Sarasota, FL | https://www.floridastudiotheatre.org | sarasota
+Theatre Jacksonville | Jacksonville, FL | https://www.theatrejax.com | jacksonville
+Alhambra Theatre & Dining | Jacksonville, FL | https://www.alhambrajax.com | jacksonville
+Gainesville Community Playhouse | Gainesville, FL | https://www.gcplayhouse.org | gainesville
+Hippodrome Theatre | Gainesville, FL | https://thehipp.org | gainesville
+Pensacola Little Theatre | Pensacola, FL | https://www.pensacolalittletheatre.com | panhandle
+Theatre Tallahassee | Tallahassee, FL | https://theatretallahassee.org | tallahassee
+Melbourne Civic Theatre | Melbourne, FL | https://www.mymct.org | spacecoast
+Henegar Center | Melbourne, FL | https://www.henegar.org | spacecoast
+Daytona Playhouse | Daytona Beach, FL | https://www.daytonaplayhouse.org | volusia
+Naples Players | Naples, FL | https://naplesplayers.org | swfl
+Florida Repertory Theatre | Fort Myers, FL | https://www.floridarep.org | swfl
+Atlanta Lyric Theatre | Marietta, GA | https://www.atlantalyrictheatre.com | atlanta
+Theatrical Outfit | Atlanta, GA | https://www.theatricaloutfit.org | atlanta
+Horizon Theatre | Atlanta, GA | https://www.horizontheatre.com | atlanta
+Aurora Theatre | Lawrenceville, GA | https://www.auroratheatre.com | atlanta
+Theatre in the Square / Marietta New Theatre | Marietta, GA | https://www.mariettanewtheatre.org | atlanta
+Savannah Children's Theatre | Savannah, GA | https://www.savannahchildrenstheatre.org | savannah
+Macon Little Theatre | Macon, GA | https://www.maconlittletheatre.org | macon
+Town Theatre | Columbia, SC | https://www.towntheatre.com | columbia
+Charleston Stage | Charleston, SC | https://www.charlestonstage.com | charleston
+Greenville Little Theatre | Greenville, SC | https://www.greenvillelittletheatre.org | upstate
+Theatre Charlotte | Charlotte, NC | https://www.theatrecharlotte.org | charlotte
+Children's Theatre of Charlotte | Charlotte, NC | https://ctcharlotte.org | charlotte
+Raleigh Little Theatre | Raleigh, NC | https://www.raleighlittletheatre.org | triangle
+North Carolina Theatre | Raleigh, NC | https://nctheatre.com | triangle
+Greensboro Community Theatre | Greensboro, NC | https://www.gctheatre.org | triad
+Asheville Community Theatre | Asheville, NC | https://www.ashevilletheatre.org | asheville
+Thalian Association | Wilmington, NC | https://www.thalian.org | wilmington
+Cape Fear Regional Theatre | Fayetteville, NC | https://www.cfrt.org | fayetteville
+Gilbert Theater | Fayetteville, NC | https://www.gilberttheater.com | fayetteville
+Virginia Repertory Theatre | Richmond, VA | https://va-rep.org | richmond
+Little Theatre of Norfolk | Norfolk, VA | https://www.ltnonline.org | hamptonroads
+Little Theatre of Alexandria | Alexandria, VA | https://thelittletheatre.com | dcmetro
+Live Arts | Charlottesville, VA | https://www.livearts.org | cville
+Mill Mountain Theatre | Roanoke, VA | https://www.millmountain.org | roanoke
+Olney Theatre Center | Olney, MD | https://www.olneytheatre.org | dcmetro
+Toby's Dinner Theatre | Columbia, MD | https://tobysdinnertheatre.com | baltimore
+Everyman Theatre | Baltimore, MD | https://everymantheatre.org | baltimore
+Annapolis Summer Garden / Colonial Players | Annapolis, MD | https://www.thecolonialplayers.org | baltimore
+Weinberg Center for the Arts | Frederick, MD | https://www.weinbergcenter.org | dcmetro
+Delaware Theatre Company | Wilmington, DE | https://www.delawaretheatre.org | delmarva
+Wilmington Drama League | Wilmington, DE | https://www.wilmingtondramaleague.org | delmarva
+Walnut Street Theatre | Philadelphia, PA | https://www.walnutstreettheatre.org | philly
+Media Theatre | Media, PA | https://www.mediatheatre.org | philly
+Hedgerow Theatre | Media, PA | https://www.hedgerowtheatre.org | philly
+Bucks County Playhouse | New Hope, PA | https://www.buckscountyplayhouse.org | philly
+People's Light | Malvern, PA | https://www.peopleslight.org | philly
+Pittsburgh CLO | Pittsburgh, PA | https://www.pittsburghclo.org | pittsburgh
+Fulton Theatre | Lancaster, PA | https://thefulton.org | lancaster
+Theatre Harrisburg | Harrisburg, PA | https://www.theatreharrisburg.com | lancaster
+Civic Theatre of Allentown | Allentown, PA | https://www.civictheatre.com | lehigh
+Erie Playhouse | Erie, PA | https://www.erieplayhouse.org | erie
+State College Community Theatre | State College, PA | https://www.scctonline.org | central-pa
+Westfield Community Players | Westfield, NJ | https://www.westfieldcommunityplayers.org | nyc
+Summit Playhouse | Summit, NJ | https://www.summitplayhouse.org | nyc
+Cranford Dramatic Club | Cranford, NJ | https://www.cdctheatre.org | nyc
+Union County Performing Arts Center Theatre | Rahway, NJ | https://ucpac.org | nyc
+Bickford Theatre at the Morris Museum | Morristown, NJ | https://morrismuseum.org/bickford-theatre | nyc
+Studio Playhouse | Upper Montclair, NJ | https://www.studioplayhouse.org | nyc
+Chatham Community Players | Chatham, NJ | https://chathamplayers.org | nyc
+Theater League of Clifton | Clifton, NJ | https://www.theaterleague.org | nyc
+Bergen County Players | Oradell, NJ | https://www.bcplayers.org | nyc
+Hudson Theatre Works | Weehawken, NJ | https://www.hudsontheatreworks.org | nyc
+Axelrod Performing Arts Center | Deal Park, NJ | https://axelrodartscenter.com | jersey-shore
+Two River Theater | Red Bank, NJ | https://tworivertheater.org | jersey-shore
+Surflight Theatre | Beach Haven, NJ | https://www.surflight.org | jersey-shore
+Somerset Valley Players | Hillsborough, NJ | https://www.svptheatre.org | central-nj
+Villagers Theatre | Somerset, NJ | https://www.villagerstheatre.com | central-nj
+George Street Playhouse | New Brunswick, NJ | https://www.georgestreetplayhouse.org | central-nj
+Princeton Summer Theater / Theatre Intime | Princeton, NJ | https://www.theatreintime.org | central-nj
+Kelsey Theatre | West Windsor, NJ | https://www.kelseytheatre.org | central-nj
+Ritz Theatre Company | Haddon Township, NJ | https://www.ritztheatreco.org | south-jersey
+Haddonfield Plays and Players | Haddonfield, NJ | https://www.haddonfieldplaysandplayers.com | south-jersey
+Tada! Youth Theater | New York, NY | https://www.tadatheater.com | nyc
+New Victory Theater | New York, NY | https://newvictory.org | nyc
+Brooklyn Lyceum / Gallery Players | Brooklyn, NY | https://www.galleryplayers.com | nyc
+Queens Theatre | Queens, NY | https://queenstheatre.org | nyc
+Engeman Theater | Northport, NY | https://www.engemantheater.com | longisland
+Gateway Playhouse / The Gateway | Bellport, NY | https://www.thegateway.org | longisland
+Arena Players Repertory Theatre | East Farmingdale, NY | https://www.arenaplayers.org | longisland
+Westchester Broadway Theatre | Elmsford, NY | https://www.broadwaytheatre.com | westchester
+Schoolhouse Theater | Croton Falls, NY | https://www.schoolhousetheater.org | westchester
+Capital Repertory Theatre | Albany, NY | https://www.capitalrep.org | capital-ny
+Geva Theatre | Rochester, NY | https://www.gevatheatre.org | rochester
+Kavinoky Theatre | Buffalo, NY | https://www.kavinokytheatre.com | buffalo
+Syracuse Stage | Syracuse, NY | https://www.syracusestage.org | syracuse
+Bardavon Opera House | Poughkeepsie, NY | https://www.bardavon.org | hudson
+Westport Country Playhouse | Westport, CT | https://www.westportplayhouse.org | fairfield-ct
+Curtain Call Stamford | Stamford, CT | https://www.curtaincallinc.com | fairfield-ct
+Downtown Cabaret Theatre | Bridgeport, CT | https://www.downtowncabaret.org | fairfield-ct
+Goodspeed Musicals | East Haddam, CT | https://www.goodspeed.org | hartford
+TheaterWorks Hartford | Hartford, CT | https://twhartford.org | hartford
+Long Wharf Theatre | New Haven, CT | https://www.longwharf.org | newhaven
+Ivoryton Playhouse | Essex, CT | https://www.ivorytonplayhouse.org | newlondon
+Trinity Repertory Company | Providence, RI | https://www.trinityrep.com | providence
+Theatre by the Sea | Wakefield, RI | https://theatrebythesea.com | providence
+Wheelock Family Theatre | Boston, MA | https://www.wheelockfamilytheatre.org | boston
+Lyric Stage Boston | Boston, MA | https://www.lyricstage.com | boston
+Reagle Music Theatre | Waltham, MA | https://www.reagleplayers.org | boston
+Stoneham Theatre / Greater Boston Stage Company | Stoneham, MA | https://www.greaterbostonstage.org | boston
+North Shore Music Theatre | Beverly, MA | https://www.nsmt.org | boston
+Worcester Foothills Theatre / Hanover Theatre | Worcester, MA | https://thehanovertheatre.org | worcester
+CityStage Springfield | Springfield, MA | https://www.symphonyhall-citystage.com | springfield-ma
+Palace Theatre Manchester | Manchester, NH | https://www.palacetheatre.org | southern-nh
+Seacoast Repertory Theatre | Portsmouth, NH | https://www.seacoastrep.org | seacoast-nh
+Flynn Center | Burlington, VT | https://www.flynnvt.org | burlington-vt
+Portland Stage | Portland, ME | https://portlandstage.org | portland-me
+Penobscot Theatre Company | Bangor, ME | https://www.penobscottheatre.org | bangor
