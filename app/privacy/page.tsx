@@ -22,6 +22,7 @@ export default function Privacy(){
    <h2>If you create an account</h2>
    <ul>
     <li><b>From Google sign-in:</b> your name, email address and profile picture. That's all we ask Google for. We can't see your Google password, Gmail, Google Calendar or any other Google data.</li>
+    <li><b>From email sign-in:</b> your email address and a scrambled version of your password. We never store your actual password, and we only email you about your account when you ask us to (a verification or password-reset link).</li>
     <li><b>What you do on GoToday:</b> the events you save and follow, so we can show them on every device, add them to your personal calendar and keep track of events that come back each year.</li>
     <li><b>Your personal calendar link:</b> a private, random web address that calendar apps use to show your saved events. Anyone who has the link can see those events, so keep it to yourself. You can replace it with a new one at any time from My GoToday.</li>
     <li><b>Sign-in cookie:</b> a cookie that keeps you signed in on that browser. We store only a scrambled version of it.</li>
@@ -35,7 +36,7 @@ export default function Privacy(){
    </ul>
 
    <h2>Who helps us run GoToday</h2>
-   <p>Like most websites, we rely on a few service providers to operate: Vercel (hosting), Neon (database), Google (sign-in and analytics) and, for reading event flyers posted by cities and venues, Anthropic's AI service (it reads public event posts, never your personal information). They handle data only to provide their service to us.</p>
+   <p>Like most websites, we rely on a few service providers to operate: Vercel (hosting), Neon (database), Google (sign-in and analytics), Resend (sending account emails like verification and password-reset links) and, for reading event flyers posted by cities and venues, Anthropic's AI service (it reads public event posts, never your personal information). They handle data only to provide their service to us.</p>
 
    <h2>Keeping or deleting your data</h2>
    <p>Your account information stays until you ask us to delete it. To delete your account and everything saved with it, email <a href={`mailto:${CONTACT}`}>{CONTACT}</a> from the address you signed in with, and we'll remove it within 30 days. You can stop using your calendar link at any time by unsubscribing in your calendar app or making a new link.</p>
