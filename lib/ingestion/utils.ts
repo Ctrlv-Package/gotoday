@@ -28,7 +28,7 @@ export function textAgeRange(s:string):[number,number]|null{
   ||s.match(/\b(\d{1,2})\s*(?:-|–|to)\s*(\d{1,2})\s*(?:-\s*)?(?:year|yr)s?[- ]?olds?\b/i)||s.match(/\b(\d{1,2})\s*(?:-|–|to)\s*(\d{1,2})\s*years?\s*(?:old|of age)\b/i);
  if(m&&+m[1]<=+m[2]&&+m[2]<=99)return[+m[1],+m[2]];
  m=s.match(/\b(?:ages?|aged)\s*(\d{1,2})\s*(?:\+|&\s*up|and up|and older|or older)/i);if(m)return[+m[1],99];
- m=s.match(/\bages?\s*(\d{1,2})\s*(?:and|&)\s*under\b/i);if(m)return[0,+m[1]];
+ m=s.match(/\b(?:ages?|aged|kids|children|for)\s*(\d{1,2})\s*(?:and|&)\s*(?:under|younger)\b/i);if(m)return[0,+m[1]];
  m=s.match(/\bgrades?\s*(k|\d{1,2})\s*(?:-|–|to|through)\s*(\d{1,2})\b/i);if(m)return[m[1].toLowerCase()==="k"?5:+m[1]+5,+m[2]+6];
  return null;
 }
@@ -113,7 +113,16 @@ export function classifyEventType(e:EventRecord):EventRecord["eventType"]{
 }
 
 // ---------- Normalization ----------
+/** A clean event name: no emoji, and no audience/price note tacked on after a period
+ *  ("Halloween Storytime at City Hall. Kids 5 & under 🎃👻" → "Halloween Storytime at City Hall"). */
+export function cleanTitle(t:string):string{
+ let x=String(t||"").replace(/[\p{Extended_Pictographic}\u{1F1E6}-\u{1F1FF}\u{1F3FB}-\u{1F3FF}\uFE0F\u200D\u20E3]/gu,"").replace(/\s{2,}/g," ").trim();
+ const m=x.match(/^(.{6,}?)[.!|•·–—-]\s+((?:for\s+)?(?:kids?|children|ages?|all ages|families|family|adults?|teens?|tweens?|grades?|free|no cost|seniors?|toddlers?|babies|everyone|open to)\b.*|\d{1,2}\s*(?:&|and)\s*(?:under|up|older)\b.*|\d{1,2}\s*\+.*)$/i);
+ if(m)x=m[1].trim();
+ return x.replace(/[\s.,;:!|•·–—-]+$/,"").trim()||String(t||"").trim();
+}
 export function normalize(e:EventRecord):EventRecord{
+ if(e.title){const c=cleanTitle(e.title);if(c!==e.title){const note=e.title.slice(c.length).replace(/^[\s.!|•·–—-]+/,"").trim();e={...e,title:c,desc:note&&!(e.desc||"").includes(note)?`${note}${e.desc?"\n"+e.desc:""}`:e.desc}}}
  const paid=/\$\s*[1-9]/.test(e.priceText||"")||e.source==="Ticketmaster";
  const free=e.isFree===true||(!paid&&/\bfree\b/i.test([e.priceText,e.desc,...(e.tags||[])].filter(Boolean).join(" ")));
  const ages=e.ageMin!=null&&e.ageMax!=null?[e.ageMin,e.ageMax] as [number,number]:ageRange(e);

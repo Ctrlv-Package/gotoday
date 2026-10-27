@@ -26,3 +26,14 @@ test("ages written in the description win over the audience label", async ()=>{
  assert.deepEqual(textAgeRange("children 5 to 8 years old"),[5,8]);
  assert.equal(textAgeRange("Open 10-12 pm for families"),null);
 });
+
+test("titles lose emoji and tacked-on audience notes; the note still sets the ages", async ()=>{
+ const {cleanTitle,normalize,textAgeRange}=await import("../lib/ingestion/utils");
+ assert.equal(cleanTitle("Halloween Storytime at City Hall. Kids 5 & under 🎃👻"),"Halloween Storytime at City Hall");
+ assert.equal(cleanTitle("🎃 Trunk or Treat 🎃"),"Trunk or Treat");
+ assert.equal(cleanTitle("Mr. Bill's Magic Show"),"Mr. Bill's Magic Show");
+ assert.equal(cleanTitle("Movie Night - Free"),"Movie Night");
+ assert.deepEqual(textAgeRange("Kids 5 & under"),[0,5]);
+ const e=normalize({id:"x",title:"Halloween Storytime at City Hall. Kids 5 & under 🎃",city:"Oakland Park, FL",venue:"City Hall",date:"2026-10-27",time:"10:00:00",url:"u",category:"Family",genre:"",desc:"Join us",tags:[],emoji:"",source:"s"} as any);
+ assert.equal(e.title,"Halloween Storytime at City Hall");assert.equal(e.ageMin,0);assert.equal(e.ageMax,5);
+});
