@@ -148,6 +148,26 @@ async function askGemini(content:any[]):Promise<Extracted[]>{
  return parseEvents((d.candidates?.[0]?.content?.parts||[]).map((x:any)=>x.text||"").join(""),"Gemini API");
 }
 
+/** A user-uploaded flyer, read with the same Gemini reader as Instagram posts — but Gemini-only, never the paid
+ *  Claude fallback: the user is right there to fill in anything the read misses, so a failed read costs a minute
+ *  of typing, not a bill. No daily cap either: uploads are already capped at 30/day per address, and the read
+ *  route only accepts our own /img/ uploads, so a read always follows an upload. */
+const FLYER_PROMPT=(today:string)=>`This is a flyer or photo for an event, uploaded by the person creating the event. Today is ${today}.
+Read the event it announces from the image. Rules:
+- Only an event with a specific calendar date. Resolve month/day-only dates relative to today (never earlier than today).
+- "place": the venue or park name (and street address if shown). Omit if not stated.
+- "town": the city the event is in, if stated. Omit if not stated.
+- Use a short, stable title (e.g. "Matteo's 6th Birthday", not "Calling all Minions!").
+- "kids": true when children are welcome and it suits them; false only for adult events (21+, bars, wine/beer, business networking); null if you truly cannot tell.
+- "forKids": true only when the event is made FOR children or teens (kids' party, story time, kids' class or camp, children's show, trick-or-treating, egg hunt, teen night).
+- "summary": one or two sentences about what happens, if the flyer says.
+Reply with JSON only: {"events":[{"title":"","date":"YYYY-MM-DD","start":"HH:MM","end":"HH:MM","place":"","town":"","summary":"one or two sentences","free":true|false|null,"kids":true|false|null,"forKids":true|false,"cancelled":false}]} — omit start/end when not stated.`;
+export async function readFlyerImage(data:Buffer,mime:string,today:string){
+ if(!process.env.GEMINI_API_KEY)throw new Error("Gemini key not set");
+ const img={type:"image",source:{type:"base64",media_type:mime,data:data.toString("base64")}};
+ return askGemini([img,{type:"text",text:FLYER_PROMPT(today)}]);
+}
+
 // Round-up accounts post one event per slide in carousels, so they get every slide read (up to 6), and
 // their posts are re-read once with the newer reading (each event's own town).
 const KIDS_TITLE=/\b(kids?|children'?s?|child|toddlers?|preschool\w*|story ?time|tots?|teens?|tweens?|youth|trick[- ]or[- ]treat\w*|trunk[- ]or[- ]treat|egg hunt|kids'? camp|baby|babies|little ones|junior)\b/i;
