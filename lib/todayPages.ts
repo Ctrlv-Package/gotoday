@@ -3,7 +3,7 @@
 // this ZIP, right now"; these pages answer the question people type into a
 // search engine — "things to do today in <city>" — and give it a stable URL.
 import {db} from "./db";
-import {ensureSchema} from "./schema";
+import {ensureSchemaSoft} from "./schema";
 import {CITY_COORDS, milesBetween} from "./cities";
 import {facetsFor, type Facet} from "./facets";
 import {todayIn, DEFAULT_TZ} from "./time";
@@ -24,7 +24,7 @@ const RADIUS_MILES = 12;
 export async function todaysEventsNear(cityName: string, facet?: Facet): Promise<CityEvent[]> {
   const center = CITY_COORDS[cityName];
   if (!center) return [];
-  await ensureSchema();
+  await ensureSchemaSoft();
   const today = todayIn(DEFAULT_TZ);
   const dLat = RADIUS_MILES / 69, dLng = RADIUS_MILES / (69 * Math.cos(center[0] * Math.PI / 180));
   const {rows} = await db.query(
