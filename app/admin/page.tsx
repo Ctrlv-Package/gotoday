@@ -9,6 +9,7 @@ export default function Admin(){
  const [secret,setSecret]=useState(""),[list,setList]=useState<P[]|null>(null),[err,setErr]=useState("");
  const [held,setHeld]=useState<Q[]|null>(null),[flagged,setFlagged]=useState<Q[]>([]);
  const [reports,setReports]=useState<R[]|null>(null),[reportsErr,setReportsErr]=useState("");
+ const [showFlagged,setShowFlagged]=useState(false);
  useEffect(()=>{try{const s=sessionStorage.getItem("gotoday:admin");if(s){setSecret(s);load(s)}}catch{}},[]);
  async function load(s=secret){setErr("");const r=await fetch("/api/admin/community",{headers:{authorization:`Bearer ${s}`},cache:"no-store"});const d=await r.json().catch(()=>({}));
   if(!d.ok){setErr(d.error||"Couldn't load");setList(null);return}try{sessionStorage.setItem("gotoday:admin",s)}catch{}setList(d.pending);
@@ -20,6 +21,7 @@ export default function Admin(){
  async function decideQ(id:number,approve:boolean){await fetch("/api/admin/quarantine",{method:"POST",headers:{authorization:`Bearer ${secret}`,"content-type":"application/json"},body:JSON.stringify({id,approve})});load()}
  async function approveAllQ(){await fetch("/api/admin/quarantine",{method:"POST",headers:{authorization:`Bearer ${secret}`,"content-type":"application/json"},body:JSON.stringify({approveAll:true})});load()}
  async function dismissReport(id:number){await fetch("/api/admin/reports",{method:"POST",headers:{authorization:`Bearer ${secret}`,"content-type":"application/json"},body:JSON.stringify({id,resolve:true})});load()}
+ async function clearAllFlags(){await fetch("/api/admin/quarantine",{method:"POST",headers:{authorization:`Bearer ${secret}`,"content-type":"application/json"},body:JSON.stringify({clearAllFlags:true})});load()}
  return <main className="detail"><header className="detailHeader"><div className="detailWrap row"><Link href="/?fresh=1" className="detailLogo">Go<span>Today</span></Link><a href="/admin/status" className="navLink">Source status</a></div></header>
   <div className="detailWrap"><article className="detailCard"><div className="detailBody">
    <h1>Events waiting for review</h1>
@@ -36,15 +38,18 @@ export default function Admin(){
      <ul className="review">{held.map(q=><li key={q.id}><b>{q.title}</b><span>{String(q.date||"").slice(0,10)} · {[q.venue,q.city].filter(Boolean).join(", ")}{q.source?` · ${q.source}`:""}</span>
       <span className="muted">Held for: {q.reasons.join(", ")}</span>
       <div className="ctaRow"><button className="btn primary" onClick={()=>decideQ(q.id,true)}>Approve</button><button className="btn ghost" onClick={()=>decideQ(q.id,false)}>Reject</button></div></li>)}</ul></>}
-    {flagged.length>0&&<><h3>Live, but flagged</h3><p className="muted">Already published listings carrying a flag (a flag never pulls a live listing; clearing it just drops the note).</p>
-     <ul className="review">{flagged.map(q=><li key={q.id}><b>{q.title}</b><span>{String(q.date||"").slice(0,10)} · {[q.venue,q.city].filter(Boolean).join(", ")}{q.source?` · ${q.source}`:""}</span>
-      <span className="muted">Flagged for: {q.reasons.join(", ")}</span>
-      <div className="ctaRow"><button className="btn ghost" onClick={()=>decideQ(q.id,true)}>Clear flag</button></div></li>)}</ul></>}
     <h2 style={{marginTop:28}}>Reports from visitors</h2>
     <p className="muted">Problems visitors flagged on event pages. A report never changes a listing by itself — dismiss it once you've checked, or fix the listing yourself.</p>
     {reportsErr?<p className="muted">{reportsErr}</p>:reports===null?<p className="muted">Loading…</p>:reports.length===0?<p>No reports. 🎉</p>
     :<ul className="review">{reports.map(r=><li key={r.id}><b>{r.title}</b><span>{r.reason} · {String(r.createdAt||"").slice(0,10)}{r.kind==="community"?" · community event":""}</span>
      {r.note&&<p>{r.note}</p>}
-     <div className="ctaRow"><button className="btn ghost" onClick={()=>dismissReport(r.id)}>Dismiss</button>{r.link&&<a className="btn ghost" href={r.link} target="_blank" rel="noreferrer">Open event</a>}</div></li>)}</ul>}</>}
+     <div className="ctaRow"><button className="btn ghost" onClick={()=>dismissReport(r.id)}>Dismiss</button>{r.link&&<a className="btn ghost" href={r.link} target="_blank" rel="noreferrer">Open event</a>}</div></li>)}</ul>}
+    {held!==null&&<><h2 style={{marginTop:28}}>Live, but flagged ({flagged.length})</h2>
+    <p className="muted">Already published listings carrying a flag (a flag never pulls a live listing; clearing it just drops the note). Hidden by default — these are notes, not work.</p>
+    <div className="ctaRow"><button className="btn ghost" onClick={()=>setShowFlagged(!showFlagged)}>{showFlagged?"Hide":"Show"}</button>{flagged.length>0&&<button className="btn ghost" onClick={clearAllFlags}>Clear all flags</button>}</div>
+    {showFlagged&&(flagged.length===0?<p>Nothing flagged. 🎉</p>
+    :<ul className="review">{flagged.map(q=><li key={q.id}><b>{q.title}</b><span>{String(q.date||"").slice(0,10)} · {[q.venue,q.city].filter(Boolean).join(", ")}{q.source?` · ${q.source}`:""}</span>
+     <span className="muted">Flagged for: {q.reasons.join(", ")}</span>
+     <div className="ctaRow"><button className="btn ghost" onClick={()=>decideQ(q.id,true)}>Clear flag</button></div></li>)}</ul>)}</>}</>}
   </div></article></div></main>;
 }
