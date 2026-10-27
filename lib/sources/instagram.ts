@@ -154,7 +154,7 @@ async function askGemini(content:any[]):Promise<Extracted[]>{
  *  route only accepts our own /img/ uploads, so a read always follows an upload. */
 const FLYER_PROMPT=(today:string)=>`This is a flyer or photo for an event, uploaded by the person creating the event. Today is ${today}.
 Read the event it announces from the image. Rules:
-- Only an event with a specific calendar date. Resolve month/day-only dates relative to today (never earlier than today).
+- Only an event with a specific calendar date. Resolve month/day-only dates relative to today (never earlier than today). If the flyer shows a month and day but no year, use today's year, or next year if that month/day has already passed this year.
 - "place": the venue or park name (and street address if shown). Omit if not stated.
 - "town": the city the event is in, if stated. Omit if not stated.
 - Use a short, stable title (e.g. "Matteo's 6th Birthday", not "Calling all Minions!").
