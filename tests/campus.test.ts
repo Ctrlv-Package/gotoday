@@ -44,3 +44,9 @@ test("invitation wording and cut-off sentences", async ()=>{
  assert.equal(discoveryRejection({title:"Join North Bergen for a spooktacular afternoon at",tags:[]} as any),"announcement");
  assert.equal(discoveryRejection({title:"Night at the Museum",tags:[]} as any),null);
 });
+
+test("standing programs and year-round offers aren't events", ()=>{
+ assert.equal(discoveryRejection({title:"Museums for All",desc:"Dates:\nYear Round\nMuseums for All is a program that provides low-cost admission",tags:[]} as any),"passive-display");
+ assert.equal(discoveryRejection({title:"Dinosaur Hall",desc:"Ongoing. See the T-Rex.",tags:[]} as any),"passive-display");
+ assert.equal(discoveryRejection({title:"Halloween Festival",desc:"Year round fun! Join us Oct 31.",tags:[]} as any),null);
+});

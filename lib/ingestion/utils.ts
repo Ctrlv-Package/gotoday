@@ -102,6 +102,10 @@ export function discoveryRejection(e:EventRecord):DiscoveryReason|null{
  const strong=STRONG_TAG.test(tagText);
  const classTag=/(^|\|)\s*(class|workshop|technology)\s*(\||$)/i.test(tagText);
  if(PASSIVE.test(title)||(!strong&&/grab (?:and|&) go|information table/i.test(tagText)))return"passive-display";
+ // Standing programs and admission offers, not things happening that day: "Museums for All" ($4 admission with SNAP),
+ // "Museums on Us", "Blue Star Museums", "Culture Pass" — and anything whose own text says it runs "year round".
+ if(/^(museums? for all|museums? on us|blue star museums?|culture pass|library (museum )?pass(es)?|discount (tickets?|admission)|reduced admission|military discount|ebt (card )?(admission|discount)|snap (card )?(admission|discount))\b/i.test(title.trim()))return"passive-display";
+ if(!strong&&!EVENT_TITLE.test(title)&&/^\W*(dates?:?\s*)?(year[- ]round|ongoing|every ?day|daily|permanent (exhibit|collection))\b/im.test(String(e.desc||"").slice(0,120)))return"passive-display";
  if(SERVICE.test(title)||(!strong&&/career\/business/i.test(tagText)))return"service-or-support";
  // University calendars list their internal business next to public concerts and lectures: advising, staff
  // trainings with course codes, housing selection, defenses, student-only sessions. Those aren't for the public.
