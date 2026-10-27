@@ -48,13 +48,13 @@ export async function runSource(s:EventSource,getRaw:()=>Promise<EventRecord[]>)
    const n=(await db.query("select count(*)::int as n from events where source_id=$1 and status='active'",[sourceId])).rows[0]?.n??0;
    if(n>3)throw new Error("Source returned zero records; treating as ingestion failure instead of success");
   }
-  // A title this source lists on 12+ different days of the window is the place's daily offering (a museum's
+  // A title this source lists at one place on 12+ different days of the window is the place's daily offering (a museum's
   // permanent gallery, its daily show, an exhibit open every day), not an event: it would flood every day's list.
-  const daysOf=new Map<string,Set<string>>();for(const r of raw){const k=r.title.toLowerCase().replace(/[^a-z0-9]+/g," ").trim();const d=daysOf.get(k)||new Set<string>();d.add(r.date);daysOf.set(k,d)}
+  const daysOf=new Map<string,Set<string>>();for(const r of raw){const k=`${r.title}|${r.venue||""}`.toLowerCase().replace(/[^a-z0-9|]+/g," ").trim();const d=daysOf.get(k)||new Set<string>();d.add(r.date);daysOf.set(k,d)}
   const daily=new Set([...daysOf].filter(([,d])=>d.size>=12).map(([k])=>k));
   const good:EventRecord[]=[];
   for(const item of raw){
-   if(daily.has(item.title.toLowerCase().replace(/[^a-z0-9]+/g," ").trim())&&!/ticketmaster/i.test(s.platform||"")){rejected++;await db.query("insert into rejected_events(source_id,ingestion_run_id,raw_title,raw_data,rejection_reason) values($1,$2,$3,$4,$5)",[sourceId,runId,item.title,JSON.stringify({date:item.date,url:item.url}),"not-discovery:daily-attraction"]);continue}
+   if(daily.has(`${item.title}|${item.venue||""}`.toLowerCase().replace(/[^a-z0-9|]+/g," ").trim())&&!/ticketmaster/i.test(s.platform||"")){rejected++;await db.query("insert into rejected_events(source_id,ingestion_run_id,raw_title,raw_data,rejection_reason) values($1,$2,$3,$4,$5)",[sourceId,runId,item.title,JSON.stringify({date:item.date,url:item.url}),"not-discovery:daily-attraction"]);continue}
    const e=normalize(item);e.eventType=classifyEventType(e);
    const errors=validationErrors(e),why=discoveryRejection(e);
    if(why)errors.push(`not-discovery:${why}`);
