@@ -28,3 +28,11 @@ export function resetEmail(origin:string,token:string){
  return{subject:"Reset your GoToday password",
   html:wrap("Reset your GoToday password",`<p>Tap the link below to choose a new password. The link works for 1 hour.</p><p><a href="${url}">Choose a new password</a></p><p style="color:#71717a;font-size:13px">If you didn't ask for this, just ignore this email — your password stays the same.</p>`)};
 }
+
+// A visitor's problem report, mailed to the site contact. The report itself is already saved in the
+// admin list before this is sent, so a failed send never loses the report — it just means no email.
+export function reportEmail(title:string,link:string|null,reason:string,note:string){
+ const esc=(s:string)=>s.replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");
+ return{subject:`GoToday report: ${reason} — ${title}`,
+  html:wrap("A visitor reported a problem",`<p><b>${esc(title)}</b></p><p>Problem: ${esc(reason)}</p>${note?`<p>Details: ${esc(note)}</p>`:""}${link?`<p><a href="${link}">Open the event</a></p>`:""}<p style="color:#71717a;font-size:13px">Review it in /admin (Reports from visitors) and dismiss it once you've checked. A report never changes the listing by itself.</p>`)};
+}
