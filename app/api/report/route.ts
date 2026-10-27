@@ -23,7 +23,8 @@ export async function POST(req:NextRequest){
    await db.query(`insert into event_reports(kind,event_id,reason,note) values($1,$2,$3,$4)`,[v.kind,v.id,v.reason,v.note||null]);
    const row=ex.rows[0],link=v.kind==="listing"?`https://www.mygotoday.com/events/db-${v.id}`:row.share_token?`https://www.mygotoday.com/e/${row.share_token}`:null;
    const m=reportEmail(row.title||"Unknown event",link,v.reason,v.note);
-   await sendEmail(process.env.NEXT_PUBLIC_CONTACT_EMAIL||"hello@mygotoday.com",m.subject,m.html).catch(()=>false);
+   // hello@mygotoday.com is not a mailbox — reports go to the owner's Gmail for now.
+   await sendEmail("mygotoday@gmail.com",m.subject,m.html).catch(()=>false);
   }
   return NextResponse.json({ok:true});
  }catch{
