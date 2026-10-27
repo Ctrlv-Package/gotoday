@@ -1,6 +1,6 @@
 import {NextRequest} from "next/server";
 import {db} from "../../../lib/db";
-import {ensureSchema} from "../../../lib/schema";
+import {ensureSchemaSoft} from "../../../lib/schema";
 import {calendarEvents} from "../../../lib/me";
 import {icsFeed} from "../../../lib/calendar";
 export const dynamic="force-dynamic";
@@ -9,7 +9,7 @@ export const dynamic="force-dynamic";
 async function feed(req:NextRequest,{params}:{params:Promise<{token:string}>},head=false){
  const token=(await params).token.replace(/\.ics$/,"");
  if(!/^[A-Za-z0-9_-]{24,}$/.test(token))return new Response("Not found",{status:404});
- await ensureSchema();
+ await ensureSchemaSoft();
  const u=(await db.query("select id,name from users where calendar_token=$1",[token])).rows[0];
  if(!u)return new Response("This calendar link was reset or removed. Get the new one from My GoToday at mygotoday.com/me.",{status:404});
  // Note which calendar app is reading it, so My GoToday can say "Connected to Google Calendar". A person opening
