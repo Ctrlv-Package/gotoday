@@ -2,6 +2,7 @@
 import {useEffect,useRef,useState} from "react";
 import {byOptions,describe,type Repeat,NO_REPEAT} from "../../lib/repeat";
 import {streetOnly} from "../../lib/places";
+import {applyFlyerDraft,type FlyerDraft} from "../../lib/flyerDraft";
 
 export type FormValues={title:string;description:string;date:string;startTime:string;endTime:string;allDay:boolean;venue:string;address:string;city:string;
  visibility:"public"|"private";isFree:boolean;priceText:string;ageMin:number|null;ageMax:number|null;category:string;categories?:string[];link:string;hostName:string;image?:string;repeat?:Repeat;rsvp?:RsvpValues};
@@ -68,6 +69,8 @@ export default function EventForm({initial,submitLabel,onSubmit,busy}:{initial:F
     <b>🔒 Private</b><span>Only people you send the link to. Birthday parties, get-togethers. Guests can RSVP.</span></label>
   </fieldset>
 
+  <PhotoField value={v.image||""} onChange={x=>set("image",x)} onFlyer={d=>setV(o=>applyFlyerDraft(o,d))}/>
+
   <label className="efField">Event name<input required maxLength={120} value={v.title} onChange={e=>set("title",e.target.value)} placeholder={v.visibility==="private"?"Sofia's 7th Birthday Party":"Fall Artisan Market"}/></label>
 
   <div className="efRow">
@@ -87,8 +90,6 @@ export default function EventForm({initial,submitLabel,onSubmit,busy}:{initial:F
    <label className="efField grow"><span>Street address {v.visibility==="private"?<small>(only guests with the link see it)</small>:<small>(helps people find it)</small>}</span><input maxLength={200} value={v.address} onChange={e=>set("address",e.target.value)} placeholder="1675 Market St" autoComplete="street-address"/></label>
    <label className="efField">City<input required maxLength={80} value={v.city} onChange={e=>set("city",e.target.value)} placeholder="Weston, FL"/></label>
   </div>
-
-  <PhotoField value={v.image||""} onChange={x=>set("image",x)}/>
 
   <label className="efField">What's happening?<textarea rows={5} maxLength={4000} value={v.description} onChange={e=>set("description",e.target.value)} placeholder={v.visibility==="private"?"Pizza, cake and a bounce house! Bring a swimsuit.":"Local artisans, live music and food trucks by the bell tower."}/></label>
 
@@ -131,29 +132,44 @@ async function shrink(f:File):Promise<Blob>{
  }finally{URL.revokeObjectURL(url)}
 }
 
-/** Optional event photo or flyer: pick, preview, replace, remove. Shown on the event page and its card. */
-function PhotoField({value,onChange}:{value:string;onChange:(url:string)=>void}){
- const [busy,setBusy]=useState(false),[err,setErr]=useState("");
+/** Optional event photo or flyer: pick, preview, replace, remove. Shown on the event page and its card.
+ *  A flyer is also read (Gemini, no paid fallback) and its stated fields prefill the form — only fields the
+ *  user hasn't typed into yet. A failed read just leaves the fields for the user. */
+function PhotoField({value,onChange,onFlyer}:{value:string;onChange:(url:string)=>void;onFlyer?:(d:FlyerDraft)=>void}){
+ const [busy,setBusy]=useState(false),[err,setErr]=useState(""),[reading,setReading]=useState(false),[readMsg,setReadMsg]=useState("");
+ const urlRef=useRef(value);urlRef.current=value;
  async function pick(f?:File|null){
-  if(!f)return;setErr("");
+  if(!f)return;setErr("");setReadMsg("");
   if(!/^image\//.test(f.type)){setErr("Please choose a photo (JPG, PNG or WebP).");return}
   setBusy(true);
   try{
    const body=await shrink(f).catch(()=>f);
    const r=await fetch("/api/community/photo",{method:"POST",headers:{"content-type":body.type||"image/jpeg"},body});
    const d=await r.json().catch(()=>({}));
-   if(d.ok)onChange(d.url);else setErr(d.error||"Couldn't upload that photo. Please try another.");
+   if(!d.ok){setErr(d.error||"Couldn't upload that photo. Please try another.");return}
+   onChange(d.url);
+   if(!onFlyer)return;
+   setReading(true);
+   try{
+    const rr=await fetch("/api/community/photo/read",{method:"POST",headers:{"content-type":"application/json"},body:JSON.stringify({imageUrl:d.url})});
+    const rd=await rr.json().catch(()=>({}));
+    if(rd.ok&&rd.draft&&urlRef.current===d.url)onFlyer(rd.draft);
+    else if(urlRef.current===d.url)setReadMsg("Couldn't read the flyer — fill in the fields below.");
+   }catch{if(urlRef.current===d.url)setReadMsg("Couldn't read the flyer — fill in the fields below.");
+   }finally{setReading(false)}
   }catch{setErr("Couldn't upload the photo. Check your connection and try again.")}finally{setBusy(false)}
  }
  return <div className="efField efPhoto">
   <span>Photo or flyer <small>(optional)</small></span>
   {value?<div className="efPhotoPrev"><img src={value} alt=""/>
     <div className="efPhotoBtns"><label className="btn ghost">{busy?"Uploading…":"Replace"}<input type="file" accept="image/*" hidden disabled={busy} onChange={e=>pick(e.target.files?.[0])}/></label>
-     <button type="button" className="btn ghost" onClick={()=>onChange("")}>Remove</button></div></div>
+     <button type="button" className="btn ghost" onClick={()=>{onChange("");setReadMsg("")}}>Remove</button></div></div>
    :<label className={`efPhotoDrop${busy?" busy":""}`} onDragOver={e=>e.preventDefault()} onDrop={e=>{e.preventDefault();pick(e.dataTransfer.files?.[0])}}>
     <input type="file" accept="image/*" hidden disabled={busy} onChange={e=>pick(e.target.files?.[0])}/>
-    <b>{busy?"Uploading…":"📷 Add a photo"}</b><small>A picture of the place, last year's event, or your flyer. Events with a photo get noticed.</small></label>}
+    <b>{busy?"Uploading…":"📷 Add a photo"}</b><small>A picture of the place, last year's event, or your flyer. If it's a flyer, we'll read it and fill in what we can.</small></label>}
   {err&&<small className="efPhotoErr" role="alert">{err}</small>}
+  {reading&&<small>Reading your flyer…</small>}
+  {readMsg&&<small className="efPhotoErr" role="alert">{readMsg}</small>}
  </div>;
 }
 
