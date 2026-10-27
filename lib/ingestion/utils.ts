@@ -125,6 +125,10 @@ export function cleanTitle(t:string):string{
  let x=String(t||"").replace(/[\p{Extended_Pictographic}\u{1F1E6}-\u{1F1FF}\u{1F3FB}-\u{1F3FF}\uFE0F\u200D\u20E3]/gu,"").replace(/\s{2,}/g," ").trim();
  const m=x.match(/^(.{6,}?)[.!|•·–—-]\s+((?:for\s+)?(?:kids?|children|ages?|all ages|families|family|adults?|teens?|tweens?|grades?|free|no cost|seniors?|toddlers?|babies|everyone|open to)\b.*|\d{1,2}\s*(?:&|and)\s*(?:under|up|older)\b.*|\d{1,2}\s*\+.*)$/i);
  if(m)x=m[1].trim();
+ // Ages in the name: "Scavenger Hunt, Ages 3-12 yo", "Lego Club (Ages 6–10)", "Storytime - Ages 0-5", "Art (Grades K-5)":
+ // the card shows the ages as their own chip, so they come out of the title (and still set the ages).
+ {const y=x.replace(/\s*(?:[,:;|–—-]\s*|\(\s*|\[\s*)(?:for\s+)?(?:ages?|aged|grades?|gr\.?)\s*(?:k|pre-?k|\d{1,2})(?:\s*(?:-|–|to|through|&|and)\s*(?:\d{1,2}|up|under|older|adults?))?\s*(?:\+|yrs?|years?(?: old)?|yo|y\.o\.?|months?)?\s*[)\]]?/gi," ").replace(/\s*\(\s*(?:\d{1,2}\s*(?:-|–)\s*\d{1,2}|\d{1,2}\+)\s*(?:yrs?|years?|yo|months?)?\s*\)/gi," ").replace(/\s{2,}/g," ").trim();
+  if(y.length>=3&&y!==x)x=y}
  // Invitation wording in front of the name: "Get ready for Rahway's Pup-kin Parade" → "Rahway's Pup-kin Parade".
  {const y=x.replace(/^(?:get ready for|join us (?:for|at)|come (?:out )?(?:to|for)|don'?t miss|save the date(?: for)?|mark your calendars?(?: for)?|you(?:'re| are) invited to)\s+(?:the\s+|our\s+)?/i,"");if(y!==x&&y.split(/\s+/).length>=2)x=y.replace(/^./,c=>c.toUpperCase())}
  // "… BEGINNING SEPT. 14" / "… starting Oct 3" / "… every Monday": when, not name.
@@ -140,10 +144,11 @@ export function cleanTitle(t:string):string{
  return x.replace(/[\s.,;:!|•·–—-]+$/,"").trim()||String(t||"").trim();
 }
 export function normalize(e:EventRecord):EventRecord{
- if(e.title){const c=cleanTitle(e.title);if(c!==e.title){const note=e.title.slice(c.length).replace(/^[\s.!|•·–—-]+/,"").trim();e={...e,title:c,desc:note&&!(e.desc||"").includes(note)?`${note}${e.desc?"\n"+e.desc:""}`:e.desc}}}
+ const rawTitle=e.title;
+ if(e.title){const c=cleanTitle(e.title);if(c!==e.title){const note=e.title.startsWith(c)?e.title.slice(c.length).replace(/^[\s.!|•·–—,:;(-]+/,"").replace(/[)\]]$/,"").trim():"";e={...e,title:c,desc:note&&!/^[\p{Extended_Pictographic}\s]*$/u.test(note)&&!textAgeRange(note)&&!(e.desc||"").includes(note)?`${note}${e.desc?"\n"+e.desc:""}`:e.desc}}}
  const paid=/\$\s*[1-9]/.test(e.priceText||"")||e.source==="Ticketmaster";
  const free=e.isFree===true||(!paid&&/\bfree\b/i.test([e.priceText,e.desc,...(e.tags||[])].filter(Boolean).join(" ")));
- const ages=e.ageMin!=null&&e.ageMax!=null?[e.ageMin,e.ageMax] as [number,number]:ageRange(e);
+ const ages=e.ageMin!=null&&e.ageMax!=null?[e.ageMin,e.ageMax] as [number,number]:(textAgeRange(rawTitle||"")||ageRange(e));
  let tags=[...(e.tags||[])].filter(t=>!junkTag(t));
  if(ages){
   // Kids = the audience is children/teens. Family = kids can come (all-ages).

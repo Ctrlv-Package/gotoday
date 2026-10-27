@@ -45,3 +45,16 @@ test("shouting titles and when-tails", async ()=>{
  assert.equal(cleanTitle("Yoga on the Lawn"),"Yoga on the Lawn");
  assert.equal(cleanTitle("Movie Night starting Oct 3"),"Movie Night");
 });
+
+test("ages come out of titles but still set the ages", async ()=>{
+ const {cleanTitle,normalize}=await import("../lib/ingestion/utils");
+ assert.equal(cleanTitle("Scavenger Hunt, Ages 3-12 yo"),"Scavenger Hunt");
+ assert.equal(cleanTitle("Lego Club (Ages 6–10)"),"Lego Club");
+ assert.equal(cleanTitle("Storytime - Ages 0-5"),"Storytime");
+ assert.equal(cleanTitle("Art Explorers (Grades K-5)"),"Art Explorers");
+ assert.equal(cleanTitle("Teen Gaming (12-18)"),"Teen Gaming");
+ assert.equal(cleanTitle("Toddler Time: Ages 2+"),"Toddler Time");
+ assert.equal(cleanTitle("Ocean's 11 Movie Night"),"Ocean's 11 Movie Night");
+ const e=normalize({id:"x",title:"Scavenger Hunt, Ages 3-12 yo",city:"South Orange, NJ",venue:"L",date:"2026-10-27",time:"",url:"u",category:"Family",genre:"",desc:"Children are invited",tags:["Age - 4 years"],emoji:"",source:"s"} as any);
+ assert.equal(e.title,"Scavenger Hunt");assert.equal(e.ageMin,3);assert.equal(e.ageMax,12);
+});

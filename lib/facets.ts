@@ -165,7 +165,7 @@ export function isBigEvent(e:{title?:string;desc?:string;tags?:string[];source?:
 export const junkTag=(t:string)=>/^\s*(event category( here)?|category( here)?|uncategorized|no category|default|tbd|tba|n\/a|none|null|undefined|test|tag ?\d*|select( a)? category)\s*$/i.test(t||"");
 
 /** Tags worth showing on a card: no audience labels, no source plumbing, no duplicates. */
-const HIDE=/^(local|library|parks|tickets|free|drop-in|in-person|indoor|outdoor|family|families|everyone|all ages|kids|seniors|adults?|new adults|older adults.*|adult \(.*|young adult.*|tweens?.*|teens?|children.*|toddlers|preschool|babies.*|special populations|event category here|special events?|outreach|information table.*)$/i;
+const HIDE=/^(local|library|parks|tickets|free|drop-in|in-person|indoor|outdoor|family|families|everyone|all ages|kids|seniors|adults?|new adults|older adults.*|adult \(.*|young adult.*|tweens?.*|teens?|children.*|toddlers|preschool|babies.*|special populations|event category here|special events?|outreach|information table.*|ages?\b.*|grades?\b.*|\d+\s*(?:-|–|to)\s*\d+\s*(?:years?|yrs?|months?)?.*|\d+\s*\+|(?:pre-?k|k)\s*(?:-|–)\s*\d+.*|infants?.*|elementary.*|middle school.*|high school.*)$/i;
 export function displayTags(e:In,facets:Facet[]){
  const seen=new Set<string>(),out:string[]=[];
  const SHORT:Record<string,string>={"Arts & Theatre":"Arts"};
