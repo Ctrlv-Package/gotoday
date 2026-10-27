@@ -64,6 +64,9 @@ const STATEMENTS=[
  `create table if not exists event_series(id serial primary key,key text unique not null,title text not null,town text,created_at timestamptz default now())`,
  `alter table events add column if not exists series_id int`,
  `create index if not exists events_series_idx on events(series_id)`,
+ `alter table events add column if not exists likes int`,
+ `create table if not exists event_actions(id serial primary key,event_id int not null,action text not null,at timestamptz not null default now())`,
+ `create index if not exists event_actions_event_idx on event_actions(event_id)`,
  `create index if not exists events_quarantine_idx on events(local_date) where status='quarantine' or quarantine_reason is not null`,
  `create table if not exists saved_events(user_id int not null references users(id) on delete cascade,event_id int not null,created_at timestamptz default now(),primary key(user_id,event_id))`,
  // Personal calendar status: when they tapped "Add to …", and when a calendar app last read the feed (and which).

@@ -57,6 +57,7 @@ function mergeCopy(keep:any,other:any){
  // A calendar listing without a time ("all day") takes the time another copy states (the city's post: 6–8 PM).
  if(!m.time&&other.time){m.time=other.time;m.live=other.live;m.over=other.over}
  m._places=[...(keep._places||[]),...(other._places||[])];
+ m._likes=Math.max(keep._likes||0,other._likes||0);m._series=[...new Set([...(keep._series||[]),...(other._series||[])])];
  m._pics=[...(keep._pics||[]),...(other._pics||[])];
  if(thinDesc(m.desc)&&!thinDesc(other.desc||""))m.desc=other.desc;
  // A copy's labels fill gaps, but "Kids"/"Family" never move onto a listing whose own ages say teens or adults.
@@ -85,10 +86,10 @@ export async function GET(request:NextRequest){
  // (saved before coordinates existed) fall back to their city center below.
  // 10 extra miles: copies of an event just outside the search distance still help pick its picture (not shown).
  // "Big events" view (big=1): only festivals, fairs and yearly favorites, over the next week or month.
- const bigOnly=p.get("big")==="1",popular=p.get("popular")==="1",reach=radius+10;   // the database pre-picks likely ones by title (BIG_SQL); facets decide
+ const bigOnly=p.get("big")==="1",popular=p.get("popular")==="1",hot=p.get("hot")==="1",reach=radius+10;   // the database pre-picks likely ones by title (BIG_SQL); facets decide
  const dLat=reach/69,dLng=reach/(69*Math.cos(lat*Math.PI/180));
  const {rows}=await db.query(`select e.id,e.title,e.description,e.start_at,e.end_at,e.local_date::text as local_date,e.timezone,e.city,e.category,e.genre,e.tags,e.is_free,e.price_text,e.image_url,
-   e.official_url,e.age_min,e.age_max,e.registration_text,e.recurrence,e.latitude,e.longitude,s.name as source,v.name as venue,v.address as venue_address
+   e.official_url,e.age_min,e.age_max,e.registration_text,e.recurrence,e.latitude,e.longitude,e.likes,e.series_id,s.name as source,v.name as venue,v.address as venue_address
   from events e join sources s on s.id=e.source_id left join venues v on v.id=e.venue_id
   where e.status='active' and e.local_date between $1::date and $2::date
    and ((e.latitude between $3 and $4 and e.longitude between $5 and $6) or e.latitude is null)
@@ -107,7 +108,7 @@ export async function GET(request:NextRequest){
   const e:any={id:"db-"+r.id,title:decodeHtml(r.title||""),city:r.city||"",venue:decodeHtml(r.venue||""),address:r.venue_address||"",date:r.local_date||lp.date,time:allDay?"":lp.time,
    image:r.image_url||"",url:r.official_url||"",category:r.category||"Local",genre:r.genre||"",desc:decodeHtml(r.description||""),tags:Array.isArray(r.tags)?r.tags:[],
    source:/^Ticketmaster/.test(r.source)?"Ticketmaster":r.source,priceText:r.price_text||undefined,isFree:Boolean(r.is_free),ageMin:r.age_min??undefined,ageMax:r.age_max??undefined,registration:r.registration_text||undefined,recurrence:r.recurrence||undefined,
-   distanceMiles:Math.round(d*10)/10,distanceAccuracy:acc,lat:la,lng:lo};
+   distanceMiles:Math.round(d*10)/10,distanceAccuracy:acc,lat:la,lng:lo,_likes:r.likes||0,_series:r.series_id?[Number(r.series_id)]:[]};
   if(e.source==="Ticketmaster"&&TM_JUNK.test(e.title))continue;
   if(/^\W*(cancel+ed|postponed)\b/i.test(e.title)){cancelledList.push(e);continue}   // "CANCELED: Kids in Motion" etc.
   if(discoveryRejection({...e,isDiscoveryEligible:e.source==="Ticketmaster"?true:undefined}))continue;
@@ -190,6 +191,7 @@ export async function GET(request:NextRequest){
  }
  for(const e of kept){e.image=bestPicture(e.title,e._pics||[]);delete e._pics;delete e.lat;delete e.lng
   // The place: same shared choice as the event page (lib/places).
+  e._ids=[...new Set([Number(String(e.id).replace(/^db-/,"")),...(e._places||[]).map((x:any)=>Number(x.id))])].filter(Number.isFinite);e._sources=new Set((e._places||[]).map((x:any)=>x.source)).size||1;
   const pl=choosePlace(e._places||[]);if(pl){e.venue=pl.venue||"";e.address=pl.address||""}delete e._places}
  // No picture from any copy: the same event's picture from another date (recurring events), same rule as event pages.
  {const need=kept.filter((e:any)=>!e.image&&e.id?.startsWith("db-"));
@@ -217,10 +219,28 @@ export async function GET(request:NextRequest){
  // Same search within 10 minutes is answered from Vercel's cache, not the database (keeps the free database tier happy).
  // Favorites (popular=1): how many people saved each card (any of its copies); the most-loved come first on the page.
  if(popular&&events.length){
-  const ids=[...new Set(events.flatMap((e:any)=>(e._places||[]).map((x:any)=>Number(x.id)).concat(Number(String(e.id).replace(/^db-/,"")))).filter(Number.isFinite))];
+  const ids=[...new Set(events.flatMap((e:any)=>e._ids||[]))];
   const n=new Map((await db.query("select event_id,count(*)::int as n from saved_events where event_id=any($1) group by event_id",[ids]).catch(()=>({rows:[]}))).rows.map((r:any)=>[Number(r.event_id),r.n]));
-  for(const e of events as any[])e.saves=[...new Set([Number(String(e.id).replace(/^db-/,"")),...(e._places||[]).map((x:any)=>Number(x.id))])].reduce((a,id)=>a+(n.get(id)||0),0);
+  for(const e of events as any[])e.saves=(e._ids||[]).reduce((a:number,id:number)=>a+(n.get(id)||0),0);
   events=events.filter((e:any)=>e.saves>0);
  }
+ // Popular (hot=1): what people near you are into today / this weekend. Signals: listed by several sources, Instagram
+ // likes and comments, saves, calendar adds and shares on GoToday, "Remind me next year" follows, a yearly favorite
+ // seen last year, and big-event types (festivals, fairs, parades). Only events with real signals make the list.
+ if(hot&&events.length){
+  const ids=[...new Set(events.flatMap((e:any)=>e._ids||[]))],series=[...new Set(events.flatMap((e:any)=>e._series||[]))];
+  const [sv,ac,fo,ly]=await Promise.all([
+   db.query("select event_id,count(*)::int n from saved_events where event_id=any($1) group by event_id",[ids]).catch(()=>({rows:[]})),
+   db.query("select event_id,sum(case when action='calendar' then 3 when action='share' then 2 else 1 end)::int n from event_actions where event_id=any($1) and at>now()-interval '60 days' group by event_id",[ids]).catch(()=>({rows:[]})),
+   db.query("select series_id,count(*)::int n from follows where series_id=any($1) group by series_id",[series]).catch(()=>({rows:[]})),
+   db.query("select distinct series_id from events where series_id=any($1) and local_date<current_date-300",[series]).catch(()=>({rows:[]}))]);
+  const m=(q:any,k:string)=>new Map<number,number>(q.rows.map((r:any)=>[Number(r[k]),Number(r.n??1)]));
+  const S=m(sv,"event_id"),A=m(ac,"event_id"),F=m(fo,"series_id"),L=new Set(ly.rows.map((r:any)=>Number(r.series_id)));
+  for(const e of events as any[]){const ids=e._ids||[],ser=e._series||[];
+   const saves=ids.reduce((a:number,id:number)=>a+(S.get(id)||0),0),acts=ids.reduce((a:number,id:number)=>a+(A.get(id)||0),0),follows=ser.reduce((a:number,id:number)=>a+(F.get(id)||0),0);
+   e.popularity=Math.round(10*(3*((e.facets||[]).includes("Big events")?1:0)+2*Math.max(0,(e._sources||1)-1)+1.5*Math.log2(1+(e._likes||0))+4*saves+acts+3*follows+2*(ser.some((id:number)=>L.has(id))?1:0)))/10}
+  events=events.filter((e:any)=>e.popularity>=3).sort((a:any,b:any)=>b.popularity-a.popularity).slice(0,60);
+ }
+ for(const e of events as any[]){delete e._ids;delete e._sources;delete e._likes;delete e._series}
  return NextResponse.json({coverage,events:events.slice(0,2000).map((e:any)=>({...e,desc:e.desc.length>320?e.desc.slice(0,317)+"…":e.desc})),range,startDate:w.startDate,endDate:w.endDate,center:[lat,lng],radius,localCount,ticketmasterCount:events.length-localCount,total:events.length},{headers:{"cache-control":"public, s-maxage=600, stale-while-revalidate=1800"}});
 }

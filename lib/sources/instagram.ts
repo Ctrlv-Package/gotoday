@@ -17,7 +17,7 @@ import {keepImages} from "../images";
 
 export type InstagramConfig={username:string;source:string;idPrefix:string;city:string;venue:string;address?:string;tz?:string;maxAgeDays?:number};
 type Extracted={slide?:number;place?:string;town?:string;title:string;date:string;start?:string;end?:string;summary?:string;free?:boolean;kids?:boolean;forKids?:boolean;cancelled?:boolean};
-type Post={id:string;caption?:string;media_type:string;media_url?:string;thumbnail_url?:string;permalink:string;timestamp:string;children?:{data:{media_url?:string;media_type:string}[]}};
+type Post={id:string;like_count?:number;comments_count?:number;caption?:string;media_type:string;media_url?:string;thumbnail_url?:string;permalink:string;timestamp:string;children?:{data:{media_url?:string;media_type:string}[]}};
 
 const GRAPH="https://graph.facebook.com/v26.0";
 const MODEL=process.env.EVENT_EXTRACT_MODEL||"claude-haiku-4-5-20251001";
@@ -62,7 +62,7 @@ async function loadPosts(username:string):Promise<{posts:Post[];website:string}>
  // Pace ourselves: a recent reading near the hourly cap means this call would likely be refused anyway.
  const gate=await recentAppUsage();
  if(gate&&gate.usage>=85&&gate.ageMin<50)throw new Error(`Instagram rate limit: app usage at ${gate.usage}% of the hourly limit (recorded ${Math.max(1,Math.round(gate.ageMin))} min ago) — deferred without calling Meta, will retry next run`);
- const fields=`business_discovery.username(${username}){website,media.limit(15){id,caption,media_type,media_url,thumbnail_url,permalink,timestamp,children{media_url,media_type}}}`;
+ const fields=`business_discovery.username(${username}){website,media.limit(15){id,like_count,comments_count,caption,media_type,media_url,thumbnail_url,permalink,timestamp,children{media_url,media_type}}}`;
  const r=await fetchRetry(`${GRAPH}/${me}?fields=${encodeURIComponent(fields)}&access_token=${encodeURIComponent(token)}`,{cache:"no-store"});
  const d:any=await r.json().catch(()=>({}));
  // Meta allows only so many calls per hour. When we hit it, say so plainly; the source is skipped (not failed)
@@ -318,15 +318,16 @@ export async function fetchInstagram(cfg:InstagramConfig,startDate:string,endDat
   const arts=/\b(music|concert|band|dj|art|artisan|craft|theat(er|re)|dance|film|movie)\b/.test(blob);
   const time=e.start&&/^\d{2}:\d{2}$/.test(e.start)?e.start+":00":"";
   const end=e.end&&/^\d{2}:\d{2}$/.test(e.end)?e.end+":00":undefined;
-  const town=(e.town||"").trim().replace(/,?\s*(FL|Florida)$/i,"");
+  const town=(e.town||"").trim().replace(/,?\s*([A-Z]{2}|Florida|New Jersey|New York|Georgia|Virginia|Maryland|Pennsylvania|Connecticut|Massachusetts|North Carolina|South Carolina)$/i,"");
   const pic=pictureFor(e);
-  out.push({id:`${cfg.idPrefix}-${slug(e.title)}-${e.date}`,title:e.title.trim(),city:town&&/^[A-Za-z .'-]{3,40}$/.test(town)?`${town}, FL`:cfg.city,
+  out.push({id:`${cfg.idPrefix}-${slug(e.title)}-${e.date}`,title:e.title.trim(),city:town&&/^[A-Za-z .'-]{3,40}$/.test(town)?`${town}, ${cfg.city.split(",")[1]?.trim()||"FL"}`:cfg.city,
    // City and parks accounts post events all over town: use the place the post names, else the account's own venue.
    venue:(e.place||"").split(",")[0].trim().slice(0,120)||cfg.venue,address:e.place&&/\d/.test(e.place)?e.place.split(",").slice(1).join(",").trim()||e.place:e.place?undefined:cfg.address,date:e.date,time,endTime:end&&time&&end>time?end:undefined,
    url:e.post.permalink,sourceUrl:`https://www.instagram.com/${cfg.username}/`,image:pic.url,imageBorrowed:pic.borrowed||undefined,
    category:family?"Family":arts?"Arts & Theatre":"Local",genre:"Venue Event",desc:(e.summary||"").trim()||`Posted by @${cfg.username}.`,
    tags:[...(family?["Family"]:[]),...(forKids?["Kids"]:[]),...(arts?["Arts & Theatre"]:[]),...(e.free?["Free"]:e.free===false?["Paid"]:[]),"Local"],
-   emoji:family?"🎉":arts?"🎨":"📍",source:cfg.source,isFree:e.free===true||undefined,eventType:"event"});
+   emoji:family?"🎉":arts?"🎨":"📍",source:cfg.source,isFree:e.free===true||undefined,eventType:"event",
+   likes:(e.post.like_count||0)+3*(e.post.comments_count||0)||undefined});
  }
  // Flyers that only name the event: look it up on the web for the official page and a real description.
  // Soonest first, a few per account per run (each look-up is cached, so the rest are done on later runs).

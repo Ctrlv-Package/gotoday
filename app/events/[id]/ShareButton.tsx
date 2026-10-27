@@ -6,6 +6,7 @@ export default function ShareButton({title,text}:{title:string;text:string}){
  const {t}=useT();
  async function share(){
   const url=location.href;
+  {const m=location.pathname.match(/\/events\/(db-\d+)/);if(m)fetch("/api/track",{method:"POST",headers:{"content-type":"application/json"},body:JSON.stringify({id:m[1],action:"share"}),keepalive:true}).catch(()=>{})}
   try{if(navigator.share){await navigator.share({title,text,url});return}}catch(e:any){if(e?.name==="AbortError")return}
   try{await navigator.clipboard.writeText(`${text}\n${url}`);setMsg(t("Link copied"))}catch{setMsg(t("Couldn't copy link"))}
   setTimeout(()=>setMsg(""),2000);

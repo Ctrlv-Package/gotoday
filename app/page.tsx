@@ -12,12 +12,12 @@ export default function Home(){
  const {t,locale}=useT();
  const[zipErr,setZipErr]=useState(""),lastGood=useRef(""),[zip,setZip]=useState(""),[searchedZip,setSearchedZip]=useState(""),[coords,setCoords]=useState<{lat:number;lng:number}|null>(null);
  const[radius,setRadius]=useState("25"),[range,setRange]=useState("today"),[selected,setSelected]=useState<string[]>([]),[ageBands,setAgeBands]=useState<string[]>([]),[moreOpen,setMoreOpen]=useState(false),[setting,setSetting]=useState("Any"),[dropIn,setDropIn]=useState(false),[spanish,setSpanish]=useState(false),[seniors,setSeniors]=useState(false);
- const[timeFilter,setTimeFilter]=useState("Any time"),[view,setView]=useState<"all"|"big"|"fav">("all"),[bigRange,setBigRange]=useState("next30"),[bigRadius,setBigRadius]=useState("25"),[sort,setSort]=useState("Nearest"),[query,setQuery]=useState("");
+ const[timeFilter,setTimeFilter]=useState("Any time"),[view,setView]=useState<"all"|"big"|"fav">("all"),[bigRange,setBigRange]=useState("today"),[bigRadius,setBigRadius]=useState("25"),[sort,setSort]=useState("Nearest"),[query,setQuery]=useState("");
  const[soon,setSoon]=useState<{place:string|null}|null>(null),[events,setEvents]=useState<EventItem[]>([]),[loading,setLoading]=useState(false),[message,setMessage]=useState(""),[toast,setToast]=useState("");
 
  // Big events have their own span (next 7 / 30 days) and distance; load() uses them while that view is on.
  const bigOnly=view!=="all";   // "Coming up" and "Favorites" share the 7/30-day span and their own distance
- const big=useRef({view:"all",range:"next30",radius:"25"});
+ const big=useRef({view:"all",range:"today",radius:"25"});
  big.current={view,range:bigRange,radius:bigRadius};
  async function load(z:string,r:string,c:{lat:number;lng:number}|null,rad:string){
   if(big.current.view!=="all"){r=big.current.range;rad=big.current.radius}
@@ -26,7 +26,7 @@ export default function Home(){
    const now=new Date(),today=`${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,"0")}-${String(now.getDate()).padStart(2,"0")}`;
    const q=new URLSearchParams({postalCode:z||DEFAULT_ZIP,radius:rad,range:r,today});
    if(c){q.set("lat",String(c.lat));q.set("lng",String(c.lng))}
-   if(big.current.view==="big")q.set("big","1");
+   if(big.current.view==="big")q.set("hot","1");   // Popular: ranked by real interest signals
    if(big.current.view==="fav")q.set("popular","1");
    const d=await (await fetch("/api/events?"+q,{cache:"no-store"})).json();
    // A ZIP that doesn't exist: explain it under the search box and keep whatever was showing before.
@@ -36,7 +36,7 @@ export default function Home(){
    setSoon(d.coverage&&d.coverage.covered===false?{place:d.coverage.place||null}:null);
    if(d.coverage?.covered===false)return;
    if(!d.events?.length&&big.current.view==="fav"){setMessage("No favorites near you yet. Tap ♡ on events you like: the ones people save the most show up here.");return}
-   if(!d.events?.length&&big.current.view==="big"){setMessage("No big events found in this period yet. Try 30 days or a bigger distance.");return}
+   if(!d.events?.length&&big.current.view==="big"){setMessage("Nothing popular nearby yet for this day. Try This weekend or a bigger distance.");return}
    if(!d.events?.length)setMessage(r==="today"?"Nothing else found for today nearby. Try Tomorrow, Next Weekend, or a bigger distance.":"Nothing found for this period yet. Try a bigger distance.");
   }catch{setEvents([]);setMessage("Events are temporarily unavailable.")}
   finally{setLoading(false)}
@@ -61,7 +61,7 @@ export default function Home(){
   // Coming back restores what you were looking at even if the address still has an older ?zip= (you then used your location).
   if(v&&v.day===today&&Date.now()-v.savedAt<45*60e3&&(returning||!fromUrl||fromUrl===v.searchedZip)){
    setZip(v.zip);setSearchedZip(v.searchedZip);setCoords(v.coords);setRadius(v.radius);setRange(v.range);setSelected(v.selected);setAgeBands(v.ageBands);
-   setMoreOpen(v.moreOpen);setSetting(v.setting);setDropIn(v.dropIn);setSpanish(v.spanish);setSeniors(v.seniors);setTimeFilter(v.timeFilter);setView(v.view==="big"||v.view==="fav"?v.view:"all");if(v.bigRange)setBigRange(v.bigRange);if(v.bigRadius)setBigRadius(v.bigRadius);setSort(v.sort);setQuery(v.query);
+   setMoreOpen(v.moreOpen);setSetting(v.setting);setDropIn(v.dropIn);setSpanish(v.spanish);setSeniors(v.seniors);setTimeFilter(v.timeFilter);setView(v.view==="big"||v.view==="fav"?v.view:"all");if(v.bigRange)setBigRange(v.bigRange==="today"||v.bigRange==="weekend"||v.view!=="big"?v.bigRange:"today");if(v.bigRadius)setBigRadius(v.bigRadius);setSort(v.sort);setQuery(v.query);
    setEvents(v.events||[]);setMessage(v.message||"");setSoon(v.soon||null);setRestored(true);
    try{history.scrollRestoration="manual"}catch{}
    const y=v.scrollY||0;requestAnimationFrame(()=>requestAnimationFrame(()=>window.scrollTo(0,y)));
@@ -104,7 +104,7 @@ export default function Home(){
    e=>{clearTimeout(guard);setLocating(false);setLocErr(t(e.code===1?"Location is turned off for this site. Allow it in your browser settings, or enter a ZIP code.":e.code===3?"Finding your location took too long. Try again, or enter a ZIP code.":"Couldn't find your location. Try again, or enter a ZIP code."))},
    {timeout:15000,maximumAge:600000});
  }
- function switchMode(v:"all"|"big"|"fav"){if(v===view)return;big.current={...big.current,view:v};setView(v);setSort(v==="all"?"Nearest":"Soonest");load(searchedZip,range,coords,radius)}
+ function switchMode(v:"all"|"big"|"fav"){if(v===view)return;const ok=v==="big"?["today","weekend"]:["next7","next30"];const br=v==="all"||ok.includes(big.current.range)?big.current.range:ok[v==="big"?0:1];if(br!==bigRange)setBigRange(br);big.current={...big.current,view:v,range:br};setView(v);setSort(v==="all"?"Nearest":v==="big"?"Popular":"Soonest");load(searchedZip,range,coords,radius)}
  function chooseBigRange(r:string){setBigRange(r);big.current={...big.current,range:r};load(searchedZip,range,coords,radius)}
  function chooseBigRadius(rad:string){setBigRadius(rad);big.current={...big.current,radius:rad};load(searchedZip,range,coords,radius)}
  function chooseRange(r:string){setRange(r);load(searchedZip,r,coords,radius)}
@@ -112,6 +112,7 @@ export default function Home(){
  function toggleChip(c:string){if(c==="All"){setSelected([]);setAgeBands([]);setSetting("Any");setDropIn(false);setSpanish(false);setSeniors(false);return}setSelected(s=>s.includes(c)?s.filter(x=>x!==c):[...s,c])}
 
  async function share(e:EventItem){
+  if(e.id?.startsWith("db-"))fetch("/api/track",{method:"POST",headers:{"content-type":"application/json"},body:JSON.stringify({id:e.id,action:"share"}),keepalive:true}).catch(()=>{});
   const url=!e.id?(e.url||location.origin):`${location.origin}/events/${encodeURIComponent(e.id||"")}`;
   const text=`${e.title} — ${fmt(e.date,e.time,t,locale)} · ${e.venue||e.city}`;
   try{if(navigator.share){await navigator.share({title:e.title,text,url});return}}catch(err:any){if(err?.name==="AbortError")return}
@@ -125,7 +126,6 @@ export default function Home(){
    const tags=new Set([e.category,...(e.tags||[])]);
    // Interests come from the server's facets (one consistent reading of every source); chips combine with OR.
    const facets=new Set(e.facets||[...tags].filter(Boolean) as string[]);
-   if(big&&!facets.has("Big events"))return false;
    const cm=(interests.length===0||interests.some(x=>facets.has(x)))&&(!selected.includes("Free")||facets.has("Free")||!!e.isFree);
    const more=(setting==="Any"||tags.has(setting))&&(!dropIn||tags.has("Drop-in"))&&(!spanish||tags.has("En Español"))&&(!seniors||tags.has("Seniors")||(e.ageMin!=null&&e.ageMin>=50));
    // Kids' ages: an event counts when its range overlaps a chosen band; a kids event that gives no ages is for any age.
@@ -138,6 +138,7 @@ export default function Home(){
    // Nearest (default): day by day, closest first within each day. Soonest: by start time.
    const when=((a.date||"")+(a.time||"")).localeCompare((b.date||"")+(b.time||""));
    if(view==="fav"&&((b as any).saves||0)!==((a as any).saves||0))return((b as any).saves||0)-((a as any).saves||0);   // most-loved first
+   if(view==="big"&&sort==="Popular")return((b as any).popularity||0)-((a as any).popularity||0)||when;
    if(sort!=="Nearest")return when;
    return (a.date||"").localeCompare(b.date||"")||(a.distanceMiles??999)-(b.distanceMiles??999)||when;
   });
@@ -187,15 +188,15 @@ export default function Home(){
     {/* Two ways to look: everything nearby, or just the big ones (festivals, fairs, yearly favorites) from farther away. */}
     <div className="modeTabs" role="tablist">
      <button type="button" role="tab" aria-selected={view==="all"} className={view==="all"?"active":""} onClick={()=>switchMode("all")}><span className="wideOnly">{t("All events")}</span><span className="narrowOnly">{t("All")}</span></button>
-     <button type="button" role="tab" aria-selected={view==="big"} className={view==="big"?"active":""} onClick={()=>switchMode("big")}>⭐ {t("Coming up")}</button>
+     <button type="button" role="tab" aria-selected={view==="big"} className={view==="big"?"active":""} onClick={()=>switchMode("big")}>🔥 {t("Popular")}</button>
      <button type="button" role="tab" aria-selected={view==="fav"} className={view==="fav"?"active":""} onClick={()=>switchMode("fav")}>❤️ {t("Favorites")}</button>
     </div>
-    {view==="big"&&<p className="modeNote">{t("Festivals, fairs, parades and yearly favorites coming up — plan ahead.")}</p>}
+    {view==="big"&&<p className="modeNote">{t("What people near you are into: the most-loved, most-shared and biggest events.")}</p>}
     {view==="fav"&&<p className="modeNote">{t("What people near you are saving the most.")}</p>}
     <div className="fcTop">
      <div className="fcWhen">
       <div className="label">{t("When")}</div>
-      {bigOnly?<div className="seg when two">{[["next7","Next 7 days"],["next30","Next 30 days"]].map(([k,l])=><button key={k} className={bigRange===k?"active":""} onClick={()=>chooseBigRange(k)}>{t(l)}</button>)}</div>:
+      {bigOnly?<div className="seg when two">{(view==="big"?[["today","Today"],["weekend","This weekend"]]:[["next7","Next 7 days"],["next30","Next 30 days"]]).map(([k,l])=><button key={k} className={bigRange===k?"active":""} onClick={()=>chooseBigRange(k)}>{t(l)}</button>)}</div>:
       <div className="seg when four">{RANGES.map(([k,l])=><button key={k} className={range===k?"active":""} onClick={()=>chooseRange(k)}>{k==="weekend"?t("Weekend"):t(l)}{k==="weekend"&&<small>{nextWeekendLabel(locale)}</small>}</button>)}
        {/* Any other day in the next three weeks */}
        <Dropdown value={/^\d{4}/.test(range)?range:""} ariaLabel={t("Pick a day")} align="right" triggerClass={`pickDay${/^\d{4}/.test(range)?" active":""}`}
@@ -207,7 +208,7 @@ export default function Home(){
       {bigOnly?<Dropdown label={t("Distance")} value={bigRadius} options={["10","15","25","50"].map(r=>({value:r,label:t("{n} mi",{n:r})}))} onChange={chooseBigRadius}/>
       :<Dropdown label={t("Distance")} value={radius} options={["10","15","25","50"].map(r=>({value:r,label:t("{n} mi",{n:r})}))} onChange={chooseRadius}/>}
       {!bigOnly&&<Dropdown label={t("Time")} value={timeFilter} options={TIMES.map(x=>({value:x,label:x==="Any time"?t("Any"):t(x)}))} onChange={setTimeFilter}/>}
-      <Dropdown label={t("Sort")} value={sort} align="right" options={[{value:"Nearest",label:t("Nearest")},{value:"Soonest",label:t("Soonest")}]} onChange={setSort}/>
+      <Dropdown label={t("Sort")} value={sort} align="right" options={[...(view==="big"?[{value:"Popular",label:t("Most popular")}]:[]),{value:"Nearest",label:t("Nearest")},{value:"Soonest",label:t("Soonest")}]} onChange={setSort}/>
      </div>
     </div>
     <div className="fcSection">
@@ -235,7 +236,7 @@ export default function Home(){
     <p className="muted">{t("Right now GoToday covers South Florida (Miami-Dade, Broward and Palm Beach), Greater Orlando, Tampa Bay and New York City.")}</p>
     <div className="soonActions"><a className="btn primary" href="/create">{t("Post an event in your area")}</a><button type="button" className="btn ghost" onClick={()=>{setZip("");document.querySelector<HTMLInputElement>('input[data-zip]')?.focus();window.scrollTo({top:0,behavior:"smooth"})}}>{t("Try another ZIP")}</button></div>
    </div>}
-   {!soon&&<div className="resultsHead"><div className="kicker">{t("NEAR {place}",{place:where}).toUpperCase()}</div><h2>{loading?t("Searching…"):view==="fav"?(shown.length===1?t("1 favorite near you"):t("{n} favorites near you",{n:shown.length})):view==="big"?(shown.length===1?t("1 big event coming up"):t("{n} big events coming up",{n:shown.length})):filtered.length===1?t("1 thing to do"):t("{n} things to do",{n:filtered.length})}</h2></div>}
+   {!soon&&<div className="resultsHead"><div className="kicker">{t("NEAR {place}",{place:where}).toUpperCase()}</div><h2>{loading?t("Searching…"):view==="fav"?(shown.length===1?t("1 favorite near you"):t("{n} favorites near you",{n:shown.length})):view==="big"?(shown.length===1?t("1 popular event"):t("{n} popular events",{n:shown.length})):filtered.length===1?t("1 thing to do"):t("{n} things to do",{n:filtered.length})}</h2></div>}
 
    <div className="grid">{shown.map((e,i)=><article className="card" key={e.id||e.title+i}>
     <a className={e.image?"pic":"pic noimg"} style={e.image?undefined:{background:artFor(e).bg}} href={detailHref(e)} aria-hidden tabIndex={-1}>
