@@ -58,3 +58,11 @@ test("ages come out of titles but still set the ages", async ()=>{
  const e=normalize({id:"x",title:"Scavenger Hunt, Ages 3-12 yo",city:"South Orange, NJ",venue:"L",date:"2026-10-27",time:"",url:"u",category:"Family",genre:"",desc:"Children are invited",tags:["Age - 4 years"],emoji:"",source:"s"} as any);
  assert.equal(e.title,"Scavenger Hunt");assert.equal(e.ageMin,3);assert.equal(e.ageMax,12);
 });
+
+test("when-words before names and 'Begins at' venues", async ()=>{
+ const {cleanTitle,normalize}=await import("../lib/ingestion/utils");
+ assert.equal(cleanTitle("TOMORROW Honoring Those Who Serve and Protect"),"Honoring Those Who Serve and Protect");
+ assert.equal(cleanTitle("TONIGHT: Movie in the Park"),"Movie in the Park");
+ const e=normalize({id:"x",title:"Salute",city:"Tamarac, FL",venue:"Begins at Tamarac City Hall",date:"2026-10-27",time:"",url:"u",category:"Local",genre:"",desc:"x".repeat(260)+"\n📅 Tuesday, Oc",tags:[],emoji:"",source:"s"} as any);
+ assert.equal(e.venue,"Tamarac City Hall");assert.ok(!e.desc.includes("Tuesday, Oc"));
+});

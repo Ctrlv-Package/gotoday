@@ -133,6 +133,8 @@ export function cleanTitle(t:string):string{
  // the card shows the ages as their own chip, so they come out of the title (and still set the ages).
  {const y=x.replace(/\s*(?:[,:;|–—-]\s*|\(\s*|\[\s*)(?:for\s+)?(?:ages?|aged|grades?|gr\.?)\s*(?:k|pre-?k|\d{1,2})(?:\s*(?:-|–|to|through|&|and)\s*(?:\d{1,2}|up|under|older|adults?))?\s*(?:\+|yrs?|years?(?: old)?|yo|y\.o\.?|months?)?\s*[)\]]?/gi," ").replace(/\s*\(\s*(?:\d{1,2}\s*(?:-|–)\s*\d{1,2}|\d{1,2}\+)\s*(?:yrs?|years?|yo|months?)?\s*\)/gi," ").replace(/\s{2,}/g," ").trim();
   if(y.length>=3&&y!==x)x=y}
+ // A "when" word in front of the name: "TOMORROW Honoring Those Who Serve", "TONIGHT: Movie in the Park", "This Saturday - Fall Fest".
+ {const y=x.replace(/^(?:(?:today|tomorrow|tonight|this (?:week(?:end)?|morning|afternoon|evening|(?:mon|tues|wednes|thurs|fri|satur|sun)day)|next (?:week|(?:mon|tues|wednes|thurs|fri|satur|sun)day)|now|reminder|last chance|happening (?:today|now|tomorrow)|coming (?:up|soon)|new|update)\b[\s:!.,–—-]*)+/i,"");if(y!==x&&y.split(/\s+/).length>=2)x=y.replace(/^./,c=>c.toUpperCase())}
  // Invitation wording in front of the name: "Get ready for Rahway's Pup-kin Parade" → "Rahway's Pup-kin Parade".
  {const y=x.replace(/^(?:get ready for|join us (?:for|at)|come (?:out )?(?:to|for)|don'?t miss|save the date(?: for)?|mark your calendars?(?: for)?|you(?:'re| are) invited to)\s+(?:the\s+|our\s+)?/i,"");if(y!==x&&y.split(/\s+/).length>=2)x=y.replace(/^./,c=>c.toUpperCase())}
  // "… BEGINNING SEPT. 14" / "… starting Oct 3" / "… every Monday": when, not name.
@@ -149,6 +151,10 @@ export function cleanTitle(t:string):string{
 }
 export function normalize(e:EventRecord):EventRecord{
  const rawTitle=e.title;
+ // Venue wording from posts: "Begins at Tamarac City Hall" → "Tamarac City Hall".
+ if(e.venue)e={...e,venue:e.venue.replace(/^(?:begins|starts|starting|meet(?:s|ing)?|located|held|hosted|takes place|happening|join us)\s+(?:at|in|on)\s+/i,"").trim()||e.venue};
+ // A description cut off mid-word by a source's length limit ("📅 Tuesday, Oc"): drop the unfinished last line.
+ if(e.desc&&e.desc.length>=250){const ls=e.desc.split("\n");const last=ls[ls.length-1].trim();if(ls.length>1&&last.length<40&&!/[.!?)"”]$/.test(last))e={...e,desc:ls.slice(0,-1).join("\n").trim()}}
  if(e.title){const c=cleanTitle(e.title);if(c!==e.title){const note=e.title.startsWith(c)?e.title.slice(c.length).replace(/^[\s.!|•·–—,:;(-]+/,"").replace(/[)\]]$/,"").trim():"";e={...e,title:c,desc:note&&!/^[\p{Extended_Pictographic}\s]*$/u.test(note)&&!textAgeRange(note)&&!(e.desc||"").includes(note)?`${note}${e.desc?"\n"+e.desc:""}`:e.desc}}}
  const paid=/\$\s*[1-9]/.test(e.priceText||"")||e.source==="Ticketmaster";
  const free=e.isFree===true||(!paid&&/\bfree\b/i.test([e.priceText,e.desc,...(e.tags||[])].filter(Boolean).join(" ")));
