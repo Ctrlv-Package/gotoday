@@ -46,3 +46,23 @@ test("a real Ticketmaster family show still gets its Kids label and publishes",(
  assert.ok(facetsFor(s).includes("Kids"));
  assert.deepEqual(quarantineReasons(s),[]);
 });
+
+test("the admin-flood classes publish: ages, child, camp, junior, and Jr. suffixes",()=>{
+ // Labeled Kids by age data alone (ageMax 12): the listing's own ages are the signal.
+ assert.deepEqual(quarantineReasons(ev({title:"Alphabet Soup",source:"Central Rappahannock Regional Library",tags:["Local"],ageMin:5,ageMax:12})),[]);
+ // "Child" and "Camp" in the title are the evidence behind the Kids label.
+ assert.deepEqual(quarantineReasons(ev({title:"Harry Potter and the Cursed Child",source:"Ticketmaster New York",category:"Arts & Theatre",tags:["Theatre"]})),[]);
+ assert.deepEqual(quarantineReasons(ev({title:"Computer Camp: Fundamentals",source:"Forsyth County Public Library NC",tags:["Local"]})),[]);
+ // "Junior" as its own word keeps the label and is now itself the signal.
+ assert.ok(facetsFor(ev({title:"Junior Friends",source:"Upper Merion Township Library"})).includes("Kids"));
+ assert.deepEqual(quarantineReasons(ev({title:"Junior Friends",source:"Upper Merion Township Library",tags:["Local"]})),[]);
+ // A "Jr." name suffix is not a kids' event, for any source.
+ const kimmel=ev({title:"Author Talk: James Kimmel, Jr. - The Science of Revenge",source:"Boston Public Library"});
+ assert.ok(!facetsFor(kimmel).includes("Kids"));
+ assert.deepEqual(quarantineReasons(kimmel),[]);
+ const branch=ev({title:"Homework Hub @ Dr. B.L. Perry, Jr. Branch",source:"LeRoy Collins Leon County Public Library"});
+ assert.ok(!facetsFor(branch).includes("Kids"));
+ assert.deepEqual(quarantineReasons(branch),[]);
+ // But a leading "Jr." (Jr. Chef Academy) still means junior.
+ assert.ok(facetsFor(ev({title:"Jr. Chef Academy",source:"Miami-Dade Public Library"})).includes("Kids"));
+});
