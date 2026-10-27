@@ -11,7 +11,10 @@ import type {EventRecord,EventSource} from "./types";
 async function sourceRow(s:EventSource){const r=await db.query(`insert into sources(name,source_type,base_url,priority,updated_at) values($1,$2,$3,$4,now()) on conflict(name) do update set source_type=excluded.source_type,base_url=excluded.base_url,priority=excluded.priority,updated_at=now() returning id`,[s.name,s.type,s.url,s.priority]);return Number(r.rows[0].id)}
 const venueCache=new Map<string,Promise<number|null>>();
 function venueRow(e:EventRecord){const k=`${e.venue}|${e.city||""}`;let p=venueCache.get(k);if(!p){p=venueRowDb(e);venueCache.set(k,p);p.catch(()=>venueCache.delete(k))}return p}
-async function venueRowDb(e:EventRecord){if(!e.venue)return null;const found=await db.query("select id from venues where name=$1 and coalesce(city,'')=coalesce($2,'') limit 1",[e.venue,e.city||null]);if(found.rowCount)return Number(found.rows[0].id);const r=await db.query("insert into venues(name,address,city,state,latitude,longitude) values($1,$2,$3,'FL',$4,$5) returning id",[e.venue,e.address||null,e.city||null,e.latitude??null,e.longitude??null]);return Number(r.rows[0].id)}
+// A venue row is one place: the same name at a different address (a city's default venue "City of Oakland Park" used
+// for City Hall and for a park) is a different row, or every event would show the first event's address.
+async function venueRowDb(e:EventRecord){if(!e.venue)return null;const addr=(e.address||"").trim()||null;
+ const found=await db.query("select id from venues where name=$1 and coalesce(city,'')=coalesce($2,'') and ($3::text is null or coalesce(address,'')=$3) order by (coalesce(address,'')=coalesce($3,'')) desc limit 1",[e.venue,e.city||null,addr]);if(found.rowCount)return Number(found.rows[0].id);const r=await db.query("insert into venues(name,address,city,state,latitude,longitude) values($1,$2,$3,'FL',$4,$5) returning id",[e.venue,e.address||null,e.city||null,e.latitude??null,e.longitude??null]);return Number(r.rows[0].id)}
 // Quarantine: a flagged record is saved with status='quarantine' (public queries only read
 // status='active') instead of publishing on a guess. A live row is never pulled back by a flag:
 // it keeps its status and only records the reason, so a false positive can't empty a page.
