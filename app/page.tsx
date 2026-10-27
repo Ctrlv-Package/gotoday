@@ -61,7 +61,7 @@ export default function Home(){
   // Coming back restores what you were looking at even if the address still has an older ?zip= (you then used your location).
   if(v&&v.day===today&&Date.now()-v.savedAt<45*60e3&&(returning||!fromUrl||fromUrl===v.searchedZip)){
    setZip(v.zip);setSearchedZip(v.searchedZip);setCoords(v.coords);setRadius(v.radius);setRange(v.range);setSelected(v.selected);setAgeBands(v.ageBands);
-   setMoreOpen(v.moreOpen);setSetting(v.setting);setDropIn(v.dropIn);setSpanish(v.spanish);setSeniors(v.seniors);setTimeFilter(v.timeFilter);setView(v.view==="big"||v.view==="fav"?v.view:"all");if(v.bigRange)setBigRange(v.bigRange==="today"||v.bigRange==="weekend"||v.view!=="big"?v.bigRange:"today");if(v.bigRadius)setBigRadius(v.bigRadius);setSort(v.sort);setQuery(v.query);
+   setMoreOpen(v.moreOpen);setSetting(v.setting);setDropIn(v.dropIn);setSpanish(v.spanish);setSeniors(v.seniors);setTimeFilter(v.timeFilter);setView(v.view==="big"||v.view==="fav"?v.view:"all");if(v.bigRange)setBigRange(v.bigRange==="today"||v.bigRange==="thisweekend"||v.view!=="big"?v.bigRange:"today");if(v.bigRadius)setBigRadius(v.bigRadius);setSort(v.sort);setQuery(v.query);
    setEvents(v.events||[]);setMessage(v.message||"");setSoon(v.soon||null);setRestored(true);
    try{history.scrollRestoration="manual"}catch{}
    const y=v.scrollY||0;requestAnimationFrame(()=>requestAnimationFrame(()=>window.scrollTo(0,y)));
@@ -104,7 +104,7 @@ export default function Home(){
    e=>{clearTimeout(guard);setLocating(false);setLocErr(t(e.code===1?"Location is turned off for this site. Allow it in your browser settings, or enter a ZIP code.":e.code===3?"Finding your location took too long. Try again, or enter a ZIP code.":"Couldn't find your location. Try again, or enter a ZIP code."))},
    {timeout:15000,maximumAge:600000});
  }
- function switchMode(v:"all"|"big"|"fav"){if(v===view)return;const ok=v==="big"?["today","weekend"]:["next7","next30"];const br=v==="all"||ok.includes(big.current.range)?big.current.range:ok[v==="big"?0:1];if(br!==bigRange)setBigRange(br);big.current={...big.current,view:v,range:br};setView(v);setSort(v==="all"?"Nearest":v==="big"?"Popular":"Soonest");load(searchedZip,range,coords,radius)}
+ function switchMode(v:"all"|"big"|"fav"){if(v===view)return;const ok=v==="big"?["today","thisweekend"]:["next7","next30"];const br=v==="all"||ok.includes(big.current.range)?big.current.range:ok[v==="big"?0:1];if(br!==bigRange)setBigRange(br);big.current={...big.current,view:v,range:br};setView(v);setSort(v==="all"?"Nearest":v==="big"?"Popular":"Soonest");load(searchedZip,range,coords,radius)}
  function chooseBigRange(r:string){setBigRange(r);big.current={...big.current,range:r};load(searchedZip,range,coords,radius)}
  function chooseBigRadius(rad:string){setBigRadius(rad);big.current={...big.current,radius:rad};load(searchedZip,range,coords,radius)}
  function chooseRange(r:string){setRange(r);load(searchedZip,r,coords,radius)}
@@ -196,7 +196,7 @@ export default function Home(){
     <div className="fcTop">
      <div className="fcWhen">
       <div className="label">{t("When")}</div>
-      {bigOnly?<div className="seg when two">{(view==="big"?[["today","Today"],["weekend","This weekend"]]:[["next7","Next 7 days"],["next30","Next 30 days"]]).map(([k,l])=><button key={k} className={bigRange===k?"active":""} onClick={()=>chooseBigRange(k)}>{t(l)}</button>)}</div>:
+      {bigOnly?<div className="seg when two">{(view==="big"?[["today","Today"],["thisweekend","This weekend"]]:[["next7","Next 7 days"],["next30","Next 30 days"]]).map(([k,l])=><button key={k} className={bigRange===k?"active":""} onClick={()=>chooseBigRange(k)}>{t(l)}</button>)}</div>:
       <div className="seg when four">{RANGES.map(([k,l])=><button key={k} className={range===k?"active":""} onClick={()=>chooseRange(k)}>{k==="weekend"?t("Weekend"):t(l)}{k==="weekend"&&<small>{nextWeekendLabel(locale)}</small>}</button>)}
        {/* Any other day in the next three weeks */}
        <Dropdown value={/^\d{4}/.test(range)?range:""} ariaLabel={t("Pick a day")} align="right" triggerClass={`pickDay${/^\d{4}/.test(range)?" active":""}`}

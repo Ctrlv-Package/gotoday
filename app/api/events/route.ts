@@ -36,6 +36,8 @@ function windowDates(range:string,today:string){
  if(range==="tomorrow"){s.setUTCDate(s.getUTCDate()+1);e=new Date(s)}
  // Weekend = Saturday and Sunday (any other day can be picked from "Pick day").
  if(range==="weekend"){const day=base.getUTCDay(),n=day===6?7:(6-day+7)%7||7;s.setUTCDate(s.getUTCDate()+n);e=new Date(s);e.setUTCDate(e.getUTCDate()+1)}
+ // This weekend (Popular): on a weekday the coming Sat–Sun; on Saturday today and tomorrow; on Sunday just today.
+ if(range==="thisweekend"){const day=base.getUTCDay();s=new Date(base);if(day>=1&&day<=5)s.setUTCDate(s.getUTCDate()+(6-day));e=new Date(s);if(s.getUTCDay()===6)e.setUTCDate(e.getUTCDate()+1)}
  return{startDate:ymd(s),endDate:ymd(e)};
 }
 const TM_JUNK=/^(luxury|premium|club)\s*(&|and)?\s*suites?\b|\bsuites?:|\bparking\b|\b(pregame|stadium|ballpark|behind the scenes) tours?\b/i;
@@ -133,8 +135,8 @@ export async function GET(request:NextRequest){
   let live=false,over=false;   // over: finished earlier today (kept until duplicates are matched, then removed)
   // "All day" listings (exhibits, scavenger hunts, class series) are really open-hours things: libraries, studios and
   // offices close by evening, so after 8 PM local time they're done for today.
-  if((range==="today"||e.date===today&&range.startsWith("next"))&&allDay&&Number(localParts(new Date(now),tz).time.slice(0,2))>=20)over=true;
-  if((range==="today"||e.date===today&&range.startsWith("next"))&&!allDay){// No end time, or an "end" that's really the end of the day (a 9:30 AM walk "ending" at midnight): assume 4 hours.
+  if((range==="today"||e.date===today&&(range.startsWith("next")||range==="thisweekend"))&&allDay&&Number(localParts(new Date(now),tz).time.slice(0,2))>=20)over=true;
+  if((range==="today"||e.date===today&&(range.startsWith("next")||range==="thisweekend"))&&!allDay){// No end time, or an "end" that's really the end of the day (a 9:30 AM walk "ending" at midnight): assume 4 hours.
    const endAt=r.end_at?new Date(r.end_at).getTime():0,span=endAt-start.getTime();
    const end=span>0&&span<=12*3600e3?endAt:start.getTime()+4*3600e3;if(end<now)over=true;else live=start.getTime()<=now}
   if(live)e.live=true;if(over)e.over=true;
