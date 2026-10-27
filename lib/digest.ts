@@ -9,7 +9,7 @@
 // /api/digest endpoint returns the digests so a scheduler or a human can see
 // exactly what would go out.
 import {db} from "./db";
-import {ensureSchema} from "./schema";
+import {ensureSchemaSoft} from "./schema";
 import {todayIn, DEFAULT_TZ} from "./time";
 import {fmtTime} from "./event-detail";
 
@@ -20,7 +20,7 @@ type Row = {uid: number; email: string; name: string | null; id: number; title: 
 const esc = (s: string) => s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
 
 export async function buildDigests(site = "https://www.mygotoday.com"): Promise<Digest[]> {
-  await ensureSchema();
+  await ensureSchemaSoft();
   const today = todayIn(DEFAULT_TZ);
   const {rows} = await db.query(
     `select u.id as uid, u.email, u.name, e.id, e.title, e.start_at, e.city, v.name as venue,
