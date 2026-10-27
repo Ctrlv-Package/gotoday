@@ -103,8 +103,21 @@ const STATEMENTS=[
  `alter table users add column if not exists locked_until timestamptz`,
  `create table if not exists email_tokens(token_hash text primary key,user_id int not null references users(id) on delete cascade,
    purpose text not null,expires_at timestamptz not null,created_at timestamptz default now())`,
+ // Visitor reports about event pages ("wrong date", "cancelled", ...). No foreign key on purpose: listings
+ // are deleted by the retention cleanup, and a report about a deleted listing is simply history. Reports
+ // never change a listing by themselves — an admin reads them and acts.
+ `create table if not exists event_reports(id serial primary key,kind text not null,event_id int not null,
+   reason text not null,note text, status text not null default 'open',created_at timestamptz default now())`,
+ `create index if not exists event_reports_open_idx on event_reports(created_at desc) where status='open'`,
 ];
 export function ensureSchema(){
  if(!ready)ready=(async()=>{for(const s of STATEMENTS)await db.query(s)})().catch(e=>{ready=null;throw e});
  return ready;
+}
+/** Read paths use this instead of ensureSchema(). If the schema check fails — e.g. the database plan is
+  * blocking writes — reads keep working against the schema that's already there instead of taking the
+  * page down with it. The failure is logged, and the next write still retries the check, so a genuine
+  * schema change still lands. Writes always use the fatal ensureSchema() above. */
+export function ensureSchemaSoft(){
+ return ensureSchema().catch(e=>{console.warn("schema check failed, serving reads anyway:",e instanceof Error?e.message:String(e))});
 }
