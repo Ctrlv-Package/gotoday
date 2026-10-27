@@ -19,6 +19,7 @@ import {followable} from "../../../lib/series";
 import {db} from "../../../lib/db";
 import {stockPicture} from "../../../lib/stockPhotos";
 import {occurrences,nextOccurrence,describe as describeRepeat} from "../../../lib/repeat";
+import ReportButton from "../../components/ReportButton";
 export const dynamic="force-dynamic";
 
 const when=(e:CommunityEvent,date=e.date)=>{const s=startOf(e,date),en=endOf(e,date);return{date:fmtDate(s,undefined,e.tz),time:e.allDay?"All day":fmtTime(s,e.tz)+(en?` – ${fmtTime(en,e.tz)}`:"")}};
@@ -47,8 +48,8 @@ export default async function CommunityEventPage({params,searchParams}:{params:P
  const photo=e.image||await stockPicture({title:e.title,desc:e.description,category:e.categories.join(" "),tags:e.categories,ageMax:e.ageMax}).catch(()=>""),stock=!e.image&&!!photo;
  // A public listing has a GoToday entry per date: Save, the calendar check and "Remind me next year" work on it.
  const listed=e.visibility==="public"&&e.status==="live";
- const row=listed?(await db.query("select id,series_id from events where fingerprint=$1 and status='active'",[e.repeat.kind==="none"?`community|${e.id}`:`community|${e.id}|${date}`]).catch(()=>({rows:[]}))).rows[0]:null;
- const dbId=row?Number(row.id):null,user=await currentUser().catch(()=>null);
+ const row=listed?(await db.query("select id,series_id,venue_id from events where fingerprint=$1 and status='active'",[e.repeat.kind==="none"?`community|${e.id}`:`community|${e.id}|${date}`]).catch(()=>({rows:[]}))).rows[0]:null;
+ const dbId=row?Number(row.id):null,venueId=row&&row.venue_id?Number(row.venue_id):null,user=await currentUser().catch(()=>null);
  const calConnected=!!user&&await calendarConnected(user.id).catch(()=>false);
  const canFollow=!!dbId&&!ended&&(e.repeat.kind==="yearly"||(!!row.series_id&&await followable(Number(row.series_id),e.title).catch(()=>false)));
  const following=!!(user&&row?.series_id&&(await db.query("select 1 from follows where user_id=$1 and series_id=$2",[user.id,row.series_id]).catch(()=>({rowCount:0}))).rowCount);
@@ -71,7 +72,7 @@ export default async function CommunityEventPage({params,searchParams}:{params:P
   {e.status==="pending"&&<div className="reg"><div><b>Waiting for review</b><span> · the link works, but it isn't listed in search yet.</span></div></div>}
   <div className="facts">
    <div className="fact"><div className="k">When</div><div className="v">{w.date}</div><div className="s">{w.time}{repeats?` · ${describeRepeat(e.date,e.repeat)}`:""}</div>{upcoming.length>0&&<div className="s nextDates">Next: {upcoming.map(fmtShort).join(" · ")}</div>}</div>
-   <div className="fact"><div className="k">Where</div><div className="v">{e.venue||e.address||e.city}</div><div className="s">{[e.venue?e.address:"",e.city].filter(Boolean).join(", ")}</div><a className="inline" href={dir} target="_blank" rel="noreferrer">Get directions ↗</a></div>
+   <div className="fact"><div className="k">Where</div><div className="v">{venueId&&e.venue?<Link href={`/venues/${venueId}`}>{e.venue}</Link>:e.venue||e.address||e.city}</div><div className="s">{[e.venue?e.address:"",e.city].filter(Boolean).join(", ")}</div><a className="inline" href={dir} target="_blank" rel="noreferrer">Get directions ↗</a></div>
    {!e.isFree&&e.priceText&&<div className="fact"><div className="k">Cost</div><div className="v">{e.priceText}</div></div>}
   </div>
   {e.link&&<div className="ctaRow"><a className="btn primary" href={e.link} target="_blank" rel="noreferrer nofollow ugc">{e.isFree?"More info ↗":"Tickets & info ↗"}</a></div>}
@@ -92,6 +93,7 @@ export default async function CommunityEventPage({params,searchParams}:{params:P
   :<>{!ended&&<HostLink share={token}/>}{!ended&&(counts||e.rsvp.phone||e.rsvp.email)&&<RsvpBox e={e} date={w.date} counts={counts} share={token}/>}</>}
   <section className="mapBox"><h2>Location</h2><p className="muted">{where}</p><iframe title={`Map of ${e.venue||e.city}`} src={map} loading="lazy" referrerPolicy="no-referrer-when-downgrade"/></section>
   <p className="sourceNote">{e.visibility==="private"?"Private event created on GoToday. Only people with this link can see it.":"Posted by a GoToday community member. Details can change, so check with the organizer before you go."} <Link href="/create">Create your own →</Link></p>
+  <ReportButton kind="community" id={e.id}/>
  </div></article>);
 }
 
