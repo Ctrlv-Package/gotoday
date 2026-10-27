@@ -57,7 +57,7 @@ const EVENT_TITLE=/\b(festival|fest|fair|concert|show|performance|celebration|ce
 // "Maintenance Alert", "Shop Local. Play Along. Win!").
 const CAPTION=/^(dear |we hope|we('re| are) (so )?(excited|thrilled|happy)|join us (tomorrow|today|this)|don'?t (miss|forget)|did you know|have you (signed|registered|heard)|reminder|friendly reminder|save the date\b|thank you\b|thanks to|happy (birthday|anniversary|friday|monday|holidays?)\b|mark your calendars?|calling all\b|attention\b|just \d+ (more )?days?|only \d+ (more )?days?|\d+ days? (until|left)|maintenance alert|road (work|closure)|traffic (alert|advisory)|service alert|weather (alert|update)|why i love|meet (our|the) (new|team|staff)|now hiring|we'?re hiring|apply now|congratulations)|\b(shop local\. play along|giveaway|survey|government week|proclamation)\b|!\s*$(?<=win!\s*)/i;
 const ANNOUNCEMENT=/^(labor day|patriot day|memorial day|veterans'? day|thanksgiving( day)?|christmas( day| eve)?|new year'?s( day| eve)?|independence day|martin luther king.*day|presidents'? day|juneteenth|columbus day|indigenous peoples'? day|good friday|election day|rosh hashanah|yom kippur)$|\b(closed|closure|office hours|registration (opens|closes|deadline)|deadline|applications? (due|open)|no school|early release|contest registration)\b/i;
-const MEETING=/\b(board|commission|committee|council|hearings?|advisory|code enforcement|magistrate|zoning|budget|bargaining|public meeting|town hall|pre-?bid|special meeting|workshop session)\b/i;
+const MEETING=/\b(board|commission|committee|council|hearings?|advisory|code enforcement|magistrate|zoning|budget|bargaining|public meeting|town hall|pre-?bid|special meeting|workshop session|public (?:forums?|input|comment|information session|hearing)|charter (?:amendments?|review)|ballot (?:questions?|measures?|initiatives?)|referendum|bond (?:referendum|forum)|community input|listening session|visioning|master plan|comprehensive plan|redistricting|rate increase)\b/i;
 const PASSIVE=/\b(grab[- ](?:and|&|n)[- ]go|information table|take (?:it )?(?:and|&) make|take[- ]home craft|photo op|word search|display (?:case|table)|coloring station|self[- ]guided|seed library|month$)\b/i;
 // Tags that mark a real happening even when a Grab & Go / Class tag is also present.
 const STRONG_TAG=/\b(fair\/festival|performances|exhibit|speaker|author events|movie|story time)\b/i;
@@ -119,6 +119,16 @@ export function cleanTitle(t:string):string{
  let x=String(t||"").replace(/[\p{Extended_Pictographic}\u{1F1E6}-\u{1F1FF}\u{1F3FB}-\u{1F3FF}\uFE0F\u200D\u20E3]/gu,"").replace(/\s{2,}/g," ").trim();
  const m=x.match(/^(.{6,}?)[.!|•·–—-]\s+((?:for\s+)?(?:kids?|children|ages?|all ages|families|family|adults?|teens?|tweens?|grades?|free|no cost|seniors?|toddlers?|babies|everyone|open to)\b.*|\d{1,2}\s*(?:&|and)\s*(?:under|up|older)\b.*|\d{1,2}\s*\+.*)$/i);
  if(m)x=m[1].trim();
+ // "… BEGINNING SEPT. 14" / "… starting Oct 3" / "… every Monday": when, not name.
+ x=x.replace(/\s+(?:[-–—|]\s*)?(?:beginning|starting|starts|begins|returns|resumes|every|each|this|on)\s+(?:(?:mon|tue|wed|thu|fri|sat|sun)[a-z]*\.?|(?:jan|feb|mar|apr|may|jun|jul|aug|sep|sept|oct|nov|dec)[a-z]*\.?\s*\d{1,2}(?:st|nd|rd|th)?|\d{1,2}\/\d{1,2})\b.*$/i,"").trim()||x;
+ // ALL-CAPS titles read as shouting: "MONDAY NIGHT FOOTBALL AT BAR TULIO'S" → "Monday Night Football at Bar Tulio's".
+ const letters=x.replace(/[^A-Za-z]/g,"");
+ if(letters.length>=10&&letters.replace(/[^A-Z]/g,"").length/letters.length>0.85){
+  const KEEP=/^(NFL|NBA|MLB|NHL|MLS|WNBA|NCAA|DJ|DJS|USA|US|UF|FIU|FAU|UCF|USF|FSU|UNC|NYC|LGBTQ\+?|YMCA|YMCA'S|BBQ|II|III|IV|5K|10K|TV|AI|STEM|STEAM|ESL|GED|SAT|ACT|ADA|CPR|NJ|NY|FL|PA|CT|MA|MD|VA|NC|SC|GA|DC|DE|RI|NH|VT|ME)$/;
+  const SMALL=/^(a|an|and|at|by|for|in|of|on|or|the|to|with|vs\.?|from)$/i;
+  x=x.split(/(\s+)/).map((w,i)=>{if(/^\s+$/.test(w))return w;const core=w.replace(/[^A-Za-z0-9+']/g,"");if(KEEP.test(core))return w;const lw=w.toLowerCase();
+   return i>0&&SMALL.test(core)?lw:lw.replace(/[a-z]/,c=>c.toUpperCase())}).join("");
+ }
  return x.replace(/[\s.,;:!|•·–—-]+$/,"").trim()||String(t||"").trim();
 }
 export function normalize(e:EventRecord):EventRecord{

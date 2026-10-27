@@ -37,3 +37,11 @@ test("titles lose emoji and tacked-on audience notes; the note still sets the ag
  const e=normalize({id:"x",title:"Halloween Storytime at City Hall. Kids 5 & under 🎃",city:"Oakland Park, FL",venue:"City Hall",date:"2026-10-27",time:"10:00:00",url:"u",category:"Family",genre:"",desc:"Join us",tags:[],emoji:"",source:"s"} as any);
  assert.equal(e.title,"Halloween Storytime at City Hall");assert.equal(e.ageMin,0);assert.equal(e.ageMax,5);
 });
+
+test("shouting titles and when-tails", async ()=>{
+ const {cleanTitle}=await import("../lib/ingestion/utils");
+ assert.equal(cleanTitle("MONDAY NIGHT FOOTBALL AT BAR TULIO’S BEGINNING SEPT. 14"),"Monday Night Football at Bar Tulio’s");
+ assert.equal(cleanTitle("NFL WATCH PARTY WITH DJ MIKE"),"NFL Watch Party with DJ Mike");
+ assert.equal(cleanTitle("Yoga on the Lawn"),"Yoga on the Lawn");
+ assert.equal(cleanTitle("Movie Night starting Oct 3"),"Movie Night");
+});

@@ -23,3 +23,9 @@ test("town services are not events", ()=>{
   assert.equal(discoveryRejection({title:t,tags:[]} as any),"service-or-support",t);
  assert.equal(discoveryRejection({title:"Pumpkin Palooza",tags:[]} as any),null);
 });
+
+test("civic forums are meetings, not events", ()=>{
+ for(const t of ["Public Forums - Charter Amendments (Forum 5)","Charter Amendment Information Session","Community Input Meeting: Parks Master Plan","Listening Session with the Mayor"])
+  assert.equal(discoveryRejection({title:t,tags:[]} as any),"meeting",t);
+ assert.equal(discoveryRejection({title:"Forum Theatre Improv Night",tags:[]} as any),null);
+});
