@@ -62,7 +62,7 @@ async function loadPosts(username:string):Promise<{posts:Post[];website:string}>
  // Pace ourselves: a recent reading near the hourly cap means this call would likely be refused anyway.
  const gate=await recentAppUsage();
  if(gate&&gate.usage>=85&&gate.ageMin<50)throw new Error(`Instagram rate limit: app usage at ${gate.usage}% of the hourly limit (recorded ${Math.max(1,Math.round(gate.ageMin))} min ago) — deferred without calling Meta, will retry next run`);
- const fields=`business_discovery.username(${username}){website,media.limit(30){id,caption,media_type,media_url,thumbnail_url,permalink,timestamp,children{media_url,media_type}}}`;
+ const fields=`business_discovery.username(${username}){website,media.limit(15){id,caption,media_type,media_url,thumbnail_url,permalink,timestamp,children{media_url,media_type}}}`;
  const r=await fetchRetry(`${GRAPH}/${me}?fields=${encodeURIComponent(fields)}&access_token=${encodeURIComponent(token)}`,{cache:"no-store"});
  const d:any=await r.json().catch(()=>({}));
  // Meta allows only so many calls per hour. When we hit it, say so plainly; the source is skipped (not failed)

@@ -140,6 +140,8 @@ console.log(failures?`${failures} source(s) did not succeed`:"All remote sources
  // Photo types for new event titles (AI reads them; free tier, paced on the site).
  // Twice: many new event titles as areas are added (each call is one site run of up to 12 AI batches).
  if(MODE!=="instagram")for(let k=0;k<2;k++){try{const pr=await fetch(`${base}/api/admin/phototopics?run=12`,{method:"POST",headers:{authorization:`Bearer ${secret}`},signal:AbortSignal.timeout(290000)});console.log("photo types:",JSON.stringify(await pr.json().catch(()=>({}))).slice(0,300))}catch(e:any){console.log(`photo types: ${e?.message||e}`)}}
+ // Keep the database small: trim the filtered-out log and events over a month past (once per sites run).
+ if(MODE!=="instagram")try{const cr=await fetch(`${base}/api/admin/cleanup`,{method:"POST",headers:{authorization:`Bearer ${secret}`},signal:AbortSignal.timeout(280000)});console.log("cleanup:",(await cr.text()).slice(0,300))}catch(e:any){console.log(`cleanup failed: ${e?.message||e}`)}
  if(MODE!=="instagram")try{const qr=await fetch(`${base}/api/admin/audit?save=1`,{headers:{authorization:`Bearer ${secret}`},signal:AbortSignal.timeout(280000)});const q:any=await qr.json().catch(()=>({}));
   if(q.ok){console.log(`Quality check: ${q.problems} to look at across ${q.cards} cards ${JSON.stringify(q.summary)}`);if(q.problems>25)problems.push(`Quality check: ${q.problems} display problems (see status page)`)}
   else console.log(`Quality check failed: HTTP ${qr.status}`)}catch(e:any){console.log(`Quality check failed: ${e?.message||e}`)}
