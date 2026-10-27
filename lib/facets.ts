@@ -106,9 +106,14 @@ export function facetsFor(e:In):Facet[]{
  // or "Lil" there is usually the act (Wheeler Walker Jr., Cry Baby Tour), not a kids'
  // event. For those titles only the stronger kid words count; a real Ticketmaster family
  // show still qualifies through its Family category (kidEvent below) or a stated age range.
- // Other sources' titles are event names, so their kid words count as before.
+ // Other sources' titles are event names, so their kid words count as before — except a
+ // "Jr." that is plainly a name suffix (", Jr." after a name, or a trailing "Jr"): that is
+ // never a kids' event, for any source (James Kimmel, Jr.; a Perry, Jr. Branch library).
+ // "Junior" as its own word (Junior Friends) and a leading "Jr." (Jr. Chef Academy) still
+ // count, because there the word means junior.
  const titleWithoutNameTrap=t.replace(/\b(bab(y|ies)|junior|jr\.?|lil)\b/gi,"");
- const titleKids=has(KIDS,t)&&!(e.source==="Ticketmaster"&&!has(KIDS,titleWithoutNameTrap));
+ const titleWithoutJrSuffix=t.replace(/,\s*jr\.?(?=[\s,]|$)/gi,"").replace(/\s+jr\.?$/gi,"");
+ const titleKids=has(KIDS,t)&&!(e.source==="Ticketmaster"?!has(KIDS,titleWithoutNameTrap):!has(KIDS,titleWithoutJrSuffix));
  const kids=!adultOnly&&(kidAges||/^to do with kids/i.test(e.source||"")||titleKids||tagHas(KID_TAGS)&&!tagHas(/^local$/i)&&!(ageMax!=null&&ageMax>=18&&tagHas(/^(new )?adults?$|^seniors?$|^50\+$/i))||(has(KIDS,d)&&!has(ADULT,t)));
  // Big family events (festivals, open houses, Halloween, "all ages") are great for kids too.
  // Kids = made for children, or built around things children come for (trick-or-treating, egg hunt, petting zoo,
