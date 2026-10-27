@@ -351,7 +351,19 @@ export const ES:Record<string,string>={
 "This verification link is expired or has already been used. Please sign in and we'll send a fresh one.": "Este enlace de verificación ya venció o ya se usó. Inicia sesión y te enviaremos uno nuevo.",
 "Something went wrong creating your account. Please try again.": "Algo salió mal al crear tu cuenta. Inténtalo de nuevo.",
 "Something went wrong verifying your email. Please try again.": "Algo salió mal al verificar tu correo. Inténtalo de nuevo.",
-"Something went wrong saving your new password. Please try again.": "Algo salió mal al guardar tu contraseña nueva. Inténtalo de nuevo."
+"Something went wrong saving your new password. Please try again.": "Algo salió mal al guardar tu contraseña nueva. Inténtalo de nuevo.",
+"Report a problem": "Reportar un problema",
+"What's wrong?": "¿Qué está mal?",
+"Wrong date or time": "Fecha u hora incorrectas",
+"Wrong place": "Lugar incorrecto",
+"Wrong details": "Detalles incorrectos",
+"Other": "Otro",
+"Details (optional)": "Detalles (opcional)",
+"Send report": "Enviar reporte",
+"Thanks — we'll take a look.": "Gracias, lo revisaremos.",
+"Couldn't send the report. Please try again.": "No pudimos enviar el reporte. Inténtalo de nuevo.",
+"Events at {name}": "Eventos en {name}",
+"No upcoming events listed here right now.": "No hay próximos eventos aquí por ahora."
 };
 export const RU:Record<string,string>={
 "Waiting for {app}'s next check": "Ждём следующей проверки: {app}",
@@ -704,5 +716,17 @@ export const RU:Record<string,string>={
 "This verification link is expired or has already been used. Please sign in and we'll send a fresh one.": "Эта ссылка для подтверждения устарела или уже использована. Войдите, и мы отправим новую.",
 "Something went wrong creating your account. Please try again.": "Что-то пошло не так при создании аккаунта. Попробуйте снова.",
 "Something went wrong verifying your email. Please try again.": "Что-то пошло не так при подтверждении email. Попробуйте снова.",
-"Something went wrong saving your new password. Please try again.": "Что-то пошло не так при сохранении нового пароля. Попробуйте снова."
+"Something went wrong saving your new password. Please try again.": "Что-то пошло не так при сохранении нового пароля. Попробуйте снова.",
+"Report a problem": "Сообщить о проблеме",
+"What's wrong?": "Что не так?",
+"Wrong date or time": "Неверная дата или время",
+"Wrong place": "Неверное место",
+"Wrong details": "Неверные детали",
+"Other": "Другое",
+"Details (optional)": "Детали (необязательно)",
+"Send report": "Отправить жалобу",
+"Thanks — we'll take a look.": "Спасибо, мы посмотрим.",
+"Couldn't send the report. Please try again.": "Не удалось отправить жалобу. Попробуйте снова.",
+"Events at {name}": "События в {name}",
+"No upcoming events listed here right now.": "Предстоящих событий здесь сейчас нет."
 };

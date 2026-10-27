@@ -4,17 +4,22 @@ import Link from "next/link";
 // Review public events the automatic check flagged. Uses the INGESTION_SECRET (kept only in this tab).
 type P={id:number;title:string;description:string;date:string;startTime:string;venue:string;address:string;city:string;hostName:string;link:string;reviewReason:string|null;shareUrl:string};
 type Q={id:number;title:string;city:string;venue:string;date:string;source:string;reasons:string[]};
+type R={id:number;kind:string;eventId:number;title:string;link:string|null;reason:string;note:string;createdAt:string};
 export default function Admin(){
  const [secret,setSecret]=useState(""),[list,setList]=useState<P[]|null>(null),[err,setErr]=useState("");
  const [held,setHeld]=useState<Q[]|null>(null),[flagged,setFlagged]=useState<Q[]>([]);
+ const [reports,setReports]=useState<R[]|null>(null),[reportsErr,setReportsErr]=useState("");
  useEffect(()=>{try{const s=sessionStorage.getItem("gotoday:admin");if(s){setSecret(s);load(s)}}catch{}},[]);
  async function load(s=secret){setErr("");const r=await fetch("/api/admin/community",{headers:{authorization:`Bearer ${s}`},cache:"no-store"});const d=await r.json().catch(()=>({}));
   if(!d.ok){setErr(d.error||"Couldn't load");setList(null);return}try{sessionStorage.setItem("gotoday:admin",s)}catch{}setList(d.pending);
   const q=await fetch("/api/admin/quarantine",{headers:{authorization:`Bearer ${s}`},cache:"no-store"}).then(r=>r.json()).catch(()=>({}));
-  if(q.ok){setHeld(q.held);setFlagged(q.flagged)}}
+  if(q.ok){setHeld(q.held);setFlagged(q.flagged)}
+  const rep=await fetch("/api/admin/reports",{headers:{authorization:`Bearer ${s}`},cache:"no-store"}).then(r=>r.json()).catch(()=>({}));
+  if(rep.ok){setReports(rep.reports);setReportsErr("")}else setReportsErr("Couldn't load reports.")}
  async function decide(id:number,approve:boolean){await fetch("/api/admin/community",{method:"POST",headers:{authorization:`Bearer ${secret}`,"content-type":"application/json"},body:JSON.stringify({id,approve})});load()}
  async function decideQ(id:number,approve:boolean){await fetch("/api/admin/quarantine",{method:"POST",headers:{authorization:`Bearer ${secret}`,"content-type":"application/json"},body:JSON.stringify({id,approve})});load()}
  async function approveAllQ(){await fetch("/api/admin/quarantine",{method:"POST",headers:{authorization:`Bearer ${secret}`,"content-type":"application/json"},body:JSON.stringify({approveAll:true})});load()}
+ async function dismissReport(id:number){await fetch("/api/admin/reports",{method:"POST",headers:{authorization:`Bearer ${secret}`,"content-type":"application/json"},body:JSON.stringify({id,resolve:true})});load()}
  return <main className="detail"><header className="detailHeader"><div className="detailWrap row"><Link href="/?fresh=1" className="detailLogo">Go<span>Today</span></Link><a href="/admin/status" className="navLink">Source status</a></div></header>
   <div className="detailWrap"><article className="detailCard"><div className="detailBody">
    <h1>Events waiting for review</h1>
@@ -34,6 +39,12 @@ export default function Admin(){
     {flagged.length>0&&<><h3>Live, but flagged</h3><p className="muted">Already published listings carrying a flag (a flag never pulls a live listing; clearing it just drops the note).</p>
      <ul className="review">{flagged.map(q=><li key={q.id}><b>{q.title}</b><span>{String(q.date||"").slice(0,10)} · {[q.venue,q.city].filter(Boolean).join(", ")}{q.source?` · ${q.source}`:""}</span>
       <span className="muted">Flagged for: {q.reasons.join(", ")}</span>
-      <div className="ctaRow"><button className="btn ghost" onClick={()=>decideQ(q.id,true)}>Clear flag</button></div></li>)}</ul></>}</>}
+      <div className="ctaRow"><button className="btn ghost" onClick={()=>decideQ(q.id,true)}>Clear flag</button></div></li>)}</ul></>}
+    <h2 style={{marginTop:28}}>Reports from visitors</h2>
+    <p className="muted">Problems visitors flagged on event pages. A report never changes a listing by itself — dismiss it once you've checked, or fix the listing yourself.</p>
+    {reportsErr?<p className="muted">{reportsErr}</p>:reports===null?<p className="muted">Loading…</p>:reports.length===0?<p>No reports. 🎉</p>
+    :<ul className="review">{reports.map(r=><li key={r.id}><b>{r.title}</b><span>{r.reason} · {String(r.createdAt||"").slice(0,10)}{r.kind==="community"?" · community event":""}</span>
+     {r.note&&<p>{r.note}</p>}
+     <div className="ctaRow"><button className="btn ghost" onClick={()=>dismissReport(r.id)}>Dismiss</button>{r.link&&<a className="btn ghost" href={r.link} target="_blank" rel="noreferrer">Open event</a>}</div></li>)}</ul>}</>}
   </div></article></div></main>;
 }

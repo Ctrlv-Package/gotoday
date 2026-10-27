@@ -26,5 +26,10 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       order by local_date, id limit ${50000 - out.length - 10}`);
     for (const r of rows as any[]) out.push({url: `${base}/events/db-${r.id}`, lastModified: r.at ? new Date(r.at) : undefined, changeFrequency: "weekly", priority: 0.5});
   } catch {}
+  // Venues with an upcoming listing, in whatever budget is left. Venues with nothing on stay out.
+  try {
+    const {rows} = await db.query(`select v.id from venues v where exists (select 1 from events e where e.venue_id=v.id and e.status='active' and e.start_at>=now()-interval '3 hours') order by v.id limit ${Math.max(0, 50000 - out.length)}`);
+    for (const r of rows as any[]) out.push({url: `${base}/venues/${r.id}`, changeFrequency: "weekly", priority: 0.5});
+  } catch {}
   return out;
 }

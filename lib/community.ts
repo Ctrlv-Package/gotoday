@@ -1,7 +1,7 @@
 import {notifyHost} from "./push";
 import crypto from "node:crypto";
 import {db} from "./db";
-import {ensureSchema} from "./schema";
+import {ensureSchema,ensureSchemaSoft} from "./schema";
 import {zonedToUtc,DEFAULT_TZ} from "./time";
 import {geocodeEvent,cityCoords} from "./ingestion/geocode";
 import {fetchRetry} from "./http";
@@ -126,8 +126,8 @@ export function rowToEvent(r:any):CommunityEvent{
   venue:r.venue||"",address:r.address||"",city:r.city||"",visibility:r.visibility,isFree:r.is_free,priceText:r.price_text||"",ageMin:r.age_min,ageMax:r.age_max,category:r.category||"Community",link:r.link||"",hostName:r.host_name||"",image:r.image||"",repeat:r.repeat&&r.repeat.kind?{...NO_REPEAT,...r.repeat}:NO_REPEAT,categories:r.categories?.length?r.categories:[r.category||"Community"],rsvp:{...rsvpDefaults(r.visibility),...(r.rsvp&&typeof r.rsvp==="object"?r.rsvp:{})}};
 }
 
-export async function eventByShare(shareToken:string){await ensureSchema();const {rows}=await db.query("select * from community_events where share_token=$1 and status<>'deleted'",[shareToken]);return rows[0]?rowToEvent(rows[0]):null}
-export async function eventByManage(manageToken:string){await ensureSchema();const {rows}=await db.query("select * from community_events where manage_hash=$1 and status<>'deleted'",[hashToken(manageToken)]);return rows[0]?rowToEvent(rows[0]):null}
+export async function eventByShare(shareToken:string){await ensureSchemaSoft();const {rows}=await db.query("select * from community_events where share_token=$1 and status<>'deleted'",[shareToken]);return rows[0]?rowToEvent(rows[0]):null}
+export async function eventByManage(manageToken:string){await ensureSchemaSoft();const {rows}=await db.query("select * from community_events where manage_hash=$1 and status<>'deleted'",[hashToken(manageToken)]);return rows[0]?rowToEvent(rows[0]):null}
 
 export const startOf=(e:CommunityEvent,date=e.date)=>zonedToUtc(date,e.allDay?"":`${e.startTime}:00`,e.tz);
 export const endOf=(e:CommunityEvent,date=e.date)=>!e.allDay&&e.endTime?zonedToUtc(date,`${e.endTime}:00`,e.tz):null;
@@ -242,7 +242,7 @@ export async function transferEvent(manageToken:string,recipientEmail:string){
 }
 
 /** Admin review of public events the automatic check wasn't sure about. */
-export async function pendingEvents(){await ensureSchema();const {rows}=await db.query("select * from community_events where status='pending' order by created_at");return rows.map(rowToEvent)}
+export async function pendingEvents(){await ensureSchemaSoft();const {rows}=await db.query("select * from community_events where status='pending' order by created_at");return rows.map(rowToEvent)}
 export async function reviewEvent(id:number,approve:boolean,origin:string){
  const {rows}=await db.query("update community_events set status=$2,review_reason=$3,updated_at=now() where id=$1 and status='pending' returning *",[id,approve?"live":"rejected",approve?"Approved by admin":"Rejected by admin"]);
  if(!rows[0])return false;await syncListing(rowToEvent(rows[0]),origin);return true;
@@ -277,7 +277,7 @@ export async function rsvpCounts(eventId:number){
 
 /** Events someone created, for My GoToday. */
 export async function eventsOfUser(userId:number){
- await ensureSchema();
+ await ensureSchemaSoft();
  const {rows}=await db.query("select * from community_events where user_id=$1 and status<>'deleted' order by start_date desc,id desc limit 100",[userId]);
  // Replies so far (going / maybe / can't go), so the host sees them in My GoToday.
  const ids=rows.map((r:any)=>r.id);const c=new Map<number,{going:number;maybe:number;no:number}>(),fresh=new Map<number,number>();
