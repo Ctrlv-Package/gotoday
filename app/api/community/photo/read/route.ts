@@ -18,6 +18,7 @@ export async function POST(req:NextRequest){
   if(!img)return NextResponse.json({ok:false});
   const today=new Date().toLocaleDateString("en-CA",{timeZone:"America/New_York"});
   const evs=await readFlyerImage(img.data,img.type,today);
-  return NextResponse.json({ok:true,draft:evs[0]?toFlyerDraft(evs[0],today):{}});
+  console.log(`flyer read: ${evs.length} event(s)`);
+  return NextResponse.json({ok:true,draft:evs[0]?toFlyerDraft(evs[0],today):{},found:evs.length});
  }catch(e:any){console.log(`flyer read: ${e?.message||e}`);return NextResponse.json({ok:false});}
 }

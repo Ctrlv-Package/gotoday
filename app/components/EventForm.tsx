@@ -136,10 +136,10 @@ async function shrink(f:File):Promise<Blob>{
  *  A flyer is also read (Gemini, no paid fallback) and its stated fields prefill the form — only fields the
  *  user hasn't typed into yet. A failed read just leaves the fields for the user. */
 function PhotoField({value,onChange,onFlyer}:{value:string;onChange:(url:string)=>void;onFlyer?:(d:FlyerDraft)=>void}){
- const [busy,setBusy]=useState(false),[err,setErr]=useState(""),[reading,setReading]=useState(false),[readMsg,setReadMsg]=useState("");
+ const [busy,setBusy]=useState(false),[err,setErr]=useState(""),[reading,setReading]=useState(false),[readMsg,setReadMsg]=useState(""),[readNote,setReadNote]=useState("");
  const urlRef=useRef(value);urlRef.current=value;
  async function pick(f?:File|null){
-  if(!f)return;setErr("");setReadMsg("");
+  if(!f)return;setErr("");setReadMsg("");setReadNote("");
   if(!/^image\//.test(f.type)){setErr("Please choose a photo (JPG, PNG or WebP).");return}
   setBusy(true);
   try{
@@ -153,7 +153,8 @@ function PhotoField({value,onChange,onFlyer}:{value:string;onChange:(url:string)
    try{
     const rr=await fetch("/api/community/photo/read",{method:"POST",headers:{"content-type":"application/json"},body:JSON.stringify({imageUrl:d.url})});
     const rd=await rr.json().catch(()=>({}));
-    if(rd.ok&&rd.draft&&urlRef.current===d.url)onFlyer(rd.draft);
+    if(rd.ok&&rd.draft&&urlRef.current===d.url){onFlyer(rd.draft);
+     if(urlRef.current===d.url)setReadNote(Object.keys(rd.draft).length>0?"Filled in from your flyer — check it.":"The flyer didn't include a readable event — fill in the fields below.");}
     else if(urlRef.current===d.url)setReadMsg("Couldn't read the flyer — fill in the fields below.");
    }catch{if(urlRef.current===d.url)setReadMsg("Couldn't read the flyer — fill in the fields below.");
    }finally{setReading(false)}
@@ -163,12 +164,13 @@ function PhotoField({value,onChange,onFlyer}:{value:string;onChange:(url:string)
   <span>Photo or flyer <small>(optional)</small></span>
   {value?<div className="efPhotoPrev"><img src={value} alt=""/>
     <div className="efPhotoBtns"><label className="btn ghost">{busy?"Uploading…":"Replace"}<input type="file" accept="image/*" hidden disabled={busy} onChange={e=>pick(e.target.files?.[0])}/></label>
-     <button type="button" className="btn ghost" onClick={()=>{onChange("");setReadMsg("")}}>Remove</button></div></div>
+     <button type="button" className="btn ghost" onClick={()=>{onChange("");setReadMsg("");setReadNote("")}}>Remove</button></div></div>
    :<label className={`efPhotoDrop${busy?" busy":""}`} onDragOver={e=>e.preventDefault()} onDrop={e=>{e.preventDefault();pick(e.dataTransfer.files?.[0])}}>
     <input type="file" accept="image/*" hidden disabled={busy} onChange={e=>pick(e.target.files?.[0])}/>
     <b>{busy?"Uploading…":"📷 Add a photo"}</b><small>A picture of the place, last year's event, or your flyer. If it's a flyer, we'll read it and fill in what we can.</small></label>}
   {err&&<small className="efPhotoErr" role="alert">{err}</small>}
   {reading&&<small>Reading your flyer…</small>}
+  {readNote&&<small>{readNote}</small>}
   {readMsg&&<small className="efPhotoErr" role="alert">{readMsg}</small>}
  </div>;
 }
