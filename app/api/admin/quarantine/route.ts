@@ -10,8 +10,10 @@ const shape=(r:any)=>({id:r.id,title:r.title,city:r.city,venue:r.venue,date:r.lo
  reasons:String(r.quarantine_reason||"").split(",").filter(Boolean).map(c=>QUARANTINE_LABELS[c]||c)});
 export async function GET(req:NextRequest){
  if(!authed(req))return NextResponse.json({ok:false,error:"Unauthorized"},{status:401});
- const held=await db.query(`select e.id,e.title,e.city,e.venue,e.local_date,e.quarantine_reason,s.name as source from events e left join sources s on s.id=e.source_id where e.status='quarantine' order by e.local_date asc limit 200`);
- const flagged=await db.query(`select e.id,e.title,e.city,e.venue,e.local_date,e.quarantine_reason,s.name as source from events e left join sources s on s.id=e.source_id where e.status='active' and e.quarantine_reason is not null order by e.local_date asc limit 200`);
+ // Events carry venue_id, not a venue column — the name comes from the venues table. Selecting e.venue
+ // errors on every call, which left the admin page stuck on "Loading…" with no error shown.
+ const held=await db.query(`select e.id,e.title,e.city,v.name as venue,e.local_date,e.quarantine_reason,s.name as source from events e left join sources s on s.id=e.source_id left join venues v on v.id=e.venue_id where e.status='quarantine' order by e.local_date asc limit 200`);
+ const flagged=await db.query(`select e.id,e.title,e.city,v.name as venue,e.local_date,e.quarantine_reason,s.name as source from events e left join sources s on s.id=e.source_id left join venues v on v.id=e.venue_id where e.status='active' and e.quarantine_reason is not null order by e.local_date asc limit 200`);
  return NextResponse.json({ok:true,held:held.rows.map(shape),flagged:flagged.rows.map(shape)});
 }
 export async function POST(req:NextRequest){
