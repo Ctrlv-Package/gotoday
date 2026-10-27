@@ -10,7 +10,7 @@ import type {EventRecord,EventSource} from "./types";
 
 async function sourceRow(s:EventSource){const r=await db.query(`insert into sources(name,source_type,base_url,priority,updated_at) values($1,$2,$3,$4,now()) on conflict(name) do update set source_type=excluded.source_type,base_url=excluded.base_url,priority=excluded.priority,updated_at=now() returning id`,[s.name,s.type,s.url,s.priority]);return Number(r.rows[0].id)}
 const venueCache=new Map<string,Promise<number|null>>();
-function venueRow(e:EventRecord){const k=`${e.venue}|${e.city||""}`;let p=venueCache.get(k);if(!p){p=venueRowDb(e);venueCache.set(k,p);p.catch(()=>venueCache.delete(k))}return p}
+function venueRow(e:EventRecord){const k=`${e.venue}|${e.city||""}|${(e.address||"").trim()}`;let p=venueCache.get(k);if(!p){p=venueRowDb(e);venueCache.set(k,p);p.catch(()=>venueCache.delete(k))}return p}
 // A venue row is one place: the same name at a different address (a city's default venue "City of Oakland Park" used
 // for City Hall and for a park) is a different row, or every event would show the first event's address.
 async function venueRowDb(e:EventRecord){if(!e.venue)return null;const addr=(e.address||"").trim()||null;
