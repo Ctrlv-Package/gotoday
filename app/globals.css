@@ -395,6 +395,7 @@ a.logo{text-decoration:none;color:inherit}
 .authForm .btn{width:100%}
 .authDivider{display:flex;align-items:center;gap:12px;color:var(--muted);font-size:13px;font-weight:700;margin:20px 0 0}
 .authDivider:before,.authDivider:after{content:"";flex:1;border-top:1px solid var(--line)}
+.reportForm{display:grid;gap:12px;margin-top:12px}
 .authFine{font-size:13px;line-height:1.55;color:var(--muted);margin:14px 0 0}
 .authFine a{color:var(--accent);font-weight:700}
 .okNote{background:#f0fdf4;border:1px solid #bbf7d0;color:#166534;border-radius:12px;padding:10px 14px;font-size:14px;margin:0 0 14px}
