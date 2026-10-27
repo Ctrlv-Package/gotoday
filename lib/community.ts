@@ -24,7 +24,7 @@ export type Rsvp={id:number;name:string;status:"going"|"maybe"|"no";guests:numbe
 /** How guests answer: Going/Maybe/Can't go on GoToday, and/or straight to the host by text, call or email. */
 export type RsvpSettings={onSite:boolean;name:string;phone:string;email:string;by:string};
 export const rsvpDefaults=(visibility:Visibility):RsvpSettings=>({onSite:visibility==="private",name:"",phone:"",email:"",by:""});
-/** "754-715-2330", "(754) 715 2330", "+1 754…" → "+17547152330"; "" when it isn't a phone number. */
+/** "754-555-0123", "(754) 555 0123", "+1 754…" → "+17545550123"; "" when it isn't a phone number. */
 export function cleanPhone(raw:unknown){const d=String(raw??"").replace(/[^\d+]/g,"");const digits=d.replace(/\D/g,"");
  if(digits.length===10)return`+1${digits}`;if(digits.length===11&&digits[0]==="1")return`+${digits}`;if(d.startsWith("+")&&digits.length>=8&&digits.length<=15)return`+${digits}`;return""}
 export const showPhone=(p:string)=>/^\+1\d{10}$/.test(p)?`(${p.slice(2,5)}) ${p.slice(5,8)}-${p.slice(8)}`:p;

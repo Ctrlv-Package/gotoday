@@ -186,7 +186,7 @@ function RepeatField({date,value,onChange}:{date:string;value:Repeat;onChange:(r
 }
 
 /** How guests answer: on GoToday (Going / Maybe / Can't go, with a guest list for the host), and/or straight to a
- *  person by text, call or email ("RSVP to Pieri at 754-715-2330"). Either or both. */
+ *  person by text, call or email ("RSVP to Jordan at 754-555-0123"). Either or both. */
 function RsvpField({visibility,date,value,onChange}:{visibility:"public"|"private";date:string;value?:RsvpValues;onChange:(r:RsvpValues)=>void}){
  const r:RsvpValues=value||{onSite:visibility==="private",name:"",phone:"",email:"",by:""};
  const set=(p:Partial<RsvpValues>)=>onChange({...r,...p});
@@ -195,7 +195,7 @@ function RsvpField({visibility,date,value,onChange}:{visibility:"public"|"privat
   <label className="efCheck"><input type="checkbox" checked={r.onSite} onChange={e=>set({onSite:e.target.checked})}/> Guests reply on GoToday (Going / Maybe / Can't go) and you see the guest list</label>
   <label className="efCheck"><input type="checkbox" checked={open} onChange={e=>{setOpen(e.target.checked);if(!e.target.checked)set({name:"",phone:"",email:""})}}/> Guests RSVP to someone by text, call or email</label>
   {open&&<div className="efRsvpWho">
-   <label className="efField"><span>RSVP to <small>(name)</small></span><input maxLength={60} value={r.name} onChange={e=>set({name:e.target.value})} placeholder="Pieri" autoComplete="off"/></label>
+   <label className="efField"><span>RSVP to <small>(name)</small></span><input maxLength={60} value={r.name} onChange={e=>set({name:e.target.value})} placeholder="Name" autoComplete="off"/></label>
    <div className="efRow">
     <label className="efField grow"><span>Phone <small>(text or call)</small></span><input type="tel" inputMode="tel" maxLength={40} value={r.phone} onChange={e=>set({phone:e.target.value})} placeholder="754-555-0123" autoComplete="off"/></label>
     <label className="efField grow">Email<input type="email" maxLength={120} value={r.email} onChange={e=>set({email:e.target.value})} placeholder="name@email.com" autoComplete="off"/></label>
