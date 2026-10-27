@@ -11,7 +11,7 @@
 import {createHash,createHmac,randomBytes,scrypt as scryptCb,timingSafeEqual} from "node:crypto";
 import {cookies} from "next/headers";
 import {db} from "./db";
-import {ensureSchema} from "./schema";
+import {ensureSchema,ensureSchemaSoft} from "./schema";
 import {emailConfigured,resetEmail,sendEmail,verificationEmail} from "./email";
 
 export const SESSION_COOKIE="gt_session";
@@ -28,7 +28,7 @@ const cookieBase={httpOnly:true,secure:process.env.NODE_ENV==="production",sameS
 export async function currentUser():Promise<User|null>{
  const tok=(await cookies()).get(SESSION_COOKIE)?.value;
  if(!tok||!/^[A-Za-z0-9_-]{30,}$/.test(tok))return null;
- await ensureSchema();
+ await ensureSchemaSoft();
  const {rows}=await db.query(`select u.id,u.email,u.name,u.image,u.calendar_token,u.lang from sessions s join users u on u.id=s.user_id
   where s.token_hash=$1 and s.expires_at>now()`,[hashToken(tok)]);
  const r=rows[0];if(!r)return null;
