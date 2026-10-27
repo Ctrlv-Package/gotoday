@@ -2,7 +2,7 @@ import {decodeEntities} from "../../../lib/html";
 import { db } from "../../../lib/db";
 import { facetsFor, cleanAges, displayTags, settingFor, isPaid, BIG_SQL } from "../../../lib/facets";
 import { NextRequest, NextResponse } from "next/server";
-import { ensureSchema } from "../../../lib/schema";
+import { ensureSchemaSoft } from "../../../lib/schema";
 import { cityCoords } from "../../../lib/ingestion/geocode";
 import { discoveryRejection } from "../../../lib/ingestion/utils";
 import { bestPicture } from "../../../lib/pictures";
@@ -80,7 +80,7 @@ export async function GET(request:NextRequest){
   if(!c&&badZips.has(postalCode))return NextResponse.json({invalidZip:true,events:[],coverage:{covered:true}});
   [lat,lng]=c||[26.12,-80.25]}
  const w=windowDates(range,today);
- await ensureSchema();
+ await ensureSchemaSoft();
  // Bounding box first (uses the lat/lng index), exact distance second; rows without coordinates
  // (saved before coordinates existed) fall back to their city center below.
  // 10 extra miles: copies of an event just outside the search distance still help pick its picture (not shown).
