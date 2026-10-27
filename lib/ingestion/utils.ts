@@ -79,6 +79,8 @@ export function discoveryRejection(e:EventRecord):DiscoveryReason|null{
  // A title that is only a status message (the organizer renamed a full program "Event Full. No longer accepting…").
  if(/^\W*(event (is )?full|(this )?(event|program|class) is full|no longer accepting|registration (is )?(closed|full)|sold out|waitlist (only|full)|full\b)\W*([.!]|$|no longer|\s*-)/i.test(title.trim()))return"announcement";
  if(ANNOUNCEMENT.test(title.trim())||CAPTION.test(title.trim()))return"announcement";
+ // A sentence cut off mid-way ("Join North Bergen for a spooktacular afternoon at") is post text, not a name.
+ if(/\s(at|for|with|the|a|an|and|of|to|in|on|from|by|our|your)$/i.test(title.trim())&&title.trim().split(/\s+/).length>=4)return"announcement";
  // Post text read as a title: "POV You're a Yonkers firefighter", "We're just two weeks away…", "Snag books…",
  // "Providence has led the state in…".
  {const t=title.trim();
@@ -123,6 +125,8 @@ export function cleanTitle(t:string):string{
  let x=String(t||"").replace(/[\p{Extended_Pictographic}\u{1F1E6}-\u{1F1FF}\u{1F3FB}-\u{1F3FF}\uFE0F\u200D\u20E3]/gu,"").replace(/\s{2,}/g," ").trim();
  const m=x.match(/^(.{6,}?)[.!|•·–—-]\s+((?:for\s+)?(?:kids?|children|ages?|all ages|families|family|adults?|teens?|tweens?|grades?|free|no cost|seniors?|toddlers?|babies|everyone|open to)\b.*|\d{1,2}\s*(?:&|and)\s*(?:under|up|older)\b.*|\d{1,2}\s*\+.*)$/i);
  if(m)x=m[1].trim();
+ // Invitation wording in front of the name: "Get ready for Rahway's Pup-kin Parade" → "Rahway's Pup-kin Parade".
+ {const y=x.replace(/^(?:get ready for|join us (?:for|at)|come (?:out )?(?:to|for)|don'?t miss|save the date(?: for)?|mark your calendars?(?: for)?|you(?:'re| are) invited to)\s+(?:the\s+|our\s+)?/i,"");if(y!==x&&y.split(/\s+/).length>=2)x=y.replace(/^./,c=>c.toUpperCase())}
  // "… BEGINNING SEPT. 14" / "… starting Oct 3" / "… every Monday": when, not name.
  x=x.replace(/\s+(?:[-–—|]\s*)?(?:beginning|starting|starts|begins|returns|resumes|every|each|this|on)\s+(?:(?:mon|tue|wed|thu|fri|sat|sun)[a-z]*\.?|(?:jan|feb|mar|apr|may|jun|jul|aug|sep|sept|oct|nov|dec)[a-z]*\.?\s*\d{1,2}(?:st|nd|rd|th)?|\d{1,2}\/\d{1,2})\b.*$/i,"").trim()||x;
  // ALL-CAPS titles read as shouting: "MONDAY NIGHT FOOTBALL AT BAR TULIO'S" → "Monday Night Football at Bar Tulio's".

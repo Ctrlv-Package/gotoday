@@ -36,3 +36,11 @@ test("post text and civic addresses are not events", ()=>{
  for(const t of ["Mayor Meerbott's Farewell State of the Town Address","The next Chat with a Planner","Girl Scout Troop 80173"])assert.equal(discoveryRejection({title:t,tags:[]} as any),"meeting",t);
  for(const t of ["Boo Bash","Pemberley","Spirits in the Stacks"])assert.equal(discoveryRejection({title:t,tags:[],source:"X · Instagram"} as any),null,t);
 });
+
+test("invitation wording and cut-off sentences", async ()=>{
+ const {cleanTitle}=await import("../lib/ingestion/utils");
+ assert.equal(cleanTitle("Get ready for Rahway’s Pup-kin Parade"),"Rahway’s Pup-kin Parade");
+ assert.equal(cleanTitle("Join us for the Fall Festival"),"Fall Festival");
+ assert.equal(discoveryRejection({title:"Join North Bergen for a spooktacular afternoon at",tags:[]} as any),"announcement");
+ assert.equal(discoveryRejection({title:"Night at the Museum",tags:[]} as any),null);
+});
