@@ -29,3 +29,10 @@ test("civic forums are meetings, not events", ()=>{
   assert.equal(discoveryRejection({title:t,tags:[]} as any),"meeting",t);
  assert.equal(discoveryRejection({title:"Forum Theatre Improv Night",tags:[]} as any),null);
 });
+
+test("post text and civic addresses are not events", ()=>{
+ for(const [t,src] of [["POV You’re a Yonkers firefighter","City of Yonkers · Instagram"],["We’re just two weeks away from debuting our new special exhibit","Hershey Story Museum · Instagram"],["Snag books for all ages at a great value","Lee County Library System · Instagram"],["Providence has led the state in housing development over the past four years","City of Providence · Instagram"]])
+  assert.equal(discoveryRejection({title:t,tags:[],source:src} as any),"announcement",t);
+ for(const t of ["Mayor Meerbott's Farewell State of the Town Address","The next Chat with a Planner","Girl Scout Troop 80173"])assert.equal(discoveryRejection({title:t,tags:[]} as any),"meeting",t);
+ for(const t of ["Boo Bash","Pemberley","Spirits in the Stacks"])assert.equal(discoveryRejection({title:t,tags:[],source:"X · Instagram"} as any),null,t);
+});
