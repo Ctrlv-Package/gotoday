@@ -19,6 +19,7 @@ export default function Home(){
  const bigOnly=view!=="all";   // "Coming up" and "Favorites" share the 7/30-day span and their own distance
  const big=useRef({view:"all",range:"today",radius:"25"});
  big.current={view,range:bigRange,radius:bigRadius};
+ const loadedAt=useRef(0);
  async function load(z:string,r:string,c:{lat:number;lng:number}|null,rad:string){
   if(big.current.view!=="all"){r=big.current.range;rad=big.current.radius}
   setLoading(true);setMessage("");setSoon(null);
@@ -32,7 +33,7 @@ export default function Home(){
    // A ZIP that doesn't exist: explain it under the search box and keep whatever was showing before.
    if(d.invalidZip){setZipErr(t("We couldn't find ZIP code {zip}. Please check the number and try again.",{zip:z}));setSearchedZip(lastGood.current);return false}
    if(!c&&z)lastGood.current=z;
-   setEvents(d.events||[]);
+   setEvents(d.events||[]);loadedAt.current=Date.now();
    setSoon(d.coverage&&d.coverage.covered===false?{place:d.coverage.place||null}:null);
    if(d.coverage?.covered===false)return;
    if(!d.events?.length&&big.current.view==="fav"){setMessage("No favorites near you yet. Tap ♡ on events you like: the ones people save the most show up here.");return}
@@ -65,6 +66,10 @@ export default function Home(){
    setEvents(v.events||[]);setMessage(v.message||"");setSoon(v.soon||null);setRestored(true);
    try{history.scrollRestoration="manual"}catch{}
    const y=v.scrollY||0;requestAnimationFrame(()=>requestAnimationFrame(()=>window.scrollTo(0,y)));
+   // Results loaded more than 5 minutes ago: show them right away, then quietly refresh (spots left, "Full", times).
+   loadedAt.current=v.loadedAt||0;
+   if(v.searchedZip||v.coords){if(Date.now()-(v.loadedAt||0)>5*60e3){big.current={view:v.view==="big"||v.view==="fav"?v.view:"all",range:v.bigRange||"today",radius:v.bigRadius||"25"};
+    setTimeout(()=>{load(v.searchedZip,v.range,v.coords,v.radius).then(()=>requestAnimationFrame(()=>window.scrollTo(0,y)))},50)}}
    return;
   }
   // Fresh page: nothing searched yet. Empty ZIP box, default filters, no results until the person
@@ -77,7 +82,7 @@ export default function Home(){
  useEffect(()=>{
   if(!restored)return;
   const save=()=>{try{sessionStorage.setItem(VIEW,JSON.stringify({view,bigRange,bigRadius,zip,searchedZip,coords,radius,range,selected,ageBands,moreOpen,setting,dropIn,spanish,seniors,timeFilter,sort,query,
-   events,message,soon,scrollY:window.scrollY,savedAt:Date.now(),day:new Date().toDateString()}))}catch{}};
+   events,message,soon,scrollY:window.scrollY,savedAt:Date.now(),loadedAt:loadedAt.current,day:new Date().toDateString()}))}catch{}};
   save();
   let t:any=null;const onScroll=()=>{clearTimeout(t);t=setTimeout(save,150)};
   // Leaving for another GoToday page (an event, My GoToday, Create…) — but not the logo, which means "start over".
