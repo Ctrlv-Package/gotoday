@@ -79,6 +79,10 @@ export function discoveryRejection(e:EventRecord):DiscoveryReason|null{
  // A title that is only a status message (the organizer renamed a full program "Event Full. No longer accepting…").
  if(/^\W*(event (is )?full|(this )?(event|program|class) is full|no longer accepting|registration (is )?(closed|full)|sold out|waitlist (only|full)|full\b)\W*([.!]|$|no longer|\s*-)/i.test(title.trim()))return"announcement";
  if(ANNOUNCEMENT.test(title.trim())||CAPTION.test(title.trim()))return"announcement";
+ // A title that is only an audience word ("ALL AGES", "Everyone", "Kids") is a label, not an event.
+ if(/^\W*(all ages|everyone|kids|children|adults|teens|families|family|free|seniors)\W*$/i.test(title.trim()))return"announcement";
+ // Online-only programs aren't something to go to ("Online Event: Composting at Home 101", "Virtual: …", "Zoom …").
+ if(/^\W*(online( event| program| class)?|virtual( event| program)?|zoom|webinar|livestream|live stream)\b\s*[:\-–|]?/i.test(title.trim())||/\b(online only|virtual only|via zoom|on zoom)\b/i.test(title))return"marked-ineligible";
  // A sentence cut off mid-way ("Join North Bergen for a spooktacular afternoon at") is post text, not a name.
  if(/\s(at|for|with|the|a|an|and|of|to|in|on|from|by|our|your)$/i.test(title.trim())&&title.trim().split(/\s+/).length>=4)return"announcement";
  // Post text read as a title: "POV You're a Yonkers firefighter", "We're just two weeks away…", "Snag books…",

@@ -123,7 +123,7 @@ export function facetsFor(e:In):Facet[]{
  // Family = fine to bring the kids. Adult-themed titles never count; city and parks events count
  // unless they say otherwise; libraries and Ticketmaster have to say so.
  const adultish=has(ADULT,t);
- if(!adultOnly&&!adultish&&(kids||has(FAMILY,t)||tagHas(FAMILY_TAGS)&&!tagHas(ADULT_TAGS)||(tagHas(/^everyone$|^all ages$/i)&&(kidEvent||has(FAMILY_OUTING,t)))||has(/\b(famil(y|ies)|kids|children)\b/i,d)||(has(/\ball ages\b/i,d)&&has(FAMILY_OUTING,t))||(CITY_SOURCE(e.source)&&!has(ADULT,d)&&!out.has("Music")&&!/\b(meeting|commission|board|council|workshop|seminar|class)\b/i.test(t))))out.add("Family");
+ if(!adultOnly&&!adultish&&(kids||has(FAMILY,t.replace(/\b(all ages|everyone)\b/gi," "))||(has(/\b(all ages|everyone)\b/i,t)&&(kidEvent||has(FAMILY_OUTING,t)))||tagHas(FAMILY_TAGS)&&!tagHas(ADULT_TAGS)||(tagHas(/^everyone$|^all ages$/i)&&(kidEvent||has(FAMILY_OUTING,t)))||has(/\b(famil(y|ies)|kids|children)\b/i,d)||(has(/\ball ages\b/i,d)&&has(FAMILY_OUTING,t))||(CITY_SOURCE(e.source)&&!has(ADULT,d)&&!out.has("Music")&&!/\b(meeting|commission|board|council|workshop|seminar|class)\b/i.test(t))))out.add("Family");
  if(isBigEvent(e as any))out.add("Big events");
  if(adultOnly||has(ADULT,t)||tagHas(ADULT_TAGS)||(ageMin!=null&&ageMin>=13&&!kidAges))out.add("Adults");
 

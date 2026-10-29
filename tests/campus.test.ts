@@ -50,3 +50,12 @@ test("standing programs and year-round offers aren't events", ()=>{
  assert.equal(discoveryRejection({title:"Dinosaur Hall",desc:"Ongoing. See the T-Rex.",tags:[]} as any),"passive-display");
  assert.equal(discoveryRejection({title:"Halloween Festival",desc:"Year round fun! Join us Oct 31.",tags:[]} as any),null);
 });
+
+test("audience-only titles and online programs are out; 'for Everyone' isn't Family", async ()=>{
+ assert.equal(discoveryRejection({title:"ALL AGES",tags:[]} as any),"announcement");
+ assert.equal(discoveryRejection({title:"Online Event: Composting at Home 101",tags:[]} as any),"marked-ineligible");
+ assert.equal(discoveryRejection({title:"Virtual: Author Talk",tags:[]} as any),"marked-ineligible");
+ const {facetsFor}=await import("../lib/facets");
+ assert.ok(!facetsFor({title:"Crochet for Everyone",source:"Forsyth County Public Library NC"} as any).includes("Family"));
+ assert.ok(facetsFor({title:"Halloween Festival for Everyone",source:"Forsyth County Public Library NC"} as any).includes("Family"));
+});
