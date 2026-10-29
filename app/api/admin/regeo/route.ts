@@ -14,8 +14,8 @@ export async function POST(req:NextRequest){
  // step=igtowns: Instagram events saved with a clipped town ("West, FL" for Weston) get the town their post named,
  // and a map point in that town.
  if(step==="igtowns"){
-  const {rows}=await db.query(`select e.id,e.title,e.local_date::text d,e.city,e.official_url,v.name venue,s.params from events e join sources s on s.id=e.source_id left join venues v on v.id=e.venue_id
-   where s.platform='instagram' and e.local_date>=current_date and e.updated_at>'2026-10-27T17:00:00Z' order by e.id limit 2000`);
+  const {rows}=await db.query(`select e.id,e.title,e.local_date::text d,e.city,e.official_url,v.name venue,c.params from events e join sources s on s.id=e.source_id join source_configs c on c.name=s.name left join venues v on v.id=e.venue_id
+   where c.platform='instagram' and e.local_date>=current_date and e.updated_at>'2026-10-27T17:00:00Z' order by e.id limit 2000`);
   const urls=[...new Set(rows.map((r:any)=>r.official_url).filter(Boolean))];
   const posts=new Map((await db.query("select permalink,extracted from social_posts where permalink=any($1)",[urls])).rows.map((r:any)=>[r.permalink,r.extracted]));
   let fixed=0;
