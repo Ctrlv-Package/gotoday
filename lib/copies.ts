@@ -23,12 +23,32 @@ const thin=(d:string)=>!d||/^Official .* event\.$/.test(d)||/^Posted by @/.test(
 const expired=(u:string)=>{const oe=/cdninstagram\.com|fbcdn\.net/.test(u)&&u.match(/[?&]oe=([0-9A-Fa-f]{8})/);return!!oe&&parseInt(oe[1],16)*1000<Date.now()};
 
 type Fillable={id:number;source:string;title:string;venue?:string|null;address?:string|null;category?:string|null;tags?:string[];stockImage?:boolean;backupImage?:string;description:string;image:string|null;city:string;lat:number|null;lng:number|null;ageMin:number|null;ageMax:number|null;start:Date;end?:Date|null;tz:string};
-export async function fillFromCopies<T extends Fillable>(e:T):Promise<T>{
- const day=new Intl.DateTimeFormat("en-CA",{timeZone:e.tz,year:"numeric",month:"2-digit",day:"2-digit"}).format(e.start);
- const {rows}=await db.query(`select e.id,e.title,e.description,e.image_url,e.city,e.age_min,e.age_max,e.start_at,e.end_at,s.name as source,v.name as venue,v.address,
+// The day scan below is the site's heaviest read: every event page used to run it fresh (Neon showed it at
+// 172k calls in 3 days, ~1 MB a call, against a 0.49 GB database). The rows for one day barely change between
+// ingestion runs, so they are cached per day, in the same module-level style as lib/stockPhotos caches its
+// library. Only the borrowed fill (photo/description/ages from copies) can go stale, and only up to
+// DAY_CACHE_TTL_MS; the event's own fields always come from the fresh loadEvent query. A failed scan is never
+// cached, so the next call retries. Serverless instances do not share this memory, so the win is per instance —
+// but warm instances serve most traffic, and the call count still collapses from per-page-view to per-day.
+const DAY_CACHE_TTL_MS=60*60e3;
+const DAY_CACHE_MAX_DAYS=14;
+const dayCache=new Map<string,{at:number;rows:any[]}>();
+async function dayRows(day:string):Promise<any[]>{
+ const hit=dayCache.get(day);
+ if(hit&&Date.now()-hit.at<DAY_CACHE_TTL_MS)return hit.rows;
+ let rows:any[];
+ try{rows=(await db.query(`select e.id,e.title,e.description,e.image_url,e.city,e.age_min,e.age_max,e.start_at,e.end_at,s.name as source,v.name as venue,v.address,
    coalesce(v.latitude,e.latitude) as lat,coalesce(v.longitude,e.longitude) as lng
   from events e join sources s on s.id=e.source_id left join venues v on v.id=e.venue_id
-  where e.local_date=$1::date and e.status='active' and e.id<>$2 limit 3000`,[day,e.id]).catch(()=>({rows:[] as any[]}));
+  where e.local_date=$1::date and e.status='active' limit 3000`,[day])).rows}catch{return []}
+ dayCache.set(day,{at:Date.now(),rows});
+ for(const [d,v] of dayCache)if(Date.now()-v.at>=DAY_CACHE_TTL_MS)dayCache.delete(d);
+ while(dayCache.size>DAY_CACHE_MAX_DAYS){const oldest=[...dayCache.entries()].sort((a,b)=>a[1].at-b[1].at)[0];if(!oldest)break;dayCache.delete(oldest[0])}
+ return rows;
+}
+export async function fillFromCopies<T extends Fillable>(e:T):Promise<T>{
+ const day=new Intl.DateTimeFormat("en-CA",{timeZone:e.tz,year:"numeric",month:"2-digit",day:"2-digit"}).format(e.start);
+ const rows=(await dayRows(day)).filter((r:any)=>Number(r.id)!==e.id);
  const near=(r:any)=>(e.lat!=null&&e.lng!=null&&r.lat!=null&&Math.hypot((Number(r.lat)-e.lat)*69,(Number(r.lng)-e.lng!)*69*Math.cos(e.lat*Math.PI/180))<4)||(!!town(e.city)&&town(e.city)===town(r.city));
  // The organizer's own copies first, round-ups last.
  // Same matching as the cards: posts match by title nearby; two calendar listings only when they also start together.
