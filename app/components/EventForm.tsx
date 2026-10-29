@@ -209,9 +209,12 @@ function RsvpField({visibility,date,value,onChange}:{visibility:"public"|"privat
  const r:RsvpValues=value||{onSite:visibility==="private",name:"",phone:"",email:"",by:""};
  const set=(p:Partial<RsvpValues>)=>onChange({...r,...p});
  const [open,setOpen]=useState(!!(r.phone||r.email||r.name||r.by));
+ const [closed,setClosed]=useState(false);
+ // A flyer prefill arriving after mount opens the section, so prefilled contact info is visible; a manual close sticks.
+ useEffect(()=>{if(!closed&&(r.phone||r.email||r.name))setOpen(true)},[closed,r.phone,r.email,r.name]);
  return <fieldset className="efField efRsvp"><legend>RSVP <small>(optional)</small></legend>
   <label className="efCheck"><input type="checkbox" checked={r.onSite} onChange={e=>set({onSite:e.target.checked})}/> Guests reply on GoToday (Going / Maybe / Can't go) and you see the guest list</label>
-  <label className="efCheck"><input type="checkbox" checked={open} onChange={e=>{setOpen(e.target.checked);if(!e.target.checked)set({name:"",phone:"",email:""})}}/> Guests RSVP to someone by text, call or email</label>
+  <label className="efCheck"><input type="checkbox" checked={open} onChange={e=>{setOpen(e.target.checked);if(e.target.checked)setClosed(false);else{setClosed(true);set({name:"",phone:"",email:""})}}}/> Guests RSVP to someone by text, call or email</label>
   {open&&<div className="efRsvpWho">
    <label className="efField"><span>RSVP to <small>(name)</small></span><input maxLength={60} value={r.name} onChange={e=>set({name:e.target.value})} placeholder="Name" autoComplete="off"/></label>
    <div className="efRow">

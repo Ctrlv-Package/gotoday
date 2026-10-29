@@ -16,7 +16,7 @@ import {keepImages} from "../images";
 // results are cached in social_posts so reruns cost nothing. Without ANTHROPIC_API_KEY, captions only.
 
 export type InstagramConfig={username:string;source:string;idPrefix:string;city:string;venue:string;address?:string;tz?:string;maxAgeDays?:number};
-type Extracted={slide?:number;place?:string;town?:string;title:string;date:string;start?:string;end?:string;summary?:string;free?:boolean;kids?:boolean;forKids?:boolean;cancelled?:boolean};
+type Extracted={slide?:number;place?:string;town?:string;title:string;date:string;start?:string;end?:string;summary?:string;free?:boolean;kids?:boolean;forKids?:boolean;cancelled?:boolean;rsvp?:{name?:string;phone?:string;email?:string;by?:string}};
 type Post={id:string;like_count?:number;comments_count?:number;caption?:string;media_type:string;media_url?:string;thumbnail_url?:string;permalink:string;timestamp:string;children?:{data:{media_url?:string;media_type:string}[]}};
 
 const GRAPH="https://graph.facebook.com/v26.0";
@@ -161,7 +161,8 @@ Read the event it announces from the image. Rules:
 - "kids": true when children are welcome and it suits them; false only for adult events (21+, bars, wine/beer, business networking); null if you truly cannot tell.
 - "forKids": true only when the event is made FOR children or teens (kids' party, story time, kids' class or camp, children's show, trick-or-treating, egg hunt, teen night).
 - "summary": one or two sentences about what happens, if the flyer says.
-Reply with JSON only: {"events":[{"title":"","date":"YYYY-MM-DD","start":"HH:MM","end":"HH:MM","place":"","town":"","summary":"one or two sentences","free":true|false|null,"kids":true|false|null,"forKids":true|false,"cancelled":false}]} — omit start/end when not stated.`;
+- "rsvp": who guests reply to, if the flyer states RSVP instructions (a name, phone number, email, or reply-by date, resolved to YYYY-MM-DD like the event date). Omit the whole rsvp object when the flyer states none.
+Reply with JSON only: {"events":[{"title":"","date":"YYYY-MM-DD","start":"HH:MM","end":"HH:MM","place":"","town":"","summary":"one or two sentences","free":true|false|null,"kids":true|false|null,"forKids":true|false,"cancelled":false,"rsvp":{"name":"","phone":"","email":"","by":"YYYY-MM-DD"}}]} — omit start/end and rsvp when not stated.`;
 export async function readFlyerImage(data:Buffer,mime:string,today:string){
  if(!process.env.GEMINI_API_KEY)throw new Error("Gemini key not set");
  const img={type:"image",source:{type:"base64",media_type:mime,data:data.toString("base64")}};
