@@ -318,7 +318,9 @@ export async function fetchInstagram(cfg:InstagramConfig,startDate:string,endDat
   const arts=/\b(music|concert|band|dj|art|artisan|craft|theat(er|re)|dance|film|movie)\b/.test(blob);
   const time=e.start&&/^\d{2}:\d{2}$/.test(e.start)?e.start+":00":"";
   const end=e.end&&/^\d{2}:\d{2}$/.test(e.end)?e.end+":00":undefined;
-  const town=(e.town||"").trim().replace(/,?\s*([A-Z]{2}|Florida|New Jersey|New York|Georgia|Virginia|Maryland|Pennsylvania|Connecticut|Massachusetts|North Carolina|South Carolina)$/i,"");
+  // Only a separate state at the end comes off ("Weston, FL", "Cranford NJ", "Edison, New Jersey") — never letters of the
+  // town itself (a case-insensitive two-letter match once turned "Weston" into "West" and "Davie" into "Dav").
+  const town=(e.town||"").trim().replace(/(?:,\s*|\s+)(?:AL|CT|DC|DE|FL|GA|MA|MD|ME|NC|NH|NJ|NY|PA|RI|SC|VA|VT|WV)$/,"").replace(/,?\s+(?:Florida|New Jersey|New York|Georgia|Virginia|Maryland|Pennsylvania|Connecticut|Massachusetts|North Carolina|South Carolina|Delaware|Rhode Island|New Hampshire|Vermont|Maine)$/i,"").trim();
   const pic=pictureFor(e);
   out.push({id:`${cfg.idPrefix}-${slug(e.title)}-${e.date}`,title:e.title.trim(),city:town&&/^[A-Za-z .'-]{3,40}$/.test(town)?`${town}, ${cfg.city.split(",")[1]?.trim()||"FL"}`:cfg.city,
    // City and parks accounts post events all over town: use the place the post names, else the account's own venue.

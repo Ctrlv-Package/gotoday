@@ -11,6 +11,28 @@ export async function POST(req:NextRequest){
  const s=process.env.INGESTION_SECRET;
  if(!s||req.headers.get("authorization")!==`Bearer ${s}`)return NextResponse.json({ok:false},{status:401});
  const step=req.nextUrl.searchParams.get("step"),started=Date.now(),out:string[]=[];let moved=0;
+ // step=igtowns: Instagram events saved with a clipped town ("West, FL" for Weston) get the town their post named,
+ // and a map point in that town.
+ if(step==="igtowns"){
+  const {rows}=await db.query(`select e.id,e.title,e.local_date::text d,e.city,e.official_url,v.name venue,s.params from events e join sources s on s.id=e.source_id left join venues v on v.id=e.venue_id
+   where s.platform='instagram' and e.local_date>=current_date and e.updated_at>'2026-10-27T17:00:00Z' order by e.id limit 2000`);
+  const urls=[...new Set(rows.map((r:any)=>r.official_url).filter(Boolean))];
+  const posts=new Map((await db.query("select permalink,extracted from social_posts where permalink=any($1)",[urls])).rows.map((r:any)=>[r.permalink,r.extracted]));
+  let fixed=0;
+  for(const r of rows){
+   if(Date.now()-started>240e3)break;
+   const ex:any[]=Array.isArray(posts.get(r.official_url))?posts.get(r.official_url):[];
+   const hit=ex.find(x=>x?.date===r.d&&x?.town)||ex.find(x=>x?.town);
+   const st=String(r.params?.city||"").split(",")[1]?.trim()||"FL";
+   const town=String(hit?.town||"").trim().replace(/(?:,\s*|\s+)(?:AL|CT|DC|DE|FL|GA|MA|MD|ME|NC|NH|NJ|NY|PA|RI|SC|VA|VT|WV)$/,"").replace(/,?\s+(?:Florida|New Jersey|New York|Georgia|Virginia|Maryland|Pennsylvania|Connecticut|Massachusetts|North Carolina|South Carolina)$/i,"").trim();
+   const city=town&&/^[A-Za-z .'-]{3,40}$/.test(town)?`${town}, ${st}`:String(r.params?.city||r.city);
+   if(!city||city===r.city)continue;
+   const pt=(r.venue?await venueCoords(r.venue,city).catch(()=>null):null)||await cityCoords(city).catch(()=>null);
+   await db.query("update events set city=$2,latitude=coalesce($3,latitude),longitude=coalesce($4,longitude) where id=$1",[r.id,city,pt?.latitude??null,pt?.longitude??null]);
+   fixed++;out.push(`${r.city} → ${city}`);
+  }
+  return NextResponse.json({ok:true,checked:rows.length,fixed,examples:out.slice(0,25)});
+ }
  if(step==="towns"){
   await db.query("alter table places add column if not exists method text").catch(()=>{});
   if(req.nextUrl.searchParams.get("redo")){await db.query("update places set method=null where key not like 'venue:%'");await db.query("delete from places where key like 'venue:%'")}
