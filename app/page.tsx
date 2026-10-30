@@ -192,7 +192,7 @@ export default function Home(){
     <div className="label">{t("Events like these, near you")}</div>
     <div className="grid">{SAMPLES.map(s=><article className="card" key={s.title}>
      <div className="pic" style={{cursor:"pointer",background:"linear-gradient(135deg,#7c3aed,#db2777)"}} onClick={()=>setPromptOpen(true)} aria-hidden>
-      <img className="picMain" src={s.image} alt="" loading="lazy" referrerPolicy="no-referrer" onLoad={x=>fitPic(x.currentTarget)} onError={x=>{const a=x.currentTarget.parentElement as HTMLElement;a.classList.add("noimg");x.currentTarget.remove();const n=a.querySelector("span") as HTMLElement|null;if(n)n.style.display="flex"}}/>
+      <img className="picMain" src={s.image} alt="" loading="lazy" referrerPolicy="no-referrer" onError={x=>{const a=x.currentTarget.parentElement as HTMLElement;a.classList.add("noimg");x.currentTarget.remove();const n=a.querySelector("span") as HTMLElement|null;if(n)n.style.display="flex"}}/>
       <span style={{display:"none"}}><i>🎉</i></span>
       <em className="freeBadge">{t("Free")}</em>
      </div>
