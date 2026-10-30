@@ -155,12 +155,14 @@ export default function Home(){
   return[...m.values()]},[filtered,bigOnly]);
  const moreCount=(setting!=="Any"?1:0)+(dropIn?1:0)+(spanish?1:0)+(seniors?1:0);
  const where=coords?t("your location"):searchedZip||t("your area"),hasPlace=!!(coords||searchedZip);
- // First-timers see proof before they search: one event happening today in each of three major
- // cities. A failed or empty read hides the strip entirely — it must never break the hero.
+ // First-timers see proof before they search: one event happening today in each of three cities
+ // spread along the coast (New York, Washington, Miami), so their 25-mile radii don't overlap.
+ // An event already picked for another city is skipped in favor of that city's next distinct
+ // one. A failed or empty read hides the strip entirely — it must never break the hero.
  const[strip,setStrip]=useState<EventItem[]|null>(null);
  useEffect(()=>{if(hasPlace)return;let live=true;
   const now=new Date(),today=`${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,"0")}-${String(now.getDate()).padStart(2,"0")}`;
-  Promise.all(["10001","33130","33301"].map(z=>fetch(`/api/events?postalCode=${z}&radius=25&range=today&today=${today}`,{cache:"no-store"}).then(r=>r.json()).then(d=>Array.isArray(d.events)&&d.events.length?d.events[0]:null).catch(()=>null))).then(list=>{if(live)setStrip(list.filter(Boolean) as EventItem[])});
+  Promise.all(["10001","20001","33130"].map(z=>fetch(`/api/events?postalCode=${z}&radius=25&range=today&today=${today}`,{cache:"no-store"}).then(r=>r.json()).then(d=>Array.isArray(d.events)?d.events:null).catch(()=>null))).then(list=>{if(!live)return;const seen=new Set<string>(),picked:EventItem[]=[];for(const evs of list){if(!evs)continue;const e=evs.find((x:EventItem)=>{const k=x.id||x.title;if(seen.has(k))return false;seen.add(k);return true});if(e)picked.push(e)}setStrip(picked)});
   return()=>{live=false}},[hasPlace]);
  return <main className="page">
   <section className="hero">
