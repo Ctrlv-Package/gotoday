@@ -155,13 +155,20 @@ export default function Home(){
   return[...m.values()]},[filtered,bigOnly]);
  const moreCount=(setting!=="Any"?1:0)+(dropIn?1:0)+(spanish?1:0)+(seniors?1:0);
  const where=coords?t("your location"):searchedZip||t("your area"),hasPlace=!!(coords||searchedZip);
+ // First-timers see proof before they search: three sample cards showing the kind of events
+ // the site lists. They are illustrations, not listings — no real venue, no date — and every
+ // click opens the location prompt instead of an event page, so nobody is sent somewhere
+ // that isn't near them.
+ const SAMPLES=[{image:"https://cdn.prod.website-files.com/5e78caf02f8ca077073f350e/5e84df40cad8a37082f6ad7f_new-york-city-dawn-P8QMA8J.jpg",title:"Concert under the city skyline"},{image:"https://images.stockcake.com/public/f/e/2/fe24fdb1-593a-46c0-8433-ef9f468dbb3f/vibrant-farmers-market-stockcake.jpg",title:"Saturday farmers market"},{image:"https://images.pexels.com/photos/8694375/pexels-photo-8694375.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1",title:"Summer music festival"}];
+ const[promptOpen,setPromptOpen]=useState(false),[promptZip,setPromptZip]=useState(""),[promptErr,setPromptErr]=useState("");
+ function submitPrompt(){if(!/^\d{5}$/.test(promptZip.trim())){setPromptErr(promptZip.trim()?t("A ZIP code has 5 digits, like 33326."):t("Enter a ZIP code to search."));return}setPromptErr("");setPromptOpen(false);searchZip(promptZip.trim())}
  return <main className="page">
   <section className="hero">
    <nav><a className="logo" href="/?fresh=1">Go<span>Today</span></a><span className="navRight"><LangPicker/><NavMe/><a className="createBtn" href="/create" aria-label={t("Create event")}><span aria-hidden>+</span><span className="createTxt">{t("Create")}</span><span className="hideXs">{t(" event")}</span></a></span></nav>
    <ReplyBanner/>
    <div className="heroContent">
     <div className="eyebrow">{t("EXPLORE MORE. TODAY.")}</div>
-    <h1>{t("Find your")} <span>{t("next thing.")}</span></h1>
+    <h1>{t("Find free events")} <span>{t("near you.")}</span></h1>
     <p className="heroLead">{t("Free and local things happening near you — from library storytimes to park concerts.")}</p>
     <form className="searchRow" onSubmit={ev=>{ev.preventDefault();submitZip()}}>
      <input inputMode="numeric" autoComplete="postal-code" maxLength={5} aria-label={t("ZIP code")} data-zip value={zip} onChange={e=>{setZip(e.target.value.replace(/\D/g,""));if(zipErr)setZipErr("")}} aria-invalid={!!zipErr} aria-describedby="zipErr" placeholder={t("ZIP code")}/>
@@ -181,6 +188,33 @@ export default function Home(){
    <p>{t("Enter a ZIP code above or tap")} <b>{t("Use my location")}</b> {t("to see what's happening near you today.")}</p>
    <div className="label">{t("OR PICK AN AREA")}</div>
    <div className="chips startAreas">{AREAS.map(([l,z])=><button key={z} type="button" onClick={()=>{setZip(z);searchZip(z)}}>{l}</button>)}</div>
+   <div className="todayStrip">
+    <div className="label">{t("Events like these, near you")}</div>
+    <div className="grid">{SAMPLES.map(s=><article className="card" key={s.title}>
+     <div className="pic" style={{cursor:"pointer",background:"linear-gradient(135deg,#7c3aed,#db2777)"}} onClick={()=>setPromptOpen(true)} aria-hidden>
+      <img className="picMain" src={s.image} alt="" loading="lazy" referrerPolicy="no-referrer" onLoad={x=>fitPic(x.currentTarget)} onError={x=>{const a=x.currentTarget.parentElement as HTMLElement;a.classList.add("noimg");x.currentTarget.remove();const n=a.querySelector("span") as HTMLElement|null;if(n)n.style.display="flex"}}/>
+      <span style={{display:"none"}}><i>🎉</i></span>
+      <em className="freeBadge">{t("Free")}</em>
+     </div>
+     <div className="cardBody">
+      <h3>{t(s.title)}</h3>
+      <div className="actions"><button type="button" className="primary" onClick={()=>setPromptOpen(true)}>{t("Find near me")}</button></div>
+     </div>
+    </article>)}</div>
+   </div>
+   {promptOpen&&<div className="promptOverlay" role="dialog" aria-modal="true" aria-label={t("See events near you")} onClick={()=>setPromptOpen(false)}>
+    <div className="promptCard" onClick={e=>e.stopPropagation()}>
+     <button type="button" className="promptClose" aria-label="Close" onClick={()=>setPromptOpen(false)}>×</button>
+     <h3>{t("See events near you")}</h3>
+     <p>{t("Enter your ZIP code or use your location to see real events near you.")}</p>
+     <form onSubmit={ev=>{ev.preventDefault();submitPrompt()}}>
+      <input inputMode="numeric" autoComplete="postal-code" maxLength={5} aria-label={t("ZIP code")} value={promptZip} onChange={e=>{setPromptZip(e.target.value.replace(/\D/g,""));if(promptErr)setPromptErr("")}} placeholder={t("ZIP code")}/>
+      <button type="submit">{t("Search")}</button>
+     </form>
+     {promptErr&&<p className="locErr" role="alert">{promptErr}</p>}
+     <button type="button" className="locate" onClick={()=>{setPromptOpen(false);useLocation()}}>📍 {t("Use my location")}</button>
+    </div>
+   </div>}
   </section>}
   {hasPlace&&<section className="content" id="results">
    <div className="toolbar">
