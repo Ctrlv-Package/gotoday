@@ -5,7 +5,7 @@
 // same day, and the looser rules need more agreement (same start time, same town, no conflicting place).
 import {isGenericVenue} from "./places";
 
-export type CardLike={title:string;date:string;time?:string;venue?:string;city?:string;source?:string;distanceMiles?:number;lat?:number|null;lng?:number|null};
+export type CardLike={title:string;desc?:string;date:string;time?:string;venue?:string;city?:string;source?:string;distanceMiles?:number;lat?:number|null;lng?:number|null};
 
 const STOP=new Set(["the","and","of","a","at","in","on","for","with","to","annual","city","town","village","free","fl","event","events","day","night",
  "only","residents","resident","presents","present","join","us","our","your","2025","2026","2027","2028","edition","fun","family","community","celebration"]);
@@ -42,6 +42,10 @@ export function sameEventCard(a:CardLike,b:CardLike,W:(e:CardLike)=>Set<string>=
  const timesOk=!a.time||!b.time||a.time===b.time,sameTime=!!a.time&&a.time===b.time;
  // (a) Same start time at the same venue, titles overlapping.
  if(sameTime&&place(a.venue)&&place(a.venue)===place(b.venue)&&(hit>=1||contains))return true;
+ // (a2) One listing's text names the other's event: a post titled "a house of fright" whose caption says
+ // "Join us for FREE at Driftwood Fright Night", next to the city's "Driftwood Fright Night" — same day, same town.
+ {const named=(x:CardLike,y:CardLike)=>{const n=String(y.title||"").trim();return n.length>=10&&words(n).size>=2&&String(x.desc||"").toLowerCase().includes(n.toLowerCase())};
+  if(timesOk&&!!town(a.city)&&town(a.city)===town(b.city)&&(named(a,b)||named(b,a)))return true}
  // (c) One source, one time, one title cut off ("Halloween Spooktacular Yard Decorating Contest Aw…").
  if(a.source===b.source&&a.time===b.time&&!placesConflict(a,b)&&fa.length>=10&&fb.length>=10&&(fa.startsWith(fb)||fb.startsWith(fa)))return true;
  if(!timesOk)return false;

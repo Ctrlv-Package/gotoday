@@ -59,3 +59,13 @@ test("audience-only titles and online programs are out; 'for Everyone' isn't Fam
  assert.ok(!facetsFor({title:"Crochet for Everyone",source:"Forsyth County Public Library NC"} as any).includes("Family"));
  assert.ok(facetsFor({title:"Halloween Festival for Everyone",source:"Forsyth County Public Library NC"} as any).includes("Family"));
 });
+
+test("a post whose caption names the city's event is the same card", async ()=>{
+ const {sameEventCard}=await import("../lib/sameCard");
+ const city={title:"Driftwood Fright Night",date:"2026-10-30",time:"18:30:00",venue:"City of Hollywood",city:"Hollywood, FL",source:"City of Hollywood",lat:26.0375,lng:-80.2268};
+ const post={title:"A house of fright",desc:"Get ready for a house of fright! Join us for FREE at Driftwood Fright Night for an evening you won't want to miss.",date:"2026-10-30",time:"18:30:00",venue:"Driftwood Community Center",city:"Hollywood, FL",source:"Hollywood Parks & Rec · Instagram",lat:26.0112,lng:-80.1495};
+ assert.ok(sameEventCard(city as any,post as any));
+ const {cleanTitle}=await import("../lib/ingestion/utils");
+ assert.equal(cleanTitle("FREE at Driftwood Fright Night"),"Driftwood Fright Night");
+ assert.equal(cleanTitle("a house of fright"),"A house of fright");
+});

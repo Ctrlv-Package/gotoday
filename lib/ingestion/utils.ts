@@ -140,7 +140,7 @@ export function cleanTitle(t:string):string{
  // A "when" word in front of the name: "TOMORROW Honoring Those Who Serve", "TONIGHT: Movie in the Park", "This Saturday - Fall Fest".
  {const y=x.replace(/^(?:(?:today|tomorrow|tonight|this (?:week(?:end)?|morning|afternoon|evening|(?:mon|tues|wednes|thurs|fri|satur|sun)day)|next (?:week|(?:mon|tues|wednes|thurs|fri|satur|sun)day)|now|reminder|last chance|happening (?:today|now|tomorrow)|coming (?:up|soon)|new|update)\b[\s:!.,–—-]*)+/i,"");if(y!==x&&y.split(/\s+/).length>=2)x=y.replace(/^./,c=>c.toUpperCase())}
  // Invitation wording in front of the name: "Get ready for Rahway's Pup-kin Parade" → "Rahway's Pup-kin Parade".
- {const y=x.replace(/^(?:get ready for|join us (?:for|at)|come (?:out )?(?:to|for)|don'?t miss|save the date(?: for)?|mark your calendars?(?: for)?|you(?:'re| are) invited to)\s+(?:the\s+|our\s+)?/i,"");if(y!==x&&y.split(/\s+/).length>=2)x=y.replace(/^./,c=>c.toUpperCase())}
+ {const y=x.replace(/^(?:get ready for|join us (?:for|at)|free (?:at|to|for)|come (?:out )?(?:to|for)|don'?t miss|save the date(?: for)?|mark your calendars?(?: for)?|you(?:'re| are) invited to)\s+(?:the\s+|our\s+)?/i,"");if(y!==x&&y.split(/\s+/).length>=2)x=y.replace(/^./,c=>c.toUpperCase())}
  // "… BEGINNING SEPT. 14" / "… starting Oct 3" / "… every Monday": when, not name.
  x=x.replace(/\s+(?:[-–—|]\s*)?(?:beginning|starting|starts|begins|returns|resumes|every|each|this|on)\s+(?:(?:mon|tue|wed|thu|fri|sat|sun)[a-z]*\.?|(?:jan|feb|mar|apr|may|jun|jul|aug|sep|sept|oct|nov|dec)[a-z]*\.?\s*\d{1,2}(?:st|nd|rd|th)?|\d{1,2}\/\d{1,2})\b.*$/i,"").trim()||x;
  // ALL-CAPS titles read as shouting: "MONDAY NIGHT FOOTBALL AT BAR TULIO'S" → "Monday Night Football at Bar Tulio's".
@@ -151,6 +151,7 @@ export function cleanTitle(t:string):string{
   x=x.split(/(\s+)/).map((w,i)=>{if(/^\s+$/.test(w))return w;const core=w.replace(/[^A-Za-z0-9+']/g,"");if(KEEP.test(core))return w;const lw=w.toLowerCase();
    return i>0&&SMALL.test(core)?lw:lw.replace(/[a-z]/,c=>c.toUpperCase())}).join("");
  }
+ x=x.replace(/^[a-z]/,c=>c.toUpperCase());
  return x.replace(/[\s.,;:!|•·–—-]+$/,"").trim()||String(t||"").trim();
 }
 export function normalize(e:EventRecord):EventRecord{
