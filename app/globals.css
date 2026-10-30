@@ -259,6 +259,9 @@ a.logo{text-decoration:none;color:inherit}
 /* Fresh page: no area chosen yet. Area buttons sit in an even grid (2 across on phones, 4 on wider
    screens) so every row lines up and the block stays centred. */
 .content.start{text-align:center;padding:28px 16px 56px;margin-top:8px}
+.todayStrip{text-align:left;margin-top:30px}
+.todayStrip .label{text-align:center}
+.stripMore{display:block;margin:18px auto 0;background:none;border:0;color:var(--accent);font-weight:700}
 .content.start .startIcon{font-size:34px;line-height:1}
 .content.start h2{margin:10px 0 8px;font-size:24px;letter-spacing:-.4px;text-wrap:balance}
 .content.start p{margin:0 auto 24px;max-width:420px;color:var(--muted,#71717a);line-height:1.5;text-wrap:balance}
