@@ -168,7 +168,7 @@ export default function Home(){
    <ReplyBanner/>
    <div className="heroContent">
     <div className="eyebrow">{t("EXPLORE MORE. TODAY.")}</div>
-    <h1>{t("Find free events")} <span>{t("near you today.")}</span></h1>
+    <h1>{t("Find free events")} <span>{t("near you.")}</span></h1>
     <p className="heroLead">{t("Free and local things happening near you — from library storytimes to park concerts.")}</p>
     <form className="searchRow" onSubmit={ev=>{ev.preventDefault();submitZip()}}>
      <input inputMode="numeric" autoComplete="postal-code" maxLength={5} aria-label={t("ZIP code")} data-zip value={zip} onChange={e=>{setZip(e.target.value.replace(/\D/g,""));if(zipErr)setZipErr("")}} aria-invalid={!!zipErr} aria-describedby="zipErr" placeholder={t("ZIP code")}/>
