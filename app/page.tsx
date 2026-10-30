@@ -155,13 +155,19 @@ export default function Home(){
   return[...m.values()]},[filtered,bigOnly]);
  const moreCount=(setting!=="Any"?1:0)+(dropIn?1:0)+(spanish?1:0)+(seniors?1:0);
  const where=coords?t("your location"):searchedZip||t("your area"),hasPlace=!!(coords||searchedZip);
+ // First-timers see proof before they search: today's events near the default area. A failed or empty
+ // read hides the strip entirely — it must never break the hero or show a "nothing today" dead end.
+ const[strip,setStrip]=useState<EventItem[]|null>(null);
+ useEffect(()=>{if(hasPlace)return;let live=true;
+  const now=new Date(),today=`${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,"0")}-${String(now.getDate()).padStart(2,"0")}`;
+  fetch(`/api/events?postalCode=${DEFAULT_ZIP}&radius=25&range=today&today=${today}`,{cache:"no-store"}).then(r=>r.json()).then(d=>{if(live)setStrip(Array.isArray(d.events)?d.events.slice(0,6):[])}).catch(()=>{if(live)setStrip([])});
+  return()=>{live=false}},[hasPlace]);
  return <main className="page">
   <section className="hero">
    <nav><a className="logo" href="/?fresh=1">Go<span>Today</span></a><span className="navRight"><LangPicker/><NavMe/><a className="createBtn" href="/create" aria-label={t("Create event")}><span aria-hidden>+</span><span className="createTxt">{t("Create")}</span><span className="hideXs">{t(" event")}</span></a></span></nav>
    <ReplyBanner/>
    <div className="heroContent">
-    <div className="eyebrow">{t("EXPLORE MORE. TODAY.")}</div>
-    <h1>{t("Find your")} <span>{t("next thing.")}</span></h1>
+    <h1>{t("Find free events")} <span>{t("near you today.")}</span></h1>
     <p className="heroLead">{t("Free and local things happening near you — from library storytimes to park concerts.")}</p>
     <form className="searchRow" onSubmit={ev=>{ev.preventDefault();submitZip()}}>
      <input inputMode="numeric" autoComplete="postal-code" maxLength={5} aria-label={t("ZIP code")} data-zip value={zip} onChange={e=>{setZip(e.target.value.replace(/\D/g,""));if(zipErr)setZipErr("")}} aria-invalid={!!zipErr} aria-describedby="zipErr" placeholder={t("ZIP code")}/>
@@ -181,6 +187,23 @@ export default function Home(){
    <p>{t("Enter a ZIP code above or tap")} <b>{t("Use my location")}</b> {t("to see what's happening near you today.")}</p>
    <div className="label">{t("OR PICK AN AREA")}</div>
    <div className="chips startAreas">{AREAS.map(([l,z])=><button key={z} type="button" onClick={()=>{setZip(z);searchZip(z)}}>{l}</button>)}</div>
+   {strip!==null&&strip.length>0&&<div className="todayStrip">
+    <div className="label">{t("Happening today near Weston")}</div>
+    <div className="grid">{strip.map((e,i)=><article className="card" key={e.id||e.title+i}>
+     <a className={e.image?"pic":"pic noimg"} style={e.image?undefined:{background:artFor(e).bg}} href={detailHref(e)} aria-hidden tabIndex={-1}>
+      {e.image?<img className="picMain" src={e.image} alt="" loading="lazy" referrerPolicy="no-referrer" onLoad={x=>fitPic(x.currentTarget)} onError={x=>{const a=x.currentTarget.parentElement as HTMLElement;a.classList.add("noimg");a.style.background=artFor(e).bg;x.currentTarget.remove();const n=a.querySelector("span") as HTMLElement|null;if(n)n.style.display="flex"}}/>:null}
+      <span style={e.image?{display:"none"}:undefined}><i>{artFor(e).icon}</i></span>
+      {(e.isFree||e.facets?.includes("Free"))&&<em className="freeBadge">{t("Free")}</em>}
+     </a>
+     <div className="cardBody">
+      <h3><a href={detailHref(e)}>{e.title}</a></h3>
+      <div className="meta">🗓 {fmt(e.date,e.time,t,locale)}</div>
+      <div className="meta locLine"><span className="locV" title={e.venue||e.city}>📍 {e.venue||e.city}</span></div>
+      <div className="actions"><a className="primary" href={detailHref(e)}>{t("View details")}</a></div>
+     </div>
+    </article>)}</div>
+    <button type="button" className="stripMore" onClick={()=>{setZip(DEFAULT_ZIP);searchZip(DEFAULT_ZIP)}}>{t("See everything today")} →</button>
+   </div>}
   </section>}
   {hasPlace&&<section className="content" id="results">
    <div className="toolbar">
