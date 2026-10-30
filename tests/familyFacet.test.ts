@@ -66,3 +66,15 @@ test("when-words before names and 'Begins at' venues", async ()=>{
  const e=normalize({id:"x",title:"Salute",city:"Tamarac, FL",venue:"Begins at Tamarac City Hall",date:"2026-10-27",time:"",url:"u",category:"Local",genre:"",desc:"x".repeat(260)+"\n📅 Tuesday, Oc",tags:[],emoji:"",source:"s"} as any);
  assert.equal(e.venue,"Tamarac City Hall");assert.ok(!e.desc.includes("Tuesday, Oc"));
 });
+
+test("animated movie nights are Kids; park movie nights with no price are Free", async ()=>{
+ const {facetsFor}=await import("../lib/facets");
+ const f=facetsFor({title:"ArtsPpark Movie Night - Toy Story 5",desc:"Movie Night every Friday 8PM. Bring your chairs and blankets!",source:"ArtsPark at Young Circle · Instagram",venue:"ArtsPark @ Young Circle Amphitheater",tags:["Family","Local","Outdoor"]} as any);
+ assert.ok(f.includes("Kids"));assert.ok(f.includes("Free"));
+ const g=facetsFor({title:"Movie Night: Oppenheimer",desc:"Rated R",source:"City of Weston",tags:[]} as any);
+ assert.ok(!g.includes("Kids"));
+ const h=facetsFor({title:"Movie in the Park: Moana",desc:"Tickets $5 at the gate",source:"City of Weston",tags:[]} as any);
+ assert.ok(h.includes("Kids"));assert.ok(!h.includes("Free"));
+ const k=facetsFor({title:"Dinner and a Movie at the Cinema",desc:"PG-13 action film",source:"Regal Cinema",tags:[]} as any);
+ assert.ok(!k.includes("Kids"));
+});

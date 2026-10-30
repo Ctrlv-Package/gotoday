@@ -19,6 +19,8 @@ const KID_TAGS=/^(kids|children|toddlers|preschool|babies|tweens?|teens?|young a
 const FAMILY=/\b(famil(y|ies)|all ages|everyone|kids|children|parents?|festivals?|fests?|fairs?|parades?|carnivals?|halloween|trunk[- ]or[- ]treat|pumpkin|egg hunt|movie night|movie in the park|open house|celebration|block party|oktoberfest|bow ?wow|ween|boo|costume|dogs?|pets?|petting zoo|pony|zoo|petting|picnic|santa|tree lighting|fireworks)\b/i;
 const KID_EVENT=/\b(trunk[- ]or[- ]treat|trick[- ]or[- ]treat\w*|egg hunts?|petting zoo|pony rides?|santa|pumpkin patch|bounce houses?|face painting|kids?'? (zone|area|corner|activities)|children'?s (activities|area)|puppet\w*|story ?time|magic show|character meet)\b/i;
 // What makes an "open to everyone" listing a family outing (not a lecture or recital that anyone may attend).
+// Animated / family films shown at movie nights.
+const KIDS_MOVIE=/\b(disney|pixar|dreamworks|illumination|toy story|coco|frozen|moana|encanto|inside out|minions|despicable me|shrek|kung fu panda|zootopia|lilo|finding (nemo|dory)|(the )?incredibles|paw patrol|bluey|trolls|the lion king|aladdin|the little mermaid|beauty and the beast|ratatouille|monsters,? inc|wall-?e|luca|elemental|turning red|onward|hotel transylvania|the super mario bros|spider-?verse|the wild robot|boss baby|madagascar|ice age|how to train your dragon|the grinch|charlie brown|it'?s the great pumpkin|hocus pocus|casper|kids'? movie|family movie|animated|rated (g|pg)(?!-?13)|\((g|pg)\))\b/i;
 const FAMILY_OUTING=/\b(festivals?|fests?|fairs?|parades?|carnivals?|halloween|trunk[- ]or[- ]treat|trick[- ]or[- ]treat(?:ing)?|toys?|pumpkins?|egg hunt|movie|movies|picnic|open house|block party|celebration|holiday|tree lighting|santa|games?|bingo|crafts?|lego|magic|puppets?|circus|zoo|animals?|nature|garden|beach|park|playtime|play|music in the park|concert in the park|fireworks)\b/i;
 const FAMILY_TAGS=/^(family|families)$/i;
 const ADULT=/\b(adults?|21\+|18\+|seniors?|older adults|55\+|50\+|wine|beer|brew(ery|ing)?|cocktails?|margarita|happy hour|bar crawl|pub|networking|career|job fair|resume|medicare|retirement|wealth|investing|taxes|estate planning|book club|singles|ladies night|date night)\b/i;
@@ -119,7 +121,9 @@ export function facetsFor(e:In):Facet[]{
  // Kids = made for children, or built around things children come for (trick-or-treating, egg hunt, petting zoo,
  // Santa…). A market, plant sale, exhibit or block party that families may attend is Family, not Kids.
  const kidEvent=!adultOnly&&!has(ADULT,t)&&(has(KID_EVENT,t)||has(KID_EVENT,d)||(e.source==="Ticketmaster"&&e.category==="Family"));
- if(kids||kidEvent)out.add("Kids");
+ // An animated family movie (Toy Story, Coco, a Disney/Pixar/DreamWorks title, rated G or PG) is a kids' event.
+ const kidsMovie=!adultOnly&&has(/\b(movies?|films?|screening|cinema|movie night|movie in the park|outdoor movie)\b/i,`${t} ${d}`)&&has(KIDS_MOVIE,`${t} ${d}`);
+ if(kids||kidEvent||kidsMovie)out.add("Kids");
  // Family = fine to bring the kids. Adult-themed titles never count; city and parks events count
  // unless they say otherwise; libraries and Ticketmaster have to say so.
  const adultish=has(ADULT,t);
@@ -131,6 +135,8 @@ export function facetsFor(e:In):Facet[]{
  // mentions no price, tickets or fees (those are free in practice). Ticketed venues never count.
  const gov=/^(city|town|village) of\b|county\b|\bparks\b|parks & rec|library|libraries|nyc parks/i.test(e.source||"");
  const priced=/\$\s?\d|\btickets?\b|\badmission\b|\bfees?\b|\bcost\b|\bprice\b|\bpurchase\b|\bpaid\b|\bper person\b/i.test(`${t} ${e.desc||""}`);
+ // A movie night in a public park from a city, parks department or arts park, with no price mentioned, is free.
+ const parkMovie=!priced&&(gov||/\bparks?\b|artspark|recreation|\brec\b/i.test(e.source||""))&&has(/\b(movie|film|cinema)s?\b/i,t)&&has(/\b(park|lawn|amphitheat(er|re)|green|under the stars|outdoor|field|plaza|beach|pier)\b/i,`${t} ${(e as any).venue||""} ${d}`);
  // The title says so ("FREE Record release show", "Free Family Movie Night") — not "gluten-free" or "kids eat free".
  const freeTitle=/(^|[\s:–-])free\b(?![- ](style|agent|form|lance|dom|range|play\b))/i.test(t)&&!/\b(gluten|sugar|dairy|alcohol|smoke|tax|fee|cruelty|hands)[- ]free\b|\beat(s)? free\b|\bfree (with|for kids with) (purchase|paid|adult)/i.test(t);
  // A listing that shows a price isn't free, whatever a "no price mentioned" guess would say.
@@ -140,7 +146,7 @@ export function facetsFor(e:In):Facet[]{
  const freeSaid=/\bfree (admission|entry|to attend|and open to (the|all)|for (all|everyone|the public|families|kids|children))\b|\b(admission|entry) is free\b|\bno (cost|charge|admission)\b|\bat no cost\b/i.test(`${t} ${e.desc||""}`);
  // Shows at a city theater or civic center (musicals, plays, concerts, galas) are usually ticketed: no "free" guess for them.
  const showLike=/\b(musical|the musical|play|theat(er|re)|broadway|concert|symphony|orchestra|ballet|opera|recital|comedy|comedian|gala|dinner|tribute|live in concert|performance|presents|on stage|productions?|tour)\b/i.test(t);
- if(!paid&&(e.isFree||tagHas(/^free$/i)||freeTitle||freeSaid)||!paid&&(gov&&!showLike&&e.source!=="Ticketmaster"&&!priced&&!tagHas(/^tickets$/i)))out.add("Free");
+ if(!paid&&(e.isFree||tagHas(/^free$/i)||freeTitle||freeSaid||parkMovie)||!paid&&(gov&&!showLike&&e.source!=="Ticketmaster"&&!priced&&!tagHas(/^tickets$/i)))out.add("Free");
  return[...out];
 }
 
