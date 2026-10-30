@@ -2,7 +2,7 @@ import Link from "next/link";
 import SiteHeader from "../components/SiteHeader";
 import type {Metadata} from "next";
 export const metadata:Metadata={title:"Terms of Use — GoToday"};
-const CONTACT=process.env.NEXT_PUBLIC_CONTACT_EMAIL||"hello@mygotoday.com";
+const CONTACT=process.env.NEXT_PUBLIC_CONTACT_EMAIL||"mygotoday@gmail.com";
 
 export default function Terms(){
  return <main className="detail">
