@@ -1,0 +1,1 @@
+{"ok":true,"startDate":"2026-10-31","endDate":"2026-11-30","sources":[{"source":"Delaware Museum of Nature and Science","found":27,"accepted":26,"quarantined":0,"rejected":1,"status":"success","rejectionReasons":[{"rejection_reason":"not-discovery:announcement","count":1,"examples":["Closed for Thanksgiving"]}]}]}
