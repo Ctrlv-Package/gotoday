@@ -1,0 +1,17 @@
+Quality audit: 4542 live listings, 301 sources
+  missing-time: 288
+  venue-is-address: 272
+  family-no-signal: 16
+  Ticketmaster: 485 events, 1 family-no-signal, 56 stock, 0 no image
+  Miami-Dade Public Library: 315 events, 8 family-no-signal, 242 stock, 0 no image
+  Orange County Library System: 257 events, 1 family-no-signal, 247 stock, 0 no image
+  Atlanta-Fulton Public Library: 168 events, 1 family-no-signal, 7 stock, 0 no image
+  Charlotte Mecklenburg Library: 168 events, 0 family-no-signal, 103 stock, 0 no image
+  DC Public Library: 151 events, 1 family-no-signal, 27 stock, 0 no image
+  Montgomery County Public Libraries: 149 events, 0 family-no-signal, 7 stock, 0 no image
+  Boston Public Library: 145 events, 3 family-no-signal, 19 stock, 0 no image
+  Broward County Library: 141 events, 0 family-no-signal, 56 stock, 0 no image
+  Tampa-Hillsborough County Public Library: 96 events, 0 family-no-signal, 2 stock, 0 no image
+  Jacksonville Public Library: 96 events, 0 family-no-signal, 91 stock, 0 no image
+  DeKalb County Public Library: 95 events, 0 family-no-signal, 27 stock, 0 no image
+Report written to out/quality.json

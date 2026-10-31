@@ -1,0 +1,5345 @@
+{
+  "generatedAt": "2026-10-31T16:19:33.578Z",
+  "totals": {
+    "events": 4542
+  },
+  "perSource": {
+    "City of Plantation": {
+      "events": 3,
+      "familyNoSignal": 0,
+      "stock": 0,
+      "missingImage": 0,
+      "missingTime": 3,
+      "failsValidation": 0
+    },
+    "Island City Stage · Instagram": {
+      "events": 3,
+      "familyNoSignal": 0,
+      "stock": 0,
+      "missingImage": 0,
+      "missingTime": 3,
+      "failsValidation": 0
+    },
+    "City of Tamarac · Instagram": {
+      "events": 2,
+      "familyNoSignal": 0,
+      "stock": 0,
+      "missingImage": 0,
+      "missingTime": 2,
+      "failsValidation": 0
+    },
+    "City of Wilton Manors · Instagram": {
+      "events": 1,
+      "familyNoSignal": 0,
+      "stock": 0,
+      "missingImage": 0,
+      "missingTime": 1,
+      "failsValidation": 0
+    },
+    "City of Hollywood · Instagram": {
+      "events": 1,
+      "familyNoSignal": 0,
+      "stock": 0,
+      "missingImage": 0,
+      "missingTime": 1,
+      "failsValidation": 0
+    },
+    "City of Lauderdale Lakes · Instagram": {
+      "events": 6,
+      "familyNoSignal": 0,
+      "stock": 3,
+      "missingImage": 0,
+      "missingTime": 6,
+      "failsValidation": 0
+    },
+    "City of Doral · Instagram": {
+      "events": 1,
+      "familyNoSignal": 0,
+      "stock": 0,
+      "missingImage": 0,
+      "missingTime": 1,
+      "failsValidation": 0
+    },
+    "To Do with Kids Broward · Instagram": {
+      "events": 1,
+      "familyNoSignal": 0,
+      "stock": 0,
+      "missingImage": 0,
+      "missingTime": 1,
+      "failsValidation": 0
+    },
+    "City of Miami Gardens · Instagram": {
+      "events": 1,
+      "familyNoSignal": 0,
+      "stock": 0,
+      "missingImage": 0,
+      "missingTime": 0,
+      "failsValidation": 0
+    },
+    "City of Deerfield Beach · Instagram": {
+      "events": 2,
+      "familyNoSignal": 0,
+      "stock": 0,
+      "missingImage": 0,
+      "missingTime": 1,
+      "failsValidation": 0
+    },
+    "Butterfly World · Instagram": {
+      "events": 1,
+      "familyNoSignal": 0,
+      "stock": 1,
+      "missingImage": 0,
+      "missingTime": 0,
+      "failsValidation": 0
+    },
+    "Broward County Parks": {
+      "events": 36,
+      "familyNoSignal": 0,
+      "stock": 5,
+      "missingImage": 0,
+      "missingTime": 0,
+      "failsValidation": 0
+    },
+    "Miami-Dade Public Library": {
+      "events": 315,
+      "familyNoSignal": 8,
+      "stock": 242,
+      "missingImage": 0,
+      "missingTime": 5,
+      "failsValidation": 0
+    },
+    "Flamingo Gardens · Instagram": {
+      "events": 2,
+      "familyNoSignal": 0,
+      "stock": 0,
+      "missingImage": 0,
+      "missingTime": 0,
+      "failsValidation": 0
+    },
+    "Broward County Library": {
+      "events": 141,
+      "familyNoSignal": 0,
+      "stock": 56,
+      "missingImage": 0,
+      "missingTime": 0,
+      "failsValidation": 0
+    },
+    "Museum of Discovery and Science": {
+      "events": 14,
+      "familyNoSignal": 0,
+      "stock": 4,
+      "missingImage": 0,
+      "missingTime": 0,
+      "failsValidation": 0
+    },
+    "Boca Raton Public Library": {
+      "events": 16,
+      "familyNoSignal": 0,
+      "stock": 12,
+      "missingImage": 0,
+      "missingTime": 0,
+      "failsValidation": 0
+    },
+    "Museum of Discovery and Science · Instagram": {
+      "events": 1,
+      "familyNoSignal": 0,
+      "stock": 0,
+      "missingImage": 0,
+      "missingTime": 0,
+      "failsValidation": 0
+    },
+    "City of Parkland": {
+      "events": 14,
+      "familyNoSignal": 0,
+      "stock": 13,
+      "missingImage": 0,
+      "missingTime": 0,
+      "failsValidation": 0
+    },
+    "City of Wilton Manors": {
+      "events": 6,
+      "familyNoSignal": 0,
+      "stock": 3,
+      "missingImage": 0,
+      "missingTime": 0,
+      "failsValidation": 0
+    },
+    "Bonnet House Museum & Gardens": {
+      "events": 1,
+      "familyNoSignal": 0,
+      "stock": 0,
+      "missingImage": 0,
+      "missingTime": 0,
+      "failsValidation": 0
+    },
+    "Pompano Beach Arts": {
+      "events": 12,
+      "familyNoSignal": 0,
+      "stock": 0,
+      "missingImage": 0,
+      "missingTime": 3,
+      "failsValidation": 0
+    },
+    "City of North Miami": {
+      "events": 12,
+      "familyNoSignal": 0,
+      "stock": 11,
+      "missingImage": 0,
+      "missingTime": 0,
+      "failsValidation": 0
+    },
+    "Wynwood": {
+      "events": 16,
+      "familyNoSignal": 0,
+      "stock": 1,
+      "missingImage": 0,
+      "missingTime": 0,
+      "failsValidation": 0
+    },
+    "City of Doral": {
+      "events": 4,
+      "familyNoSignal": 0,
+      "stock": 0,
+      "missingImage": 0,
+      "missingTime": 0,
+      "failsValidation": 0
+    },
+    "City of Hollywood": {
+      "events": 7,
+      "familyNoSignal": 0,
+      "stock": 0,
+      "missingImage": 0,
+      "missingTime": 0,
+      "failsValidation": 0
+    },
+    "Hollywood Parks & Rec · Instagram": {
+      "events": 1,
+      "familyNoSignal": 0,
+      "stock": 1,
+      "missingImage": 0,
+      "missingTime": 0,
+      "failsValidation": 0
+    },
+    "City of Miami Gardens": {
+      "events": 4,
+      "familyNoSignal": 0,
+      "stock": 1,
+      "missingImage": 0,
+      "missingTime": 0,
+      "failsValidation": 0
+    },
+    "City of Fort Lauderdale": {
+      "events": 8,
+      "familyNoSignal": 0,
+      "stock": 2,
+      "missingImage": 0,
+      "missingTime": 1,
+      "failsValidation": 0
+    },
+    "Weston Town Center": {
+      "events": 1,
+      "familyNoSignal": 0,
+      "stock": 0,
+      "missingImage": 0,
+      "missingTime": 0,
+      "failsValidation": 0
+    },
+    "City of Hialeah": {
+      "events": 3,
+      "familyNoSignal": 0,
+      "stock": 0,
+      "missingImage": 0,
+      "missingTime": 0,
+      "failsValidation": 0
+    },
+    "City of Lauderdale Lakes": {
+      "events": 3,
+      "familyNoSignal": 0,
+      "stock": 0,
+      "missingImage": 0,
+      "missingTime": 1,
+      "failsValidation": 0
+    },
+    "City of Hallandale Beach": {
+      "events": 2,
+      "familyNoSignal": 0,
+      "stock": 0,
+      "missingImage": 0,
+      "missingTime": 0,
+      "failsValidation": 0
+    },
+    "Town of Surfside · Instagram": {
+      "events": 1,
+      "familyNoSignal": 0,
+      "stock": 0,
+      "missingImage": 0,
+      "missingTime": 0,
+      "failsValidation": 0
+    },
+    "Ticketmaster": {
+      "events": 485,
+      "familyNoSignal": 1,
+      "stock": 56,
+      "missingImage": 0,
+      "missingTime": 8,
+      "failsValidation": 0
+    },
+    "Curtain Call Playhouse · Instagram": {
+      "events": 7,
+      "familyNoSignal": 0,
+      "stock": 1,
+      "missingImage": 0,
+      "missingTime": 7,
+      "failsValidation": 0
+    },
+    "City of Hallandale Beach · Instagram": {
+      "events": 1,
+      "familyNoSignal": 0,
+      "stock": 1,
+      "missingImage": 0,
+      "missingTime": 1,
+      "failsValidation": 0
+    },
+    "City of Pompano Beach · Instagram": {
+      "events": 2,
+      "familyNoSignal": 0,
+      "stock": 0,
+      "missingImage": 0,
+      "missingTime": 2,
+      "failsValidation": 0
+    },
+    "City of Weston": {
+      "events": 2,
+      "familyNoSignal": 0,
+      "stock": 2,
+      "missingImage": 0,
+      "missingTime": 1,
+      "failsValidation": 0
+    },
+    "Vizcaya Museum and Gardens": {
+      "events": 4,
+      "familyNoSignal": 0,
+      "stock": 0,
+      "missingImage": 0,
+      "missingTime": 0,
+      "failsValidation": 0
+    },
+    "Broward County Parks · Instagram": {
+      "events": 2,
+      "familyNoSignal": 0,
+      "stock": 0,
+      "missingImage": 0,
+      "missingTime": 0,
+      "failsValidation": 0
+    },
+    "City of Lighthouse Point": {
+      "events": 1,
+      "familyNoSignal": 0,
+      "stock": 1,
+      "missingImage": 0,
+      "missingTime": 0,
+      "failsValidation": 0
+    },
+    "City of Boca Raton": {
+      "events": 19,
+      "familyNoSignal": 0,
+      "stock": 16,
+      "missingImage": 0,
+      "missingTime": 0,
+      "failsValidation": 0
+    },
+    "City of Cooper City · Instagram": {
+      "events": 2,
+      "familyNoSignal": 0,
+      "stock": 0,
+      "missingImage": 0,
+      "missingTime": 1,
+      "failsValidation": 0
+    },
+    "City of Sunrise": {
+      "events": 3,
+      "familyNoSignal": 0,
+      "stock": 2,
+      "missingImage": 0,
+      "missingTime": 0,
+      "failsValidation": 0
+    },
+    "CityPlace Doral · Instagram": {
+      "events": 3,
+      "familyNoSignal": 0,
+      "stock": 1,
+      "missingImage": 0,
+      "missingTime": 1,
+      "failsValidation": 0
+    },
+    "City of Lauderhill · Instagram": {
+      "events": 2,
+      "familyNoSignal": 0,
+      "stock": 0,
+      "missingImage": 0,
+      "missingTime": 0,
+      "failsValidation": 0
+    },
+    "City of Miami Beach": {
+      "events": 13,
+      "familyNoSignal": 0,
+      "stock": 7,
+      "missingImage": 0,
+      "missingTime": 0,
+      "failsValidation": 0
+    },
+    "Hialeah Parks & Rec · Instagram": {
+      "events": 2,
+      "familyNoSignal": 0,
+      "stock": 2,
+      "missingImage": 0,
+      "missingTime": 2,
+      "failsValidation": 0
+    },
+    "Palm Beach County Library": {
+      "events": 19,
+      "familyNoSignal": 0,
+      "stock": 14,
+      "missingImage": 0,
+      "missingTime": 6,
+      "failsValidation": 0
+    },
+    "North Miami Beach Public Library": {
+      "events": 11,
+      "familyNoSignal": 0,
+      "stock": 2,
+      "missingImage": 0,
+      "missingTime": 0,
+      "failsValidation": 0
+    },
+    "City of Cooper City": {
+      "events": 8,
+      "familyNoSignal": 0,
+      "stock": 8,
+      "missingImage": 0,
+      "missingTime": 0,
+      "failsValidation": 0
+    },
+    "Hallandale Beach Parks & Rec · Instagram": {
+      "events": 1,
+      "familyNoSignal": 0,
+      "stock": 0,
+      "missingImage": 0,
+      "missingTime": 1,
+      "failsValidation": 0
+    },
+    "Charles F. Dodge City Center · Instagram": {
+      "events": 1,
+      "familyNoSignal": 0,
+      "stock": 0,
+      "missingImage": 0,
+      "missingTime": 1,
+      "failsValidation": 0
+    },
+    "City of Coral Springs": {
+      "events": 6,
+      "familyNoSignal": 0,
+      "stock": 1,
+      "missingImage": 0,
+      "missingTime": 0,
+      "failsValidation": 0
+    },
+    "City of Oakland Park": {
+      "events": 6,
+      "familyNoSignal": 0,
+      "stock": 0,
+      "missingImage": 0,
+      "missingTime": 0,
+      "failsValidation": 0
+    },
+    "City of Oakland Park · Instagram": {
+      "events": 2,
+      "familyNoSignal": 0,
+      "stock": 0,
+      "missingImage": 0,
+      "missingTime": 2,
+      "failsValidation": 0
+    },
+    "City of Plantation · Instagram": {
+      "events": 2,
+      "familyNoSignal": 0,
+      "stock": 0,
+      "missingImage": 0,
+      "missingTime": 1,
+      "failsValidation": 0
+    },
+    "Downtown Hollywood · Instagram": {
+      "events": 1,
+      "familyNoSignal": 0,
+      "stock": 0,
+      "missingImage": 0,
+      "missingTime": 0,
+      "failsValidation": 0
+    },
+    "Broward Center for the Performing Arts · Instagram": {
+      "events": 1,
+      "familyNoSignal": 0,
+      "stock": 1,
+      "missingImage": 0,
+      "missingTime": 1,
+      "failsValidation": 0
+    },
+    "City of Pembroke Pines": {
+      "events": 2,
+      "familyNoSignal": 0,
+      "stock": 1,
+      "missingImage": 0,
+      "missingTime": 0,
+      "failsValidation": 0
+    },
+    "NSU Art Museum Fort Lauderdale": {
+      "events": 1,
+      "familyNoSignal": 0,
+      "stock": 0,
+      "missingImage": 0,
+      "missingTime": 0,
+      "failsValidation": 0
+    },
+    "Boca Raton Recreation · Instagram": {
+      "events": 1,
+      "familyNoSignal": 0,
+      "stock": 0,
+      "missingImage": 0,
+      "missingTime": 0,
+      "failsValidation": 0
+    },
+    "City of Miramar": {
+      "events": 1,
+      "familyNoSignal": 0,
+      "stock": 0,
+      "missingImage": 0,
+      "missingTime": 0,
+      "failsValidation": 0
+    },
+    "City of Boca Raton · Instagram": {
+      "events": 1,
+      "familyNoSignal": 0,
+      "stock": 0,
+      "missingImage": 0,
+      "missingTime": 0,
+      "failsValidation": 0
+    },
+    "City of Fort Lauderdale · Instagram": {
+      "events": 1,
+      "familyNoSignal": 0,
+      "stock": 0,
+      "missingImage": 0,
+      "missingTime": 1,
+      "failsValidation": 0
+    },
+    "Miami Springs Parks & Rec · Instagram": {
+      "events": 2,
+      "familyNoSignal": 0,
+      "stock": 1,
+      "missingImage": 0,
+      "missingTime": 1,
+      "failsValidation": 0
+    },
+    "Downtown Fort Lauderdale · Instagram": {
+      "events": 1,
+      "familyNoSignal": 0,
+      "stock": 0,
+      "missingImage": 0,
+      "missingTime": 0,
+      "failsValidation": 0
+    },
+    "City of Deerfield Beach": {
+      "events": 1,
+      "familyNoSignal": 0,
+      "stock": 0,
+      "missingImage": 0,
+      "missingTime": 0,
+      "failsValidation": 0
+    },
+    "Adrienne Arsht Center · Instagram": {
+      "events": 2,
+      "familyNoSignal": 0,
+      "stock": 1,
+      "missingImage": 0,
+      "missingTime": 2,
+      "failsValidation": 0
+    },
+    "Phillip and Patricia Frost Museum of Science · Instagram": {
+      "events": 1,
+      "familyNoSignal": 0,
+      "stock": 1,
+      "missingImage": 0,
+      "missingTime": 1,
+      "failsValidation": 0
+    },
+    "Jungle Island · Instagram": {
+      "events": 1,
+      "familyNoSignal": 0,
+      "stock": 0,
+      "missingImage": 0,
+      "missingTime": 1,
+      "failsValidation": 0
+    },
+    "Deering Estate": {
+      "events": 3,
+      "familyNoSignal": 0,
+      "stock": 0,
+      "missingImage": 0,
+      "missingTime": 0,
+      "failsValidation": 0
+    },
+    "Downtown Delray Beach · Instagram": {
+      "events": 1,
+      "familyNoSignal": 0,
+      "stock": 0,
+      "missingImage": 0,
+      "missingTime": 0,
+      "failsValidation": 0
+    },
+    "Bayfront Park · Instagram": {
+      "events": 3,
+      "familyNoSignal": 0,
+      "stock": 1,
+      "missingImage": 0,
+      "missingTime": 0,
+      "failsValidation": 0
+    },
+    "The Bass Museum": {
+      "events": 5,
+      "familyNoSignal": 0,
+      "stock": 2,
+      "missingImage": 0,
+      "missingTime": 0,
+      "failsValidation": 0
+    },
+    "Phillip and Patricia Frost Museum of Science": {
+      "events": 2,
+      "familyNoSignal": 0,
+      "stock": 0,
+      "missingImage": 0,
+      "missingTime": 0,
+      "failsValidation": 0
+    },
+    "Delray Beach Public Library · Instagram": {
+      "events": 1,
+      "familyNoSignal": 0,
+      "stock": 0,
+      "missingImage": 0,
+      "missingTime": 0,
+      "failsValidation": 0
+    },
+    "Coconut Grove BID · Instagram": {
+      "events": 4,
+      "familyNoSignal": 0,
+      "stock": 2,
+      "missingImage": 0,
+      "missingTime": 0,
+      "failsValidation": 0
+    },
+    "Bayfront Park": {
+      "events": 1,
+      "familyNoSignal": 0,
+      "stock": 0,
+      "missingImage": 0,
+      "missingTime": 0,
+      "failsValidation": 0
+    },
+    "Gold Coast Railroad Museum · Instagram": {
+      "events": 1,
+      "familyNoSignal": 0,
+      "stock": 1,
+      "missingImage": 0,
+      "missingTime": 0,
+      "failsValidation": 0
+    },
+    "New World Symphony · Instagram": {
+      "events": 1,
+      "familyNoSignal": 0,
+      "stock": 1,
+      "missingImage": 0,
+      "missingTime": 1,
+      "failsValidation": 0
+    },
+    "City of Miami · Instagram": {
+      "events": 3,
+      "familyNoSignal": 0,
+      "stock": 1,
+      "missingImage": 0,
+      "missingTime": 3,
+      "failsValidation": 0
+    },
+    "Miami Residents · Instagram": {
+      "events": 2,
+      "familyNoSignal": 0,
+      "stock": 0,
+      "missingImage": 0,
+      "missingTime": 1,
+      "failsValidation": 0
+    },
+    "Miami Children's Museum · Instagram": {
+      "events": 1,
+      "familyNoSignal": 0,
+      "stock": 0,
+      "missingImage": 0,
+      "missingTime": 1,
+      "failsValidation": 0
+    },
+    "Miami-Dade Parks · Instagram": {
+      "events": 1,
+      "familyNoSignal": 0,
+      "stock": 0,
+      "missingImage": 0,
+      "missingTime": 1,
+      "failsValidation": 0
+    },
+    "Miami New Drama · Instagram": {
+      "events": 4,
+      "familyNoSignal": 0,
+      "stock": 2,
+      "missingImage": 0,
+      "missingTime": 4,
+      "failsValidation": 0
+    },
+    "Zoetic Stage · Instagram": {
+      "events": 3,
+      "familyNoSignal": 0,
+      "stock": 1,
+      "missingImage": 0,
+      "missingTime": 3,
+      "failsValidation": 0
+    },
+    "City of Coral Gables · Instagram": {
+      "events": 5,
+      "familyNoSignal": 0,
+      "stock": 0,
+      "missingImage": 0,
+      "missingTime": 1,
+      "failsValidation": 0
+    },
+    "City of South Miami · Instagram": {
+      "events": 2,
+      "familyNoSignal": 0,
+      "stock": 0,
+      "missingImage": 0,
+      "missingTime": 2,
+      "failsValidation": 0
+    },
+    "Coral Gables Museum": {
+      "events": 2,
+      "familyNoSignal": 0,
+      "stock": 0,
+      "missingImage": 0,
+      "missingTime": 0,
+      "failsValidation": 0
+    },
+    "Coral Gables Museum · Instagram": {
+      "events": 4,
+      "familyNoSignal": 0,
+      "stock": 2,
+      "missingImage": 0,
+      "missingTime": 2,
+      "failsValidation": 0
+    },
+    "Actors' Playhouse at the Miracle Theatre": {
+      "events": 1,
+      "familyNoSignal": 0,
+      "stock": 0,
+      "missingImage": 0,
+      "missingTime": 0,
+      "failsValidation": 0
+    },
+    "Actors' Playhouse at the Miracle Theatre · Instagram": {
+      "events": 2,
+      "familyNoSignal": 0,
+      "stock": 1,
+      "missingImage": 0,
+      "missingTime": 1,
+      "failsValidation": 0
+    },
+    "City of South Miami": {
+      "events": 2,
+      "familyNoSignal": 0,
+      "stock": 1,
+      "missingImage": 0,
+      "missingTime": 0,
+      "failsValidation": 0
+    },
+    "Village of Palmetto Bay · Instagram": {
+      "events": 3,
+      "familyNoSignal": 0,
+      "stock": 0,
+      "missingImage": 0,
+      "missingTime": 2,
+      "failsValidation": 0
+    },
+    "Pinecrest Gardens": {
+      "events": 3,
+      "familyNoSignal": 0,
+      "stock": 0,
+      "missingImage": 0,
+      "missingTime": 0,
+      "failsValidation": 0
+    },
+    "Vizcaya Museum and Gardens · Instagram": {
+      "events": 1,
+      "familyNoSignal": 0,
+      "stock": 0,
+      "missingImage": 0,
+      "missingTime": 0,
+      "failsValidation": 0
+    },
+    "Village of Pinecrest · Instagram": {
+      "events": 1,
+      "familyNoSignal": 0,
+      "stock": 0,
+      "missingImage": 0,
+      "missingTime": 0,
+      "failsValidation": 0
+    },
+    "GableStage · Instagram": {
+      "events": 1,
+      "familyNoSignal": 0,
+      "stock": 0,
+      "missingImage": 0,
+      "missingTime": 0,
+      "failsValidation": 0
+    },
+    "Town of Cutler Bay": {
+      "events": 1,
+      "familyNoSignal": 0,
+      "stock": 1,
+      "missingImage": 0,
+      "missingTime": 0,
+      "failsValidation": 0
+    },
+    "University of Georgia": {
+      "events": 6,
+      "familyNoSignal": 0,
+      "stock": 5,
+      "missingImage": 0,
+      "missingTime": 5,
+      "failsValidation": 0
+    },
+    "Tampa Riverwalk · Instagram": {
+      "events": 2,
+      "familyNoSignal": 0,
+      "stock": 0,
+      "missingImage": 0,
+      "missingTime": 2,
+      "failsValidation": 0
+    },
+    "City of Oldsmar · Instagram": {
+      "events": 1,
+      "familyNoSignal": 0,
+      "stock": 0,
+      "missingImage": 0,
+      "missingTime": 1,
+      "failsValidation": 0
+    },
+    "Temple Terrace Parks & Rec · Instagram": {
+      "events": 2,
+      "familyNoSignal": 0,
+      "stock": 0,
+      "missingImage": 0,
+      "missingTime": 0,
+      "failsValidation": 0
+    },
+    "Tampa-Hillsborough County Public Library": {
+      "events": 96,
+      "familyNoSignal": 0,
+      "stock": 2,
+      "missingImage": 0,
+      "missingTime": 0,
+      "failsValidation": 0
+    },
+    "Dunedin Public Library": {
+      "events": 20,
+      "familyNoSignal": 0,
+      "stock": 20,
+      "missingImage": 0,
+      "missingTime": 0,
+      "failsValidation": 0
+    },
+    "City of Oldsmar": {
+      "events": 41,
+      "familyNoSignal": 0,
+      "stock": 40,
+      "missingImage": 0,
+      "missingTime": 0,
+      "failsValidation": 0
+    },
+    "St. Petersburg Public Library": {
+      "events": 17,
+      "familyNoSignal": 0,
+      "stock": 9,
+      "missingImage": 0,
+      "missingTime": 0,
+      "failsValidation": 0
+    },
+    "City of Safety Harbor": {
+      "events": 4,
+      "familyNoSignal": 0,
+      "stock": 4,
+      "missingImage": 0,
+      "missingTime": 0,
+      "failsValidation": 0
+    },
+    "Francis Wilson Playhouse · Instagram": {
+      "events": 2,
+      "familyNoSignal": 0,
+      "stock": 2,
+      "missingImage": 0,
+      "missingTime": 0,
+      "failsValidation": 0
+    },
+    "ZooTampa at Lowry Park": {
+      "events": 2,
+      "familyNoSignal": 0,
+      "stock": 0,
+      "missingImage": 0,
+      "missingTime": 0,
+      "failsValidation": 0
+    },
+    "City of Pinellas Park": {
+      "events": 2,
+      "familyNoSignal": 0,
+      "stock": 1,
+      "missingImage": 0,
+      "missingTime": 0,
+      "failsValidation": 0
+    },
+    "City of Clearwater": {
+      "events": 7,
+      "familyNoSignal": 0,
+      "stock": 2,
+      "missingImage": 0,
+      "missingTime": 0,
+      "failsValidation": 0
+    },
+    "The Florida Aquarium · Instagram": {
+      "events": 1,
+      "familyNoSignal": 0,
+      "stock": 1,
+      "missingImage": 0,
+      "missingTime": 0,
+      "failsValidation": 0
+    },
+    "The Dali Museum": {
+      "events": 7,
+      "familyNoSignal": 0,
+      "stock": 0,
+      "missingImage": 0,
+      "missingTime": 0,
+      "failsValidation": 0
+    },
+    "Clearwater Public Library": {
+      "events": 14,
+      "familyNoSignal": 0,
+      "stock": 14,
+      "missingImage": 0,
+      "missingTime": 0,
+      "failsValidation": 0
+    },
+    "Great Explorations Children's Museum": {
+      "events": 3,
+      "familyNoSignal": 0,
+      "stock": 1,
+      "missingImage": 0,
+      "missingTime": 0,
+      "failsValidation": 0
+    },
+    "Pasco County Libraries": {
+      "events": 2,
+      "familyNoSignal": 0,
+      "stock": 2,
+      "missingImage": 0,
+      "missingTime": 0,
+      "failsValidation": 0
+    },
+    "St. Pete Pier": {
+      "events": 1,
+      "familyNoSignal": 0,
+      "stock": 0,
+      "missingImage": 0,
+      "missingTime": 0,
+      "failsValidation": 0
+    },
+    "American Stage · Instagram": {
+      "events": 1,
+      "familyNoSignal": 0,
+      "stock": 0,
+      "missingImage": 0,
+      "missingTime": 1,
+      "failsValidation": 0
+    },
+    "City of Dunedin · Instagram": {
+      "events": 1,
+      "familyNoSignal": 0,
+      "stock": 0,
+      "missingImage": 0,
+      "missingTime": 0,
+      "failsValidation": 0
+    },
+    "Largo Recreation · Instagram": {
+      "events": 1,
+      "familyNoSignal": 0,
+      "stock": 0,
+      "missingImage": 0,
+      "missingTime": 1,
+      "failsValidation": 0
+    },
+    "City of Temple Terrace": {
+      "events": 1,
+      "familyNoSignal": 0,
+      "stock": 0,
+      "missingImage": 0,
+      "missingTime": 0,
+      "failsValidation": 0
+    },
+    "Great Explorations Children's Museum · Instagram": {
+      "events": 1,
+      "familyNoSignal": 0,
+      "stock": 0,
+      "missingImage": 0,
+      "missingTime": 0,
+      "failsValidation": 0
+    },
+    "Lake Eola Park / Downtown Orlando": {
+      "events": 10,
+      "familyNoSignal": 0,
+      "stock": 5,
+      "missingImage": 0,
+      "missingTime": 1,
+      "failsValidation": 0
+    },
+    "City of Orlando": {
+      "events": 42,
+      "familyNoSignal": 0,
+      "stock": 40,
+      "missingImage": 0,
+      "missingTime": 2,
+      "failsValidation": 0
+    },
+    "Harry P. Leu Gardens · Instagram": {
+      "events": 6,
+      "familyNoSignal": 0,
+      "stock": 4,
+      "missingImage": 0,
+      "missingTime": 6,
+      "failsValidation": 0
+    },
+    "Historic Downtown Sanford · Instagram": {
+      "events": 5,
+      "familyNoSignal": 0,
+      "stock": 1,
+      "missingImage": 0,
+      "missingTime": 5,
+      "failsValidation": 0
+    },
+    "City of Altamonte Springs · Instagram": {
+      "events": 3,
+      "familyNoSignal": 0,
+      "stock": 0,
+      "missingImage": 0,
+      "missingTime": 3,
+      "failsValidation": 0
+    },
+    "Orange County Library System · Instagram": {
+      "events": 2,
+      "familyNoSignal": 0,
+      "stock": 0,
+      "missingImage": 0,
+      "missingTime": 2,
+      "failsValidation": 0
+    },
+    "Orlando Science Center · Instagram": {
+      "events": 1,
+      "familyNoSignal": 0,
+      "stock": 0,
+      "missingImage": 0,
+      "missingTime": 1,
+      "failsValidation": 0
+    },
+    "City of Sanford · Instagram": {
+      "events": 1,
+      "familyNoSignal": 0,
+      "stock": 0,
+      "missingImage": 0,
+      "missingTime": 1,
+      "failsValidation": 0
+    },
+    "Central Florida Zoo · Instagram": {
+      "events": 1,
+      "familyNoSignal": 0,
+      "stock": 0,
+      "missingImage": 0,
+      "missingTime": 1,
+      "failsValidation": 0
+    },
+    "City of Apopka": {
+      "events": 1,
+      "familyNoSignal": 0,
+      "stock": 0,
+      "missingImage": 0,
+      "missingTime": 0,
+      "failsValidation": 0
+    },
+    "City of Altamonte Springs": {
+      "events": 12,
+      "familyNoSignal": 0,
+      "stock": 10,
+      "missingImage": 0,
+      "missingTime": 0,
+      "failsValidation": 0
+    },
+    "Orlando Science Center": {
+      "events": 45,
+      "familyNoSignal": 0,
+      "stock": 6,
+      "missingImage": 0,
+      "missingTime": 0,
+      "failsValidation": 0
+    },
+    "Orange County Library System": {
+      "events": 257,
+      "familyNoSignal": 1,
+      "stock": 247,
+      "missingImage": 0,
+      "missingTime": 0,
+      "failsValidation": 0
+    },
+    "Osceola Library System": {
+      "events": 51,
+      "familyNoSignal": 0,
+      "stock": 50,
+      "missingImage": 0,
+      "missingTime": 1,
+      "failsValidation": 0
+    },
+    "Orlando Parks & Rec · Instagram": {
+      "events": 1,
+      "familyNoSignal": 0,
+      "stock": 1,
+      "missingImage": 0,
+      "missingTime": 0,
+      "failsValidation": 0
+    },
+    "Dr. Phillips Center for the Performing Arts": {
+      "events": 12,
+      "familyNoSignal": 0,
+      "stock": 0,
+      "missingImage": 0,
+      "missingTime": 0,
+      "failsValidation": 0
+    },
+    "City of Kissimmee · Instagram": {
+      "events": 1,
+      "familyNoSignal": 0,
+      "stock": 0,
+      "missingImage": 0,
+      "missingTime": 0,
+      "failsValidation": 0
+    },
+    "Downtown Winter Garden · Instagram": {
+      "events": 1,
+      "familyNoSignal": 0,
+      "stock": 0,
+      "missingImage": 0,
+      "missingTime": 0,
+      "failsValidation": 0
+    },
+    "Winter Park Library": {
+      "events": 18,
+      "familyNoSignal": 0,
+      "stock": 17,
+      "missingImage": 0,
+      "missingTime": 3,
+      "failsValidation": 0
+    },
+    "City of Apopka · Instagram": {
+      "events": 1,
+      "familyNoSignal": 0,
+      "stock": 0,
+      "missingImage": 0,
+      "missingTime": 1,
+      "failsValidation": 0
+    },
+    "Orlando Museum of Art": {
+      "events": 8,
+      "familyNoSignal": 0,
+      "stock": 0,
+      "missingImage": 0,
+      "missingTime": 0,
+      "failsValidation": 0
+    },
+    "City of Ocoee · Instagram": {
+      "events": 1,
+      "familyNoSignal": 0,
+      "stock": 0,
+      "missingImage": 0,
+      "missingTime": 0,
+      "failsValidation": 0
+    },
+    "Winter Park Chamber · Instagram": {
+      "events": 2,
+      "familyNoSignal": 0,
+      "stock": 0,
+      "missingImage": 0,
+      "missingTime": 0,
+      "failsValidation": 0
+    },
+    "City of Orlando · Instagram": {
+      "events": 1,
+      "familyNoSignal": 0,
+      "stock": 0,
+      "missingImage": 0,
+      "missingTime": 1,
+      "failsValidation": 0
+    },
+    "City of Kissimmee": {
+      "events": 1,
+      "familyNoSignal": 0,
+      "stock": 0,
+      "missingImage": 0,
+      "missingTime": 0,
+      "failsValidation": 0
+    },
+    "Orlando Shakes · Instagram": {
+      "events": 1,
+      "familyNoSignal": 0,
+      "stock": 0,
+      "missingImage": 0,
+      "missingTime": 1,
+      "failsValidation": 0
+    },
+    "Lake County": {
+      "events": 1,
+      "familyNoSignal": 0,
+      "stock": 0,
+      "missingImage": 0,
+      "missingTime": 0,
+      "failsValidation": 0
+    },
+    "City of Winter Garden": {
+      "events": 1,
+      "familyNoSignal": 0,
+      "stock": 0,
+      "missingImage": 0,
+      "missingTime": 0,
+      "failsValidation": 0
+    },
+    "Clay County Public Library": {
+      "events": 35,
+      "familyNoSignal": 0,
+      "stock": 20,
+      "missingImage": 0,
+      "missingTime": 6,
+      "failsValidation": 0
+    },
+    "Jacksonville Public Library": {
+      "events": 96,
+      "familyNoSignal": 0,
+      "stock": 91,
+      "missingImage": 0,
+      "missingTime": 1,
+      "failsValidation": 0
+    },
+    "City of Jacksonville · Instagram": {
+      "events": 1,
+      "familyNoSignal": 0,
+      "stock": 0,
+      "missingImage": 0,
+      "missingTime": 1,
+      "failsValidation": 0
+    },
+    "Jacksonville Zoo and Gardens · Instagram": {
+      "events": 4,
+      "familyNoSignal": 0,
+      "stock": 3,
+      "missingImage": 0,
+      "missingTime": 3,
+      "failsValidation": 0
+    },
+    "Downtown Vision Jacksonville": {
+      "events": 34,
+      "familyNoSignal": 0,
+      "stock": 1,
+      "missingImage": 0,
+      "missingTime": 0,
+      "failsValidation": 0
+    },
+    "City of Jacksonville Beach": {
+      "events": 1,
+      "familyNoSignal": 0,
+      "stock": 1,
+      "missingImage": 0,
+      "missingTime": 0,
+      "failsValidation": 0
+    },
+    "Cummer Museum": {
+      "events": 3,
+      "familyNoSignal": 0,
+      "stock": 0,
+      "missingImage": 0,
+      "missingTime": 0,
+      "failsValidation": 0
+    },
+    "St. Johns County Public Library": {
+      "events": 16,
+      "familyNoSignal": 0,
+      "stock": 16,
+      "missingImage": 0,
+      "missingTime": 2,
+      "failsValidation": 0
+    },
+    "Nassau County Public Library": {
+      "events": 2,
+      "familyNoSignal": 0,
+      "stock": 0,
+      "missingImage": 0,
+      "missingTime": 0,
+      "failsValidation": 0
+    },
+    "Clay County Public Library · Instagram": {
+      "events": 1,
+      "familyNoSignal": 0,
+      "stock": 1,
+      "missingImage": 0,
+      "missingTime": 1,
+      "failsValidation": 0
+    },
+    "DeKalb County Public Library": {
+      "events": 95,
+      "familyNoSignal": 0,
+      "stock": 27,
+      "missingImage": 0,
+      "missingTime": 15,
+      "failsValidation": 0
+    },
+    "City of Brookhaven · Instagram": {
+      "events": 2,
+      "familyNoSignal": 0,
+      "stock": 1,
+      "missingImage": 0,
+      "missingTime": 2,
+      "failsValidation": 0
+    },
+    "Center for Puppetry Arts · Instagram": {
+      "events": 5,
+      "familyNoSignal": 0,
+      "stock": 3,
+      "missingImage": 0,
+      "missingTime": 5,
+      "failsValidation": 0
+    },
+    "Fernbank Museum · Instagram": {
+      "events": 2,
+      "familyNoSignal": 0,
+      "stock": 0,
+      "missingImage": 0,
+      "missingTime": 2,
+      "failsValidation": 0
+    },
+    "Emory University · Instagram": {
+      "events": 2,
+      "familyNoSignal": 0,
+      "stock": 0,
+      "missingImage": 0,
+      "missingTime": 2,
+      "failsValidation": 0
+    },
+    "City of Peachtree Corners · Instagram": {
+      "events": 2,
+      "familyNoSignal": 0,
+      "stock": 0,
+      "missingImage": 0,
+      "missingTime": 2,
+      "failsValidation": 0
+    },
+    "City of Chamblee · Instagram": {
+      "events": 5,
+      "familyNoSignal": 0,
+      "stock": 0,
+      "missingImage": 0,
+      "missingTime": 5,
+      "failsValidation": 0
+    },
+    "City of Atlanta · Instagram": {
+      "events": 1,
+      "familyNoSignal": 0,
+      "stock": 0,
+      "missingImage": 0,
+      "missingTime": 1,
+      "failsValidation": 0
+    },
+    "City of Kennesaw": {
+      "events": 9,
+      "familyNoSignal": 0,
+      "stock": 3,
+      "missingImage": 0,
+      "missingTime": 0,
+      "failsValidation": 0
+    },
+    "Piedmont Park Conservancy": {
+      "events": 3,
+      "familyNoSignal": 0,
+      "stock": 3,
+      "missingImage": 0,
+      "missingTime": 0,
+      "failsValidation": 0
+    },
+    "Atlanta-Fulton Public Library": {
+      "events": 168,
+      "familyNoSignal": 1,
+      "stock": 7,
+      "missingImage": 0,
+      "missingTime": 2,
+      "failsValidation": 0
+    },
+    "City of Douglasville": {
+      "events": 9,
+      "familyNoSignal": 0,
+      "stock": 1,
+      "missingImage": 0,
+      "missingTime": 1,
+      "failsValidation": 0
+    },
+    "Stone Mountain Park": {
+      "events": 6,
+      "familyNoSignal": 0,
+      "stock": 0,
+      "missingImage": 0,
+      "missingTime": 0,
+      "failsValidation": 0
+    },
+    "Atlanta Botanical Garden": {
+      "events": 5,
+      "familyNoSignal": 0,
+      "stock": 0,
+      "missingImage": 0,
+      "missingTime": 0,
+      "failsValidation": 0
+    },
+    "Gwinnett County Public Library": {
+      "events": 34,
+      "familyNoSignal": 1,
+      "stock": 1,
+      "missingImage": 0,
+      "missingTime": 0,
+      "failsValidation": 0
+    },
+    "Atlanta BeltLine · Instagram": {
+      "events": 2,
+      "familyNoSignal": 0,
+      "stock": 0,
+      "missingImage": 0,
+      "missingTime": 1,
+      "failsValidation": 0
+    },
+    "Clayton County Library System": {
+      "events": 22,
+      "familyNoSignal": 0,
+      "stock": 6,
+      "missingImage": 0,
+      "missingTime": 1,
+      "failsValidation": 0
+    },
+    "City of Woodstock · Instagram": {
+      "events": 1,
+      "familyNoSignal": 0,
+      "stock": 0,
+      "missingImage": 0,
+      "missingTime": 0,
+      "failsValidation": 0
+    },
+    "City of Tucker": {
+      "events": 5,
+      "familyNoSignal": 0,
+      "stock": 0,
+      "missingImage": 0,
+      "missingTime": 0,
+      "failsValidation": 0
+    },
+    "City of Stonecrest · Instagram": {
+      "events": 1,
+      "familyNoSignal": 0,
+      "stock": 0,
+      "missingImage": 0,
+      "missingTime": 0,
+      "failsValidation": 0
+    },
+    "Atlanta Botanical Garden · Instagram": {
+      "events": 4,
+      "familyNoSignal": 0,
+      "stock": 0,
+      "missingImage": 0,
+      "missingTime": 4,
+      "failsValidation": 0
+    },
+    "City of Douglasville · Instagram": {
+      "events": 2,
+      "familyNoSignal": 0,
+      "stock": 0,
+      "missingImage": 0,
+      "missingTime": 1,
+      "failsValidation": 0
+    },
+    "Georgia Aquarium · Instagram": {
+      "events": 1,
+      "familyNoSignal": 0,
+      "stock": 1,
+      "missingImage": 0,
+      "missingTime": 1,
+      "failsValidation": 0
+    },
+    "Georgia Tech · Instagram": {
+      "events": 1,
+      "familyNoSignal": 0,
+      "stock": 0,
+      "missingImage": 0,
+      "missingTime": 1,
+      "failsValidation": 0
+    },
+    "City of Tucker · Instagram": {
+      "events": 1,
+      "familyNoSignal": 0,
+      "stock": 0,
+      "missingImage": 0,
+      "missingTime": 1,
+      "failsValidation": 0
+    },
+    "City of Roswell · Instagram": {
+      "events": 2,
+      "familyNoSignal": 0,
+      "stock": 1,
+      "missingImage": 0,
+      "missingTime": 2,
+      "failsValidation": 0
+    },
+    "Children's Museum of Atlanta · Instagram": {
+      "events": 1,
+      "familyNoSignal": 0,
+      "stock": 0,
+      "missingImage": 0,
+      "missingTime": 0,
+      "failsValidation": 0
+    },
+    "City of Duluth · Instagram": {
+      "events": 2,
+      "familyNoSignal": 0,
+      "stock": 0,
+      "missingImage": 0,
+      "missingTime": 1,
+      "failsValidation": 0
+    },
+    "Chattahoochee Nature Center · Instagram": {
+      "events": 1,
+      "familyNoSignal": 0,
+      "stock": 0,
+      "missingImage": 0,
+      "missingTime": 0,
+      "failsValidation": 0
+    },
+    "Atlanta · Instagram": {
+      "events": 1,
+      "familyNoSignal": 0,
+      "stock": 0,
+      "missingImage": 0,
+      "missingTime": 1,
+      "failsValidation": 0
+    },
+    "Clayton County Library System · Instagram": {
+      "events": 2,
+      "familyNoSignal": 0,
+      "stock": 0,
+      "missingImage": 0,
+      "missingTime": 2,
+      "failsValidation": 0
+    },
+    "Cobb County Public Library · Instagram": {
+      "events": 2,
+      "familyNoSignal": 0,
+      "stock": 0,
+      "missingImage": 0,
+      "missingTime": 2,
+      "failsValidation": 0
+    },
+    "City of Marietta": {
+      "events": 3,
+      "familyNoSignal": 0,
+      "stock": 3,
+      "missingImage": 0,
+      "missingTime": 0,
+      "failsValidation": 0
+    },
+    "Atlanta History Center": {
+      "events": 2,
+      "familyNoSignal": 0,
+      "stock": 0,
+      "missingImage": 0,
+      "missingTime": 0,
+      "failsValidation": 0
+    },
+    "City of East Point": {
+      "events": 1,
+      "familyNoSignal": 0,
+      "stock": 0,
+      "missingImage": 0,
+      "missingTime": 0,
+      "failsValidation": 0
+    },
+    "Zoo Atlanta · Instagram": {
+      "events": 1,
+      "familyNoSignal": 0,
+      "stock": 1,
+      "missingImage": 0,
+      "missingTime": 1,
+      "failsValidation": 0
+    },
+    "High Museum of Art · Instagram": {
+      "events": 1,
+      "familyNoSignal": 0,
+      "stock": 0,
+      "missingImage": 0,
+      "missingTime": 1,
+      "failsValidation": 0
+    },
+    "City of Marietta · Instagram": {
+      "events": 1,
+      "familyNoSignal": 0,
+      "stock": 1,
+      "missingImage": 0,
+      "missingTime": 0,
+      "failsValidation": 0
+    },
+    "Charlotte Mecklenburg Library": {
+      "events": 168,
+      "familyNoSignal": 0,
+      "stock": 103,
+      "missingImage": 0,
+      "missingTime": 2,
+      "failsValidation": 0
+    },
+    "City of Charlotte": {
+      "events": 2,
+      "familyNoSignal": 0,
+      "stock": 1,
+      "missingImage": 0,
+      "missingTime": 2,
+      "failsValidation": 0
+    },
+    "Theatre Charlotte · Instagram": {
+      "events": 7,
+      "familyNoSignal": 0,
+      "stock": 0,
+      "missingImage": 0,
+      "missingTime": 7,
+      "failsValidation": 0
+    },
+    "Discovery Place · Instagram": {
+      "events": 1,
+      "familyNoSignal": 0,
+      "stock": 0,
+      "missingImage": 0,
+      "missingTime": 1,
+      "failsValidation": 0
+    },
+    "Town of Matthews · Instagram": {
+      "events": 1,
+      "familyNoSignal": 0,
+      "stock": 0,
+      "missingImage": 0,
+      "missingTime": 1,
+      "failsValidation": 0
+    },
+    "Cabarrus County Public Library · Instagram": {
+      "events": 1,
+      "familyNoSignal": 0,
+      "stock": 0,
+      "missingImage": 0,
+      "missingTime": 1,
+      "failsValidation": 0
+    },
+    "York County Library": {
+      "events": 38,
+      "familyNoSignal": 0,
+      "stock": 38,
+      "missingImage": 0,
+      "missingTime": 1,
+      "failsValidation": 0
+    },
+    "Gaston County Public Library": {
+      "events": 27,
+      "familyNoSignal": 0,
+      "stock": 7,
+      "missingImage": 0,
+      "missingTime": 1,
+      "failsValidation": 0
+    },
+    "Mint Museum": {
+      "events": 6,
+      "familyNoSignal": 0,
+      "stock": 0,
+      "missingImage": 0,
+      "missingTime": 0,
+      "failsValidation": 0
+    },
+    "Charlotte Mecklenburg Library · Instagram": {
+      "events": 1,
+      "familyNoSignal": 0,
+      "stock": 0,
+      "missingImage": 0,
+      "missingTime": 1,
+      "failsValidation": 0
+    },
+    "Town of Indian Trail": {
+      "events": 2,
+      "familyNoSignal": 0,
+      "stock": 2,
+      "missingImage": 0,
+      "missingTime": 0,
+      "failsValidation": 0
+    },
+    "Town of Mint Hill · Instagram": {
+      "events": 1,
+      "familyNoSignal": 0,
+      "stock": 0,
+      "missingImage": 0,
+      "missingTime": 1,
+      "failsValidation": 0
+    },
+    "Town of Cornelius · Instagram": {
+      "events": 1,
+      "familyNoSignal": 0,
+      "stock": 0,
+      "missingImage": 0,
+      "missingTime": 1,
+      "failsValidation": 0
+    },
+    "Union County Public Library": {
+      "events": 14,
+      "familyNoSignal": 0,
+      "stock": 1,
+      "missingImage": 0,
+      "missingTime": 0,
+      "failsValidation": 0
+    },
+    "City of Gastonia · Instagram": {
+      "events": 4,
+      "familyNoSignal": 0,
+      "stock": 1,
+      "missingImage": 0,
+      "missingTime": 1,
+      "failsValidation": 0
+    },
+    "Town of Davidson": {
+      "events": 1,
+      "familyNoSignal": 0,
+      "stock": 1,
+      "missingImage": 0,
+      "missingTime": 0,
+      "failsValidation": 0
+    },
+    "Prince William Public Libraries": {
+      "events": 18,
+      "familyNoSignal": 0,
+      "stock": 8,
+      "missingImage": 0,
+      "missingTime": 6,
+      "failsValidation": 0
+    },
+    "Loudoun County Public Library": {
+      "events": 29,
+      "familyNoSignal": 0,
+      "stock": 22,
+      "missingImage": 0,
+      "missingTime": 1,
+      "failsValidation": 0
+    },
+    "City of Rockville · Instagram": {
+      "events": 1,
+      "familyNoSignal": 0,
+      "stock": 0,
+      "missingImage": 0,
+      "missingTime": 1,
+      "failsValidation": 0
+    },
+    "Alexandria Library · Instagram": {
+      "events": 1,
+      "familyNoSignal": 0,
+      "stock": 1,
+      "missingImage": 0,
+      "missingTime": 1,
+      "failsValidation": 0
+    },
+    "DC Public Library · Instagram": {
+      "events": 1,
+      "familyNoSignal": 0,
+      "stock": 0,
+      "missingImage": 0,
+      "missingTime": 1,
+      "failsValidation": 0
+    },
+    "Town of Vienna · Instagram": {
+      "events": 2,
+      "familyNoSignal": 0,
+      "stock": 0,
+      "missingImage": 0,
+      "missingTime": 2,
+      "failsValidation": 0
+    },
+    "Montgomery Parks · Instagram": {
+      "events": 3,
+      "familyNoSignal": 0,
+      "stock": 0,
+      "missingImage": 0,
+      "missingTime": 1,
+      "failsValidation": 0
+    },
+    "City of Falls Church": {
+      "events": 2,
+      "familyNoSignal": 0,
+      "stock": 2,
+      "missingImage": 0,
+      "missingTime": 1,
+      "failsValidation": 0
+    },
+    "City of College Park": {
+      "events": 12,
+      "familyNoSignal": 0,
+      "stock": 10,
+      "missingImage": 0,
+      "missingTime": 0,
+      "failsValidation": 0
+    },
+    "Arlington County": {
+      "events": 48,
+      "familyNoSignal": 0,
+      "stock": 43,
+      "missingImage": 0,
+      "missingTime": 0,
+      "failsValidation": 0
+    },
+    "City of Rockville": {
+      "events": 7,
+      "familyNoSignal": 0,
+      "stock": 3,
+      "missingImage": 0,
+      "missingTime": 0,
+      "failsValidation": 0
+    },
+    "Anne Arundel County Public Library": {
+      "events": 32,
+      "familyNoSignal": 0,
+      "stock": 32,
+      "missingImage": 0,
+      "missingTime": 0,
+      "failsValidation": 0
+    },
+    "Smithsonian": {
+      "events": 85,
+      "familyNoSignal": 0,
+      "stock": 6,
+      "missingImage": 0,
+      "missingTime": 2,
+      "failsValidation": 0
+    },
+    "City of Alexandria": {
+      "events": 9,
+      "familyNoSignal": 0,
+      "stock": 9,
+      "missingImage": 0,
+      "missingTime": 0,
+      "failsValidation": 0
+    },
+    "Georgetown BID": {
+      "events": 36,
+      "familyNoSignal": 0,
+      "stock": 36,
+      "missingImage": 0,
+      "missingTime": 0,
+      "failsValidation": 0
+    },
+    "Alexandria Library": {
+      "events": 50,
+      "familyNoSignal": 0,
+      "stock": 5,
+      "missingImage": 0,
+      "missingTime": 0,
+      "failsValidation": 0
+    },
+    "Howard County Library System": {
+      "events": 52,
+      "familyNoSignal": 0,
+      "stock": 52,
+      "missingImage": 0,
+      "missingTime": 0,
+      "failsValidation": 0
+    },
+    "DC Public Library": {
+      "events": 151,
+      "familyNoSignal": 1,
+      "stock": 27,
+      "missingImage": 0,
+      "missingTime": 2,
+      "failsValidation": 0
+    },
+    "Prince George's Parks": {
+      "events": 34,
+      "familyNoSignal": 0,
+      "stock": 0,
+      "missingImage": 0,
+      "missingTime": 0,
+      "failsValidation": 0
+    },
+    "Arlington Public Library": {
+      "events": 69,
+      "familyNoSignal": 0,
+      "stock": 20,
+      "missingImage": 0,
+      "missingTime": 0,
+      "failsValidation": 0
+    },
+    "Fairfax County Park Authority · Instagram": {
+      "events": 4,
+      "familyNoSignal": 0,
+      "stock": 1,
+      "missingImage": 0,
+      "missingTime": 3,
+      "failsValidation": 0
+    },
+    "Montgomery County Public Libraries": {
+      "events": 149,
+      "familyNoSignal": 0,
+      "stock": 7,
+      "missingImage": 0,
+      "missingTime": 0,
+      "failsValidation": 0
+    },
+    "Prince George's County Memorial Library System": {
+      "events": 76,
+      "familyNoSignal": 0,
+      "stock": 2,
+      "missingImage": 0,
+      "missingTime": 0,
+      "failsValidation": 0
+    },
+    "City of Fairfax": {
+      "events": 4,
+      "familyNoSignal": 0,
+      "stock": 1,
+      "missingImage": 0,
+      "missingTime": 0,
+      "failsValidation": 0
+    },
+    "City of Takoma Park": {
+      "events": 3,
+      "familyNoSignal": 0,
+      "stock": 0,
+      "missingImage": 0,
+      "missingTime": 0,
+      "failsValidation": 0
+    },
+    "Glen Echo Park · Instagram": {
+      "events": 1,
+      "familyNoSignal": 0,
+      "stock": 0,
+      "missingImage": 0,
+      "missingTime": 0,
+      "failsValidation": 0
+    },
+    "Prince George's Parks · Instagram": {
+      "events": 2,
+      "familyNoSignal": 0,
+      "stock": 2,
+      "missingImage": 0,
+      "missingTime": 0,
+      "failsValidation": 0
+    },
+    "City of Bowie": {
+      "events": 4,
+      "familyNoSignal": 0,
+      "stock": 4,
+      "missingImage": 0,
+      "missingTime": 0,
+      "failsValidation": 0
+    },
+    "Olney Theatre Center · Instagram": {
+      "events": 2,
+      "familyNoSignal": 0,
+      "stock": 1,
+      "missingImage": 0,
+      "missingTime": 2,
+      "failsValidation": 0
+    },
+    "City of Greenbelt": {
+      "events": 2,
+      "familyNoSignal": 0,
+      "stock": 0,
+      "missingImage": 0,
+      "missingTime": 0,
+      "failsValidation": 0
+    },
+    "Town of Vienna": {
+      "events": 2,
+      "familyNoSignal": 0,
+      "stock": 0,
+      "missingImage": 0,
+      "missingTime": 0,
+      "failsValidation": 0
+    },
+    "The Wharf DC · Instagram": {
+      "events": 1,
+      "familyNoSignal": 0,
+      "stock": 0,
+      "missingImage": 0,
+      "missingTime": 0,
+      "failsValidation": 0
+    },
+    "City of College Park · Instagram": {
+      "events": 1,
+      "familyNoSignal": 0,
+      "stock": 0,
+      "missingImage": 0,
+      "missingTime": 1,
+      "failsValidation": 0
+    },
+    "DC Department of Parks and Recreation · Instagram": {
+      "events": 2,
+      "familyNoSignal": 0,
+      "stock": 0,
+      "missingImage": 0,
+      "missingTime": 2,
+      "failsValidation": 0
+    },
+    "Reston Association": {
+      "events": 1,
+      "familyNoSignal": 0,
+      "stock": 1,
+      "missingImage": 0,
+      "missingTime": 0,
+      "failsValidation": 0
+    },
+    "City of Takoma Park · Instagram": {
+      "events": 1,
+      "familyNoSignal": 0,
+      "stock": 0,
+      "missingImage": 0,
+      "missingTime": 0,
+      "failsValidation": 0
+    },
+    "Town of Herndon · Instagram": {
+      "events": 1,
+      "familyNoSignal": 0,
+      "stock": 0,
+      "missingImage": 0,
+      "missingTime": 1,
+      "failsValidation": 0
+    },
+    "Wolf Trap · Instagram": {
+      "events": 1,
+      "familyNoSignal": 0,
+      "stock": 0,
+      "missingImage": 0,
+      "missingTime": 1,
+      "failsValidation": 0
+    },
+    "Little Theatre of Alexandria · Instagram": {
+      "events": 1,
+      "familyNoSignal": 0,
+      "stock": 0,
+      "missingImage": 0,
+      "missingTime": 1,
+      "failsValidation": 0
+    },
+    "Howard County Library System · Instagram": {
+      "events": 1,
+      "familyNoSignal": 0,
+      "stock": 1,
+      "missingImage": 0,
+      "missingTime": 1,
+      "failsValidation": 0
+    },
+    "Toby's Dinner Theatre · Instagram": {
+      "events": 1,
+      "familyNoSignal": 0,
+      "stock": 0,
+      "missingImage": 0,
+      "missingTime": 1,
+      "failsValidation": 0
+    },
+    "Milton Public Library": {
+      "events": 24,
+      "familyNoSignal": 0,
+      "stock": 8,
+      "missingImage": 0,
+      "missingTime": 3,
+      "failsValidation": 0
+    },
+    "Framingham Public Library": {
+      "events": 25,
+      "familyNoSignal": 0,
+      "stock": 17,
+      "missingImage": 0,
+      "missingTime": 1,
+      "failsValidation": 0
+    },
+    "Thomas Crane Public Library": {
+      "events": 17,
+      "familyNoSignal": 0,
+      "stock": 8,
+      "missingImage": 0,
+      "missingTime": 1,
+      "failsValidation": 0
+    },
+    "Salem Public Library · Instagram": {
+      "events": 3,
+      "familyNoSignal": 0,
+      "stock": 0,
+      "missingImage": 0,
+      "missingTime": 2,
+      "failsValidation": 0
+    },
+    "Brookline Public Library · Instagram": {
+      "events": 1,
+      "familyNoSignal": 0,
+      "stock": 0,
+      "missingImage": 0,
+      "missingTime": 1,
+      "failsValidation": 0
+    },
+    "North Shore Music Theatre · Instagram": {
+      "events": 6,
+      "familyNoSignal": 0,
+      "stock": 0,
+      "missingImage": 0,
+      "missingTime": 6,
+      "failsValidation": 0
+    },
+    "City of Cambridge · Instagram": {
+      "events": 1,
+      "familyNoSignal": 0,
+      "stock": 0,
+      "missingImage": 0,
+      "missingTime": 1,
+      "failsValidation": 0
+    },
+    "Medford Public Library": {
+      "events": 37,
+      "familyNoSignal": 0,
+      "stock": 37,
+      "missingImage": 0,
+      "missingTime": 0,
+      "failsValidation": 0
+    },
+    "Winchester Public Library": {
+      "events": 16,
+      "familyNoSignal": 0,
+      "stock": 10,
+      "missingImage": 0,
+      "missingTime": 0,
+      "failsValidation": 0
+    },
+    "Woburn Public Library": {
+      "events": 30,
+      "familyNoSignal": 0,
+      "stock": 3,
+      "missingImage": 0,
+      "missingTime": 0,
+      "failsValidation": 0
+    },
+    "Memorial Hall Library": {
+      "events": 27,
+      "familyNoSignal": 0,
+      "stock": 2,
+      "missingImage": 0,
+      "missingTime": 0,
+      "failsValidation": 0
+    },
+    "Boston Public Library": {
+      "events": 145,
+      "familyNoSignal": 3,
+      "stock": 19,
+      "missingImage": 0,
+      "missingTime": 1,
+      "failsValidation": 0
+    },
+    "Acton Memorial Library": {
+      "events": 22,
+      "familyNoSignal": 0,
+      "stock": 3,
+      "missingImage": 0,
+      "missingTime": 1,
+      "failsValidation": 0
+    },
+    "Concord Free Public Library": {
+      "events": 30,
+      "familyNoSignal": 0,
+      "stock": 6,
+      "missingImage": 0,
+      "missingTime": 0,
+      "failsValidation": 0
+    },
+    "Beverly Public Library": {
+      "events": 10,
+      "familyNoSignal": 0,
+      "stock": 8,
+      "missingImage": 0,
+      "missingTime": 0,
+      "failsValidation": 0
+    },
+    "Somerville Public Library": {
+      "events": 27,
+      "familyNoSignal": 0,
+      "stock": 4,
+      "missingImage": 0,
+      "missingTime": 0,
+      "failsValidation": 0
+    },
+    "Rose Kennedy Greenway · Instagram": {
+      "events": 1,
+      "familyNoSignal": 0,
+      "stock": 0,
+      "missingImage": 0,
+      "missingTime": 0,
+      "failsValidation": 0
+    },
+    "MIT": {
+      "events": 68,
+      "familyNoSignal": 0,
+      "stock": 29,
+      "missingImage": 0,
+      "missingTime": 0,
+      "failsValidation": 0
+    },
+    "Goodnow Library": {
+      "events": 22,
+      "familyNoSignal": 0,
+      "stock": 1,
+      "missingImage": 0,
+      "missingTime": 0,
+      "failsValidation": 0
+    },
+    "Wellesley Free Library": {
+      "events": 18,
+      "familyNoSignal": 0,
+      "stock": 2,
+      "missingImage": 0,
+      "missingTime": 1,
+      "failsValidation": 0
+    },
+    "Hingham Public Library": {
+      "events": 15,
+      "familyNoSignal": 0,
+      "stock": 11,
+      "missingImage": 0,
+      "missingTime": 0,
+      "failsValidation": 0
+    },
+    "Needham Free Public Library": {
+      "events": 3,
+      "familyNoSignal": 0,
+      "stock": 2,
+      "missingImage": 0,
+      "missingTime": 2,
+      "failsValidation": 0
+    },
+    "Needham Free Public Library · Instagram": {
+      "events": 1,
+      "familyNoSignal": 0,
+      "stock": 0,
+      "missingImage": 0,
+      "missingTime": 1,
+      "failsValidation": 0
+    },
+    "Newton Free Library": {
+      "events": 38,
+      "familyNoSignal": 0,
+      "stock": 8,
+      "missingImage": 0,
+      "missingTime": 0,
+      "failsValidation": 0
+    },
+    "New England Aquarium": {
+      "events": 2,
+      "familyNoSignal": 0,
+      "stock": 0,
+      "missingImage": 0,
+      "missingTime": 0,
+      "failsValidation": 0
+    },
+    "Waltham Public Library": {
+      "events": 19,
+      "familyNoSignal": 0,
+      "stock": 13,
+      "missingImage": 0,
+      "missingTime": 0,
+      "failsValidation": 0
+    },
+    "Milton Public Library · Instagram": {
+      "events": 1,
+      "familyNoSignal": 0,
+      "stock": 0,
+      "missingImage": 0,
+      "missingTime": 0,
+      "failsValidation": 0
+    },
+    "Brookline Public Library": {
+      "events": 28,
+      "familyNoSignal": 0,
+      "stock": 7,
+      "missingImage": 0,
+      "missingTime": 0,
+      "failsValidation": 0
+    },
+    "City of Salem MA": {
+      "events": 5,
+      "familyNoSignal": 0,
+      "stock": 5,
+      "missingImage": 0,
+      "missingTime": 5,
+      "failsValidation": 0
+    },
+    "Town of Lexington MA": {
+      "events": 2,
+      "familyNoSignal": 0,
+      "stock": 2,
+      "missingImage": 0,
+      "missingTime": 0,
+      "failsValidation": 0
+    },
+    "Salem Public Library": {
+      "events": 8,
+      "familyNoSignal": 0,
+      "stock": 0,
+      "missingImage": 0,
+      "missingTime": 0,
+      "failsValidation": 0
+    },
+    "Melrose Public Library": {
+      "events": 15,
+      "familyNoSignal": 0,
+      "stock": 9,
+      "missingImage": 0,
+      "missingTime": 0,
+      "failsValidation": 0
+    },
+    "Cary Memorial Library": {
+      "events": 16,
+      "familyNoSignal": 0,
+      "stock": 10,
+      "missingImage": 0,
+      "missingTime": 0,
+      "failsValidation": 0
+    },
+    "Belmont Public Library": {
+      "events": 21,
+      "familyNoSignal": 0,
+      "stock": 19,
+      "missingImage": 0,
+      "missingTime": 0,
+      "failsValidation": 0
+    },
+    "Town of Lexington MA · Instagram": {
+      "events": 1,
+      "familyNoSignal": 0,
+      "stock": 1,
+      "missingImage": 0,
+      "missingTime": 1,
+      "failsValidation": 0
+    },
+    "Cambridge Public Library · Instagram": {
+      "events": 1,
+      "familyNoSignal": 0,
+      "stock": 0,
+      "missingImage": 0,
+      "missingTime": 1,
+      "failsValidation": 0
+    },
+    "Boston Public Library · Instagram": {
+      "events": 3,
+      "familyNoSignal": 0,
+      "stock": 0,
+      "missingImage": 0,
+      "missingTime": 3,
+      "failsValidation": 0
+    },
+    "Concord Free Public Library · Instagram": {
+      "events": 1,
+      "familyNoSignal": 0,
+      "stock": 0,
+      "missingImage": 0,
+      "missingTime": 1,
+      "failsValidation": 0
+    },
+    "City of Somerville · Instagram": {
+      "events": 1,
+      "familyNoSignal": 0,
+      "stock": 0,
+      "missingImage": 0,
+      "missingTime": 1,
+      "failsValidation": 0
+    },
+    "Lake Worth Beach City Library · Instagram": {
+      "events": 1,
+      "familyNoSignal": 0,
+      "stock": 0,
+      "missingImage": 0,
+      "missingTime": 0,
+      "failsValidation": 0
+    },
+    "Somerville Public Library · Instagram": {
+      "events": 1,
+      "familyNoSignal": 0,
+      "stock": 0,
+      "missingImage": 0,
+      "missingTime": 1,
+      "failsValidation": 0
+    },
+    "Museum of Science · Instagram": {
+      "events": 1,
+      "familyNoSignal": 0,
+      "stock": 1,
+      "missingImage": 0,
+      "missingTime": 1,
+      "failsValidation": 0
+    },
+    "Museum of Fine Arts Boston · Instagram": {
+      "events": 1,
+      "familyNoSignal": 0,
+      "stock": 1,
+      "missingImage": 0,
+      "missingTime": 0,
+      "failsValidation": 0
+    }
+  },
+  "findingsByType": {
+    "missing-time": 288,
+    "venue-is-address": 272,
+    "family-no-signal": 16
+  },
+  "examples": {
+    "City of Plantation": {
+      "missing-time": [
+        {
+          "type": "missing-time",
+          "eventId": "db-1884205",
+          "title": "Farmers Market",
+          "source": "City of Plantation"
+        },
+        {
+          "type": "missing-time",
+          "eventId": "db-1884203",
+          "title": "Wednesday Food Trucks",
+          "source": "City of Plantation"
+        },
+        {
+          "type": "missing-time",
+          "eventId": "db-133196",
+          "title": "Rock The Park Free Concert Series",
+          "source": "City of Plantation"
+        }
+      ]
+    },
+    "Island City Stage · Instagram": {
+      "missing-time": [
+        {
+          "type": "missing-time",
+          "eventId": "db-1266542",
+          "title": "We don’t know why but for some reason you’ve waited to get tickets for Michael L",
+          "source": "Island City Stage · Instagram"
+        },
+        {
+          "type": "missing-time",
+          "eventId": "db-1123297",
+          "title": "On a dark and stormy night five men arrive at a cabin for a soap star’s surprise",
+          "source": "Island City Stage · Instagram"
+        },
+        {
+          "type": "missing-time",
+          "eventId": "db-1123299",
+          "title": "Be sure to check out Florida Theater On Stage’s outstanding review of Who Killed",
+          "source": "Island City Stage · Instagram"
+        }
+      ]
+    },
+    "City of Tamarac · Instagram": {
+      "venue-is-address": [
+        {
+          "type": "venue-is-address",
+          "eventId": "db-1883119",
+          "title": "TOMORROW",
+          "source": "City of Tamarac · Instagram",
+          "detail": "7105 NW 88th Ave."
+        }
+      ],
+      "missing-time": [
+        {
+          "type": "missing-time",
+          "eventId": "db-1883119",
+          "title": "TOMORROW",
+          "source": "City of Tamarac · Instagram"
+        },
+        {
+          "type": "missing-time",
+          "eventId": "db-226494",
+          "title": "Join Mayor Michelle J",
+          "source": "City of Tamarac · Instagram"
+        }
+      ]
+    },
+    "City of Wilton Manors · Instagram": {
+      "venue-is-address": [
+        {
+          "type": "venue-is-address",
+          "eventId": "db-1704287",
+          "title": "This iconic block party",
+          "source": "City of Wilton Manors · Instagram",
+          "detail": "2020 Wilton Drive"
+        }
+      ],
+      "missing-time": [
+        {
+          "type": "missing-time",
+          "eventId": "db-1704287",
+          "title": "This iconic block party",
+          "source": "City of Wilton Manors · Instagram"
+        }
+      ]
+    },
+    "City of Hollywood · Instagram": {
+      "venue-is-address": [
+        {
+          "type": "venue-is-address",
+          "eventId": "db-1641649",
+          "title": "Burgers griot grilled lamb chops tacos and delicious memories from Dine Out Holl",
+          "source": "City of Hollywood · Instagram",
+          "detail": "906 North Dixie Highway"
+        }
+      ],
+      "missing-time": [
+        {
+          "type": "missing-time",
+          "eventId": "db-1641649",
+          "title": "Burgers griot grilled lamb chops tacos and delicious memories from Dine Out Holl",
+          "source": "City of Hollywood · Instagram"
+        }
+      ]
+    },
+    "City of Lauderdale Lakes · Instagram": {
+      "missing-time": [
+        {
+          "type": "missing-time",
+          "eventId": "db-1889377",
+          "title": "Pssst Want a Sneak Peek",
+          "source": "City of Lauderdale Lakes · Instagram"
+        },
+        {
+          "type": "missing-time",
+          "eventId": "db-1883019",
+          "title": "SETUP",
+          "source": "City of Lauderdale Lakes · Instagram"
+        },
+        {
+          "type": "missing-time",
+          "eventId": "db-1704183",
+          "title": "The City of Lauderdale Lakes’ Halloween Spooktacular",
+          "source": "City of Lauderdale Lakes · Instagram"
+        }
+      ]
+    },
+    "City of Doral · Instagram": {
+      "missing-time": [
+        {
+          "type": "missing-time",
+          "eventId": "db-1641674",
+          "title": "𝐘𝐨𝐮𝐫 𝐖𝐞𝐞𝐤𝐞𝐧𝐝 𝐏𝐥𝐚𝐧𝐬 𝐒𝐡𝐨𝐮𝐥𝐝 𝐈𝐧𝐜𝐥𝐮𝐝𝐞 𝐚 𝐓𝐚𝐬𝐭𝐞 𝐨�",
+          "source": "City of Doral · Instagram"
+        }
+      ]
+    },
+    "To Do with Kids Broward · Instagram": {
+      "missing-time": [
+        {
+          "type": "missing-time",
+          "eventId": "db-1458870",
+          "title": "Celebrate the season with adorable leaf crafts at Bass Pro Shops",
+          "source": "To Do with Kids Broward · Instagram"
+        }
+      ]
+    },
+    "City of Miami Gardens · Instagram": {
+      "venue-is-address": [
+        {
+          "type": "venue-is-address",
+          "eventId": "db-1641680",
+          "title": "Fall Festival at Rolling Oaks Park",
+          "source": "City of Miami Gardens · Instagram",
+          "detail": "3000 NW 199th Street"
+        }
+      ]
+    },
+    "City of Deerfield Beach · Instagram": {
+      "missing-time": [
+        {
+          "type": "missing-time",
+          "eventId": "db-1395662",
+          "title": "Get ready to jump sweat and glow",
+          "source": "City of Deerfield Beach · Instagram"
+        }
+      ]
+    },
+    "Butterfly World · Instagram": {},
+    "Broward County Parks": {},
+    "Miami-Dade Public Library": {
+      "family-no-signal": [
+        {
+          "type": "family-no-signal",
+          "eventId": "db-127584",
+          "title": "Miami Gardens Toastmasters Club",
+          "source": "Miami-Dade Public Library"
+        },
+        {
+          "type": "family-no-signal",
+          "eventId": "db-220569",
+          "title": "Dungeons & Dragons [DND] Club",
+          "source": "Miami-Dade Public Library"
+        },
+        {
+          "type": "family-no-signal",
+          "eventId": "db-116951",
+          "title": "Crochet and Connections",
+          "source": "Miami-Dade Public Library"
+        }
+      ],
+      "missing-time": [
+        {
+          "type": "missing-time",
+          "eventId": "db-65685",
+          "title": "The Magic of Miami Beach",
+          "source": "Miami-Dade Public Library"
+        }
+      ]
+    },
+    "Flamingo Gardens · Instagram": {},
+    "Broward County Library": {},
+    "Museum of Discovery and Science": {},
+    "Boca Raton Public Library": {},
+    "Museum of Discovery and Science · Instagram": {},
+    "City of Parkland": {
+      "venue-is-address": [
+        {
+          "type": "venue-is-address",
+          "eventId": "db-1267439",
+          "title": "Gaming Unplugged",
+          "source": "City of Parkland",
+          "detail": "6620 University Drive"
+        },
+        {
+          "type": "venue-is-address",
+          "eventId": "db-287702",
+          "title": "Farmers' Market | Opening Day- Public Safety",
+          "source": "City of Parkland",
+          "detail": "8350 Ranch Rd."
+        },
+        {
+          "type": "venue-is-address",
+          "eventId": "db-334986",
+          "title": "Paper Crafts (Adults)",
+          "source": "City of Parkland",
+          "detail": "6620 University Drive"
+        }
+      ]
+    },
+    "City of Wilton Manors": {
+      "venue-is-address": [
+        {
+          "type": "venue-is-address",
+          "eventId": "db-268046",
+          "title": "Family Fun with Board Games (Drop-in Event)",
+          "source": "City of Wilton Manors",
+          "detail": "500 NE 26th St."
+        },
+        {
+          "type": "venue-is-address",
+          "eventId": "db-319415",
+          "title": "Schools Day Out: Galaxy Skateway",
+          "source": "City of Wilton Manors",
+          "detail": "823 NE 28th ST"
+        },
+        {
+          "type": "venue-is-address",
+          "eventId": "db-319412",
+          "title": "Chair Volleyball",
+          "source": "City of Wilton Manors",
+          "detail": "2020 Wilton Drive"
+        }
+      ]
+    },
+    "Bonnet House Museum & Gardens": {},
+    "Pompano Beach Arts": {
+      "missing-time": [
+        {
+          "type": "missing-time",
+          "eventId": "db-1128626",
+          "title": "\"Everything Esther\" Esther Rolle Exhibition",
+          "source": "Pompano Beach Arts"
+        },
+        {
+          "type": "missing-time",
+          "eventId": "db-1128625",
+          "title": "Pompano Players 2026 - 2027",
+          "source": "Pompano Beach Arts"
+        },
+        {
+          "type": "missing-time",
+          "eventId": "db-1276144",
+          "title": "2026 - 2027 Season: Live Theater & Concerts",
+          "source": "Pompano Beach Arts"
+        }
+      ]
+    },
+    "City of North Miami": {
+      "venue-is-address": [
+        {
+          "type": "venue-is-address",
+          "eventId": "db-1397605",
+          "title": "Fall Computer Classes",
+          "source": "City of North Miami",
+          "detail": "835 NE 132 Street"
+        },
+        {
+          "type": "venue-is-address",
+          "eventId": "db-304761",
+          "title": "Fall Zumbini",
+          "source": "City of North Miami",
+          "detail": "835 NE 132 Street"
+        },
+        {
+          "type": "venue-is-address",
+          "eventId": "db-304760",
+          "title": "Moca @ the Library - Middleschool",
+          "source": "City of North Miami",
+          "detail": "835 NE 132 Street"
+        }
+      ]
+    },
+    "Wynwood": {},
+    "City of Doral": {},
+    "City of Hollywood": {
+      "venue-is-address": [
+        {
+          "type": "venue-is-address",
+          "eventId": "db-1580630",
+          "title": "Youth Light the Night Halloween Spectacular",
+          "source": "City of Hollywood",
+          "detail": "2400 Charleston Street"
+        },
+        {
+          "type": "venue-is-address",
+          "eventId": "db-267410",
+          "title": "Live Music at Hollywood Beach Theatre",
+          "source": "City of Hollywood",
+          "detail": "200 Johnson St"
+        },
+        {
+          "type": "venue-is-address",
+          "eventId": "db-287504",
+          "title": "Dream Car Classic Car Show",
+          "source": "City of Hollywood",
+          "detail": "1900 Block of Hollywood Blvd"
+        }
+      ]
+    },
+    "Hollywood Parks & Rec · Instagram": {},
+    "City of Miami Gardens": {
+      "venue-is-address": [
+        {
+          "type": "venue-is-address",
+          "eventId": "db-304727",
+          "title": "Military Mondays",
+          "source": "City of Miami Gardens",
+          "detail": "3000 NW 199th Street"
+        },
+        {
+          "type": "venue-is-address",
+          "eventId": "db-304726",
+          "title": "Manhood Mondays",
+          "source": "City of Miami Gardens",
+          "detail": "20601 NW 32nd Ave"
+        },
+        {
+          "type": "venue-is-address",
+          "eventId": "db-363753",
+          "title": "Operation Veterans Stand Down",
+          "source": "City of Miami Gardens",
+          "detail": "3000 NW 199th Street"
+        }
+      ]
+    },
+    "City of Fort Lauderdale": {
+      "missing-time": [
+        {
+          "type": "missing-time",
+          "eventId": "db-347560",
+          "title": "Posh Halloween Soca Bash",
+          "source": "City of Fort Lauderdale"
+        }
+      ]
+    },
+    "Weston Town Center": {},
+    "City of Hialeah": {
+      "venue-is-address": [
+        {
+          "type": "venue-is-address",
+          "eventId": "db-1125358",
+          "title": "Trunk or Treat",
+          "source": "City of Hialeah",
+          "detail": "4800 Palm Avenue"
+        },
+        {
+          "type": "venue-is-address",
+          "eventId": "db-348255",
+          "title": "Pop Art Exhibit Opening Night",
+          "source": "City of Hialeah",
+          "detail": "4800 Palm Avenue"
+        }
+      ]
+    },
+    "City of Lauderdale Lakes": {
+      "venue-is-address": [
+        {
+          "type": "venue-is-address",
+          "eventId": "db-348264",
+          "title": "Halloween Spooktacular 2026: Heroes vs. Villains",
+          "source": "City of Lauderdale Lakes",
+          "detail": "4331 NW 36th Street"
+        },
+        {
+          "type": "venue-is-address",
+          "eventId": "db-348263",
+          "title": "Alzheimer’s Association Brain Bus",
+          "source": "City of Lauderdale Lakes",
+          "detail": "4340 NW 36th Street"
+        },
+        {
+          "type": "venue-is-address",
+          "eventId": "db-363739",
+          "title": "Broward County Tax Collector Services",
+          "source": "City of Lauderdale Lakes",
+          "detail": "4300 NW 36th Street"
+        }
+      ],
+      "missing-time": [
+        {
+          "type": "missing-time",
+          "eventId": "db-363739",
+          "title": "Broward County Tax Collector Services",
+          "source": "City of Lauderdale Lakes"
+        }
+      ]
+    },
+    "City of Hallandale Beach": {
+      "venue-is-address": [
+        {
+          "type": "venue-is-address",
+          "eventId": "db-267384",
+          "title": "Halloween Trail of Treats",
+          "source": "City of Hallandale Beach",
+          "detail": "1000 NW 8th Avenue"
+        }
+      ]
+    },
+    "Town of Surfside · Instagram": {},
+    "Ticketmaster": {
+      "missing-time": [
+        {
+          "type": "missing-time",
+          "eventId": "db-68451",
+          "title": "Monster's Ball Featuring NOIZU",
+          "source": "Ticketmaster"
+        },
+        {
+          "type": "missing-time",
+          "eventId": "db-399246",
+          "title": "Georgia Tech Yellow Jackets Mens Basketball vs. Hampton Pirates Mens Basketball",
+          "source": "Ticketmaster"
+        },
+        {
+          "type": "missing-time",
+          "eventId": "db-399284",
+          "title": "Georgia Tech Yellow Jackets Mens Basketball vs. Georgia Southern Eagles Mens Basketball",
+          "source": "Ticketmaster"
+        }
+      ],
+      "family-no-signal": [
+        {
+          "type": "family-no-signal",
+          "eventId": "db-1919337",
+          "title": "Valesca Popozuda (ALL AGES) | November 1st @ Big Night Live",
+          "source": "Ticketmaster"
+        }
+      ]
+    },
+    "Curtain Call Playhouse · Instagram": {
+      "missing-time": [
+        {
+          "type": "missing-time",
+          "eventId": "db-1883413",
+          "title": "Barney's Personal Ad 47 married and completely out of his depth",
+          "source": "Curtain Call Playhouse · Instagram"
+        },
+        {
+          "type": "missing-time",
+          "eventId": "db-1123255",
+          "title": "Event",
+          "source": "Curtain Call Playhouse · Instagram"
+        },
+        {
+          "type": "missing-time",
+          "eventId": "db-1889752",
+          "title": "Last of the Red Hot Lovers",
+          "source": "Curtain Call Playhouse · Instagram"
+        }
+      ]
+    },
+    "City of Hallandale Beach · Instagram": {
+      "missing-time": [
+        {
+          "type": "missing-time",
+          "eventId": "db-305391",
+          "title": "Hallandale Sounds Concert",
+          "source": "City of Hallandale Beach · Instagram"
+        }
+      ]
+    },
+    "City of Pompano Beach · Instagram": {
+      "venue-is-address": [
+        {
+          "type": "venue-is-address",
+          "eventId": "db-132593",
+          "title": "SE 6th Terrace Bridge Replacement - Bridge Construction Begins",
+          "source": "City of Pompano Beach · Instagram",
+          "detail": "SE 6th Terrace Bridge"
+        }
+      ],
+      "missing-time": [
+        {
+          "type": "missing-time",
+          "eventId": "db-132593",
+          "title": "SE 6th Terrace Bridge Replacement - Bridge Construction Begins",
+          "source": "City of Pompano Beach · Instagram"
+        },
+        {
+          "type": "missing-time",
+          "eventId": "db-1883111",
+          "title": "The City of Pompano Beach’s Utilities Department will conduct routine free chlor",
+          "source": "City of Pompano Beach · Instagram"
+        }
+      ]
+    },
+    "City of Weston": {
+      "missing-time": [
+        {
+          "type": "missing-time",
+          "eventId": "db-133250",
+          "title": "12th Annual Veterans Day Salute",
+          "source": "City of Weston"
+        }
+      ]
+    },
+    "Vizcaya Museum and Gardens": {},
+    "Broward County Parks · Instagram": {},
+    "City of Lighthouse Point": {
+      "venue-is-address": [
+        {
+          "type": "venue-is-address",
+          "eventId": "db-288181",
+          "title": "Elk's Hoop Challenge",
+          "source": "City of Lighthouse Point",
+          "detail": "4521 NE 22nd Ave"
+        }
+      ]
+    },
+    "City of Boca Raton": {
+      "venue-is-address": [
+        {
+          "type": "venue-is-address",
+          "eventId": "db-288154",
+          "title": "Soccer Shots",
+          "source": "City of Boca Raton",
+          "detail": "300 S Military Trail"
+        },
+        {
+          "type": "venue-is-address",
+          "eventId": "db-288158",
+          "title": "Make & Take - Veggie Stamp Tote Bags",
+          "source": "City of Boca Raton",
+          "detail": "300 South Military Trail"
+        },
+        {
+          "type": "venue-is-address",
+          "eventId": "db-304696",
+          "title": "Music Together with Laurie (NEW DAY ADDED!)",
+          "source": "City of Boca Raton",
+          "detail": "300 S Military Trail"
+        }
+      ]
+    },
+    "City of Cooper City · Instagram": {
+      "missing-time": [
+        {
+          "type": "missing-time",
+          "eventId": "db-1197803",
+          "title": "A couple more homes have joined the haunt now it’s time to take the scenic scare",
+          "source": "City of Cooper City · Instagram"
+        }
+      ]
+    },
+    "City of Sunrise": {},
+    "CityPlace Doral · Instagram": {
+      "missing-time": [
+        {
+          "type": "missing-time",
+          "eventId": "db-305612",
+          "title": "Whiskey Wednesdays",
+          "source": "CityPlace Doral · Instagram"
+        }
+      ]
+    },
+    "City of Lauderhill · Instagram": {},
+    "City of Miami Beach": {
+      "venue-is-address": [
+        {
+          "type": "venue-is-address",
+          "eventId": "db-1426017",
+          "title": "The Ocean Drive Promenade Music Series",
+          "source": "City of Miami Beach",
+          "detail": "Lummus Park – 14 Street & Ocean Drive"
+        },
+        {
+          "type": "venue-is-address",
+          "eventId": "db-1607354",
+          "title": "Sound Therapy for Seniors (UN)",
+          "source": "City of Miami Beach",
+          "detail": "UNIDAD – 7251 Collins Avenue"
+        },
+        {
+          "type": "venue-is-address",
+          "eventId": "db-1846744",
+          "title": "Dance Fusion for Seniors (UN) - Tue",
+          "source": "City of Miami Beach",
+          "detail": "UNIDAD – 7251 Collins Avenue"
+        }
+      ]
+    },
+    "Hialeah Parks & Rec · Instagram": {
+      "missing-time": [
+        {
+          "type": "missing-time",
+          "eventId": "db-82598",
+          "title": "Start Smart Basketball",
+          "source": "Hialeah Parks & Rec · Instagram"
+        }
+      ]
+    },
+    "Palm Beach County Library": {
+      "missing-time": [
+        {
+          "type": "missing-time",
+          "eventId": "db-77535",
+          "title": "Be a Kid Librarian",
+          "source": "Palm Beach County Library"
+        }
+      ]
+    },
+    "North Miami Beach Public Library": {},
+    "City of Cooper City": {},
+    "Hallandale Beach Parks & Rec · Instagram": {
+      "missing-time": [
+        {
+          "type": "missing-time",
+          "eventId": "db-1458825",
+          "title": "Get ready to level up your workout routine",
+          "source": "Hallandale Beach Parks & Rec · Instagram"
+        }
+      ]
+    },
+    "Charles F. Dodge City Center · Instagram": {
+      "missing-time": [
+        {
+          "type": "missing-time",
+          "eventId": "db-305345",
+          "title": "Broward Health Annual Small Business Expo",
+          "source": "Charles F. Dodge City Center · Instagram"
+        }
+      ]
+    },
+    "City of Coral Springs": {},
+    "City of Oakland Park": {
+      "venue-is-address": [
+        {
+          "type": "venue-is-address",
+          "eventId": "db-319252",
+          "title": "Broward County Property Appraiser",
+          "source": "City of Oakland Park",
+          "detail": "3900 NE 3rd Avenue"
+        },
+        {
+          "type": "venue-is-address",
+          "eventId": "db-319253",
+          "title": "Youth Show and Tell",
+          "source": "City of Oakland Park",
+          "detail": "3900 NE 3rd Avenue"
+        },
+        {
+          "type": "venue-is-address",
+          "eventId": "db-333933",
+          "title": "Storytime w/ BSO & Firefighters",
+          "source": "City of Oakland Park",
+          "detail": "3900 NE 3rd Avenue"
+        }
+      ]
+    },
+    "City of Oakland Park · Instagram": {
+      "venue-is-address": [
+        {
+          "type": "venue-is-address",
+          "eventId": "db-457243",
+          "title": "There’s already a better option on the table",
+          "source": "City of Oakland Park · Instagram",
+          "detail": "4000 N Dixie Hwy"
+        },
+        {
+          "type": "venue-is-address",
+          "eventId": "db-1883082",
+          "title": "Before Broward makes a final decision about Lloyd Estates it should show its wor",
+          "source": "City of Oakland Park · Instagram",
+          "detail": "4000 N Dixie Hwy"
+        }
+      ],
+      "missing-time": [
+        {
+          "type": "missing-time",
+          "eventId": "db-457243",
+          "title": "There’s already a better option on the table",
+          "source": "City of Oakland Park · Instagram"
+        },
+        {
+          "type": "missing-time",
+          "eventId": "db-1883082",
+          "title": "Before Broward makes a final decision about Lloyd Estates it should show its wor",
+          "source": "City of Oakland Park · Instagram"
+        }
+      ]
+    },
+    "City of Plantation · Instagram": {
+      "missing-time": [
+        {
+          "type": "missing-time",
+          "eventId": "db-368511",
+          "title": "Need to renew your driver's license update your address or replace your ID",
+          "source": "City of Plantation · Instagram"
+        }
+      ]
+    },
+    "Downtown Hollywood · Instagram": {},
+    "Broward Center for the Performing Arts · Instagram": {
+      "missing-time": [
+        {
+          "type": "missing-time",
+          "eventId": "db-1643221",
+          "title": "Mind reading pickpocketing comedy and a whole lot of deception",
+          "source": "Broward Center for the Performing Arts · Instagram"
+        }
+      ]
+    },
+    "City of Pembroke Pines": {
+      "venue-is-address": [
+        {
+          "type": "venue-is-address",
+          "eventId": "db-347803",
+          "title": "Weekly Public Education",
+          "source": "City of Pembroke Pines",
+          "detail": "301 NW 103rd Avenue"
+        },
+        {
+          "type": "venue-is-address",
+          "eventId": "db-363281",
+          "title": "Veterans Assistance at SWFP",
+          "source": "City of Pembroke Pines",
+          "detail": "301 NW 103rd Avenue"
+        }
+      ]
+    },
+    "NSU Art Museum Fort Lauderdale": {},
+    "Boca Raton Recreation · Instagram": {},
+    "City of Miramar": {},
+    "City of Boca Raton · Instagram": {},
+    "City of Fort Lauderdale · Instagram": {
+      "missing-time": [
+        {
+          "type": "missing-time",
+          "eventId": "db-335834",
+          "title": "LauderBriefs are here",
+          "source": "City of Fort Lauderdale · Instagram"
+        }
+      ]
+    },
+    "Miami Springs Parks & Rec · Instagram": {
+      "missing-time": [
+        {
+          "type": "missing-time",
+          "eventId": "db-1460630",
+          "title": "Ready set TOSS",
+          "source": "Miami Springs Parks & Rec · Instagram"
+        }
+      ]
+    },
+    "Downtown Fort Lauderdale · Instagram": {},
+    "City of Deerfield Beach": {},
+    "Adrienne Arsht Center · Instagram": {
+      "missing-time": [
+        {
+          "type": "missing-time",
+          "eventId": "db-1521530",
+          "title": "Time",
+          "source": "Adrienne Arsht Center · Instagram"
+        },
+        {
+          "type": "missing-time",
+          "eventId": "db-1123719",
+          "title": "Celebrate the centennial of Brazilian music icon Antonio Carlos Jobim with a nig",
+          "source": "Adrienne Arsht Center · Instagram"
+        }
+      ]
+    },
+    "Phillip and Patricia Frost Museum of Science · Instagram": {
+      "missing-time": [
+        {
+          "type": "missing-time",
+          "eventId": "db-788281",
+          "title": "Having a skele-ton fun in our Aquarium",
+          "source": "Phillip and Patricia Frost Museum of Science · Instagram"
+        }
+      ]
+    },
+    "Jungle Island · Instagram": {
+      "missing-time": [
+        {
+          "type": "missing-time",
+          "eventId": "db-1704776",
+          "title": "Trick or Treat",
+          "source": "Jungle Island · Instagram"
+        }
+      ]
+    },
+    "Deering Estate": {},
+    "Downtown Delray Beach · Instagram": {},
+    "Bayfront Park · Instagram": {},
+    "The Bass Museum": {},
+    "Phillip and Patricia Frost Museum of Science": {},
+    "Delray Beach Public Library · Instagram": {},
+    "Coconut Grove BID · Instagram": {},
+    "Bayfront Park": {},
+    "Gold Coast Railroad Museum · Instagram": {},
+    "New World Symphony · Instagram": {
+      "missing-time": [
+        {
+          "type": "missing-time",
+          "eventId": "db-1330607",
+          "title": "Kids Concert",
+          "source": "New World Symphony · Instagram"
+        }
+      ]
+    },
+    "City of Miami · Instagram": {
+      "missing-time": [
+        {
+          "type": "missing-time",
+          "eventId": "db-1704212",
+          "title": "An extra hour of sleep",
+          "source": "City of Miami · Instagram"
+        },
+        {
+          "type": "missing-time",
+          "eventId": "db-1334624",
+          "title": "The City of Miami Department of Human Services",
+          "source": "City of Miami · Instagram"
+        },
+        {
+          "type": "missing-time",
+          "eventId": "db-1460955",
+          "title": "Stay informed Miami",
+          "source": "City of Miami · Instagram"
+        }
+      ]
+    },
+    "Miami Residents · Instagram": {
+      "missing-time": [
+        {
+          "type": "missing-time",
+          "eventId": "db-1889294",
+          "title": "A Spooky Symphony",
+          "source": "Miami Residents · Instagram"
+        }
+      ]
+    },
+    "Miami Children's Museum · Instagram": {
+      "missing-time": [
+        {
+          "type": "missing-time",
+          "eventId": "db-787301",
+          "title": "One Day Camp",
+          "source": "Miami Children's Museum · Instagram"
+        }
+      ]
+    },
+    "Miami-Dade Parks · Instagram": {
+      "missing-time": [
+        {
+          "type": "missing-time",
+          "eventId": "db-1882944",
+          "title": "Make an impact beyond the parks",
+          "source": "Miami-Dade Parks · Instagram"
+        }
+      ]
+    },
+    "Miami New Drama · Instagram": {
+      "missing-time": [
+        {
+          "type": "missing-time",
+          "eventId": "db-1123342",
+          "title": "Every remarkable story needs someone to bring it to light",
+          "source": "Miami New Drama · Instagram"
+        },
+        {
+          "type": "missing-time",
+          "eventId": "db-1642734",
+          "title": "Hermann Kallenbach gave it all up",
+          "source": "Miami New Drama · Instagram"
+        },
+        {
+          "type": "missing-time",
+          "eventId": "db-1521081",
+          "title": "What can a place reveal about a friendship nearly lost to history",
+          "source": "Miami New Drama · Instagram"
+        }
+      ],
+      "venue-is-address": [
+        {
+          "type": "venue-is-address",
+          "eventId": "db-1521081",
+          "title": "What can a place reveal about a friendship nearly lost to history",
+          "source": "Miami New Drama · Instagram",
+          "detail": "November 5–29"
+        },
+        {
+          "type": "venue-is-address",
+          "eventId": "db-1123338",
+          "title": "Everyone can connect with a deep life-changing friendship",
+          "source": "Miami New Drama · Instagram",
+          "detail": "November 5–29"
+        }
+      ]
+    },
+    "Zoetic Stage · Instagram": {
+      "missing-time": [
+        {
+          "type": "missing-time",
+          "eventId": "db-1123477",
+          "title": "Four actors",
+          "source": "Zoetic Stage · Instagram"
+        },
+        {
+          "type": "missing-time",
+          "eventId": "db-1704881",
+          "title": "God of Carnage",
+          "source": "Zoetic Stage · Instagram"
+        }
+      ]
+    },
+    "City of Coral Gables · Instagram": {
+      "missing-time": [
+        {
+          "type": "missing-time",
+          "eventId": "db-1197780",
+          "title": "A beautiful celebration of life remembrance and Mexican tradition",
+          "source": "City of Coral Gables · Instagram"
+        }
+      ]
+    },
+    "City of South Miami · Instagram": {
+      "missing-time": [
+        {
+          "type": "missing-time",
+          "eventId": "db-457272",
+          "title": "There’s still time to savor Miami Spice in and around South Miami",
+          "source": "City of South Miami · Instagram"
+        },
+        {
+          "type": "missing-time",
+          "eventId": "db-1197900",
+          "title": "Looking for Halloween plans",
+          "source": "City of South Miami · Instagram"
+        }
+      ]
+    },
+    "Coral Gables Museum": {},
+    "Coral Gables Museum · Instagram": {
+      "missing-time": [
+        {
+          "type": "missing-time",
+          "eventId": "db-1330270",
+          "title": "America Touched America Seen at CGM",
+          "source": "Coral Gables Museum · Instagram"
+        },
+        {
+          "type": "missing-time",
+          "eventId": "db-787098",
+          "title": "Friday night",
+          "source": "Coral Gables Museum · Instagram"
+        }
+      ]
+    },
+    "Actors' Playhouse at the Miracle Theatre": {},
+    "Actors' Playhouse at the Miracle Theatre · Instagram": {
+      "missing-time": [
+        {
+          "type": "missing-time",
+          "eventId": "db-1123224",
+          "title": "THIS",
+          "source": "Actors' Playhouse at the Miracle Theatre · Instagram"
+        }
+      ]
+    },
+    "City of South Miami": {},
+    "Village of Palmetto Bay · Instagram": {
+      "missing-time": [
+        {
+          "type": "missing-time",
+          "eventId": "db-1197690",
+          "title": "Community Update",
+          "source": "Village of Palmetto Bay · Instagram"
+        }
+      ]
+    },
+    "Pinecrest Gardens": {
+      "venue-is-address": [
+        {
+          "type": "venue-is-address",
+          "eventId": "db-975453",
+          "title": "Farmers Market",
+          "source": "Pinecrest Gardens",
+          "detail": "11000 Red Road"
+        }
+      ]
+    },
+    "Vizcaya Museum and Gardens · Instagram": {},
+    "Village of Pinecrest · Instagram": {},
+    "GableStage · Instagram": {},
+    "Town of Cutler Bay": {},
+    "University of Georgia": {
+      "missing-time": [
+        {
+          "type": "missing-time",
+          "eventId": "db-413674",
+          "title": "Tampa Chapter: Game Watching Party - UGA vs Florida",
+          "source": "University of Georgia"
+        },
+        {
+          "type": "missing-time",
+          "eventId": "db-413655",
+          "title": "Orlando Chapter: Game Watching Party - UGA vs Florida",
+          "source": "University of Georgia"
+        },
+        {
+          "type": "missing-time",
+          "eventId": "db-413622",
+          "title": "Atlanta Chapter: Game Watching Party - UGA vs Florida",
+          "source": "University of Georgia"
+        }
+      ]
+    },
+    "Tampa Riverwalk · Instagram": {
+      "missing-time": [
+        {
+          "type": "missing-time",
+          "eventId": "db-305866",
+          "title": "A Pirates Halloween",
+          "source": "Tampa Riverwalk · Instagram"
+        },
+        {
+          "type": "missing-time",
+          "eventId": "db-305865",
+          "title": "Haunted River Tours",
+          "source": "Tampa Riverwalk · Instagram"
+        }
+      ]
+    },
+    "City of Oldsmar · Instagram": {
+      "venue-is-address": [
+        {
+          "type": "venue-is-address",
+          "eventId": "db-1461016",
+          "title": "Got Talent",
+          "source": "City of Oldsmar · Instagram",
+          "detail": "400 St. Petersburg Drive East"
+        }
+      ],
+      "missing-time": [
+        {
+          "type": "missing-time",
+          "eventId": "db-1461016",
+          "title": "Got Talent",
+          "source": "City of Oldsmar · Instagram"
+        }
+      ]
+    },
+    "Temple Terrace Parks & Rec · Instagram": {},
+    "Tampa-Hillsborough County Public Library": {},
+    "Dunedin Public Library": {},
+    "City of Oldsmar": {
+      "venue-is-address": [
+        {
+          "type": "venue-is-address",
+          "eventId": "db-267984",
+          "title": "Oldsmar Historical Collection",
+          "source": "City of Oldsmar",
+          "detail": "400 St. Petersburg Drive East"
+        },
+        {
+          "type": "venue-is-address",
+          "eventId": "db-267982",
+          "title": "Badminton",
+          "source": "City of Oldsmar",
+          "detail": "650 Pine Avenue North"
+        },
+        {
+          "type": "venue-is-address",
+          "eventId": "db-304877",
+          "title": "Toddler Storytime with Mr Anthony",
+          "source": "City of Oldsmar",
+          "detail": "400 St. Petersburg Drive East"
+        }
+      ]
+    },
+    "St. Petersburg Public Library": {},
+    "City of Safety Harbor": {},
+    "Francis Wilson Playhouse · Instagram": {},
+    "ZooTampa at Lowry Park": {},
+    "City of Pinellas Park": {},
+    "City of Clearwater": {},
+    "The Florida Aquarium · Instagram": {},
+    "The Dali Museum": {},
+    "Clearwater Public Library": {},
+    "Great Explorations Children's Museum": {},
+    "Pasco County Libraries": {},
+    "St. Pete Pier": {},
+    "American Stage · Instagram": {
+      "missing-time": [
+        {
+          "type": "missing-time",
+          "eventId": "db-1889696",
+          "title": "Meteor Shower",
+          "source": "American Stage · Instagram"
+        }
+      ]
+    },
+    "City of Dunedin · Instagram": {},
+    "Largo Recreation · Instagram": {
+      "missing-time": [
+        {
+          "type": "missing-time",
+          "eventId": "db-1458832",
+          "title": "Friday Night",
+          "source": "Largo Recreation · Instagram"
+        }
+      ]
+    },
+    "City of Temple Terrace": {
+      "venue-is-address": [
+        {
+          "type": "venue-is-address",
+          "eventId": "db-363936",
+          "title": "Food Truck Rally",
+          "source": "City of Temple Terrace",
+          "detail": "6610 Whiteway Dr"
+        }
+      ]
+    },
+    "Great Explorations Children's Museum · Instagram": {},
+    "Lake Eola Park / Downtown Orlando": {
+      "missing-time": [
+        {
+          "type": "missing-time",
+          "eventId": "db-1893109",
+          "title": "By Heart and By Hand",
+          "source": "Lake Eola Park / Downtown Orlando"
+        }
+      ]
+    },
+    "City of Orlando": {
+      "missing-time": [
+        {
+          "type": "missing-time",
+          "eventId": "db-1890150",
+          "title": "Call to Artists: Birds in Focus - District 3",
+          "source": "City of Orlando"
+        },
+        {
+          "type": "missing-time",
+          "eventId": "db-1890151",
+          "title": "Hispanic Heritage Month Art Exhibit",
+          "source": "City of Orlando"
+        }
+      ],
+      "venue-is-address": [
+        {
+          "type": "venue-is-address",
+          "eventId": "db-166081",
+          "title": "Thornton Park District 13th Halloween Block Party",
+          "source": "City of Orlando",
+          "detail": "700 East Washington Street"
+        },
+        {
+          "type": "venue-is-address",
+          "eventId": "db-238945",
+          "title": "A Taste of Thornton Park",
+          "source": "City of Orlando",
+          "detail": "818 East Washington Street"
+        }
+      ]
+    },
+    "Harry P. Leu Gardens · Instagram": {
+      "missing-time": [
+        {
+          "type": "missing-time",
+          "eventId": "db-1335515",
+          "title": "Dog Day",
+          "source": "Harry P. Leu Gardens · Instagram"
+        },
+        {
+          "type": "missing-time",
+          "eventId": "db-1335522",
+          "title": "Tea & Garden Workshop",
+          "source": "Harry P. Leu Gardens · Instagram"
+        },
+        {
+          "type": "missing-time",
+          "eventId": "db-1335517",
+          "title": "Free Day & Story Time",
+          "source": "Harry P. Leu Gardens · Instagram"
+        }
+      ]
+    },
+    "Historic Downtown Sanford · Instagram": {
+      "missing-time": [
+        {
+          "type": "missing-time",
+          "eventId": "db-1458799",
+          "title": "Lowest Ticket Prices End October 31",
+          "source": "Historic Downtown Sanford · Instagram"
+        },
+        {
+          "type": "missing-time",
+          "eventId": "db-213750",
+          "title": "Zoo Boo Bash",
+          "source": "Historic Downtown Sanford · Instagram"
+        },
+        {
+          "type": "missing-time",
+          "eventId": "db-69765",
+          "title": "Halloween Celebration",
+          "source": "Historic Downtown Sanford · Instagram"
+        }
+      ]
+    },
+    "City of Altamonte Springs · Instagram": {
+      "venue-is-address": [
+        {
+          "type": "venue-is-address",
+          "eventId": "db-419422",
+          "title": "ONE WEEK until a spooktacular night at CranesRoostPark",
+          "source": "City of Altamonte Springs · Instagram",
+          "detail": "280 Douglas Avenue"
+        },
+        {
+          "type": "venue-is-address",
+          "eventId": "db-1334634",
+          "title": "Keep hitting save on those online recipes",
+          "source": "City of Altamonte Springs · Instagram",
+          "detail": "280 Douglas Avenue"
+        }
+      ],
+      "missing-time": [
+        {
+          "type": "missing-time",
+          "eventId": "db-419422",
+          "title": "ONE WEEK until a spooktacular night at CranesRoostPark",
+          "source": "City of Altamonte Springs · Instagram"
+        },
+        {
+          "type": "missing-time",
+          "eventId": "db-1883065",
+          "title": "Your invited to Halloween in CranesRoostPark for a frightful family-friendly nig",
+          "source": "City of Altamonte Springs · Instagram"
+        },
+        {
+          "type": "missing-time",
+          "eventId": "db-1334634",
+          "title": "Keep hitting save on those online recipes",
+          "source": "City of Altamonte Springs · Instagram"
+        }
+      ]
+    },
+    "Orange County Library System · Instagram": {
+      "venue-is-address": [
+        {
+          "type": "venue-is-address",
+          "eventId": "db-787737",
+          "title": "Join OCLS Partner auduboncbop for Hawks and Haunts",
+          "source": "Orange County Library System · Instagram",
+          "detail": "Audubon Center for Birds of Prey - 1101 Audubon Way"
+        }
+      ],
+      "missing-time": [
+        {
+          "type": "missing-time",
+          "eventId": "db-787737",
+          "title": "Join OCLS Partner auduboncbop for Hawks and Haunts",
+          "source": "Orange County Library System · Instagram"
+        },
+        {
+          "type": "missing-time",
+          "eventId": "db-1458381",
+          "title": "An unforgettable evening",
+          "source": "Orange County Library System · Instagram"
+        }
+      ]
+    },
+    "Orlando Science Center · Instagram": {
+      "missing-time": [
+        {
+          "type": "missing-time",
+          "eventId": "db-1645000",
+          "title": "Pumpkins & Protons Party",
+          "source": "Orlando Science Center · Instagram"
+        }
+      ]
+    },
+    "City of Sanford · Instagram": {
+      "missing-time": [
+        {
+          "type": "missing-time",
+          "eventId": "db-364241",
+          "title": "Fang-tastic Fest",
+          "source": "City of Sanford · Instagram"
+        }
+      ]
+    },
+    "Central Florida Zoo · Instagram": {
+      "missing-time": [
+        {
+          "type": "missing-time",
+          "eventId": "db-1123737",
+          "title": "The countdown",
+          "source": "Central Florida Zoo · Instagram"
+        }
+      ]
+    },
+    "City of Apopka": {},
+    "City of Altamonte Springs": {
+      "venue-is-address": [
+        {
+          "type": "venue-is-address",
+          "eventId": "db-320789",
+          "title": "Color Your World",
+          "source": "City of Altamonte Springs",
+          "detail": "281 Maitland Avenue"
+        },
+        {
+          "type": "venue-is-address",
+          "eventId": "db-320788",
+          "title": "Drawn to Reading Book Club",
+          "source": "City of Altamonte Springs",
+          "detail": "281 Maitland Avenue"
+        },
+        {
+          "type": "venue-is-address",
+          "eventId": "db-319129",
+          "title": "Together Time Tales",
+          "source": "City of Altamonte Springs",
+          "detail": "281 Maitland Ave"
+        }
+      ]
+    },
+    "Orlando Science Center": {},
+    "Orange County Library System": {
+      "family-no-signal": [
+        {
+          "type": "family-no-signal",
+          "eventId": "db-298371",
+          "title": "Voice & Bodywork for Actors",
+          "source": "Orange County Library System"
+        }
+      ]
+    },
+    "Osceola Library System": {
+      "missing-time": [
+        {
+          "type": "missing-time",
+          "eventId": "db-158627",
+          "title": "All Day - Spice of the Month Club",
+          "source": "Osceola Library System"
+        }
+      ]
+    },
+    "Orlando Parks & Rec · Instagram": {},
+    "Dr. Phillips Center for the Performing Arts": {},
+    "City of Kissimmee · Instagram": {},
+    "Downtown Winter Garden · Instagram": {},
+    "Winter Park Library": {
+      "missing-time": [
+        {
+          "type": "missing-time",
+          "eventId": "db-591409",
+          "title": "Story Sacks for Kids",
+          "source": "Winter Park Library"
+        },
+        {
+          "type": "missing-time",
+          "eventId": "db-591405",
+          "title": "Surprise me! Personalized Reading Recommendations for Adults",
+          "source": "Winter Park Library"
+        },
+        {
+          "type": "missing-time",
+          "eventId": "db-591406",
+          "title": "Book Boxes for Teens & Tweens",
+          "source": "Winter Park Library"
+        }
+      ]
+    },
+    "City of Apopka · Instagram": {
+      "venue-is-address": [
+        {
+          "type": "venue-is-address",
+          "eventId": "db-1882989",
+          "title": "When clocks change by one hour for Eastern Standard Time",
+          "source": "City of Apopka · Instagram",
+          "detail": "1211 E. Semoran Blvd."
+        }
+      ],
+      "missing-time": [
+        {
+          "type": "missing-time",
+          "eventId": "db-1882989",
+          "title": "When clocks change by one hour for Eastern Standard Time",
+          "source": "City of Apopka · Instagram"
+        }
+      ]
+    },
+    "Orlando Museum of Art": {},
+    "City of Ocoee · Instagram": {
+      "venue-is-address": [
+        {
+          "type": "venue-is-address",
+          "eventId": "db-1883074",
+          "title": "North Clarke Road Construction Update",
+          "source": "City of Ocoee · Instagram",
+          "detail": "11131 W Colonial Dr."
+        }
+      ]
+    },
+    "Winter Park Chamber · Instagram": {},
+    "City of Orlando · Instagram": {
+      "missing-time": [
+        {
+          "type": "missing-time",
+          "eventId": "db-1197888",
+          "title": "Hispanic Heritage Month may be over but there’s still time to celebrate the art",
+          "source": "City of Orlando · Instagram"
+        }
+      ]
+    },
+    "City of Kissimmee": {},
+    "Orlando Shakes · Instagram": {
+      "missing-time": [
+        {
+          "type": "missing-time",
+          "eventId": "db-1123358",
+          "title": "A new play that explores the stories we inherit",
+          "source": "Orlando Shakes · Instagram"
+        }
+      ]
+    },
+    "Lake County": {},
+    "City of Winter Garden": {},
+    "Clay County Public Library": {
+      "missing-time": [
+        {
+          "type": "missing-time",
+          "eventId": "db-762025",
+          "title": "Voting",
+          "source": "Clay County Public Library"
+        }
+      ]
+    },
+    "Jacksonville Public Library": {
+      "missing-time": [
+        {
+          "type": "missing-time",
+          "eventId": "db-390842",
+          "title": "Happy Halloween",
+          "source": "Jacksonville Public Library"
+        }
+      ]
+    },
+    "City of Jacksonville · Instagram": {
+      "missing-time": [
+        {
+          "type": "missing-time",
+          "eventId": "db-1883766",
+          "title": "Who’s ready for some Halloween fun this weekend",
+          "source": "City of Jacksonville · Instagram"
+        }
+      ]
+    },
+    "Jacksonville Zoo and Gardens · Instagram": {
+      "missing-time": [
+        {
+          "type": "missing-time",
+          "eventId": "db-1335560",
+          "title": "Jacksonville Zoo Spooktacular",
+          "source": "Jacksonville Zoo and Gardens · Instagram"
+        },
+        {
+          "type": "missing-time",
+          "eventId": "db-1888498",
+          "title": "Halloween plans",
+          "source": "Jacksonville Zoo and Gardens · Instagram"
+        }
+      ]
+    },
+    "Downtown Vision Jacksonville": {},
+    "City of Jacksonville Beach": {
+      "venue-is-address": [
+        {
+          "type": "venue-is-address",
+          "eventId": "db-397655",
+          "title": "Beaches Green Market",
+          "source": "City of Jacksonville Beach",
+          "detail": "321 Penman Road"
+        }
+      ]
+    },
+    "Cummer Museum": {},
+    "St. Johns County Public Library": {
+      "missing-time": [
+        {
+          "type": "missing-time",
+          "eventId": "db-415976",
+          "title": "Great Turkey Escape",
+          "source": "St. Johns County Public Library"
+        },
+        {
+          "type": "missing-time",
+          "eventId": "db-415975",
+          "title": "I Spy Thanksgiving Challenge",
+          "source": "St. Johns County Public Library"
+        }
+      ]
+    },
+    "Nassau County Public Library": {},
+    "Clay County Public Library · Instagram": {
+      "missing-time": [
+        {
+          "type": "missing-time",
+          "eventId": "db-752930",
+          "title": "Cozy Up With November’s Book Club Lineup",
+          "source": "Clay County Public Library · Instagram"
+        }
+      ]
+    },
+    "DeKalb County Public Library": {
+      "missing-time": [
+        {
+          "type": "missing-time",
+          "eventId": "db-417493",
+          "title": "Inktober: Pen and Ink Creations",
+          "source": "DeKalb County Public Library"
+        },
+        {
+          "type": "missing-time",
+          "eventId": "db-417492",
+          "title": "Halloween Horror Movie Marathon",
+          "source": "DeKalb County Public Library"
+        },
+        {
+          "type": "missing-time",
+          "eventId": "db-417494",
+          "title": "Pass It On: Kindness Card Table",
+          "source": "DeKalb County Public Library"
+        }
+      ]
+    },
+    "City of Brookhaven · Instagram": {
+      "venue-is-address": [
+        {
+          "type": "venue-is-address",
+          "eventId": "db-1396714",
+          "title": "Craft",
+          "source": "City of Brookhaven · Instagram",
+          "detail": ": 2235 Briarwood Park Rd"
+        },
+        {
+          "type": "venue-is-address",
+          "eventId": "db-1883306",
+          "title": "Rut-roh it's breeding season in Georgia according to GeorgiaWildlife",
+          "source": "City of Brookhaven · Instagram",
+          "detail": "1551 W Nancy Creek Trail"
+        }
+      ],
+      "missing-time": [
+        {
+          "type": "missing-time",
+          "eventId": "db-1396714",
+          "title": "Craft",
+          "source": "City of Brookhaven · Instagram"
+        },
+        {
+          "type": "missing-time",
+          "eventId": "db-1883306",
+          "title": "Rut-roh it's breeding season in Georgia according to GeorgiaWildlife",
+          "source": "City of Brookhaven · Instagram"
+        }
+      ]
+    },
+    "Center for Puppetry Arts · Instagram": {
+      "missing-time": [
+        {
+          "type": "missing-time",
+          "eventId": "db-787083",
+          "title": "One more week to enjoy the macabre shenanigans of The Ghastly Dreadfuls",
+          "source": "Center for Puppetry Arts · Instagram"
+        },
+        {
+          "type": "missing-time",
+          "eventId": "db-787084",
+          "title": "All dressed up with nowhere to go",
+          "source": "Center for Puppetry Arts · Instagram"
+        },
+        {
+          "type": "missing-time",
+          "eventId": "db-1888404",
+          "title": "Do that disco in the dark",
+          "source": "Center for Puppetry Arts · Instagram"
+        }
+      ]
+    },
+    "Fernbank Museum · Instagram": {
+      "missing-time": [
+        {
+          "type": "missing-time",
+          "eventId": "db-1643153",
+          "title": "FINAL DAYS for the Halloween Fernbank membership sale",
+          "source": "Fernbank Museum · Instagram"
+        },
+        {
+          "type": "missing-time",
+          "eventId": "db-754664",
+          "title": "Skip the tricks and treat yourself to a year of exploration and discovery",
+          "source": "Fernbank Museum · Instagram"
+        }
+      ]
+    },
+    "Emory University · Instagram": {
+      "missing-time": [
+        {
+          "type": "missing-time",
+          "eventId": "db-754350",
+          "title": "EaglesSpotlight The Eagles cross country teams have gone the distance this seaso",
+          "source": "Emory University · Instagram"
+        },
+        {
+          "type": "missing-time",
+          "eventId": "db-754348",
+          "title": "Colin Kaepernick civil rights activist entrepreneur and former NFL Super Bowl qu",
+          "source": "Emory University · Instagram"
+        }
+      ]
+    },
+    "City of Peachtree Corners · Instagram": {
+      "missing-time": [
+        {
+          "type": "missing-time",
+          "eventId": "db-693597",
+          "title": "Creativity",
+          "source": "City of Peachtree Corners · Instagram"
+        },
+        {
+          "type": "missing-time",
+          "eventId": "db-693595",
+          "title": "Rescue Dog Games",
+          "source": "City of Peachtree Corners · Instagram"
+        }
+      ]
+    },
+    "City of Chamblee · Instagram": {
+      "missing-time": [
+        {
+          "type": "missing-time",
+          "eventId": "db-1262545",
+          "title": "Dawgs vs",
+          "source": "City of Chamblee · Instagram"
+        },
+        {
+          "type": "missing-time",
+          "eventId": "db-1883320",
+          "title": "Join us to watch one of the biggest rivalries in sports on the big screen",
+          "source": "City of Chamblee · Instagram"
+        },
+        {
+          "type": "missing-time",
+          "eventId": "db-1334913",
+          "title": "Socktober & Thanksgiving Food Drive Donation Deadlines",
+          "source": "City of Chamblee · Instagram"
+        }
+      ],
+      "venue-is-address": [
+        {
+          "type": "venue-is-address",
+          "eventId": "db-1334912",
+          "title": "NOVEMBER",
+          "source": "City of Chamblee · Instagram",
+          "detail": "4445 Buford Hwy NE"
+        },
+        {
+          "type": "venue-is-address",
+          "eventId": "db-1334910",
+          "title": "Chamblee’s Day",
+          "source": "City of Chamblee · Instagram",
+          "detail": "3518 Broad Street"
+        }
+      ]
+    },
+    "City of Atlanta · Instagram": {
+      "missing-time": [
+        {
+          "type": "missing-time",
+          "eventId": "db-1883296",
+          "title": "Atlanta it all comes down to this",
+          "source": "City of Atlanta · Instagram"
+        }
+      ]
+    },
+    "City of Kennesaw": {},
+    "Piedmont Park Conservancy": {},
+    "Atlanta-Fulton Public Library": {
+      "family-no-signal": [
+        {
+          "type": "family-no-signal",
+          "eventId": "db-416610",
+          "title": "Inktober Inspired: Randy Taylor Art Exhibit",
+          "source": "Atlanta-Fulton Public Library"
+        }
+      ],
+      "missing-time": [
+        {
+          "type": "missing-time",
+          "eventId": "db-416658",
+          "title": "Puzzle Day",
+          "source": "Atlanta-Fulton Public Library"
+        }
+      ]
+    },
+    "City of Douglasville": {
+      "missing-time": [
+        {
+          "type": "missing-time",
+          "eventId": "db-1644615",
+          "title": "2026 Letters to Santa",
+          "source": "City of Douglasville"
+        }
+      ]
+    },
+    "Stone Mountain Park": {},
+    "Atlanta Botanical Garden": {},
+    "Gwinnett County Public Library": {
+      "family-no-signal": [
+        {
+          "type": "family-no-signal",
+          "eventId": "db-409864",
+          "title": "Literacy | Reading Buddies",
+          "source": "Gwinnett County Public Library"
+        }
+      ]
+    },
+    "Atlanta BeltLine · Instagram": {
+      "missing-time": [
+        {
+          "type": "missing-time",
+          "eventId": "db-1054097",
+          "title": "ATL StyleWriters Jam",
+          "source": "Atlanta BeltLine · Instagram"
+        }
+      ]
+    },
+    "Clayton County Library System": {
+      "missing-time": [
+        {
+          "type": "missing-time",
+          "eventId": "db-399951",
+          "title": "Surprise Books",
+          "source": "Clayton County Library System"
+        }
+      ]
+    },
+    "City of Woodstock · Instagram": {},
+    "City of Tucker": {},
+    "City of Stonecrest · Instagram": {},
+    "Atlanta Botanical Garden · Instagram": {
+      "missing-time": [
+        {
+          "type": "missing-time",
+          "eventId": "db-1395860",
+          "title": "These Dolly scarecrows",
+          "source": "Atlanta Botanical Garden · Instagram"
+        },
+        {
+          "type": "missing-time",
+          "eventId": "db-1262432",
+          "title": "Today",
+          "source": "Atlanta Botanical Garden · Instagram"
+        },
+        {
+          "type": "missing-time",
+          "eventId": "db-1704339",
+          "title": "Our Business Nonprofit division winners for 𝘚𝘤𝘢𝘳𝘦𝘤𝘳𝘰𝘸𝘴 𝘪𝘯 𝘵𝘩𝘦 𝘎�",
+          "source": "Atlanta Botanical Garden · Instagram"
+        }
+      ]
+    },
+    "City of Douglasville · Instagram": {
+      "missing-time": [
+        {
+          "type": "missing-time",
+          "eventId": "db-1889644",
+          "title": "City of Douglasville Christmas Parade",
+          "source": "City of Douglasville · Instagram"
+        }
+      ]
+    },
+    "Georgia Aquarium · Instagram": {
+      "missing-time": [
+        {
+          "type": "missing-time",
+          "eventId": "db-787121",
+          "title": "You're in for a treat with a POV of our 'spooky' sea lion show during Haunted Se",
+          "source": "Georgia Aquarium · Instagram"
+        }
+      ]
+    },
+    "Georgia Tech · Instagram": {
+      "missing-time": [
+        {
+          "type": "missing-time",
+          "eventId": "db-754958",
+          "title": "Georgia Tech alumnus and Executive Vice President for Research Tim Lieuwen has b",
+          "source": "Georgia Tech · Instagram"
+        }
+      ]
+    },
+    "City of Tucker · Instagram": {
+      "venue-is-address": [
+        {
+          "type": "venue-is-address",
+          "eventId": "db-693643",
+          "title": "More Friday Facts",
+          "source": "City of Tucker · Instagram",
+          "detail": "4226 Railroad Ave"
+        }
+      ],
+      "missing-time": [
+        {
+          "type": "missing-time",
+          "eventId": "db-693643",
+          "title": "More Friday Facts",
+          "source": "City of Tucker · Instagram"
+        }
+      ]
+    },
+    "City of Roswell · Instagram": {
+      "missing-time": [
+        {
+          "type": "missing-time",
+          "eventId": "db-1894020",
+          "title": "Daylight Saving Time ends Sunday November 1",
+          "source": "City of Roswell · Instagram"
+        },
+        {
+          "type": "missing-time",
+          "eventId": "db-1888166",
+          "title": "On Nov",
+          "source": "City of Roswell · Instagram"
+        }
+      ]
+    },
+    "Children's Museum of Atlanta · Instagram": {},
+    "City of Duluth · Instagram": {
+      "missing-time": [
+        {
+          "type": "missing-time",
+          "eventId": "db-1889647",
+          "title": "Little Gym of Duluth",
+          "source": "City of Duluth · Instagram"
+        }
+      ]
+    },
+    "Chattahoochee Nature Center · Instagram": {},
+    "Atlanta · Instagram": {
+      "missing-time": [
+        {
+          "type": "missing-time",
+          "eventId": "db-1334785",
+          "title": "You’re Invited to a FREE Screening of THE CAT IN THE HAT",
+          "source": "Atlanta · Instagram"
+        }
+      ]
+    },
+    "Clayton County Library System · Instagram": {
+      "missing-time": [
+        {
+          "type": "missing-time",
+          "eventId": "db-752945",
+          "title": "Foraging in Your Backyard",
+          "source": "Clayton County Library System · Instagram"
+        },
+        {
+          "type": "missing-time",
+          "eventId": "db-1643070",
+          "title": "Painted Tote Bags",
+          "source": "Clayton County Library System · Instagram"
+        }
+      ]
+    },
+    "Cobb County Public Library · Instagram": {
+      "missing-time": [
+        {
+          "type": "missing-time",
+          "eventId": "db-1123597",
+          "title": "SPLOST questions",
+          "source": "Cobb County Public Library · Instagram"
+        },
+        {
+          "type": "missing-time",
+          "eventId": "db-1296682",
+          "title": "If you requested an absentee ballot for the November 3 election and it hasn't ar",
+          "source": "Cobb County Public Library · Instagram"
+        }
+      ]
+    },
+    "City of Marietta": {
+      "venue-is-address": [
+        {
+          "type": "venue-is-address",
+          "eventId": "db-415381",
+          "title": "Municipal Court in session",
+          "source": "City of Marietta",
+          "detail": "240 Lemon Street"
+        }
+      ]
+    },
+    "Atlanta History Center": {},
+    "City of East Point": {},
+    "Zoo Atlanta · Instagram": {
+      "missing-time": [
+        {
+          "type": "missing-time",
+          "eventId": "db-1458782",
+          "title": "Ping Ping",
+          "source": "Zoo Atlanta · Instagram"
+        }
+      ]
+    },
+    "High Museum of Art · Instagram": {
+      "missing-time": [
+        {
+          "type": "missing-time",
+          "eventId": "db-1888485",
+          "title": "Looking for things to do this November",
+          "source": "High Museum of Art · Instagram"
+        }
+      ]
+    },
+    "City of Marietta · Instagram": {},
+    "Charlotte Mecklenburg Library": {
+      "missing-time": [
+        {
+          "type": "missing-time",
+          "eventId": "db-423470",
+          "title": "The Excelsior Club Remembered",
+          "source": "Charlotte Mecklenburg Library"
+        },
+        {
+          "type": "missing-time",
+          "eventId": "db-424679",
+          "title": "Toy Drive",
+          "source": "Charlotte Mecklenburg Library"
+        }
+      ],
+      "venue-is-address": [
+        {
+          "type": "venue-is-address",
+          "eventId": "db-423435",
+          "title": "Family Storytime",
+          "source": "Charlotte Mecklenburg Library",
+          "detail": "6840 Matthews - Mint Hill Road"
+        },
+        {
+          "type": "venue-is-address",
+          "eventId": "db-423438",
+          "title": "Paws to Read",
+          "source": "Charlotte Mecklenburg Library",
+          "detail": "230  Matthews Station St."
+        },
+        {
+          "type": "venue-is-address",
+          "eventId": "db-1328472",
+          "title": "Showing: Scooby-Doo and The Witch's Ghost",
+          "source": "Charlotte Mecklenburg Library",
+          "detail": "505 Main St. Suite 100"
+        }
+      ]
+    },
+    "City of Charlotte": {
+      "venue-is-address": [
+        {
+          "type": "venue-is-address",
+          "eventId": "db-1823143",
+          "title": "Halloween Park, Street and Stream Cleanup",
+          "source": "City of Charlotte",
+          "detail": "715 Charlottetowne Avenue"
+        },
+        {
+          "type": "venue-is-address",
+          "eventId": "db-1823144",
+          "title": "HNS Trunk or Treat",
+          "source": "City of Charlotte",
+          "detail": "2012 Beatties Ford Road"
+        }
+      ],
+      "missing-time": [
+        {
+          "type": "missing-time",
+          "eventId": "db-1823143",
+          "title": "Halloween Park, Street and Stream Cleanup",
+          "source": "City of Charlotte"
+        },
+        {
+          "type": "missing-time",
+          "eventId": "db-1823144",
+          "title": "HNS Trunk or Treat",
+          "source": "City of Charlotte"
+        }
+      ]
+    },
+    "Theatre Charlotte · Instagram": {
+      "missing-time": [
+        {
+          "type": "missing-time",
+          "eventId": "db-1704751",
+          "title": "Frankenstein",
+          "source": "Theatre Charlotte · Instagram"
+        }
+      ]
+    },
+    "Discovery Place · Instagram": {
+      "missing-time": [
+        {
+          "type": "missing-time",
+          "eventId": "db-754069",
+          "title": "Something",
+          "source": "Discovery Place · Instagram"
+        }
+      ]
+    },
+    "Town of Matthews · Instagram": {
+      "missing-time": [
+        {
+          "type": "missing-time",
+          "eventId": "db-983689",
+          "title": "ISO Class",
+          "source": "Town of Matthews · Instagram"
+        }
+      ]
+    },
+    "Cabarrus County Public Library · Instagram": {
+      "missing-time": [
+        {
+          "type": "missing-time",
+          "eventId": "db-1396089",
+          "title": "The eighth annual Touch-a-Truck",
+          "source": "Cabarrus County Public Library · Instagram"
+        }
+      ]
+    },
+    "York County Library": {
+      "missing-time": [
+        {
+          "type": "missing-time",
+          "eventId": "db-428933",
+          "title": "Staff In-Service Day",
+          "source": "York County Library"
+        }
+      ]
+    },
+    "Gaston County Public Library": {
+      "missing-time": [
+        {
+          "type": "missing-time",
+          "eventId": "db-421333",
+          "title": "Happy Bookers Book Club @ Dallas",
+          "source": "Gaston County Public Library"
+        }
+      ]
+    },
+    "Mint Museum": {},
+    "Charlotte Mecklenburg Library · Instagram": {
+      "missing-time": [
+        {
+          "type": "missing-time",
+          "eventId": "db-693481",
+          "title": "You activated my trap card",
+          "source": "Charlotte Mecklenburg Library · Instagram"
+        }
+      ]
+    },
+    "Town of Indian Trail": {
+      "venue-is-address": [
+        {
+          "type": "venue-is-address",
+          "eventId": "db-421533",
+          "title": "Lotus Dance",
+          "source": "Town of Indian Trail",
+          "detail": "315 Matthews Indian Trail"
+        }
+      ]
+    },
+    "Town of Mint Hill · Instagram": {
+      "missing-time": [
+        {
+          "type": "missing-time",
+          "eventId": "db-983691",
+          "title": "Teacher Work Day",
+          "source": "Town of Mint Hill · Instagram"
+        }
+      ]
+    },
+    "Town of Cornelius · Instagram": {
+      "missing-time": [
+        {
+          "type": "missing-time",
+          "eventId": "db-1703817",
+          "title": "The Dawn of Another Leaf Collecting Season",
+          "source": "Town of Cornelius · Instagram"
+        }
+      ]
+    },
+    "Union County Public Library": {},
+    "City of Gastonia · Instagram": {
+      "missing-time": [
+        {
+          "type": "missing-time",
+          "eventId": "db-693550",
+          "title": "Keep Gastonia Beautiful’s Rain Barrel Sale",
+          "source": "City of Gastonia · Instagram"
+        }
+      ]
+    },
+    "Town of Davidson": {},
+    "Prince William Public Libraries": {
+      "missing-time": [
+        {
+          "type": "missing-time",
+          "eventId": "db-427933",
+          "title": "Spice Club",
+          "source": "Prince William Public Libraries"
+        },
+        {
+          "type": "missing-time",
+          "eventId": "db-427936",
+          "title": "Hooked on Craft Kits",
+          "source": "Prince William Public Libraries"
+        },
+        {
+          "type": "missing-time",
+          "eventId": "db-427951",
+          "title": "Adult Writing Contest",
+          "source": "Prince William Public Libraries"
+        }
+      ]
+    },
+    "Loudoun County Public Library": {
+      "missing-time": [
+        {
+          "type": "missing-time",
+          "eventId": "db-426612",
+          "title": "What's Cooking Cascades?",
+          "source": "Loudoun County Public Library"
+        }
+      ]
+    },
+    "City of Rockville · Instagram": {
+      "missing-time": [
+        {
+          "type": "missing-time",
+          "eventId": "db-1888165",
+          "title": "Halloween",
+          "source": "City of Rockville · Instagram"
+        }
+      ]
+    },
+    "Alexandria Library · Instagram": {
+      "missing-time": [
+        {
+          "type": "missing-time",
+          "eventId": "db-1641798",
+          "title": "There's still time to sign up to join us on our spirited ride through Alexandria",
+          "source": "Alexandria Library · Instagram"
+        }
+      ]
+    },
+    "DC Public Library · Instagram": {
+      "missing-time": [
+        {
+          "type": "missing-time",
+          "eventId": "db-1888262",
+          "title": "What a FALL-tastic time at MLK Library last Saturday",
+          "source": "DC Public Library · Instagram"
+        }
+      ]
+    },
+    "Town of Vienna · Instagram": {
+      "missing-time": [
+        {
+          "type": "missing-time",
+          "eventId": "db-983697",
+          "title": "Drug Take Back Day",
+          "source": "Town of Vienna · Instagram"
+        },
+        {
+          "type": "missing-time",
+          "eventId": "db-1190333",
+          "title": "What's your opinion about Town government services and the quality of life in Vi",
+          "source": "Town of Vienna · Instagram"
+        }
+      ]
+    },
+    "Montgomery Parks · Instagram": {
+      "missing-time": [
+        {
+          "type": "missing-time",
+          "eventId": "db-787357",
+          "title": "When Bella Fawn moves to Montgomery County Maryland she falls in love with the m",
+          "source": "Montgomery Parks · Instagram"
+        }
+      ]
+    },
+    "City of Falls Church": {
+      "venue-is-address": [
+        {
+          "type": "venue-is-address",
+          "eventId": "db-431762",
+          "title": "Falls Church Farmers Market",
+          "source": "City of Falls Church",
+          "detail": "300 Park Ave."
+        }
+      ],
+      "missing-time": [
+        {
+          "type": "missing-time",
+          "eventId": "db-1397204",
+          "title": "Enterprise Resource Planning (ERP) Solutions Industry Day",
+          "source": "City of Falls Church"
+        }
+      ]
+    },
+    "City of College Park": {
+      "venue-is-address": [
+        {
+          "type": "venue-is-address",
+          "eventId": "db-431680",
+          "title": "Berwyn Ballet School at The Old Parish House",
+          "source": "City of College Park",
+          "detail": "4711 Knox Road"
+        },
+        {
+          "type": "venue-is-address",
+          "eventId": "db-431677",
+          "title": "CPAE Spooky Kid Disco",
+          "source": "City of College Park",
+          "detail": "4711 Knox Road"
+        },
+        {
+          "type": "venue-is-address",
+          "eventId": "db-431681",
+          "title": "College Park Youth Orchestra Rehearsal",
+          "source": "City of College Park",
+          "detail": "4711 Knox Road"
+        }
+      ]
+    },
+    "Arlington County": {},
+    "City of Rockville": {},
+    "Anne Arundel County Public Library": {},
+    "Smithsonian": {
+      "missing-time": [
+        {
+          "type": "missing-time",
+          "eventId": "db-825351",
+          "title": "From Memory to Hope: A Service of Poetry and Prayer to Honor the Ancestors (People’s Poetry Gathering)",
+          "source": "Smithsonian"
+        },
+        {
+          "type": "missing-time",
+          "eventId": "db-455797",
+          "title": "Exposure by Exposure Skate",
+          "source": "Smithsonian"
+        }
+      ]
+    },
+    "City of Alexandria": {
+      "venue-is-address": [
+        {
+          "type": "venue-is-address",
+          "eventId": "db-422610",
+          "title": "Visit Alexandria",
+          "source": "City of Alexandria",
+          "detail": "4850 Mark Center Drive"
+        }
+      ]
+    },
+    "Georgetown BID": {
+      "venue-is-address": [
+        {
+          "type": "venue-is-address",
+          "eventId": "db-810880",
+          "title": "Wisconsin Avenue Woof Walk",
+          "source": "Georgetown BID",
+          "detail": "3206 N St NW & Around Georgetown"
+        },
+        {
+          "type": "venue-is-address",
+          "eventId": "db-810878",
+          "title": "Murder Mystery Dinners",
+          "source": "Georgetown BID",
+          "detail": "1310 Kitchen & Bar (1310 Wisconsin Ave NW)"
+        },
+        {
+          "type": "venue-is-address",
+          "eventId": "db-810885",
+          "title": "Dolly Look-A-Like Contest",
+          "source": "Georgetown BID",
+          "detail": "1310 Kitchen & Bar (1310 Wisconsin Ave NW)"
+        }
+      ]
+    },
+    "Alexandria Library": {},
+    "Howard County Library System": {},
+    "DC Public Library": {
+      "missing-time": [
+        {
+          "type": "missing-time",
+          "eventId": "db-425044",
+          "title": "STEM2Go",
+          "source": "DC Public Library"
+        },
+        {
+          "type": "missing-time",
+          "eventId": "db-425076",
+          "title": "A Puzzling Swap",
+          "source": "DC Public Library"
+        }
+      ],
+      "family-no-signal": [
+        {
+          "type": "family-no-signal",
+          "eventId": "db-425168",
+          "title": "Messy Art",
+          "source": "DC Public Library"
+        }
+      ]
+    },
+    "Prince George's Parks": {},
+    "Arlington Public Library": {},
+    "Fairfax County Park Authority · Instagram": {
+      "missing-time": [
+        {
+          "type": "missing-time",
+          "eventId": "db-1643137",
+          "title": "On Nov",
+          "source": "Fairfax County Park Authority · Instagram"
+        },
+        {
+          "type": "missing-time",
+          "eventId": "db-1123654",
+          "title": "Move",
+          "source": "Fairfax County Park Authority · Instagram"
+        },
+        {
+          "type": "missing-time",
+          "eventId": "db-1521471",
+          "title": "Clemyjontri Park",
+          "source": "Fairfax County Park Authority · Instagram"
+        }
+      ]
+    },
+    "Montgomery County Public Libraries": {},
+    "Prince George's County Memorial Library System": {},
+    "City of Fairfax": {},
+    "City of Takoma Park": {
+      "venue-is-address": [
+        {
+          "type": "venue-is-address",
+          "eventId": "db-432471",
+          "title": "Monster Bash",
+          "source": "City of Takoma Park",
+          "detail": "7611 Piney Branch Road"
+        },
+        {
+          "type": "venue-is-address",
+          "eventId": "db-432472",
+          "title": "Takoma Park Election",
+          "source": "City of Takoma Park",
+          "detail": "7500 Maple Avenue"
+        },
+        {
+          "type": "venue-is-address",
+          "eventId": "db-1398121",
+          "title": "Fall Business Forum",
+          "source": "City of Takoma Park",
+          "detail": "8732 Flower Ave"
+        }
+      ]
+    },
+    "Glen Echo Park · Instagram": {},
+    "Prince George's Parks · Instagram": {},
+    "City of Bowie": {
+      "venue-is-address": [
+        {
+          "type": "venue-is-address",
+          "eventId": "db-431602",
+          "title": "Halloween: Trick or Treating",
+          "source": "City of Bowie",
+          "detail": "14900 Health Center Dr."
+        },
+        {
+          "type": "venue-is-address",
+          "eventId": "db-431603",
+          "title": "Monarch Waystations: Discoveries and Maintenance",
+          "source": "City of Bowie",
+          "detail": "14900 Health Center Dr."
+        },
+        {
+          "type": "venue-is-address",
+          "eventId": "db-431605",
+          "title": "Food Truck Frenzy",
+          "source": "City of Bowie",
+          "detail": "15901 Fred Robinson Way"
+        }
+      ]
+    },
+    "Olney Theatre Center · Instagram": {
+      "missing-time": [
+        {
+          "type": "missing-time",
+          "eventId": "db-1123353",
+          "title": "Synetictheater Production of The Legend of Sleepy Hollow olneytheatre",
+          "source": "Olney Theatre Center · Instagram"
+        },
+        {
+          "type": "missing-time",
+          "eventId": "db-1123352",
+          "title": "Something wicked this way comes",
+          "source": "Olney Theatre Center · Instagram"
+        }
+      ]
+    },
+    "City of Greenbelt": {
+      "venue-is-address": [
+        {
+          "type": "venue-is-address",
+          "eventId": "db-431833",
+          "title": "Greenbelt Farmer's Market",
+          "source": "City of Greenbelt",
+          "detail": "25 Crescent Road"
+        },
+        {
+          "type": "venue-is-address",
+          "eventId": "db-431830",
+          "title": "Artful Afternoon",
+          "source": "City of Greenbelt",
+          "detail": "15 Crescent Road"
+        }
+      ]
+    },
+    "Town of Vienna": {},
+    "The Wharf DC · Instagram": {},
+    "City of College Park · Instagram": {
+      "missing-time": [
+        {
+          "type": "missing-time",
+          "eventId": "db-1883322",
+          "title": "The City",
+          "source": "City of College Park · Instagram"
+        }
+      ]
+    },
+    "DC Department of Parks and Recreation · Instagram": {
+      "missing-time": [
+        {
+          "type": "missing-time",
+          "eventId": "db-1302393",
+          "title": "Rec Center Alert",
+          "source": "DC Department of Parks and Recreation · Instagram"
+        },
+        {
+          "type": "missing-time",
+          "eventId": "db-1123613",
+          "title": "A new season of fun",
+          "source": "DC Department of Parks and Recreation · Instagram"
+        }
+      ]
+    },
+    "Reston Association": {},
+    "City of Takoma Park · Instagram": {
+      "venue-is-address": [
+        {
+          "type": "venue-is-address",
+          "eventId": "db-1457730",
+          "title": "Tune in to Takoma Radio 94",
+          "source": "City of Takoma Park · Instagram",
+          "detail": "7500 Maple Avenue"
+        }
+      ]
+    },
+    "Town of Herndon · Instagram": {
+      "missing-time": [
+        {
+          "type": "missing-time",
+          "eventId": "db-1330878",
+          "title": "You asked for more time Herndon",
+          "source": "Town of Herndon · Instagram"
+        }
+      ]
+    },
+    "Wolf Trap · Instagram": {
+      "missing-time": [
+        {
+          "type": "missing-time",
+          "eventId": "db-1889187",
+          "title": "Cris Jacobs with Joe Pug",
+          "source": "Wolf Trap · Instagram"
+        }
+      ]
+    },
+    "Little Theatre of Alexandria · Instagram": {
+      "missing-time": [
+        {
+          "type": "missing-time",
+          "eventId": "db-1642696",
+          "title": "A little romance a lot of laughs",
+          "source": "Little Theatre of Alexandria · Instagram"
+        }
+      ]
+    },
+    "Howard County Library System · Instagram": {
+      "missing-time": [
+        {
+          "type": "missing-time",
+          "eventId": "db-1457988",
+          "title": "We asked some of our teens how they imagine the distant future",
+          "source": "Howard County Library System · Instagram"
+        }
+      ]
+    },
+    "Toby's Dinner Theatre · Instagram": {
+      "missing-time": [
+        {
+          "type": "missing-time",
+          "eventId": "db-1521173",
+          "title": "Irving Berlin's White Christmas",
+          "source": "Toby's Dinner Theatre · Instagram"
+        }
+      ]
+    },
+    "Milton Public Library": {
+      "missing-time": [
+        {
+          "type": "missing-time",
+          "eventId": "db-1314990",
+          "title": "Halloween Craft",
+          "source": "Milton Public Library"
+        },
+        {
+          "type": "missing-time",
+          "eventId": "db-535416",
+          "title": "Wotiz Gallery: New Paintings by Jed Sutter",
+          "source": "Milton Public Library"
+        },
+        {
+          "type": "missing-time",
+          "eventId": "db-535453",
+          "title": "MPL Lit Kit for Adults",
+          "source": "Milton Public Library"
+        }
+      ]
+    },
+    "Framingham Public Library": {
+      "missing-time": [
+        {
+          "type": "missing-time",
+          "eventId": "db-633992",
+          "title": "Main - Halloween Movie Marathon",
+          "source": "Framingham Public Library"
+        }
+      ]
+    },
+    "Thomas Crane Public Library": {
+      "missing-time": [
+        {
+          "type": "missing-time",
+          "eventId": "db-635066",
+          "title": "Rubber Duck Costume Dress Up for Ages 5+ @ North Quincy",
+          "source": "Thomas Crane Public Library"
+        }
+      ]
+    },
+    "Salem Public Library · Instagram": {
+      "missing-time": [
+        {
+          "type": "missing-time",
+          "eventId": "db-1458514",
+          "title": "The library",
+          "source": "Salem Public Library · Instagram"
+        },
+        {
+          "type": "missing-time",
+          "eventId": "db-1458516",
+          "title": "Come sing and dance with MaryBeth Maes at Music & Movement",
+          "source": "Salem Public Library · Instagram"
+        }
+      ]
+    },
+    "Brookline Public Library · Instagram": {
+      "missing-time": [
+        {
+          "type": "missing-time",
+          "eventId": "db-1334852",
+          "title": "Battle of the Pumpkins Voting",
+          "source": "Brookline Public Library · Instagram"
+        }
+      ]
+    },
+    "North Shore Music Theatre · Instagram": {
+      "venue-is-address": [
+        {
+          "type": "venue-is-address",
+          "eventId": "db-1883549",
+          "title": "INSTAGRAM TAKEOVER The final NSMT Instagram Takeover for Yeston & Kopit’s PHANTO",
+          "source": "North Shore Music Theatre · Instagram",
+          "detail": "IN PERSON: 54 Dunham Road"
+        },
+        {
+          "type": "venue-is-address",
+          "eventId": "db-1123345",
+          "title": "One must mention the exceptionally good work by the orchestra led by Dale Rielin",
+          "source": "North Shore Music Theatre · Instagram",
+          "detail": "IN PERSON: 54 Dunham Road"
+        },
+        {
+          "type": "venue-is-address",
+          "eventId": "db-1457509",
+          "title": "The North Shore Music Theatre’s current production running through Nov",
+          "source": "North Shore Music Theatre · Instagram",
+          "detail": "IN PERSON: 54 Dunham Road"
+        }
+      ],
+      "missing-time": [
+        {
+          "type": "missing-time",
+          "eventId": "db-1883549",
+          "title": "INSTAGRAM TAKEOVER The final NSMT Instagram Takeover for Yeston & Kopit’s PHANTO",
+          "source": "North Shore Music Theatre · Instagram"
+        },
+        {
+          "type": "missing-time",
+          "eventId": "db-1123345",
+          "title": "One must mention the exceptionally good work by the orchestra led by Dale Rielin",
+          "source": "North Shore Music Theatre · Instagram"
+        },
+        {
+          "type": "missing-time",
+          "eventId": "db-1457509",
+          "title": "The North Shore Music Theatre’s current production running through Nov",
+          "source": "North Shore Music Theatre · Instagram"
+        }
+      ]
+    },
+    "City of Cambridge · Instagram": {
+      "missing-time": [
+        {
+          "type": "missing-time",
+          "eventId": "db-1520873",
+          "title": "The Cambridge 5K",
+          "source": "City of Cambridge · Instagram"
+        }
+      ]
+    },
+    "Medford Public Library": {},
+    "Winchester Public Library": {},
+    "Woburn Public Library": {},
+    "Memorial Hall Library": {},
+    "Boston Public Library": {
+      "venue-is-address": [
+        {
+          "type": "venue-is-address",
+          "eventId": "db-454839",
+          "title": "Race and Inclusion Book Group: The Boston Way by Mark Kurlansky",
+          "source": "Boston Public Library",
+          "detail": "4246  Washington St"
+        },
+        {
+          "type": "venue-is-address",
+          "eventId": "db-454587",
+          "title": "Yarn & Craft Supply Swap",
+          "source": "Boston Public Library",
+          "detail": "30 South Street"
+        },
+        {
+          "type": "venue-is-address",
+          "eventId": "db-454529",
+          "title": "Chess Club (All Ages)",
+          "source": "Boston Public Library",
+          "detail": "4246  Washington St"
+        }
+      ],
+      "missing-time": [
+        {
+          "type": "missing-time",
+          "eventId": "db-454984",
+          "title": "Quabbin—Yesterday and Today",
+          "source": "Boston Public Library"
+        }
+      ],
+      "family-no-signal": [
+        {
+          "type": "family-no-signal",
+          "eventId": "db-454835",
+          "title": "City Voices: Finding Your Voice Poetry Workshop Series",
+          "source": "Boston Public Library"
+        },
+        {
+          "type": "family-no-signal",
+          "eventId": "db-454890",
+          "title": "Talk Tax with the IRS: Trump Accounts",
+          "source": "Boston Public Library"
+        },
+        {
+          "type": "family-no-signal",
+          "eventId": "db-805042",
+          "title": "Author Talk: James Kimmel, Jr. - The Science of Revenge",
+          "source": "Boston Public Library"
+        }
+      ]
+    },
+    "Acton Memorial Library": {
+      "missing-time": [
+        {
+          "type": "missing-time",
+          "eventId": "db-633904",
+          "title": "Adult November Passive Enrichment Kits",
+          "source": "Acton Memorial Library"
+        }
+      ]
+    },
+    "Concord Free Public Library": {},
+    "Beverly Public Library": {},
+    "Somerville Public Library": {},
+    "Rose Kennedy Greenway · Instagram": {},
+    "MIT": {},
+    "Goodnow Library": {},
+    "Wellesley Free Library": {
+      "missing-time": [
+        {
+          "type": "missing-time",
+          "eventId": "db-537298",
+          "title": "Adult Craft To-Go Kits",
+          "source": "Wellesley Free Library"
+        }
+      ]
+    },
+    "Hingham Public Library": {},
+    "Needham Free Public Library": {
+      "missing-time": [
+        {
+          "type": "missing-time",
+          "eventId": "db-589604",
+          "title": "(SM) Rotary Club Pancake Breakfast",
+          "source": "Needham Free Public Library"
+        },
+        {
+          "type": "missing-time",
+          "eventId": "db-589603",
+          "title": "(LG) Rotary Club Pancake Breakfast",
+          "source": "Needham Free Public Library"
+        }
+      ]
+    },
+    "Needham Free Public Library · Instagram": {
+      "missing-time": [
+        {
+          "type": "missing-time",
+          "eventId": "db-1643633",
+          "title": "Day of the Dead Cultural Celebration",
+          "source": "Needham Free Public Library · Instagram"
+        }
+      ]
+    },
+    "Newton Free Library": {},
+    "New England Aquarium": {},
+    "Waltham Public Library": {},
+    "Milton Public Library · Instagram": {},
+    "Brookline Public Library": {},
+    "City of Salem MA": {
+      "missing-time": [
+        {
+          "type": "missing-time",
+          "eventId": "db-432401",
+          "title": "7 AM Residential Street Sweep, E1",
+          "source": "City of Salem MA"
+        },
+        {
+          "type": "missing-time",
+          "eventId": "db-432398",
+          "title": "7 AM Residential Street Sweep, A1",
+          "source": "City of Salem MA"
+        },
+        {
+          "type": "missing-time",
+          "eventId": "db-432400",
+          "title": "7 AM Residential Street Sweep, B1",
+          "source": "City of Salem MA"
+        }
+      ]
+    },
+    "Town of Lexington MA": {
+      "venue-is-address": [
+        {
+          "type": "venue-is-address",
+          "eventId": "db-433581",
+          "title": "Lexington Small Business Matchmaker",
+          "source": "Town of Lexington MA",
+          "detail": "33 Marrett Rd."
+        },
+        {
+          "type": "venue-is-address",
+          "eventId": "db-1270310",
+          "title": "Notice of Post-Election Tabulation",
+          "source": "Town of Lexington MA",
+          "detail": "1605 Massachusetts Avenue"
+        }
+      ]
+    },
+    "Salem Public Library": {},
+    "Melrose Public Library": {},
+    "Cary Memorial Library": {},
+    "Belmont Public Library": {},
+    "Town of Lexington MA · Instagram": {
+      "missing-time": [
+        {
+          "type": "missing-time",
+          "eventId": "db-983688",
+          "title": "The 2026 State Election",
+          "source": "Town of Lexington MA · Instagram"
+        }
+      ]
+    },
+    "Cambridge Public Library · Instagram": {
+      "missing-time": [
+        {
+          "type": "missing-time",
+          "eventId": "db-1262496",
+          "title": "Career Exploration Mapping Your Future O'Neill November 3 6-7 30 p",
+          "source": "Cambridge Public Library · Instagram"
+        }
+      ]
+    },
+    "Boston Public Library · Instagram": {
+      "missing-time": [
+        {
+          "type": "missing-time",
+          "eventId": "db-693455",
+          "title": "The North End Branch",
+          "source": "Boston Public Library · Instagram"
+        },
+        {
+          "type": "missing-time",
+          "eventId": "db-1883224",
+          "title": "Looking for a fun fall day",
+          "source": "Boston Public Library · Instagram"
+        },
+        {
+          "type": "missing-time",
+          "eventId": "db-1641871",
+          "title": "On Friday November 6 2026 all neighborhood branches will close at 4 pm for a sta",
+          "source": "Boston Public Library · Instagram"
+        }
+      ]
+    },
+    "Concord Free Public Library · Instagram": {
+      "missing-time": [
+        {
+          "type": "missing-time",
+          "eventId": "db-1888251",
+          "title": "Event",
+          "source": "Concord Free Public Library · Instagram"
+        }
+      ]
+    },
+    "City of Somerville · Instagram": {
+      "missing-time": [
+        {
+          "type": "missing-time",
+          "eventId": "db-1272789",
+          "title": "Join the Mobility team",
+          "source": "City of Somerville · Instagram"
+        }
+      ]
+    },
+    "Lake Worth Beach City Library · Instagram": {},
+    "Somerville Public Library · Instagram": {
+      "missing-time": [
+        {
+          "type": "missing-time",
+          "eventId": "db-1823141",
+          "title": "All Somerville Public Library locations",
+          "source": "Somerville Public Library · Instagram"
+        }
+      ]
+    },
+    "Museum of Science · Instagram": {
+      "missing-time": [
+        {
+          "type": "missing-time",
+          "eventId": "db-787506",
+          "title": "This November keep your eyes peeled for earthgrazers blazing across the night sk",
+          "source": "Museum of Science · Instagram"
+        }
+      ]
+    },
+    "Museum of Fine Arts Boston · Instagram": {}
+  }
+}
