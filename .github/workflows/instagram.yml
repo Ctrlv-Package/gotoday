@@ -4,7 +4,7 @@ name: Instagram accounts (hourly)
 # lets hundreds of town, library, parks and downtown accounts from Florida to Maine stay fresh through the day.
 on:
   schedule:
-    - cron: "5 */5 * * *"   # each run reads a batch every hour for ~5 hours (GitHub skips many hourly schedules)
+    - cron: "5 */4 * * *"   # each run reads a batch every hour for ~4 hours; the site watch restarts it if GitHub skips a schedule
   workflow_dispatch: {}
 
 permissions:
@@ -17,7 +17,7 @@ concurrency:
 jobs:
   instagram:
     runs-on: ubuntu-24.04
-    timeout-minutes: 330
+    timeout-minutes: 300
     steps:
       - uses: actions/checkout@v5
       - uses: actions/setup-node@v5
@@ -27,10 +27,10 @@ jobs:
       # Five rounds, one per hour: Meta's hourly read budget refills between rounds.
       - run: |
           set -o pipefail
-          for round in 1 2 3 4 5; do
+          for round in 1 2 3 4; do
             echo "=== round $round $(date -u +%H:%M)" | tee -a ig.log
             npx tsx scripts/remote-ingest.ts 2>&1 | sed -E 's#(Bearer )[A-Za-z0-9._-]+#\1***#g' | tee -a ig.log || true
-            if [ $round -lt 5 ]; then sleep 3300; fi
+            if [ $round -lt 4 ]; then sleep 3300; fi
           done
         env:
           GOTODAY_URL: ${{ secrets.GOTODAY_URL }}

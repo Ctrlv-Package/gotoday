@@ -80,9 +80,13 @@ export async function fetchTribe(cfg:GenericCfg,startDate:string,endDate:string)
  const origin=new URL(cfg.url).origin,out:EventRecord[]=[];
  for(let page=1;page<=10;page++){
   const u=`${origin}/wp-json/tribe/events/v1/events?start_date=${startDate}&end_date=${endDate}%2023:59:59&per_page=50&page=${page}`;
-  const r=await fetchRetry(u,{headers:{...UA,Accept:"application/json"},cache:"no-store"});
+  let r=await fetchRetry(u,{headers:{...UA,Accept:"application/json"},cache:"no-store"});
   if(!r.ok){if(page===1)throw new Error(`HTTP ${r.status} from ${new URL(origin).host} events API`);break}
-  const d:any=await r.json().catch(()=>({}));const rows:any[]=d?.events||[];
+  let d:any=await r.json().catch(()=>null);
+  // Busy WordPress sites sometimes answer the morning rush with an empty or non-JSON page: wait and ask once more.
+  if(page===1&&(!d||!Array.isArray(d.events))){await new Promise(z=>setTimeout(z,4000));r=await fetchRetry(u,{headers:{...UA,Accept:"application/json"},cache:"no-store"});d=r.ok?await r.json().catch(()=>null):null;
+   if(!d||!Array.isArray(d.events))throw new Error(`${new URL(origin).host} events API didn't answer with events (busy or blocked); retried`)}
+  const rows:any[]=d?.events||[];
   for(const e of rows){
    const date=String(e.start_date||"").slice(0,10);if(!date||date<startDate||date>endDate)continue;
    const title=clean(e.title);if(title.length<3)continue;

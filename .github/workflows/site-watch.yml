@@ -10,6 +10,7 @@ on:
 
 permissions:
   issues: write
+  actions: write
 
 concurrency:
   group: site-watch
@@ -61,3 +62,20 @@ jobs:
           issue site-down "🔴 GoToday is down" "$down"
           issue db-size "🟠 Database close to its size budget" "$big"
           [ -z "$down" ]
+
+      # GitHub skips or delays scheduled runs, sometimes for hours. If the Instagram job or the city-sites job has been
+      # idle too long, start it here (this watch runs every ~10 minutes).
+      - name: Keep the update jobs running
+        if: always()
+        env:
+          GH_TOKEN: ${{ github.token }}
+          REPO: ${{ github.repository }}
+        run: |
+          kick() { wf="$1"; idle_min="$2"
+            busy=$(gh api "repos/$REPO/actions/workflows/$wf/runs?per_page=5" --jq '[.workflow_runs[]|select(.status=="in_progress" or .status=="queued" or .status=="waiting" or .status=="pending")]|length')
+            last=$(gh api "repos/$REPO/actions/workflows/$wf/runs?per_page=1" --jq '.workflow_runs[0].updated_at // ""')
+            age=$(( ( $(date -u +%s) - $(date -u -d "${last:-1970-01-01T00:00:00Z}" +%s) ) / 60 ))
+            echo "$wf: running=$busy, last activity ${age} min ago"
+            if [ "${busy:-0}" = 0 ] && [ "$age" -ge "$idle_min" ]; then gh api -X POST "repos/$REPO/actions/workflows/$wf/dispatches" -f ref=main >/dev/null && echo "started $wf"; fi; }
+          kick instagram.yml 70
+          kick remote-ingest.yml 300
