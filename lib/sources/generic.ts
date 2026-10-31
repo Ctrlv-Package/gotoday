@@ -41,7 +41,7 @@ function icsWhen(prop:string,value:string,defaultTz:string):{date:string;time:st
 }
 export async function fetchIcal(cfg:GenericCfg,startDate:string,endDate:string):Promise<EventRecord[]>{
  const tz=cfg.tz||"America/New_York";
- const r=await fetchRetry(cfg.url.replace(/^webcal:/i,"https:"),{headers:{...UA,Accept:"text/calendar,*/*"},cache:"no-store"});
+ const r=await fetchRetry(cfg.url.replace(/^webcal:/i,"https:"),{headers:{...UA,Accept:"text/calendar,*/*"},cache:"no-store"},2,60000);
  if(!r.ok)throw new Error(`HTTP ${r.status} from ${new URL(cfg.url.replace(/^webcal:/i,"https:")).host}`);
  const text=unfold(await r.text());if(!/BEGIN:VCALENDAR/.test(text))throw new Error("Not an iCal feed");
  const out:EventRecord[]=[];
