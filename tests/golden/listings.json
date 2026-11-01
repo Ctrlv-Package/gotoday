@@ -17,5 +17,9 @@
   {"keep": false, "note": "Countdown teaser for a registration date, not an event.", "title": "The Countdown", "tags": [], "desc": "THE COUNTDOWN IS ON! Registration for the Turkey Giveaway opens Sunday."},
   {"keep": false, "note": "Countdown teaser.", "title": "Two Days to Go", "tags": [], "desc": "Registration for the Thanksgiving Turkey Giveaway opens this Sunday."},
   {"keep": false, "note": "A registration opening isn't something to go to.", "title": "Pre-Registration Opens for Turkey Giveaway", "tags": [], "desc": "Register online."},
-  {"keep": true, "note": "A countdown party is a real event.", "title": "New Year's Eve Countdown Party", "tags": ["Music"], "desc": "Live DJ and a balloon drop at midnight."}
+  {"keep": true, "note": "A countdown party is a real event.", "title": "New Year's Eve Countdown Party", "tags": ["Music"], "desc": "Live DJ and a balloon drop at midnight."},
+  {"keep": false, "note": "Public-works notice, not an event.", "title": "SE 6th Terrace Bridge Replacement - Bridge Construction Begins", "tags": ["Free"], "desc": "Bridge construction begins with expected temporary lane closures and traffic impacts."},
+  {"keep": false, "note": "Promo caption: go get brunch somewhere.", "title": "Start your Sunday in Downtown Hollywood", "tags": [], "desc": "Grab a coffee, enjoy breakfast or brunch at one of Downtown Hollywood's amazing restaurants."},
+  {"keep": true, "note": "A groundbreaking people attend stays.", "title": "Community Center Construction Groundbreaking Ceremony", "tags": [], "desc": "Join the Mayor and Commission."},
+  {"keep": true, "note": "A farmers market opening day.", "title": "Farmers' Market | Opening Day – Public Safety", "tags": ["Free"], "desc": "Opening Day of the City of Parkland Farmers' Market."}
 ]

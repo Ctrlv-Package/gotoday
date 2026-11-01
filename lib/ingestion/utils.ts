@@ -89,6 +89,11 @@ export function discoveryRejection(e:EventRecord):DiscoveryReason|null{
  // "Providence has led the state in…".
  {const t=title.trim();
   if(/^(pov\b|we(’|')?re\b|we are\b|snag\b|grab\b|shop\b|check out\b|stop by\b|swipe\b|tag a\b|meet our\b|congrat|happy \w+day\b|throwback|tbt\b)/i.test(t)||/\b(has|have) (led|been|seen|made)\b|\bjust \w+ (days?|weeks?) away\b|\b(days?|weeks?) away\b|\bcoming soon\b/i.test(t))return"announcement";}
+ // Public-works notices aren't events: "SE 6th Terrace Bridge Replacement - Bridge Construction Begins", lane closures,
+ // detours, water-main work, road resurfacing. A groundbreaking or ribbon cutting people attend stays.
+ if(/\b(construction (begins|starts|update|notice|alert|schedule)|(bridge|road|street|roadway|sidewalk|culvert|seawall) (replacement|repairs?|closures?|reconstruction|improvements?|work)|lane closures?|road closures?|street closures?|detours?|traffic (impacts?|alerts?|advisory|shifts?)|utility (work|installation|relocation)|water main|drainage (project|improvements?)|(re)?paving|milling and resurfacing|resurfacing project|boil water|service interruption)\b/i.test(title)&&!/\b(groundbreaking|ribbon[- ]cutting|grand opening|open house|celebration|festival|run|walk|parade|tour)\b/i.test(title))return"announcement";
+ // Promo captions read as titles: "Start your Sunday in Downtown Hollywood" (go get brunch somewhere).
+ if(/^(start|spend|end) your (day|morning|evening|night|weekend|(mon|tues|wednes|thurs|fri|satur|sun)day)\b/i.test(title.trim()))return"announcement";
  // Countdown and sign-up teasers, not events: "TOMORROW", "The Countdown", "Two Days to Go", "3 days until
  // registration opens", "Pre-registration opens Sunday". A countdown party (New Year's Eve) stays.
  {const t=title.trim(),N="(\\d+|one|two|three|four|five|six|seven|eight|nine|ten)";
@@ -139,6 +144,7 @@ export function cleanTitle(t:string):string{
  let x=String(t||"").replace(/[\p{Extended_Pictographic}\u{1F1E6}-\u{1F1FF}\u{1F3FB}-\u{1F3FF}\uFE0F\u200D\u20E3]/gu,"").replace(/\s{2,}/g," ").trim();
  const m=x.match(/^(.{6,}?)[.!|•·–—-]\s+((?:for\s+)?(?:kids?|children|ages?|all ages|families|family|adults?|teens?|tweens?|grades?|free|no cost|seniors?|toddlers?|babies|everyone|open to)\b.*|\d{1,2}\s*(?:&|and)\s*(?:under|up|older)\b.*|\d{1,2}\s*\+.*)$/i);
  if(m)x=m[1].trim();
+ x=x.replace(/(\p{L}{2})-\s+(?=\p{Lu}\p{Ll})/gu,"$1 – ");
  // Ages in the name: "Scavenger Hunt, Ages 3-12 yo", "Lego Club (Ages 6–10)", "Storytime - Ages 0-5", "Art (Grades K-5)":
  // the card shows the ages as their own chip, so they come out of the title (and still set the ages).
  {const y=x.replace(/\s*(?:[,:;|–—-]\s*|\(\s*|\[\s*)(?:for\s+)?(?:ages?|aged|grades?|gr\.?)\s*(?:k|pre-?k|\d{1,2})(?:\s*(?:-|–|to|through|&|and)\s*(?:\d{1,2}|up|under|older|adults?))?\s*(?:\+|yrs?|years?(?: old)?|yo|y\.o\.?|months?)?\s*[)\]]?/gi," ").replace(/\s*\(\s*(?:\d{1,2}\s*(?:-|–)\s*\d{1,2}|\d{1,2}\+)\s*(?:yrs?|years?|yo|months?)?\s*\)/gi," ").replace(/\s{2,}/g," ").trim();
