@@ -81,16 +81,37 @@ export async function fillFromCopies<T extends Fillable>(e:T):Promise<T>{
 // Recurring events (a weekly block party, a monthly art walk) often have a flyer on one date and none on another. An event
 // with no picture of its own uses the picture of the same event on another date: same town, same title (by the same
 // matching as copies), the saved pictures only (they don't expire), within ±90 days. Cards and event pages both use this.
+// The town-set scan below is the listing side's heaviest read: every listing request with picture-less cards used to
+// run it fresh (Neon showed it at 88k calls in 3 days, up to 8,000 rows a call). The rows for one set of towns barely
+// change between ingestion runs, so they are cached per town set, in the same module-level style as the day scan above.
+// Only borrowed pictures can go stale, and only up to FAMILY_CACHE_TTL_MS. A failed scan is never cached, so the next
+// call retries. Serverless instances do not share this memory, so the win is per instance — but warm instances serve
+// most traffic, and the call count still collapses from per-listing-request to per-town-set per hour.
+const FAMILY_CACHE_TTL_MS=60*60e3;
+const FAMILY_CACHE_MAX_SETS=50;
+const familyCache=new Map<string,{at:number;rows:any[];shared:Set<string>}>();
+function storeFamily(key:string,rows:any[],shared:Set<string>){
+ familyCache.set(key,{at:Date.now(),rows,shared});
+ for(const [k,v] of familyCache)if(Date.now()-v.at>=FAMILY_CACHE_TTL_MS)familyCache.delete(k);
+ while(familyCache.size>FAMILY_CACHE_MAX_SETS){const oldest=[...familyCache.entries()].sort((a,b)=>a[1].at-b[1].at)[0];if(!oldest)break;familyCache.delete(oldest[0])}
+}
 export async function familyPictures(wanted:{title:string;city:string}[]):Promise<Map<string,string>>{
  const out=new Map<string,string>();const towns=[...new Set(wanted.map(w=>town(w.city)).filter(Boolean))];
  if(!towns.length)return out;
- const {rows}=await db.query(`select e.id,e.title,e.city,e.image_url,s.name as source from events e join sources s on s.id=e.source_id
+ const key=[...towns].sort().join("|");
+ const hit=familyCache.get(key);
+ let rows:any[];let shared:Set<string>;
+ if(hit&&Date.now()-hit.at<FAMILY_CACHE_TTL_MS){rows=hit.rows;shared=hit.shared}else{
+  try{rows=(await db.query(`select e.id,e.title,e.city,e.image_url,s.name as source from events e join sources s on s.id=e.source_id
   where e.image_url like '/img/%' and e.local_date between current_date-90 and current_date+90
-   and btrim(lower(regexp_replace(split_part(coalesce(e.city,''),',',1),'^ft\\.?\\s','fort ','i'))) = any($1::text[]) limit 8000`,[towns]).catch(()=>({rows:[] as any[]}));
- if(!rows.length)return out;
- const imgs=[...new Set(rows.map((r:any)=>r.image_url))];
- // A picture several differently named events share is a cover, not this event's.
- const shared=new Set((await db.query("select image_url from events where image_url=any($1) group by image_url having count(distinct lower(title))>=3",[imgs]).catch(()=>({rows:[]}))).rows.map((r:any)=>r.image_url));
+   and btrim(lower(regexp_replace(split_part(coalesce(e.city,''),',',1),'^ft\\.?\\s','fort ','i'))) = any($1::text[]) limit 8000`,[towns])).rows}catch{return out}
+  if(!rows.length){storeFamily(key,[],new Set());return out}
+  const imgs=[...new Set(rows.map((r:any)=>r.image_url))];
+  // A picture several differently named events share is a cover, not this event's.
+  let failed=false;
+  try{shared=new Set((await db.query("select image_url from events where image_url=any($1) group by image_url having count(distinct lower(title))>=3",[imgs])).rows.map((r:any)=>r.image_url))}catch{shared=new Set();failed=true}
+  if(!failed)storeFamily(key,rows,shared);
+ }
  for(const w of wanted){
   const k=`${w.title}|${town(w.city)}`;if(out.has(k))continue;
   const pics=rows.filter((r:any)=>town(r.city)===town(w.city)&&!shared.has(r.image_url)&&sameEvent(w.title,r.title)).map((r:any)=>({id:r.id,image:r.image_url,source:r.source,title:r.title}));
