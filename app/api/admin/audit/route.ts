@@ -61,8 +61,8 @@ export async function GET(req:NextRequest){
    const t=e.title||"",f:string[]=e.facets||[],h={area,date:day,title:t,source:e.source,id:e.id};
    // Library photos are shared on purpose (one per kind of event); only events' own photos count here.
    if(e.image&&!e.stockImage&&!/static\.libnet\.info/.test(e.image)){const k=String(e.image).split("?")[0];pics.set(k,[...(pics.get(k)||[]),t])}
-   if(/\b(kids?|children'?s?|toddlers?|bab(y|ies)|preschool|storytime|tweens?|teens?|youth|family|families)\b/i.test(t)&&!f.includes("Kids")&&!f.includes("Family")&&!((e.ageMin??0)>=18))add("kidsTitleNotKids",h);
-   if(/\bfree\b/i.test(t)&&!/\b(gluten|sugar|alcohol|dairy)[- ]free|free ?style|\beats? free\b/i.test(t)&&!f.includes("Free"))add("freeTitleNotFree",h);
+   if(/\b(kids?|children'?s?|toddlers?|bab(y|ies)|preschool|storytime|tweens?|teens?|youth|family|families)\b/i.test(e.source==="Ticketmaster"?t.replace(/\bbab(y|ies)\b/gi,""):t)&&!f.includes("Kids")&&!f.includes("Family")&&!((e.ageMin??0)>=18))add("kidsTitleNotKids",h);
+   if(/\bfree\b/i.test(t)&&!/\b(gluten|sugar|alcohol|dairy)[- ]free|free ?style|\beats? free\b|\bfree (play|time|throw|skate|write|writing|form|verse|dance|range|agent)\b/i.test(t)&&!f.includes("Free"))add("freeTitleNotFree",h);
    // Labeled Free while the listing names a ticket price ("$5 per person", "$10 admission").
    if(f.includes("Free")&&/\$\s?[1-9]\d*[^.]{0,25}\b(per (person|child|adult|car|family)|admission|entry|tickets?|wristband|each|pp)\b/i.test(`${t} ${e.desc||""} ${e.priceText||""}`))add("freeButPriced",{...h,note:(e.desc||"").slice(0,120)});
    if(/\b(21\+|18\+|wine|beer|brewery|cocktails?|happy hour|bar crawl|burlesque)\b/i.test(t)&&f.includes("Family"))add("adultTitleFamily",h);

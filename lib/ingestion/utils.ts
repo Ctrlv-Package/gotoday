@@ -129,6 +129,7 @@ export function discoveryRejection(e:EventRecord):DiscoveryReason|null{
  if(PASSIVE.test(title)||(!strong&&/grab (?:and|&) go|information table/i.test(tagText)))return"passive-display";
  // Standing programs and admission offers, not things happening that day: "Museums for All" ($4 admission with SNAP),
  // "Museums on Us", "Blue Star Museums", "Culture Pass" — and anything whose own text says it runs "year round".
+ if(/\b(museums? for all|museums? on us|bank of america.{0,3}s? museums|smithsonian museum day|free (museum|first) (day|sunday)s? (pass|program)|blue star museums?)\b/i.test(title)&&!/\b(festival|celebration|party|tour|workshop|concert)\b/i.test(title))return"passive-display";
  if(/^(museums? for all|museums? on us|blue star museums?|culture pass|library (museum )?pass(es)?|discount (tickets?|admission)|reduced admission|military discount|ebt (card )?(admission|discount)|snap (card )?(admission|discount))\b/i.test(title.trim()))return"passive-display";
  if(!strong&&!EVENT_TITLE.test(title)&&/^\W*(dates?:?\s*)?(year[- ]round|ongoing|every ?day|daily|permanent (exhibit|collection))\b/im.test(String(e.desc||"").slice(0,120)))return"passive-display";
  if(SERVICE.test(title)||(!strong&&/career\/business/i.test(tagText)))return"service-or-support";

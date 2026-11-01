@@ -28,5 +28,6 @@
   {"keep": false, "note": "Monthly calendar post.", "title": "November Events", "tags": [], "desc": "Check out everything happening this month."},
   {"keep": false, "note": "Round-up.", "title": "What's Happening in November", "tags": [], "desc": "Our lineup."},
   {"keep": true, "note": "A named festival stays.", "title": "Hello Fall Festival", "tags": ["Free"], "desc": "Hayrides, games and food trucks for the whole family."},
-  {"keep": true, "note": "A named event with a month stays.", "title": "November Craft Fair", "tags": [], "desc": "Local makers and vendors."}
+  {"keep": true, "note": "A named event with a month stays.", "title": "November Craft Fair", "tags": [], "desc": "Local makers and vendors."},
+  {"keep": false, "note": "A standing discount program, not an event.", "title": "Bank of America “Museums on Us”", "tags": [], "desc": "Free general admission on the first full weekend of every month for Bank of America cardholders."}
 ]

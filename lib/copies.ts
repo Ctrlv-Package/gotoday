@@ -15,9 +15,19 @@ const partOf=(t:string)=>/^(opening|closing) reception|^vip\b|\bpreview\b|after 
 const roundup=(s:string)=>/^(Miami Residents|Weekend Broward|The Broward Scene|To Do with Kids (Broward|Miami)) · Instagram$/.test(s);
 export function sameEvent(a:string,b:string){
  if(partOf(a)!==partOf(b))return false;
- const fa=flat(a),fb=flat(b);if(fa.length>=4&&fb.length>=4&&(fa.includes(fb)||fb.includes(fa)))return true;
+ // One title inside the other counts only as whole words and with enough to it: "Time" (a show) is not "Tech Time"
+ // or "Funtime" — that borrowed one show's picture onto every library "… Time" program in town.
+ const fa=flat(a),fb=flat(b);
+ if(fa.length>=4&&fb.length>=4&&(fa.includes(fb)||fb.includes(fa))){
+  const sp=(t:string)=>` ${t.toLowerCase().replace(/&/g,"and").replace(/[^a-z0-9]+/g," ").trim()} `;
+  const [s1,l1]=fa.length<=fb.length?[sp(a),sp(b)]:[sp(b),sp(a)];
+  if(Math.min(fa.length,fb.length)>=8&&l1.includes(s1))return true;
+ }
  const wa=words(a),wb=words(b);let hit=0;for(const x of wa)if(wb.has(x))hit++;
- const small=Math.min(wa.size,wb.size);return small>0&&hit>=Math.min(2,small)&&hit/small>=0.6;
+ const small=Math.min(wa.size,wb.size);
+ // A one-word title ("Time", "Yoga") must be a distinctive word (6+ letters, like "Misery") to match a longer one.
+ if(small===1){const one=[...(wa.size===1?wa:wb)][0];if(one.length<6)return false}
+ return small>0&&hit>=Math.min(2,small)&&hit/small>=0.6;
 }
 const thin=(d:string)=>!d||/^Official .* event\.$/.test(d)||/^Posted by @/.test(d)||d.length<40;
 const expired=(u:string)=>{const oe=/cdninstagram\.com|fbcdn\.net/.test(u)&&u.match(/[?&]oe=([0-9A-Fa-f]{8})/);return!!oe&&parseInt(oe[1],16)*1000<Date.now()};

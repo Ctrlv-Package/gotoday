@@ -149,7 +149,7 @@ export function facetsFor(e:In):Facet[]{
  // A movie night in a public park from a city, parks department or arts park, with no price mentioned, is free.
  const parkMovie=!priced&&(gov||/\bparks?\b|artspark|recreation|\brec\b/i.test(e.source||""))&&has(/\b(movie|film|cinema)s?\b/i,t)&&has(/\b(park|lawn|amphitheat(er|re)|green|under the stars|outdoor|field|plaza|beach|pier)\b/i,`${t} ${(e as any).venue||""} ${d}`);
  // The title says so ("FREE Record release show", "Free Family Movie Night") — not "gluten-free" or "kids eat free".
- const freeTitle=/(^|[\s:–-])free\b(?![- ](style|agent|form|lance|dom|range|play\b))/i.test(t)&&!/\b(gluten|sugar|dairy|alcohol|smoke|tax|fee|cruelty|hands)[- ]free\b|\beat(s)? free\b|\bfree (with|for kids with) (purchase|paid|adult)/i.test(t);
+ const freeTitle=/(^|[\s:–(\[-])free\b(?![- ](style|agent|form|lance|dom|range|play\b))/i.test(t)&&!/\b(gluten|sugar|dairy|alcohol|smoke|tax|fee|cruelty|hands)[- ]free\b|\beat(s)? free\b|\bfree (with|for kids with) (purchase|paid|adult)/i.test(t);
  // A listing that shows a price isn't free, whatever a "no price mentioned" guess would say.
  // A stated cost that isn't "free" ("Varies", "Fees apply", "See website") means it isn't free, even without a $ amount.
  const pt=(e.priceText||"").trim(),costNotFree=!!pt&&!/\bfree\b|no (cost|charge)/i.test(pt)&&!/(^|[\s:–-])free\b/i.test(t);
