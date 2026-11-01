@@ -63,8 +63,13 @@ function mergeCopy(keep:any,other:any){
  m._pics=[...(keep._pics||[]),...(other._pics||[])];
  if(thinDesc(m.desc)&&!thinDesc(other.desc||""))m.desc=other.desc;
  // A copy's labels fill gaps, but "Kids"/"Family" never move onto a listing whose own ages say teens or adults.
+ // Nor onto a stage production: when one copy names a theater and reads not-for-kids, a city copy's default guess
+ // doesn't override it.
  const grown=(m.ageMin??0)>=13;
- m.facets=[...new Set([...(m.facets||[]),...(other.facets||[]).filter((f:string)=>!(grown&&(f==="Kids"||f==="Family")))])];
+ const fam=(x:any)=>(x.facets||[]).some((f:string)=>f==="Kids"||f==="Family");
+ const stage=[keep,other].some((x:any)=>!fam(x)&&/\b(playhouse|players|repertory|theat(er|re))\b/i.test(`${x.venue||""} ${x.source||""}`)&&!/library|youth|kids|children|junior|tada|school/i.test(`${x.venue||""} ${x.source||""}`));
+ m.facets=[...new Set([...(m.facets||[]),...(other.facets||[]).filter((f:string)=>!((grown||stage)&&(f==="Kids"||f==="Family")))])];
+ if(stage)m.facets=m.facets.filter((f:string)=>f!=="Kids"&&f!=="Family");
  if(!(m.labels||[]).length&&(other.labels||[]).length)m.labels=other.labels;
  if(!m.isFree&&other.isFree&&!m.paid)m.isFree=true;
  if(m.ageMin==null&&other.ageMin!=null){m.ageMin=other.ageMin;m.ageMax=other.ageMax}
