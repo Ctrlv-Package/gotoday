@@ -92,12 +92,13 @@ export async function uploadsToday(uploader:string){
  return Number((await db.query("select count(*)::int as n from images where source_url=$1 and created_at>now()-interval '1 day'",[`upload:${uploader}`])).rows[0].n);
 }
 
-/** Drop copies no event from the last few days or the future still shows. */
+/** Drop copies no event from the last few days or the future still shows. Pictures people uploaded for their own
+ *  events are kept as long as the event exists (past events keep their picture for "Create again"). */
 export async function purgeImages(){
  await schema();
  const r=await db.query(`delete from images i where created_at<now()-interval '2 days' and not exists
   (select 1 from events e where e.image_url='/img/'||i.key and e.local_date>=current_date-3)
   and not exists (select 1 from stock_photos p where p.image='/img/'||i.key)
-  and not exists (select 1 from community_events c where c.image='/img/'||i.key and c.status<>'deleted' and c.start_date>=current_date-3)`).catch(()=>({rowCount:0}));
+  and not exists (select 1 from community_events c where c.image='/img/'||i.key and c.status<>'deleted')`).catch(()=>({rowCount:0}));
  return r.rowCount||0;
 }

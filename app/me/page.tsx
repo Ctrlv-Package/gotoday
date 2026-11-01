@@ -51,6 +51,9 @@ export default async function Me({searchParams}:{searchParams?:Promise<{deleted?
  const cal=await calendarStatus(user.id).catch(()=>({clickedAt:null,clicked:null,apps:[]}));
  const today=new Intl.DateTimeFormat("en-CA",{timeZone:"America/New_York"}).format(new Date());
  const upcoming=saved.filter(r=>r.date>=today),past=saved.filter(r=>r.date<today).reverse();
+ // My events: upcoming (soonest first) on top; past ones fold away. A repeating event counts as upcoming.
+ const isPast=(c:any)=>c.date<today&&!(c.repeat&&c.repeat.kind&&c.repeat.kind!=="none");
+ const myUpcoming=created.filter(c=>!isPast(c)).sort((a,b)=>a.date.localeCompare(b.date)),myPast=created.filter(isPast);
  const feed=`${SITE.replace(/^https?:\/\//,"")}/cal/${token}.ics`;
 
  return <main className="detail">{head}<BfcacheRefresh/>
@@ -81,12 +84,15 @@ export default async function Me({searchParams}:{searchParams?:Promise<{deleted?
     <section className="meSection">
      <h2>{t("My events")} <span className="count">{created.length}</span></h2>
      {created.length===0?<p className="muted">{t("Events you create on GoToday show up here, with links to share and manage them.")} <Link href="/create" className="inlineLink">{t("Create an event →")}</Link></p>
-     :<><ul className="meList">{created.map(c=><li key={c.id}>
+     :<>{(()=>{const row=(c:any,past:boolean)=><li key={c.id}>
        <a href={`/e/${c.shareToken}`}><b>{c.title}</b><span>{longDate(c.date,loc)}{c.startTime?` · ${c.startTime}`:""}{c.venue?` · ${c.venue}`:""}</span>
         {c.rsvpCounts&&(c.rsvpCounts.going+c.rsvpCounts.maybe+c.rsvpCounts.no)>0&&<span className="rsvpCount">👥 {c.rsvpCounts.going} {t("going")}{c.rsvpCounts.maybe?` · ${c.rsvpCounts.maybe} ${t("maybe")}`:""}{c.rsvpCounts.no?` · ${c.rsvpCounts.no} ${t("can't go")}`:""}{c.newReplies>0&&<em className="newBadge">{c.newReplies} {t("new")}</em>}</span>}
         <span className={`stat ${c.status}`}>{c.visibility==="private"?t("Private · link only"):c.status==="live"?t("Live on GoToday"):c.status==="pending"?t("Waiting for review"):c.status==="rejected"?t("Not approved"):c.status}</span></a>
        {c.ownerToken&&<Link className="btn ghost small" href={`/manage/${c.ownerToken}`}>{t("Manage")}</Link>}
-      </li>)}</ul>
+       {past&&c.ownerToken&&<Link className="btn ghost small" href={`/create?from=${c.ownerToken}`}>{t("Create again")}</Link>}
+      </li>;
+      return <>{myUpcoming.length>0?<ul className="meList">{myUpcoming.map(c=>row(c,false))}</ul>:<p className="muted">{t("No upcoming events.")}</p>}
+      {myPast.length>0&&<details className="mePast"><summary>{t("Past events")} ({myPast.length})</summary><ul className="meList">{myPast.map(c=>row(c,true))}</ul></details>}</>})()}
       <p className="muted small" style={{marginTop:8}}><Link href="/create" className="inlineLink">{t("+ Create another event")}</Link></p></>}
     </section>
 

@@ -10,7 +10,14 @@ type Done={status:string;visibility:string;shareUrl:string;manageUrl:string;titl
 
 export default function CreatePage(){
  const [busy,setBusy]=useState(false),[done,setDone]=useState<Done|null>(null),[mine,setMine]=useState<MyEvent[]>([]),[initial,setInitial]=useState<FormValues|null>(null);
- useEffect(()=>{setMine(myEvents());const vis=new URLSearchParams(location.search).get("type")==="private"?"private":"public";setInitial({...EMPTY,visibility:vis})},[]);
+ const [copied,setCopied]=useState(false);
+ useEffect(()=>{setMine(myEvents());const q=new URLSearchParams(location.search),vis=q.get("type")==="private"?"private":"public",from=q.get("from");
+  // "Create again" from My events: start from that event (same name, place, details, picture), with a new date to pick.
+  if(from){fetch("/api/community/manage",{headers:{authorization:`Bearer ${from}`},cache:"no-store"}).then(r=>r.json()).then(d=>{
+    if(!d?.ok){setInitial({...EMPTY,visibility:vis});return}
+    const ev=d.event||{},keys=[...Object.keys(EMPTY),"categories","image","repeat","rsvp"];
+    setInitial({...EMPTY,...Object.fromEntries(keys.filter(k=>ev[k]!==undefined).map(k=>[k,ev[k]])),date:""} as FormValues);setCopied(true);history.replaceState(null,"","/create")}).catch(()=>setInitial({...EMPTY,visibility:vis}));return}
+  setInitial({...EMPTY,visibility:vis})},[]);
  async function create(v:FormValues){
   setBusy(true);
   try{const r=await fetch("/api/community",{method:"POST",headers:{"content-type":"application/json"},body:JSON.stringify(v)});const d=await r.json().catch(()=>({}));
@@ -38,6 +45,7 @@ export default function CreatePage(){
     </div>:<>
      <h1>Create an event</h1>
      <p className="lead">Share something happening near you, or set up a private invite for friends and family. No account needed.</p>
+     {copied&&!done&&<p className="muted">Copied from your past event: pick a new date.</p>}
      {initial&&<EventForm initial={initial} submitLabel="Create event" busy={busy} onSubmit={create}/>}
     </>}
     {mine.length>0&&!done&&<section className="related"><h2>Events you created on this device</h2>
