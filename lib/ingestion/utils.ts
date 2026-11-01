@@ -89,6 +89,12 @@ export function discoveryRejection(e:EventRecord):DiscoveryReason|null{
  // "Providence has led the state in…".
  {const t=title.trim();
   if(/^(pov\b|we(’|')?re\b|we are\b|snag\b|grab\b|shop\b|check out\b|stop by\b|swipe\b|tag a\b|meet our\b|congrat|happy \w+day\b|throwback|tbt\b)/i.test(t)||/\b(has|have) (led|been|seen|made)\b|\bjust \w+ (days?|weeks?) away\b|\b(days?|weeks?) away\b|\bcoming soon\b/i.test(t))return"announcement";}
+ // Countdown and sign-up teasers, not events: "TOMORROW", "The Countdown", "Two Days to Go", "3 days until
+ // registration opens", "Pre-registration opens Sunday". A countdown party (New Year's Eve) stays.
+ {const t=title.trim(),N="(\\d+|one|two|three|four|five|six|seven|eight|nine|ten)";
+  if(/^\W*(tomorrow|today|tonight|this (weekend|week|morning|afternoon|evening)|next week|(this )?(mon|tues|wednes|thurs|fri|satur|sun)day|coming soon|save the date|stay tuned|reminder)\W*$/i.test(t))return"announcement";
+  if(!/\b(party|celebration|bash|gala|ball|new year|nye|concert|show|festival|countdown to (midnight|2\d{3}))\b/i.test(t)&&(/^\W*(the )?(final )?countdown( is on| begins| starts)?\W*$/i.test(t)||new RegExp(`\\b${N} (more )?(days?|weeks?|sleeps?) (to go|left|until|till|away)\\b|^\\W*only ${N} (days?|weeks?)\\b`,"i").test(t)))return"announcement";
+  if(/\b(pre-?)?registration (opens|begins|starts|is (now )?open)\b|\btickets? (go|goes|are going) on sale\b|\bsign-?ups? (open|begin)\b/i.test(t))return"announcement";}
  // Ticket products and bookings listed as if they were events: daily admission, birthday-party packages, rentals.
  if(/^(general |museum |daily |timed[- ]entry |online )?(admission|tickets?)$|^birthday part(y|ies)( packages?| booking)?$|^(private|facility|room) (event|rental|booking)s?\b|^(closed|museum closed)\b/i.test(title.trim()))return"announcement";
  if(MEETING.test(title))return"meeting";

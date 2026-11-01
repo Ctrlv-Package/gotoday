@@ -40,6 +40,21 @@ export async function POST(req:NextRequest){
   }
   return NextResponse.json({ok:true,...out});
  }
+ // Re-check live upcoming cards against today's rules (a new rule also clears what's already published).
+ // {sweep:true} is a dry run (counts + examples); {sweep:true,apply:true,reasons:["announcement"]} deletes those.
+ if(b.sweep){
+  const {rows}=await db.query(`select e.id,e.title,e.description,e.tags,s.name as source from events e left join sources s on s.id=e.source_id
+   where e.status='active' and e.local_date>=current_date - 1`);
+  const by:Record<string,{n:number;ex:string[]}>={};const del:number[]=[];
+  const only:string[]|null=Array.isArray(b.reasons)?b.reasons:null;
+  for(const r of rows){
+   const why=discoveryRejection({title:r.title,desc:r.description,tags:r.tags||[],source:r.source,isDiscoveryEligible:/ticketmaster/i.test(String(r.source||""))?true:undefined} as any);
+   if(!why||(only&&!only.includes(why)))continue;
+   (by[why]??={n:0,ex:[]}).n++;if(by[why].ex.length<25)by[why].ex.push(`${r.title} — ${r.source}`);del.push(r.id);
+  }
+  if(b.apply&&del.length)for(let i=0;i<del.length;i+=500)await db.query("delete from events where id=any($1::bigint[])",[del.slice(i,i+500)]);
+  return NextResponse.json({ok:true,checked:rows.length,applied:!!b.apply,removed:b.apply?del.length:0,byReason:by});
+ }
  if(b.approveAll){await db.query(`update events set status='active',quarantine_reason=null where status='quarantine'`);return NextResponse.json({ok:true})}
  // Live rows only: a flag on a published listing is a note, not a hold, and clearing it in bulk
  // is the only sane way through a flood. Held rows still need Approve/Reject one by one.
