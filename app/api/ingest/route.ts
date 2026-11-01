@@ -58,6 +58,7 @@ async function run(req:NextRequest){
   }
   const names=(await activeSources()).filter(s=>s.platform!=="instagram").map(s=>s.name),origin=/localhost|127\.0\.0\.1/.test(req.nextUrl.host)?req.nextUrl.origin:SITE,results:any[]=new Array(names.length);
   await ensureSchema();
+  const t0=Date.now(),left=()=>290e3-(Date.now()-t0);   // the whole run must end inside Vercel's 300 s limit
   const trigger=req.headers.get("user-agent")?.includes("vercel-cron")?"schedule":"manual";
   const log=await db.query("insert into ingest_log(trigger,sources) values($1,$2) returning id",[trigger,names.length]).catch(()=>null);
   // Keep the database small (it's billed by size and memory): the log of filtered-out events only needs a week,
@@ -66,23 +67,22 @@ async function run(req:NextRequest){
   // (Trimming the filtered-out log and old events runs from the GitHub job via /api/admin/cleanup: here it ate the
   // morning update's time limit, and only 27 of 448 sources got read.)
   await db.query("delete from ingestion_runs where started_at<now()-interval '30 days'").catch(()=>{});
-  await purgeImages().catch(()=>{});   // saved pictures of events that are over
-  await buildLibrary(10).catch(()=>{});   // stock photo library: fill any event type still missing photos
-  await refreshRepeating(SITE).catch(()=>{});   // repeating community events: list the next dates
-  await decidePending(6).catch(()=>{});   // photo types for new event titles (AI, free tier)
-  await assignSeries().catch(()=>{});   // annual-event families for listings added since the last run
+  if(left()>210e3)await Promise.race([purgeImages().catch(()=>{}),new Promise(r=>setTimeout(r,25e3))]);   // saved pictures of events that are over
+  if(left()>210e3)await Promise.race([buildLibrary(10).catch(()=>{}),new Promise(r=>setTimeout(r,25e3))]);   // stock photo library: fill any event type still missing photos
+  if(left()>210e3)await Promise.race([refreshRepeating(SITE).catch(()=>{}),new Promise(r=>setTimeout(r,25e3))]);   // repeating community events: list the next dates
+  if(left()>210e3)await Promise.race([decidePending(6).catch(()=>{}),new Promise(r=>setTimeout(r,25e3))]);   // photo types for new event titles (AI, free tier)
+  if(left()>210e3)await Promise.race([assignSeries().catch(()=>{}),new Promise(r=>setTimeout(r,25e3))]);   // annual-event families for listings added since the last run
   // Upcoming events saved without a map position get their town's center, so searches can find them.
-  try{const {rows}=await db.query("select distinct city from events where latitude is null and status='active' and local_date>=current_date and city is not null limit 40");
+  if(left()>200e3)try{const {rows}=await db.query("select distinct city from events where latitude is null and status='active' and local_date>=current_date and city is not null limit 40");
    for(const {city} of rows){const p=await cityCoords(city);if(p)await db.query("update events set latitude=$1,longitude=$2 where latitude is null and city=$3",[p.latitude,p.longitude,city])}}catch{}
   // Many regions now: stalest sources first, 10 at a time, and no new start after 4 minutes, so the run always
   // finishes inside its time limit and whatever didn't fit goes first next time.
   try{const last=new Map((await db.query("select name,last_success_at from sources").catch(()=>({rows:[]}))).rows.map((r:any)=>[r.name,r.last_success_at?new Date(r.last_success_at).getTime():0]));
    names.sort((a,b)=>(last.get(a)??0)-(last.get(b)??0))}catch{}
-  const started=Date.now();
   let next=0;
-  const worker=async()=>{while(next<names.length&&Date.now()-started<240e3){const i=next++,name=names[i];
+  const worker=async()=>{while(next<names.length&&left()>45e3){const i=next++,name=names[i];
    try{
-    const r=await fetch(`${origin}/api/ingest?source=${encodeURIComponent(name)}`,{method:"POST",headers:{authorization:auth},signal:AbortSignal.timeout(Math.max(30e3,292e3-(Date.now()-started)))});
+    const r=await fetch(`${origin}/api/ingest?source=${encodeURIComponent(name)}`,{method:"POST",headers:{authorization:auth},signal:AbortSignal.timeout(Math.max(5e3,Math.min(120e3,left()-8e3)))});
     const d=await r.json().catch(()=>({}));
     results[i]=d?.sources?.[0]||{source:name,found:0,accepted:0,rejected:0,status:"error",error:d?.error||`HTTP ${r.status}`};
    }catch(e:any){results[i]={source:name,found:0,accepted:0,rejected:0,status:"error",error:e?.name==="TimeoutError"?"Timed out":String(e?.message||e)}}

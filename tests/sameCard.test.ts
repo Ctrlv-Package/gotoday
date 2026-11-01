@@ -59,3 +59,10 @@ test("a title cut off by one lister matches the full title from another", () => 
   assert.equal(same(ev("The Carpenters Songbook: A Live Celebration",{venue:"Florida Theatre",city:"Jacksonville, FL",source:"Ticketmaster",time:"19:30:00"}),
     ev("The Carpenters Songbook - A Live Celebrati",{venue:"Florida Theatre",city:"Jacksonville, FL",source:"Downtown Vision Jacksonville",time:"19:30:00"})),true);
 });
+
+test("a site listing and the same organizer's own Instagram post merge despite different spot names", () => {
+  assert.equal(same(ev("Plant Swap",{source:"Ridgewood Public Library",venue:"Ridgewood Public Library",city:"Ridgewood, NJ",time:"11:00:00"}),
+    ev("Autumn Plant Swap",{source:"Ridgewood Public Library · Instagram",venue:"Maple Ave Lawn",city:"Ridgewood, NJ",time:"11:00:00"})),true);
+  assert.equal(same(ev("REDRUM: The Unauthorized Musical Parody of The Shining",{source:"Dr. Phillips Center for the Performing Arts · Instagram",venue:"Alexis & Jim Pugh Theater",city:"Orlando, FL",time:""}),
+    ev("REDRUM",{source:"Lake Eola Park / Downtown Orlando",venue:"Dr. Phillips Center for the Performing Arts",city:"Orlando, FL",time:"14:30:00"})),true);
+});

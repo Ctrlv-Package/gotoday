@@ -42,7 +42,9 @@ export async function GET(req:NextRequest){
    // A part of an event listed on its own (its opening reception, a VIP preview) is its own listing, not a copy.
    const partOf=(t:string)=>/^(opening|closing) reception|^vip\b|\bpreview\b|after ?party|pre-?show|meet (and|&) greet|costume contest/i.test(t);
    if(partOf(a.title)!==partOf(b.title))continue;
-   const wa=words(a.title),wb=words(b.title);let hit=0;for(const x of wa)if(wb.has(x))hit++;
+   // Program-type words don't identify one event: two different storytimes or crafts at one library aren't copies.
+   const GEN=/^(story|stories|storytime|time|craft|crafts|make|stay|club|book|books|baby|babies|toddler|toddlers|preschool|family|families|kids|all|ages|age|teen|teens|tween|tweens|play|group|class|bilingual|reading|read)$/;
+   const wa=new Set([...words(a.title)].filter(w=>!GEN.test(w))),wb=new Set([...words(b.title)].filter(w=>!GEN.test(w)));let hit=0;for(const x of wa)if(wb.has(x))hit++;
    const fa=a.title.toLowerCase().replace(/[^a-z0-9]+/g,""),fb=b.title.toLowerCase().replace(/[^a-z0-9]+/g,"");
    const sameVenue=String(a.venue).toLowerCase().replace(/&/g,"and")===String(b.venue).toLowerCase().replace(/&/g,"and");
    const sameSlot=a.time&&a.time===b.time&&sameVenue;

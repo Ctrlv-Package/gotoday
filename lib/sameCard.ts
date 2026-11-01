@@ -23,6 +23,14 @@ const PLACE_WORDS=new Set(["park","parks","center","centre","library","branch","
 /** Two named places that differ ("Pine Island Park" vs "Central Park") mean two events, whatever the titles say. */
 function placesConflict(a:CardLike,b:CardLike,miles?:number|null){
  if(miles!=null&&miles<0.25)return false;   // one spot on the map under two names ("Seminole Hard Rock Hotel" / "Hard Rock Live")
+ // One organizer, two spot names: a library's site says "Ridgewood Public Library", its own Instagram says "Maple Ave
+ // Lawn"; a museum's site says "East Building, Studios", its Instagram names the museum. Same organization, same day.
+ // Only the site + its own Instagram: two branches of one library system in one feed stay two places.
+ if(organizer(a)&&organizer(a)===organizer(b)&&isIg(a)!==isIg(b))return false;
+ // The room vs the building: "Alexis & Jim Pugh Theater" posted by the Dr. Phillips Center, listed elsewhere at
+ // "Dr. Phillips Center for the Performing Arts". A venue that is the other listing's organizer is the same place.
+ {const oa=place(organizer(a)),ob=place(organizer(b)),va=place(a.venue),vb=place(b.venue);
+  if((oa.length>=6&&vb&&(vb.includes(oa)||oa.includes(vb)))||(ob.length>=6&&va&&(va.includes(ob)||ob.includes(va))))return false}
  const ga=isGenericVenue(a.venue,a.city,a.source),gb=isGenericVenue(b.venue,b.city,b.source);
  if(ga||gb)return false;
  const pa=place(a.venue),pb=place(b.venue);
