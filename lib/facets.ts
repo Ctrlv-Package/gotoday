@@ -23,7 +23,7 @@ const KID_EVENT=/\b(trunk[- ]or[- ]treat|trick[- ]or[- ]treat\w*|egg hunts?|pett
 const KIDS_MOVIE=/\b(disney|pixar|dreamworks|illumination|toy story|coco|frozen|moana|encanto|inside out|minions|despicable me|shrek|kung fu panda|zootopia|lilo|finding (nemo|dory)|(the )?incredibles|paw patrol|bluey|trolls|the lion king|aladdin|the little mermaid|beauty and the beast|ratatouille|monsters,? inc|wall-?e|luca|elemental|turning red|onward|hotel transylvania|the super mario bros|spider-?verse|the wild robot|boss baby|madagascar|ice age|how to train your dragon|the grinch|charlie brown|it'?s the great pumpkin|hocus pocus|casper|kids'? movie|family movie|animated|rated (g|pg)(?!-?13)|\((g|pg)\))\b/i;
 const FAMILY_OUTING=/\b(festivals?|fests?|fairs?|parades?|carnivals?|halloween|trunk[- ]or[- ]treat|trick[- ]or[- ]treat(?:ing)?|toys?|pumpkins?|egg hunt|movie|movies|picnic|open house|block party|celebration|holiday|tree lighting|santa|games?|bingo|crafts?|lego|magic|puppets?|circus|zoo|animals?|nature|garden|beach|park|playtime|play|music in the park|concert in the park|fireworks)\b/i;
 const FAMILY_TAGS=/^(family|families)$/i;
-const ADULT=/\b(adults?|21\+|18\+|seniors?|older adults|55\+|50\+|wine|beer|brew(ery|ing)?|cocktails?|margarita|happy hour|bar crawl|pub|networking|career|job fair|resume|medicare|retirement|wealth|investing|taxes|estate planning|book club|singles|ladies night|date night)\b/i;
+const ADULT=/\b(adults?|21\+|18\+|seniors?|older adults|55\+|50\+|wine|beer|brew(ery|ing)?|cocktails?|margarita|happy hour|bar crawl|pub|networking|career|job fair|resume|medicare|retirement|wealth|investing|taxes|estate planning|book club|singles|ladies night|date night|drag (brunch|show|queens?|bingo|night)|bottomless|mimosas?|hookah|sports bar|nfl sunday ticket|monday night football)\b/i;
 const ADULT_TAGS=/^(adults?|adult \(|new adults|older adults|seniors|21\+|18\+)/i;
 
 /** The listing says it costs money: a "Paid" mark (the flyer reading found a price), a price, or a $ amount. */
@@ -76,7 +76,12 @@ export function settingFor(e:{title?:string;venue?:string;source?:string;desc?:s
 }
 
 // City, town and parks sources (not libraries, Ticketmaster or round-up accounts that repost anyone's events).
-export const CITY_SOURCE=(s?:string)=>!!s&&s!=="Ticketmaster"&&!/library/i.test(s)&&!/^(Miami Residents|Weekend Broward|The Broward Scene|To Do with Kids (Broward|Miami)) · Instagram$/.test(s);
+// A government source: a city, town, village, township, borough, county, or parks & recreation department. Their public
+// events are family-friendly unless they say otherwise. Venues, bars, restaurants, business districts and libraries are
+// not: they have to say so (a "Wynwood" sports-bar post or a drag brunch is not a family event).
+/** Places built for families: everything they run is fine to bring kids to unless it says adults. */
+export const FAMILY_SOURCE=(s?:string)=>!!s&&/children'?s museum|kids'? museum|marbles kids|explore & more|great explorations|\bzoo\b|aquarium|science (center|centre)|nature center|discovery (center|museum)|museum of (natural history|science)/i.test(s)&&!/ticketmaster/i.test(s);
+export const CITY_SOURCE=(s?:string)=>!!s&&!/^ticketmaster|library|libraries|players|theat(er|re)|visitors|history center|museum|cultural council|gulfstream park|\bmall\b|\bshops\b/i.test(s)&&/^(city|town|township|village|borough|municipality|county|state|commonwealth) of\b|\bcounty\b|\bparks\b|\bparks (and|&) rec|\brecreation\b|\bnyc parks\b|^(the )?(city|town|village|township|borough)\b|\b(city|town|village|township|borough)( of [\w .'-]+)?( · instagram)?$/i.test(s);
 
 // Ticket/admission rules ("Children 2 and older must have a ticket", "Kids under 3 free on a lap") say who needs a
 // ticket, not who the event is for, so they never make an event a Kids or Family event.
@@ -127,7 +132,7 @@ export function facetsFor(e:In):Facet[]{
  // Family = fine to bring the kids. Adult-themed titles never count; city and parks events count
  // unless they say otherwise; libraries and Ticketmaster have to say so.
  const adultish=has(ADULT,t);
- if(!adultOnly&&!adultish&&(kids||has(FAMILY,t.replace(/\b(all ages|everyone)\b/gi," "))||(has(/\b(all ages|everyone)\b/i,t)&&(kidEvent||has(FAMILY_OUTING,t)))||tagHas(FAMILY_TAGS)&&!tagHas(ADULT_TAGS)||(tagHas(/^everyone$|^all ages$/i)&&(kidEvent||has(FAMILY_OUTING,t)))||has(/\b(famil(y|ies)|kids|children)\b/i,d)||(has(/\ball ages\b/i,d)&&has(FAMILY_OUTING,t))||(CITY_SOURCE(e.source)&&!has(ADULT,d)&&!out.has("Music")&&!/\b(meeting|commission|board|council|workshop|seminar|class)\b/i.test(t))))out.add("Family");
+ if(!adultOnly&&!adultish&&(kids||has(FAMILY,t.replace(/\b(all ages|everyone)\b/gi," "))||(has(/\b(all ages|everyone)\b/i,t)&&(kidEvent||has(FAMILY_OUTING,t)))||tagHas(FAMILY_TAGS)&&!tagHas(ADULT_TAGS)||(tagHas(/^everyone$|^all ages$/i)&&(kidEvent||has(FAMILY_OUTING,t)))||has(/\b(famil(y|ies)|kids|children)\b/i,d)||(has(/\ball ages\b/i,d)&&has(FAMILY_OUTING,t))||((CITY_SOURCE(e.source)||FAMILY_SOURCE(e.source))&&!has(ADULT,d)&&!out.has("Music")&&!/\b(theat(er|re)|playhouse|stage|cabaret)\b/i.test(String((e as any).venue||""))&&!/\b(meeting|commission|board|council|workshop|seminar|class)\b/i.test(t))))out.add("Family");
  if(isBigEvent(e as any))out.add("Big events");
  if(adultOnly||has(ADULT,t)||tagHas(ADULT_TAGS)||(ageMin!=null&&ageMin>=13&&!kidAges))out.add("Adults");
 

@@ -3,7 +3,7 @@
 // regression in a rule that was previously fixed (a Family label with no family signal behind it
 // trips here even if facets.ts ever grants it again). Quarantined rows sit in events with
 // status='quarantine' (public queries only read status='active') until an admin approves them.
-import {facetsFor,CITY_SOURCE} from "../facets";
+import {facetsFor,CITY_SOURCE,FAMILY_SOURCE} from "../facets";
 import {hasFamilySignal} from "../quality/signals";
 import type {EventRecord} from "./types";
 
@@ -27,7 +27,7 @@ export function autoFix(e:EventRecord):EventRecord{
  let x=e;
  if(x.imageBorrowed)x={...x,image:undefined,imageBorrowed:false};
  const f=facetsFor(x);
- if(!CITY_SOURCE(x.source)&&(f.includes("Family")||f.includes("Kids"))&&!hasFamilySignal(x.title,x.desc,x.tags,x.venue,{ageMin:x.ageMin,ageMax:x.ageMax})){
+ if(!CITY_SOURCE(x.source)&&!FAMILY_SOURCE(x.source)&&(f.includes("Family")||f.includes("Kids"))&&!hasFamilySignal(x.title,x.desc,x.tags,x.venue,{ageMin:x.ageMin,ageMax:x.ageMax})){
   const allAges=x.ageMin!=null&&x.ageMax!=null&&x.ageMin<=2&&x.ageMax>=18;
   x={...x,tags:(x.tags||[]).filter(t=>!/^(family|families|kids|children|all ages|everyone|youth|family friendly)$/i.test(t.trim())),
    category:x.category==="Family"?"Local":x.category,...(allAges?{ageMin:undefined,ageMax:undefined}:{})};
@@ -38,6 +38,6 @@ export function quarantineReasons(e:EventRecord):string[]{
  const out:string[]=[];
  if(e.imageBorrowed)out.push("borrowed-image");
  const f=facetsFor(e);
- if(!CITY_SOURCE(e.source)&&(f.includes("Family")||f.includes("Kids"))&&!hasFamilySignal(e.title,e.desc,e.tags,e.venue,{ageMin:e.ageMin,ageMax:e.ageMax}))out.push("family-no-signal");
+ if(!CITY_SOURCE(e.source)&&!FAMILY_SOURCE(e.source)&&(f.includes("Family")||f.includes("Kids"))&&!hasFamilySignal(e.title,e.desc,e.tags,e.venue,{ageMin:e.ageMin,ageMax:e.ageMax}))out.push("family-no-signal");
  return out;
 }

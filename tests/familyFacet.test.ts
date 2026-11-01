@@ -78,3 +78,17 @@ test("animated movie nights are Kids; park movie nights with no price are Free",
  const k=facetsFor({title:"Dinner and a Movie at the Cinema",desc:"PG-13 action film",source:"Regal Cinema",tags:[]} as any);
  assert.ok(!k.includes("Kids"));
 });
+
+// Only government sources (city, town, county, parks & rec) and family places (zoos, children's museums) get Family by
+// default. Bars, restaurants, business districts and venue Instagram accounts have to say so.
+test("venue and bar posts aren't Family by default; city and zoo events are", () => {
+  const f=(title:string,source:string,desc="",venue="")=>facetsFor({title,source,desc,tags:[],venue} as any);
+  assert.ok(!f("Sunday Drag Brunch","Wynwood","Join us Sunday for our fabulous drag brunch!").includes("Family"));
+  assert.ok(!f("NFL Sunday Ticket in Wynwood Miami | Watch Every Game at Grails","Wynwood","Looking for the best place to watch NFL Sunday football?").includes("Family"));
+  assert.ok(!f("Día de los Muertos Brunch at Bar Tulio’s","Wynwood","Brunch specials all day.").includes("Family"));
+  assert.ok(!f("Last of the Red Hot Lovers","City of Sunrise","A Neil Simon comedy.","Sunrise Civic Center Theatre").includes("Family"));
+  assert.ok(!f("Shopping Sunday","The Village at Gulfstream Park · Instagram","Sales all day.").includes("Family"));
+  assert.ok(f("Dream Car Classic Car Show","City of Hollywood","Classic cars on display.").includes("Family"));
+  assert.ok(f("Guided Nature Walk","Broward County Parks","Walk the trail with a naturalist.").includes("Family"));
+  assert.ok(f("Animal Encounters","Brevard Zoo","Meet the animals.").includes("Family"));
+});

@@ -2,7 +2,7 @@
 // public /api/events endpoint returns. Each check names a class of listing a visitor would see
 // as wrong, not a code rule: the audit is the tripwire for the next silent heuristic failure.
 import {BAD_TEXT,BAD_TITLE} from "../ingestion/validate";
-import {CITY_SOURCE} from "../facets";
+import {CITY_SOURCE,FAMILY_SOURCE} from "../facets";
 import {hasFamilySignal,looksLikeStreetAddress} from "./signals";
 
 export type ApiEvent={id?:string;title:string;desc?:string;tags?:string[];facets?:string[];image?:string;venue?:string;address?:string;time?:string;url?:string;date?:string;source?:string;stockImage?:boolean};
@@ -15,7 +15,7 @@ export type AuditFinding={type:FindingType;eventId?:string;title:string;source?:
 export function auditFindings(e:ApiEvent):AuditFinding[]{
  const out:AuditFinding[]=[];
  const facets=e.facets||[];
- if(!CITY_SOURCE(e.source)&&(facets.includes("Family")||facets.includes("Kids"))&&!hasFamilySignal(e.title,e.desc,e.tags,e.venue))
+ if(!CITY_SOURCE(e.source)&&!FAMILY_SOURCE(e.source)&&(facets.includes("Family")||facets.includes("Kids"))&&!hasFamilySignal(e.title,e.desc,e.tags,e.venue))
   out.push({type:"family-no-signal",eventId:e.id,title:e.title,source:e.source});
  if(looksLikeStreetAddress(e.venue,e.address))
   out.push({type:"venue-is-address",eventId:e.id,title:e.title,source:e.source,detail:e.venue});
