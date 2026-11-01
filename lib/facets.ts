@@ -157,8 +157,22 @@ export function facetsFor(e:In):Facet[]{
  const freeSaid=/\bfree (admission|entry|to attend|and open to (the|all)|for (all|everyone|the public|families|kids|children))\b|\b(admission|entry) is free\b|\bno (cost|charge|admission)\b|\bat no cost\b/i.test(`${t} ${e.desc||""}`);
  // Shows at a city theater or civic center (musicals, plays, concerts, galas) are usually ticketed: no "free" guess for them.
  const showLike=/\b(musical|the musical|play|theat(er|re)|broadway|concert|symphony|orchestra|ballet|opera|recital|comedy|comedian|gala|dinner|tribute|live in concert|performance|presents|on stage|productions?|tour)\b/i.test(t);
- if(!paid&&(e.isFree||tagHas(/^free$/i)||freeTitle||freeSaid||parkMovie)||!paid&&(gov&&!showLike&&e.source!=="Ticketmaster"&&!priced&&!tagHas(/^tickets$/i)))out.add("Free");
+ // Eating and drinking out (a brunch, a dinner, a sports bar, bottomless anything, "book your seating") isn't free just
+ // because a feed says so: only when the listing itself says free.
+ const dine=diningNotFree(e);
+ if(!dine&&(!paid&&(e.isFree||tagHas(/^free$/i)||freeTitle||freeSaid||parkMovie)||!paid&&(gov&&!showLike&&e.source!=="Ticketmaster"&&!priced&&!tagHas(/^tickets$/i))))out.add("Free");
  return[...out];
+}
+
+/** A brunch, dinner, tasting, sports-bar or reservation listing that doesn't itself say "free" — never labeled Free. */
+export function diningNotFree(e:{title?:string;desc?:string|null;source?:string}):boolean{
+ const t=e.title||"",x=`${t} ${String(e.desc||"").slice(0,600)}`;
+ if(!/\b(brunch|dinner|lunch(eon)?|breakfast|tasting|prix[- ]fixe|bottomless|mimosas?|happy hour|drink specials?|wine (night|pairing)|sports bar|watch (every|the) game|nfl sunday ticket|monday night football|drag (brunch|show)|reservations?|book (now|a table|your (table|seat|seating))|seatings?|per person|menu)\b/i.test(x))return false;
+ if(/(^|[\s:–-])free\b/i.test(t)&&!/\b(gluten|dairy|sugar|alcohol)[- ]free\b|\beats? free\b/i.test(t))return false;
+ if(/\bfree (admission|entry|to attend|event|community|for (all|everyone|the public|families))\b|\b(admission|entry) is free\b|\bno cover\b/i.test(x))return false;
+ // City and parks pancake breakfasts and community dinners are still free when the city says so via its own feed.
+ if(CITY_SOURCE(e.source)&&!/\b(reservations?|book (now|a table)|per person|menu|seatings?)\b/i.test(x))return false;
+ return true;
 }
 
 /** Big events: the once-a-season community happenings worth a drive (festivals, fairs, parades, carnivals, yearly

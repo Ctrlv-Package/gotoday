@@ -21,5 +21,7 @@
   {"keep": false, "note": "Public-works notice, not an event.", "title": "SE 6th Terrace Bridge Replacement - Bridge Construction Begins", "tags": ["Free"], "desc": "Bridge construction begins with expected temporary lane closures and traffic impacts."},
   {"keep": false, "note": "Promo caption: go get brunch somewhere.", "title": "Start your Sunday in Downtown Hollywood", "tags": [], "desc": "Grab a coffee, enjoy breakfast or brunch at one of Downtown Hollywood's amazing restaurants."},
   {"keep": true, "note": "A groundbreaking people attend stays.", "title": "Community Center Construction Groundbreaking Ceremony", "tags": [], "desc": "Join the Mayor and Commission."},
-  {"keep": true, "note": "A farmers market opening day.", "title": "Farmers' Market | Opening Day – Public Safety", "tags": ["Free"], "desc": "Opening Day of the City of Parkland Farmers' Market."}
+  {"keep": true, "note": "A farmers market opening day.", "title": "Farmers' Market | Opening Day – Public Safety", "tags": ["Free"], "desc": "Opening Day of the City of Parkland Farmers' Market."},
+  {"keep": true, "note": "A community turkey giveaway is an event people go to.", "title": "Thanksgiving Turkey Giveaway", "tags": ["Free"], "desc": "Pick up a free turkey for your family."},
+  {"keep": false, "note": "A contest giveaway is a post.", "title": "Giveaway Time", "tags": [], "desc": "Tag a friend and follow us to win two tickets!"}
 ]

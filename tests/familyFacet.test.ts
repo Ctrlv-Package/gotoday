@@ -98,3 +98,11 @@ test("a community theater's play listed by a city isn't Family/Kids", () => {
   assert.ok(!f("City of Boca Raton",["Family","Kids","Local"],"City of Boca Raton").includes("Kids"));
   assert.ok(facetsFor({title:"Annie Jr.",source:"City of Sunrise",desc:"A kids' musical presented by Curtain Call Playhouse youth company",tags:[],venue:"Sunrise Civic Center Theatre"} as any).includes("Kids"));
 });
+test("brunch, dinner and sports-bar listings aren't Free unless they say so", () => {
+  const f=(title:string,source:string,desc:string)=>facetsFor({title,source,desc,tags:["Free"],isFree:true} as any);
+  assert.ok(!f("Sunday Drag Brunch","Wynwood","Join us Sunday for our fabulous drag brunch! Book now.").includes("Free"));
+  assert.ok(!f("NFL Sunday Ticket in Wynwood Miami | Watch Every Game at Grails","Wynwood","The best place to watch NFL Sunday football. Drink specials.").includes("Free"));
+  assert.ok(f("Free Pancake Breakfast with Santa","Wynwood","Bring the kids.").includes("Free"));
+  assert.ok(f("Community Pancake Breakfast","City of Weston","Join your neighbors.").includes("Free"));
+  assert.ok(f("Jazz Night","Wynwood","Live jazz, no cover.").includes("Free"));
+});
