@@ -23,5 +23,10 @@
   {"keep": true, "note": "A groundbreaking people attend stays.", "title": "Community Center Construction Groundbreaking Ceremony", "tags": [], "desc": "Join the Mayor and Commission."},
   {"keep": true, "note": "A farmers market opening day.", "title": "Farmers' Market | Opening Day – Public Safety", "tags": ["Free"], "desc": "Opening Day of the City of Parkland Farmers' Market."},
   {"keep": true, "note": "A community turkey giveaway is an event people go to.", "title": "Thanksgiving Turkey Giveaway", "tags": ["Free"], "desc": "Pick up a free turkey for your family."},
-  {"keep": false, "note": "A contest giveaway is a post.", "title": "Giveaway Time", "tags": [], "desc": "Tag a friend and follow us to win two tickets!"}
+  {"keep": false, "note": "A contest giveaway is a post.", "title": "Giveaway Time", "tags": [], "desc": "Tag a friend and follow us to win two tickets!"},
+  {"keep": false, "note": "Monthly round-up post.", "title": "Hello November", "tags": ["Free"], "desc": "Hello, November! The holiday season is just around the corner, and Hollywood is ready with festive celebrations and FREE programming all month long."},
+  {"keep": false, "note": "Monthly calendar post.", "title": "November Events", "tags": [], "desc": "Check out everything happening this month."},
+  {"keep": false, "note": "Round-up.", "title": "What's Happening in November", "tags": [], "desc": "Our lineup."},
+  {"keep": true, "note": "A named festival stays.", "title": "Hello Fall Festival", "tags": ["Free"], "desc": "Hayrides, games and food trucks for the whole family."},
+  {"keep": true, "note": "A named event with a month stays.", "title": "November Craft Fair", "tags": [], "desc": "Local makers and vendors."}
 ]

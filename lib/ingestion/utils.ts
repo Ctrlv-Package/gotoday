@@ -99,6 +99,11 @@ export function discoveryRejection(e:EventRecord):DiscoveryReason|null{
  // Contest giveaways ("Giveaway! Tag a friend to win") are posts; community giveaways people go to (turkey, food,
  // backpack, toy, coat, school-supply giveaways) are events.
  if(/\bgive-?aways?\b/i.test(title)&&!/\b(turkey|thanksgiving|food|grocer(y|ies)|produce|meal|backpacks?|school suppl(y|ies)|toys?|coats?|bikes?|bicycles?|diapers?|books?|trees?|pumpkins?|holiday|christmas|community|drive[- ]?(thru|through|up)|distribution|pantry|ham|gift)\b/i.test(title))return"announcement";
+ // Month / season greetings and round-ups: "Hello November", "Welcome Fall!", "November Events", "This Month at the
+ // Library", "What's happening in November". A "November Fest" or "Hello Fall Festival" is a real event and stays.
+ {const t=title.trim(),M="(january|february|march|april|may|june|july|august|september|october|november|december|fall|autumn|winter|spring|summer|the weekend|weekend|the holidays|holiday season|(the )?new (month|year)|(this|next) month)";
+  if(new RegExp(`^\\W*(hello|hi|welcome( to)?|goodbye|bye(,? bye)?|happy|cheers to|so long)\\W*${M}\\W*$`,"i").test(t)
+   ||new RegExp(`^\\W*(${M}|monthly|this month'?s?|(what'?s|what is) (happening|going on|on) (in|this|for) ${M}|(this|next) month (at|in) [\\w .'’-]+)\\s*(events?|calendar|line-?up|happenings|round-?up|highlights|at a glance|schedule|programs?|programming|activities|newsletter|recap)?\\W*$`,"i").test(t))return"announcement";}
  // Countdown and sign-up teasers, not events: "TOMORROW", "The Countdown", "Two Days to Go", "3 days until
  // registration opens", "Pre-registration opens Sunday". A countdown party (New Year's Eve) stays.
  {const t=title.trim(),N="(\\d+|one|two|three|four|five|six|seven|eight|nine|ten)";
