@@ -92,3 +92,9 @@ test("venue and bar posts aren't Family by default; city and zoo events are", ()
   assert.ok(f("Guided Nature Walk","Broward County Parks","Walk the trail with a naturalist.").includes("Family"));
   assert.ok(f("Animal Encounters","Brevard Zoo","Meet the animals.").includes("Family"));
 });
+test("a community theater's play listed by a city isn't Family/Kids", () => {
+  const f=(source:string,tags:string[],venue:string,desc="Presented by Curtain Call Playhouse")=>facetsFor({title:"Last of the Red Hot Lovers",source,desc,tags,venue} as any);
+  assert.ok(!f("City of Sunrise",["Local"],"City of Sunrise").includes("Family"));
+  assert.ok(!f("City of Boca Raton",["Family","Kids","Local"],"City of Boca Raton").includes("Kids"));
+  assert.ok(facetsFor({title:"Annie Jr.",source:"City of Sunrise",desc:"A kids' musical presented by Curtain Call Playhouse youth company",tags:[],venue:"Sunrise Civic Center Theatre"} as any).includes("Kids"));
+});

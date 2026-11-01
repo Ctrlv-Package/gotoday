@@ -133,6 +133,11 @@ export function facetsFor(e:In):Facet[]{
  // unless they say otherwise; libraries and Ticketmaster have to say so.
  const adultish=has(ADULT,t);
  if(!adultOnly&&!adultish&&(kids||has(FAMILY,t.replace(/\b(all ages|everyone)\b/gi," "))||(has(/\b(all ages|everyone)\b/i,t)&&(kidEvent||has(FAMILY_OUTING,t)))||tagHas(FAMILY_TAGS)&&!tagHas(ADULT_TAGS)||(tagHas(/^everyone$|^all ages$/i)&&(kidEvent||has(FAMILY_OUTING,t)))||has(/\b(famil(y|ies)|kids|children)\b/i,d)||(has(/\ball ages\b/i,d)&&has(FAMILY_OUTING,t))||((CITY_SOURCE(e.source)||FAMILY_SOURCE(e.source))&&!has(ADULT,d)&&!out.has("Music")&&!/\b(theat(er|re)|playhouse|stage|cabaret)\b/i.test(String((e as any).venue||""))&&!/\b(meeting|commission|board|council|workshop|seminar|class)\b/i.test(t))))out.add("Family");
+ // A stage production (a community theater's play at a city venue, "Presented by Curtain Call Playhouse") isn't a family
+ // event because a city calendar lists it or tags it "Family/Kids": it has to say kids/family or be a kids' show itself.
+ {const where=`${String((e as any).venue||"")} ${e.source||""} ${d}`;
+  const production=/\bpresented by\b.*\b(playhouse|players|theat(er|re)|repertory|company|productions?|stage)\b|\b(playhouse|players|repertory|community theat(er|re)|civic theat(er|re)|dinner theat(er|re))\b|\btheat(er|re)\b/i.test(where);
+  if(production&&!kidAges&&!has(KIDS,t)&&!has(KID_EVENT,t)&&!kidsMovie&&!has(/\b(famil(y|ies)|kids|children|all ages)\b/i,d)){out.delete("Kids");out.delete("Family")}}
  if(isBigEvent(e as any))out.add("Big events");
  if(adultOnly||has(ADULT,t)||tagHas(ADULT_TAGS)||(ageMin!=null&&ageMin>=13&&!kidAges))out.add("Adults");
 
