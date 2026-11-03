@@ -46,10 +46,12 @@ test("bad links, bad photos and unknown categories are dropped, and categories c
 });
 
 test("an impossible repeat choice falls back to the date, and a monthly repeat caps at two years",()=>{
- const nth=validate(base({date:"2026-10-31",repeat:{kind:"monthly",by:"nth"}}));
+ // Dates are always in the future (a past date doesn't validate), whatever day the tests run.
+ const Y=new Date().getFullYear()+1;
+ const nth=validate(base({date:`${Y}-10-31`,repeat:{kind:"monthly",by:"nth"}}));
  assert.equal(nth.ok,true);if(nth.ok)assert.equal(nth.v.repeat.by,"date");
- const capped=validate(base({date:"2027-06-15",repeat:{kind:"monthly",by:"date",until:"2030-01-01"}}));
- assert.equal(capped.ok,true);if(capped.ok)assert.equal(capped.v.repeat.until,"2029-06-14");
+ const capped=validate(base({date:`${Y}-06-15`,repeat:{kind:"monthly",by:"date",until:`${Y+3}-01-01`}}));
+ assert.equal(capped.ok,true);if(capped.ok)assert.equal(capped.v.repeat.until,`${Y+2}-06-14`);
 });
 
 test("RSVP phone numbers are cleaned to E.164 and bad ones are errors",()=>{

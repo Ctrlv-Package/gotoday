@@ -12,12 +12,14 @@ test("identical reports: no drift",()=>{
 test("a source disappearing is flagged",()=>{
  assert.ok(driftAlerts(rep({"A":src(100),"B":src(50)},150),rep({"A":src(100)},100)).some(a=>/disappeared/.test(a)));
 });
-test("a new source is flagged",()=>{
- assert.ok(driftAlerts(rep({"A":src(100)},100),rep({"A":src(100),"B":src(20)},120)).some(a=>/new source/.test(a)));
+test("a new source is not an alert (sources are added all the time)",()=>{
+ assert.ok(!driftAlerts(rep({"A":src(100)},100),rep({"A":src(100),"B":src(20)},120)).some(a=>/new source/.test(a)));
 });
-test("a volume shift over 30% is flagged, a small one is not",()=>{
- assert.ok(driftAlerts(rep({"A":src(100)},100),rep({"A":src(60)},60)).some(a=>/volume shift/.test(a)));
- assert.ok(!driftAlerts(rep({"A":src(100)},100),rep({"A":src(90)},90)).some(a=>/volume shift/.test(a)));
+test("a big source losing half its events is flagged; small swings and growth are not",()=>{
+ assert.ok(driftAlerts(rep({"A":src(100)},100),rep({"A":src(40)},90)).some(a=>/volume drop/.test(a)));
+ assert.ok(!driftAlerts(rep({"A":src(100)},100),rep({"A":src(70)},90)).some(a=>/volume/.test(a)));
+ assert.ok(!driftAlerts(rep({"A":src(10)},100),rep({"A":src(6)},96)).some(a=>/volume/.test(a)));
+ assert.ok(!driftAlerts(rep({"A":src(100)},100),rep({"A":src(160)},110)).some(a=>/volume/.test(a)));
 });
 test("a family-no-signal share shift is flagged",()=>{
  const before=rep({"A":src(100)},100),after=rep({"A":src(100,{familyNoSignal:12})},100);
