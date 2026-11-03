@@ -106,3 +106,9 @@ test("brunch, dinner and sports-bar listings aren't Free unless they say so", ()
   assert.ok(f("Community Pancake Breakfast","City of Weston","Join your neighbors.").includes("Free"));
   assert.ok(f("Jazz Night","Wynwood","Live jazz, no cover.").includes("Free"));
 });
+test("teens + adults programs (Young Adult (12-18) + Adult (19+)) aren't Kids; a teen-only one is", () => {
+  const f=(tags:string[],ageMin?:number,ageMax?:number)=>facetsFor({title:"Dungeons & Dragons Club",source:"Miami-Dade Public Library",desc:"Roll for initiative!",tags,ageMin,ageMax} as any);
+  assert.ok(!f(["Young Adult (12-18)","Adult (19+)","Games","Library"],12,99).includes("Kids"));
+  assert.ok(f(["Young Adult (12-18)","Games","Library"],12,18).includes("Kids"));
+  assert.ok(!facetsFor({title:"Concert: Rahsaan Cruse Jr. & Trio",source:"Plainview-Old Bethpage Public Library",desc:"Jazz.",tags:[]} as any).includes("Kids"));
+});

@@ -119,9 +119,9 @@ export function facetsFor(e:In):Facet[]{
  // "Junior" as its own word (Junior Friends) and a leading "Jr." (Jr. Chef Academy) still
  // count, because there the word means junior.
  const titleWithoutNameTrap=t.replace(/\b(bab(y|ies)|junior|jr\.?|lil)\b/gi,"");
- const titleWithoutJrSuffix=t.replace(/,\s*jr\.?(?=[\s,]|$)/gi,"").replace(/\s+jr\.?$/gi,"");
+ const titleWithoutJrSuffix=t.replace(/,\s*jr\.?(?=[\s,]|$)/gi,"").replace(/\s+jr\.?$/gi,"").replace(/\bjr\.?(?=\s*(&|and\b|trio|band|quartet|quintet|sextet|orchestra|ensemble|group|duo|\+))/gi,"");
  const titleKids=has(KIDS,t)&&!(e.source==="Ticketmaster"?!has(KIDS,titleWithoutNameTrap):!has(KIDS,titleWithoutJrSuffix));
- const kids=!adultOnly&&(kidAges||/^to do with kids/i.test(e.source||"")||titleKids||tagHas(KID_TAGS)&&!tagHas(/^local$/i)&&!(ageMax!=null&&ageMax>=18&&tagHas(/^(new )?adults?$|^seniors?$|^50\+$/i))||(has(KIDS,d)&&!has(ADULT,t)));
+ const kids=!adultOnly&&(kidAges||/^to do with kids/i.test(e.source||"")||titleKids||tagHas(KID_TAGS)&&!tagHas(/^local$/i)&&!((ageMax==null||ageMax>=18)&&tagHas(/^(new )?adults?\b|^seniors?\b|^50\+|^55\+/i))&&!(ageMin!=null&&ageMin>=12&&ageMax!=null&&ageMax>=19)||(has(KIDS,d)&&!has(ADULT,t)));
  // Big family events (festivals, open houses, Halloween, "all ages") are great for kids too.
  // Kids = made for children, or built around things children come for (trick-or-treating, egg hunt, petting zoo,
  // Santa…). A market, plant sale, exhibit or block party that families may attend is Family, not Kids.
