@@ -124,7 +124,7 @@ export function facetsFor(e:In):Facet[]{
  // A teens + adults program (tags "Young Adult (12-18)" + "Adult (19+)", or ages 12 to adult) isn't Kids from a tag or
  // a word in its description. In a description, "Jr." / "Lil" are people's names (Frank Santos Jr., D.H. Hill Jr.
  // Library, JR Fennell), never a sign the event is for children.
- const grownUp=((ageMax==null||ageMax>=18)&&tagHas(/^(new |all )?adults?\b|^seniors?\b|^older adults\b|^50\+|^55\+/i))||(ageMin!=null&&ageMin>=12&&ageMax!=null&&ageMax>=19);
+ const grownUp=(ageMin==null||ageMin>=12)&&(((ageMax==null||ageMax>=18)&&tagHas(/^(new |all )?adults?\b|^seniors?\b|^older adults\b|^50\+|^55\+/i))||(ageMin!=null&&ageMax!=null&&ageMax>=19));
  const dk=d.replace(/\b(jr|lil)\b\.?/gi," ");
  const kids=!adultOnly&&(kidAges||/^to do with kids/i.test(e.source||"")||titleKids||(((tagHas(KID_TAGS)&&!tagHas(/^local$/i))||(has(KIDS,dk)&&!has(ADULT,t)))&&!grownUp));
  // Big family events (festivals, open houses, Halloween, "all ages") are great for kids too.
@@ -134,7 +134,7 @@ export function facetsFor(e:In):Facet[]{
  // An animated family movie (Toy Story, Coco, a Disney/Pixar/DreamWorks title, rated G or PG) is a kids' event.
  // The family-film title has to be the event's own title, or the description has to say Disney / Pixar / DreamWorks /
  // rated G or PG / animated ("Beyond Aladdin: The Thousand and One Nights on Film" is an art-film series, not Aladdin).
- const kidsMovie=!adultOnly&&has(/\b(movies?|films?|screening|cinema|movie night|movie in the park|outdoor movie)\b/i,`${t} ${d}`)&&(has(KIDS_MOVIE,t)||has(KIDS_MOVIE,d)&&has(/\b(disney|pixar|dreamworks|illumination|rated (g|pg)\b|animated)\b/i,d));
+ const kidsMovie=!adultOnly&&has(/\b(movies?|films?|screening|cinema|movie night|movie in the park|outdoor movie)\b/i,`${t} ${d}`)&&(has(KIDS_MOVIE,t)||has(KIDS_MOVIE,d)&&has(/\b(disney|pixar|dreamworks|illumination|animated|family (film|movie))\b|\brated (g|pg)\b|\((g|pg)\)/i,d));
  if(kids||kidEvent||kidsMovie)out.add("Kids");
  // Family = fine to bring the kids. Adult-themed titles never count; city and parks events count
  // unless they say otherwise; libraries and Ticketmaster have to say so.

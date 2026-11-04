@@ -122,3 +122,7 @@ test("'Jr.' in a description is a name, not a kids' word; R-rated is adult; art 
   assert.ok(f("Sunday Cinema","Come watch Hoppers! ©Disney Pixar. Rated PG.",["Film","Free"],"Palm Beach County Library").includes("Kids"));
   assert.ok(f("Junior Ranger Day","Kids earn a badge.",[],"Everglades National Park").includes("Kids"));
 });
+test("an all-ages program starting at age 5 stays Kids even with an Adults tag; '(PG)' marks a family film", () => {
+  assert.ok(facetsFor({title:"Chess Club",source:"Broward County Library",desc:"The entire family is invited.",tags:["Tweens","Teens","New Adults","Families","Adults","Games"],ageMin:5,ageMax:99} as any).includes("Kids"));
+  assert.ok(facetsFor({title:"Compost & Movie Night",source:"City of Deerfield Beach · Instagram",desc:"Catch a movie under the stars featuring The Wild Robot (PG)!",tags:["Outdoor"]} as any).includes("Kids"));
+});
