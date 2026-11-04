@@ -112,3 +112,13 @@ test("teens + adults programs (Young Adult (12-18) + Adult (19+)) aren't Kids; a
   assert.ok(f(["Young Adult (12-18)","Games","Library"],12,18).includes("Kids"));
   assert.ok(!facetsFor({title:"Concert: Rahsaan Cruse Jr. & Trio",source:"Plainview-Old Bethpage Public Library",desc:"Jazz.",tags:[]} as any).includes("Kids"));
 });
+test("'Jr.' in a description is a name, not a kids' word; R-rated is adult; art films named after tales aren't kids' movies", () => {
+  const f=(title:string,desc:string,tags:string[]=[],src="Broadway at the Beach",ageMin?:number,ageMax?:number)=>facetsFor({title,desc,tags,source:src,ageMin,ageMax} as any);
+  const R=f("R-Rated Comic Hypnosis at Wonders Theatre","Join Frank Santos Jr. the R-Rated Comic Hypnotist.");
+  assert.ok(!R.includes("Kids")&&!R.includes("Family"),String(R));
+  assert.ok(!f("Silent Reading Society","Enjoy some silent reading at D.H. Hill Jr. Library.",[],"North Carolina State University").includes("Kids"));
+  assert.ok(!f("Author Talk","Author James Kimmel, Jr. discusses his book.",["All Adults","Older Adults","Free"],"Boston Public Library",12,99).includes("Kids"));
+  assert.ok(!f("The Arabian Nights: Volume 1","We conclude our series Beyond Aladdin: The Thousand and One Nights on Film with Portuguese filmmaker Miguel Gomes.",["Films"],"Smithsonian").includes("Kids"));
+  assert.ok(f("Sunday Cinema","Come watch Hoppers! ©Disney Pixar. Rated PG.",["Film","Free"],"Palm Beach County Library").includes("Kids"));
+  assert.ok(f("Junior Ranger Day","Kids earn a badge.",[],"Everglades National Park").includes("Kids"));
+});

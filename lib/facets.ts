@@ -23,7 +23,7 @@ const KID_EVENT=/\b(trunk[- ]or[- ]treat|trick[- ]or[- ]treat\w*|egg hunts?|pett
 const KIDS_MOVIE=/\b(disney|pixar|dreamworks|illumination|toy story|coco|frozen|moana|encanto|inside out|minions|despicable me|shrek|kung fu panda|zootopia|lilo|finding (nemo|dory)|(the )?incredibles|paw patrol|bluey|trolls|the lion king|aladdin|the little mermaid|beauty and the beast|ratatouille|monsters,? inc|wall-?e|luca|elemental|turning red|onward|hotel transylvania|the super mario bros|spider-?verse|the wild robot|boss baby|madagascar|ice age|how to train your dragon|the grinch|charlie brown|it'?s the great pumpkin|hocus pocus|casper|kids'? movie|family movie|animated|rated (g|pg)(?!-?13)|\((g|pg)\))\b/i;
 const FAMILY_OUTING=/\b(festivals?|fests?|fairs?|parades?|carnivals?|halloween|trunk[- ]or[- ]treat|trick[- ]or[- ]treat(?:ing)?|toys?|pumpkins?|egg hunt|movie|movies|picnic|open house|block party|celebration|holiday|tree lighting|santa|games?|bingo|crafts?|lego|magic|puppets?|circus|zoo|animals?|nature|garden|beach|park|playtime|play|music in the park|concert in the park|fireworks)\b/i;
 const FAMILY_TAGS=/^(family|families)$/i;
-const ADULT=/\b(adults?|21\+|18\+|seniors?|older adults|55\+|50\+|wine|beer|brew(ery|ing)?|cocktails?|margarita|happy hour|bar crawl|pub|networking|career|job fair|resume|medicare|retirement|wealth|investing|taxes|estate planning|book club|singles|ladies night|date night|drag (brunch|show|queens?|bingo|night)|bottomless|mimosas?|hookah|sports bar|nfl sunday ticket|monday night football)\b/i;
+const ADULT=/\b(adults?|21\+|18\+|seniors?|older adults|55\+|50\+|wine|beer|brew(ery|ing)?|cocktails?|margarita|happy hour|bar crawl|pub|networking|career|job fair|resume|medicare|retirement|wealth|investing|taxes|estate planning|book club|singles|ladies night|date night|drag (brunch|show|queens?|bingo|night)|r-rated|rated r\b|mature audiences|explicit|burlesque|bottomless|mimosas?|hookah|sports bar|nfl sunday ticket|monday night football)\b/i;
 const ADULT_TAGS=/^(adults?|adult \(|new adults|older adults|seniors|21\+|18\+)/i;
 
 /** The listing says it costs money: a "Paid" mark (the flyer reading found a price), a price, or a $ amount. */
@@ -121,13 +121,20 @@ export function facetsFor(e:In):Facet[]{
  const titleWithoutNameTrap=t.replace(/\b(bab(y|ies)|junior|jr\.?|lil)\b/gi,"");
  const titleWithoutJrSuffix=t.replace(/,\s*jr\.?(?=[\s,]|$)/gi,"").replace(/\s+jr\.?$/gi,"").replace(/\bjr\.?(?=\s*(&|and\b|trio|band|quartet|quintet|sextet|orchestra|ensemble|group|duo|\+))/gi,"");
  const titleKids=has(KIDS,t)&&!(e.source==="Ticketmaster"?!has(KIDS,titleWithoutNameTrap):!has(KIDS,titleWithoutJrSuffix));
- const kids=!adultOnly&&(kidAges||/^to do with kids/i.test(e.source||"")||titleKids||tagHas(KID_TAGS)&&!tagHas(/^local$/i)&&!((ageMax==null||ageMax>=18)&&tagHas(/^(new )?adults?\b|^seniors?\b|^50\+|^55\+/i))&&!(ageMin!=null&&ageMin>=12&&ageMax!=null&&ageMax>=19)||(has(KIDS,d)&&!has(ADULT,t)));
+ // A teens + adults program (tags "Young Adult (12-18)" + "Adult (19+)", or ages 12 to adult) isn't Kids from a tag or
+ // a word in its description. In a description, "Jr." / "Lil" are people's names (Frank Santos Jr., D.H. Hill Jr.
+ // Library, JR Fennell), never a sign the event is for children.
+ const grownUp=((ageMax==null||ageMax>=18)&&tagHas(/^(new |all )?adults?\b|^seniors?\b|^older adults\b|^50\+|^55\+/i))||(ageMin!=null&&ageMin>=12&&ageMax!=null&&ageMax>=19);
+ const dk=d.replace(/\b(jr|lil)\b\.?/gi," ");
+ const kids=!adultOnly&&(kidAges||/^to do with kids/i.test(e.source||"")||titleKids||(((tagHas(KID_TAGS)&&!tagHas(/^local$/i))||(has(KIDS,dk)&&!has(ADULT,t)))&&!grownUp));
  // Big family events (festivals, open houses, Halloween, "all ages") are great for kids too.
  // Kids = made for children, or built around things children come for (trick-or-treating, egg hunt, petting zoo,
  // Santa…). A market, plant sale, exhibit or block party that families may attend is Family, not Kids.
  const kidEvent=!adultOnly&&!has(ADULT,t)&&(has(KID_EVENT,t)||has(KID_EVENT,d)||(e.source==="Ticketmaster"&&e.category==="Family"));
  // An animated family movie (Toy Story, Coco, a Disney/Pixar/DreamWorks title, rated G or PG) is a kids' event.
- const kidsMovie=!adultOnly&&has(/\b(movies?|films?|screening|cinema|movie night|movie in the park|outdoor movie)\b/i,`${t} ${d}`)&&has(KIDS_MOVIE,`${t} ${d}`);
+ // The family-film title has to be the event's own title, or the description has to say Disney / Pixar / DreamWorks /
+ // rated G or PG / animated ("Beyond Aladdin: The Thousand and One Nights on Film" is an art-film series, not Aladdin).
+ const kidsMovie=!adultOnly&&has(/\b(movies?|films?|screening|cinema|movie night|movie in the park|outdoor movie)\b/i,`${t} ${d}`)&&(has(KIDS_MOVIE,t)||has(KIDS_MOVIE,d)&&has(/\b(disney|pixar|dreamworks|illumination|rated (g|pg)\b|animated)\b/i,d));
  if(kids||kidEvent||kidsMovie)out.add("Kids");
  // Family = fine to bring the kids. Adult-themed titles never count; city and parks events count
  // unless they say otherwise; libraries and Ticketmaster have to say so.

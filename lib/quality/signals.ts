@@ -29,6 +29,8 @@ export function hasFamilySignal(title:string,desc?:string,tags?:string[],venue?:
  if(ages&&ages.ageMax!=null&&ages.ageMax<=17)return true;
  const text=`${title||""} ${desc||""}`;
  if(FAMILY_OUTING.test(text)||FAMILY_WORD.test(text))return true;
+ // A family film (Disney / Pixar / DreamWorks, rated G or PG, animated) is a family signal.
+ if(/\b(movies?|films?|screening|cinema)\b/i.test(text)&&/\b(disney|pixar|dreamworks|illumination|rated (g|pg)\b|animated|the wild robot|toy story|frozen|moana|encanto|zootopia)\b/i.test(text))return true;
  if(venue&&FAMILY_WORD.test(venue))return true;
  return (tags||[]).some(t=>/^(family|families|kids|children)$/i.test(t.trim())||FAMILY_WORD.test(t));
 }
