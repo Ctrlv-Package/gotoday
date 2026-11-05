@@ -85,7 +85,10 @@ async function run(req:NextRequest){
     const r=await fetch(`${origin}/api/ingest?source=${encodeURIComponent(name)}`,{method:"POST",headers:{authorization:auth},signal:AbortSignal.timeout(Math.max(5e3,Math.min(120e3,left()-8e3)))});
     const d=await r.json().catch(()=>({}));
     results[i]=d?.sources?.[0]||{source:name,found:0,accepted:0,rejected:0,status:"error",error:d?.error||`HTTP ${r.status}`};
-   }catch(e:any){results[i]={source:name,found:0,accepted:0,rejected:0,status:"error",error:e?.name==="TimeoutError"?"Timed out":String(e?.message||e)}}
+   }catch(e:any){
+    // Cut off by this run's own clock (it started late in the window): not a failure — it goes first next run.
+    if(e?.name==="TimeoutError"&&left()<20e3){results[i]={source:name,found:0,accepted:0,rejected:0,status:"deferred"};continue}
+    results[i]={source:name,found:0,accepted:0,rejected:0,status:"error",error:e?.name==="TimeoutError"?"Timed out":String(e?.message||e)}}
   }};
   await Promise.all(Array.from({length:Math.min(10,names.length)},worker));
   for(let i=0;i<names.length;i++)if(!results[i])results[i]={source:names[i],found:0,accepted:0,rejected:0,status:"deferred"};

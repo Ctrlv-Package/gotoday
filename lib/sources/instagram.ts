@@ -207,12 +207,13 @@ export function captionOnly(p:Post):Extracted[]{
 }
 
 class NoCredit extends Error{}
-async function cached(p:Post,venue:string,city:string,roundup=false):Promise<Extracted[]>{
+async function cached(p:Post,venue:string,city:string,roundup=false,allowNew=true):Promise<Extracted[]>{
  if(!process.env.ANTHROPIC_API_KEY&&!process.env.GEMINI_API_KEY)return captionOnly(p);   // don't cache the weaker caption-only reading
  let prev:Extracted[]|null=null;   // an earlier reading, kept if a new one can't be done today
  const id=`${p.id}:${roundup?"v5":"v4"}`;   // bump when the reading logic changes, so posts are read again
  const {rows}=await db.query("select extracted from social_posts where id=$1",[id]);
  if(rows[0])return rows[0].extracted||[];
+ if(!allowNew)return [];   // out of time this run: read it next run (cached readings above still count)
  // v4 only changed how one event with a schedule is read (one card, not one per activity). Earlier readings stay
  // valid unless they split a post into 3+ events on one day, so only those posts are read again.
  if(!roundup){
@@ -244,6 +245,10 @@ export async function fetchInstagram(cfg:InstagramConfig,startDate:string,endDat
   if(e instanceof AccountMissing){await db.query("update source_configs set enabled=false,updated_at=now() where name=$1",[cfg.source]).catch(()=>{});throw new Error(`${e.message}. Source paused.`)}
   throw e;
  }
+ // One account must finish inside the 300 s server limit (the busiest ones — a library with long flyers, a round-up
+ // account with 10 events a post — were timing out every run and never saving anything). After ~2.5 min no new AI
+ // reading starts and after ~3.5 min no new web lookup: what's done is saved and cached, the rest goes next run.
+ const t0=Date.now(),spent=()=>Date.now()-t0;
  const cutoff=new Date(Date.now()-(cfg.maxAgeDays??45)*86400e3).toISOString();
  const found:(Extracted&{post:Post})[]=[];let errors=0,firstError="";
  // Newest first, so a later "moved to Sunday" post wins over the original announcement.
@@ -258,7 +263,7 @@ export async function fetchInstagram(cfg:InstagramConfig,startDate:string,endDat
  let next=0;
  await Promise.all(Array.from({length:Math.min(3,recent.length)},async()=>{
   while(next<recent.length){const i=next++;const p=recent[i];
-   try{results[i]=await cached(p,cfg.venue,cfg.city,ROUNDUPS.has(cfg.username))}catch(e:any){results[i]=[];errors++;firstError||=String(e?.message||e);console.log(`instagram ${cfg.username} post ${p.id}: ${e?.message||e}`)}}
+   try{results[i]=await cached(p,cfg.venue,cfg.city,ROUNDUPS.has(cfg.username),spent()<150e3)}catch(e:any){results[i]=[];errors++;firstError||=String(e?.message||e);console.log(`instagram ${cfg.username} post ${p.id}: ${e?.message||e}`)}}
  }));
  recent.forEach((p,i)=>{for(const e of results[i]||[])found.push({...e,post:p})});
  const key=(e:Extracted)=>`${e.date}|${slug(e.title).split("-").filter(w=>w.length>2).slice(0,2).join("-")}`;
@@ -336,6 +341,7 @@ export async function fetchInstagram(cfg:InstagramConfig,startDate:string,endDat
  // Soonest first, a few per account per run (each look-up is cached, so the rest are done on later runs).
  const thin=out.filter(e=>thinSummary(e.title,e.desc&&!/^Posted by @/.test(e.desc)?e.desc:"")).sort((a,b)=>a.date.localeCompare(b.date)).slice(0,Number(process.env.EVENT_DETAILS_PER_ACCOUNT||4));
  for(const e of thin){
+  if(spent()>210e3)break;
   try{
    // Free first: the sites the post links to and the account's own website. The paid web search only
    // runs if EVENT_DETAILS_WEB_SEARCH=on is set in Vercel (off by default).
