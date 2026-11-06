@@ -3,7 +3,7 @@
 import {NextRequest,NextResponse} from "next/server";
 import {fetchRetry} from "../../../../lib/http";
 import {pageText} from "../../../../lib/sources/webpage";
-import {readPageText,geminiCheck} from "../../../../lib/sources/instagram";
+import {readPageText,geminiCheck,debugRead} from "../../../../lib/sources/instagram";
 export const maxDuration=120;
 export async function GET(req:NextRequest){
  const s=process.env.INGESTION_SECRET;
@@ -13,6 +13,7 @@ export async function GET(req:NextRequest){
  try{
   const r=await fetchRetry(url,{headers:{"User-Agent":"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36"},cache:"no-store"},2,45000);
   const text=pageText(await r.text());
+  if(q.get("debug"))return NextResponse.json({ok:true,chars:text.length,raw:await debugRead(text,url,q.get("venue")||"",q.get("city")||"")});
   const events=await readPageText(text,url,q.get("venue")||"",q.get("city")||"");
   return NextResponse.json({ok:true,status:r.status,chars:text.length,start:text.slice(0,400),events});
  }catch(e:any){return NextResponse.json({ok:false,error:String(e?.message||e),name:e?.name})}

@@ -401,3 +401,9 @@ export async function geminiCheck():Promise<string>{
  const models=await fetch("https://generativelanguage.googleapis.com/v1beta/models?pageSize=200",{headers:{"x-goog-api-key":process.env.GEMINI_API_KEY}}).then(r=>r.json()).then((d:any)=>(d.models||[]).filter((m:any)=>(m.supportedGenerationMethods||[]).includes("generateContent")).map((m:any)=>m.name.replace(/^models\//,""))).catch(()=>[]);
  try{await askGemini([{type:"text",text:'Reply with JSON only: {"events":[]}'}]);return `ok (chain: ${GEMINI_CHAIN.join(" → ")}, used up: ${[...geminiSpent.keys()].join(", ")||"none"}) | models: ${models.join(", ")}`}catch(e:any){return `${GEMINI_MODEL}: ${String(e?.message||e).slice(0,200)} | models: ${models.join(", ")}`}
 }
+
+/** Admin check: the free reader's raw answer (or error) for a page's text, with the real instructions. */
+export async function debugRead(text:string,url:string,venue:string,city:string):Promise<any>{
+ const p:Post={id:"debug",caption:text,media_type:"TEXT",permalink:url,timestamp:new Date().toISOString()};
+ try{return {events:await askGemini([{type:"text",text:PROMPT(p,venue,city)}])}}catch(e:any){return {error:String(e?.message||e).slice(0,600)}}
+}
