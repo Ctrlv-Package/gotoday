@@ -9,6 +9,7 @@ import {fetchGovAccess} from "../sources/govaccess";
 import {fetchOpenCities} from "../sources/opencities";
 import {fetchLibCal} from "../sources/libcal";
 import {fetchJsonLd} from "../sources/jsonld";
+import {fetchWebpage} from "../sources/webpage";
 import {fetchOvationTix} from "../sources/ovationtix";
 import {cityCoords} from "./geocode";
 import {fetchInstagram} from "../sources/instagram";
@@ -99,6 +100,8 @@ export const PLATFORMS:Record<string,{describe:string;params:string;build:(p:Par
   build:(p,m)=>{need(p,"url","city");return(s,e)=>fetchSquarespace({url:p.url,source:m.name,idPrefix:p.idPrefix||m.name.toLowerCase().replace(/[^a-z]+/g,""),city:p.city,venue:p.venue||m.name,tz:p.tz},s,e)}},
  localist:{describe:"Localist event calendars (/api/2/events)",params:"url, city, venue?, tz?",
   build:(p,m)=>{need(p,"url","city");return(s,e)=>fetchLocalist({url:p.url,source:m.name,idPrefix:p.idPrefix||m.name.toLowerCase().replace(/[^a-z]+/g,""),city:p.city,venue:p.venue||m.name,tz:p.tz},s,e)}},
+ webpage:{describe:"Any page that lists events in plain text (a parish festival page, a club's events page): read by the free AI reader, re-read only when the page changes",params:"url, city, venue, address?",
+  build:(p,m)=>{need(p,"url","city");return(s,e)=>fetchWebpage({url:p.url,source:m.name,idPrefix:p.idPrefix||m.name.toLowerCase().replace(/[^a-z]+/g,""),city:p.city,venue:p.venue||m.name,address:p.address},s,e)}},
  "nyc-parks":{describe:"NYC Parks public events (NYC Open Data)",params:"(none)",build:(p,m)=>(s,e)=>fetchNycParks(s,e,m.name)},
 };
 

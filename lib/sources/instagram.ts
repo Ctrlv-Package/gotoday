@@ -370,3 +370,14 @@ export async function fetchInstagram(cfg:InstagramConfig,startDate:string,endDat
  // Keep our own copy of each picture: Instagram's links expire after a few days.
  return keepImages(out);
 }
+
+
+/** Read a plain web page (a parish festival page, a club's events page) with the same AI reader as Instagram posts:
+ *  its visible text is the "caption", read as a round-up so every dated event on it is listed. The reading is saved
+ *  under the text's fingerprint, so the AI only runs again when the page changes. */
+export async function readPageText(text:string,url:string,venue:string,city:string):Promise<Extracted[]>{
+ let h=2166136261;for(let i=0;i<text.length;i++)h=Math.imul(h^text.charCodeAt(i),16777619);
+ const p:Post={id:`page:${(h>>>0).toString(36)}:${text.length}`,caption:text,media_type:"TEXT",permalink:url,timestamp:new Date().toISOString()};
+ return cached(p,venue,city,true);
+}
+export type {Extracted};
