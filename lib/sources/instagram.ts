@@ -386,5 +386,6 @@ export type {Extracted};
 /** Admin check: does the free reader answer right now? (error text, or "ok") */
 export async function geminiCheck():Promise<string>{
  if(!process.env.GEMINI_API_KEY)return "no GEMINI_API_KEY";
- try{await askGemini([{type:"text",text:'Reply with JSON only: {"events":[]}'}]);return `ok (${GEMINI_MODEL})`}catch(e:any){return `${GEMINI_MODEL}: ${String(e?.message||e)}`}
+ const models=await fetch("https://generativelanguage.googleapis.com/v1beta/models?pageSize=200",{headers:{"x-goog-api-key":process.env.GEMINI_API_KEY}}).then(r=>r.json()).then((d:any)=>(d.models||[]).filter((m:any)=>(m.supportedGenerationMethods||[]).includes("generateContent")).map((m:any)=>m.name.replace(/^models\//,""))).catch(()=>[]);
+ try{await askGemini([{type:"text",text:'Reply with JSON only: {"events":[]}'}]);return `ok (${GEMINI_MODEL}) | models: ${models.join(", ")}`}catch(e:any){return `${GEMINI_MODEL}: ${String(e?.message||e).slice(0,200)} | models: ${models.join(", ")}`}
 }
