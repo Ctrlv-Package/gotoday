@@ -95,7 +95,7 @@ Rules:
 - "place": the venue or park name (and street address if shown), e.g. "Vista Park, 4001 Southwest 142nd Ave". Omit if not stated.
 - "town": the city the event is in, if the post says (e.g. "Plantation"). Omit if not stated.
 - If the post says an event is cancelled or moved, list the original date with "cancelled": true and the new date as a normal event.
-- Use a short, stable title (e.g. "Artisan Market", not "Fall Artisan Market is back!").
+- Use a short, stable title: the event's own name from the flyer or caption (e.g. "Artisan Market", not "Fall Artisan Market is back!"). Never the post's headline or hook: for "Get a head start on holiday shopping! Shop original artwork at Festival of the Arts", the title is "Festival of the Arts".
 - "kids": true when children are welcome and it suits them: family/community events, all-ages festivals, open houses, kids in the photo or flyer, kid activities. false only for adult events (21+, bars, wine/beer, business networking). null if you truly cannot tell.
 - "forKids": true only when the event is made FOR children or teens (story time, kids' class or camp, children's show, kids' party, trick-or-treating, egg hunt, teen night). A plant sale, market, festival or concert that families can attend is NOT forKids. Judge each event on its own, even when one post lists several.
 - "slide": if several images are attached, the number (1 = first) of the image that shows THIS event best (its own flyer or photo); omit if none does.
@@ -212,7 +212,10 @@ async function cached(p:Post,venue:string,city:string,roundup=false,allowNew=tru
  let prev:Extracted[]|null=null;   // an earlier reading, kept if a new one can't be done today
  const id=`${p.id}:${roundup?"v5":"v4"}`;   // bump when the reading logic changes, so posts are read again
  const {rows}=await db.query("select extracted from social_posts where id=$1",[id]);
- if(rows[0])return rows[0].extracted||[];
+ // A saved reading whose title is the post's headline ("Get a head start on holiday shopping") is read again with the
+ // current instructions, which name the event itself.
+ const HOOK=/^\W*(get a head start|mark your calendars?|don'?t miss|you won'?t want to miss|did you know|guess what|icymi|reminder\b|calling all|it'?s (almost|finally) here|looking for (something|things|fun|plans)|ready for|who'?s ready)/i;
+ if(rows[0]&&!(allowNew&&(rows[0].extracted||[]).some((e:any)=>HOOK.test(String(e?.title||""))&&!e.hookChecked)))return rows[0].extracted||[];
  if(!allowNew)return [];   // out of time this run: read it next run (cached readings above still count)
  // v4 only changed how one event with a schedule is read (one card, not one per activity). Earlier readings stay
  // valid unless they split a post into 3+ events on one day, so only those posts are read again.
@@ -232,7 +235,7 @@ async function cached(p:Post,venue:string,city:string,roundup=false,allowNew=tru
  let ev:Extracted[];
  try{ev=await extractWithClaude(p,venue,city,roundup,today<allowance)}
  catch(e){if(e instanceof NoCredit)return prev??captionOnly(p);throw e}   // not cached: read properly once credit is back
- await db.query("insert into social_posts(id,permalink,posted_at,extracted) values($1,$2,$3,$4) on conflict(id) do update set extracted=excluded.extracted",[id,p.permalink,p.timestamp,JSON.stringify(ev)]);
+ await db.query("insert into social_posts(id,permalink,posted_at,extracted) values($1,$2,$3,$4) on conflict(id) do update set extracted=excluded.extracted",[id,p.permalink,p.timestamp,JSON.stringify(ev.map((e:any)=>({...e,hookChecked:true})))]);   // read with the headline rule: not re-read again
  return ev;
 }
 
