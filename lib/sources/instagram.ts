@@ -382,3 +382,9 @@ export async function readPageText(text:string,url:string,venue:string,city:stri
  return cached(p,venue,city,true);
 }
 export type {Extracted};
+
+/** Admin check: does the free reader answer right now? (error text, or "ok") */
+export async function geminiCheck():Promise<string>{
+ if(!process.env.GEMINI_API_KEY)return "no GEMINI_API_KEY";
+ try{await askGemini([{type:"text",text:'Reply with JSON only: {"events":[]}'}]);return `ok (${GEMINI_MODEL})`}catch(e:any){return `${GEMINI_MODEL}: ${String(e?.message||e)}`}
+}
