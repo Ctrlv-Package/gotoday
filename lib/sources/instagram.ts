@@ -87,6 +87,7 @@ List the dated, public, in-person events this post announces in or near ${city},
 Rules:
 - Only events with a specific calendar date. Resolve weekday/month-only dates relative to the posting date (never earlier than it).
 - Recurring series: list each date it states, up to 8.
+- A multi-day event (a festival, fair or carnival running Nov 5–8): list EACH day as its own entry with the same title and that day's hours, so it shows on every day it's open.
 - ONE event with a schedule: when the post promotes a single named event (an ArtWalk, festival, fair, block party, open house, celebration) and lists the activities or times that happen as part of it ("6 p.m. guided mural tour, 9 p.m. magic show, then live music on the main stage"), list ONE event: the main event's name as the title (e.g. "Downtown Hollywood ArtWalk"), the earliest start and the latest end, the area or venue where it's held, and the schedule in "summary" (e.g. "5 PM champagne welcome at the Art & Culture Center; 6 PM guided mural tour; 7 PM art walk tour; 9 PM magic show at Twisted Roots; live music on the main stage."). Do NOT split its parts into separate events. Only list separate events when they really are separate (different days, different organizers, or unrelated to each other).
 - Round-up posts (a list or calendar of many different events): list every event in it, each with its own place. Keep "summary" short (one sentence). Never list the round-up/guide itself ("Fun plans this weekend", "Things to do in Broward") as an event.
 - Skip deals and promotions that aren't an event at a specific place (e.g. "free museum admission with your Bank of America card", "kids eat free all month", store coupons), and chain-store activities with no specific location ("at your local Home Depot / check your local store").
@@ -377,7 +378,7 @@ export async function fetchInstagram(cfg:InstagramConfig,startDate:string,endDat
  *  under the text's fingerprint, so the AI only runs again when the page changes. */
 export async function readPageText(text:string,url:string,venue:string,city:string):Promise<Extracted[]>{
  let h=2166136261;for(let i=0;i<text.length;i++)h=Math.imul(h^text.charCodeAt(i),16777619);
- const p:Post={id:`page:${(h>>>0).toString(36)}:${text.length}`,caption:text,media_type:"TEXT",permalink:url,timestamp:new Date().toISOString()};
+ const p:Post={id:`page2:${(h>>>0).toString(36)}:${text.length}`,caption:text,media_type:"TEXT",permalink:url,timestamp:new Date().toISOString()};
  return cached(p,venue,city,true);
 }
 export type {Extracted};
