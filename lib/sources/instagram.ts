@@ -139,14 +139,26 @@ function parseEvents(text:string,who:string):Extracted[]{
  *  Claude-within-the-daily-budget fallback. Without a Gemini key, Claude is still the reader. */
 // Gemini 2.x models are no longer offered to new keys; 3.5 Flash-Lite reads images and has a free tier.
 const GEMINI_MODEL=process.env.GEMINI_MODEL&&!/gemini-2\./.test(process.env.GEMINI_MODEL)?process.env.GEMINI_MODEL:"gemini-3.5-flash-lite";   // pinned: the "gemini-flash-latest" alias points at the newest Flash, whose free quota can be far smaller; 2.5 Flash is the generous-quota model. Override with GEMINI_MODEL in Vercel.
+// Free-tier limits are per model (about 500 readings a day each): when one model's daily limit is used up, the next
+// one reads — still free. Image-capable flash models, best first.
+const GEMINI_CHAIN=[...new Set([GEMINI_MODEL,...(process.env.GEMINI_FALLBACKS||"gemini-3.1-flash-lite,gemini-3.5-flash,gemini-3-flash-preview,gemini-3.6-flash").split(",").map(x=>x.trim()).filter(Boolean)])];
+const geminiSpent=new Map<string,number>();   // model -> when its daily limit was hit (this server instance)
 async function askGemini(content:any[]):Promise<Extracted[]>{
  const parts=content.map((c:any)=>c.type==="image"?{inline_data:{mime_type:c.source.media_type,data:c.source.data}}:{text:c.text});
- const r=await fetchRetry(`https://generativelanguage.googleapis.com/v1beta/models/${GEMINI_MODEL}:generateContent`,{method:"POST",
-  headers:{"content-type":"application/json","x-goog-api-key":process.env.GEMINI_API_KEY!},
-  body:JSON.stringify({contents:[{role:"user",parts}],generationConfig:{responseMimeType:"application/json",maxOutputTokens:4096,temperature:0}})},2);
- const d:any=await r.json().catch(()=>({}));
- if(!r.ok)throw new Error(`Gemini API: ${d?.error?.message||`HTTP ${r.status}`}`);
- return parseEvents((d.candidates?.[0]?.content?.parts||[]).map((x:any)=>x.text||"").join(""),"Gemini API");
+ let last="";
+ for(const model of GEMINI_CHAIN){
+  if(Date.now()-(geminiSpent.get(model)||0)<3600e3)continue;
+  const r=await fetchRetry(`https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent`,{method:"POST",
+   headers:{"content-type":"application/json","x-goog-api-key":process.env.GEMINI_API_KEY!},
+   body:JSON.stringify({contents:[{role:"user",parts}],generationConfig:{responseMimeType:"application/json",maxOutputTokens:4096,temperature:0}})},2);
+  const d:any=await r.json().catch(()=>({}));
+  if(r.ok)return parseEvents((d.candidates?.[0]?.content?.parts||[]).map((x:any)=>x.text||"").join(""),`Gemini API (${model})`);
+  last=`Gemini API (${model}): ${d?.error?.message||`HTTP ${r.status}`}`;
+  // Daily limit used up (or this model isn't offered on the key): try the next model. Anything else is a real error.
+  if(r.status===429&&/per ?day|daily|PerDay/i.test(JSON.stringify(d))||r.status===404||/not found|not supported/i.test(d?.error?.message||"")){geminiSpent.set(model,Date.now());continue}
+  throw new Error(last);
+ }
+ throw new Error(last||"Gemini API: every free model's daily limit is used up");
 }
 
 /** A user-uploaded flyer, read with the same Gemini reader as Instagram posts — but Gemini-only, never the paid
@@ -387,5 +399,5 @@ export type {Extracted};
 export async function geminiCheck():Promise<string>{
  if(!process.env.GEMINI_API_KEY)return "no GEMINI_API_KEY";
  const models=await fetch("https://generativelanguage.googleapis.com/v1beta/models?pageSize=200",{headers:{"x-goog-api-key":process.env.GEMINI_API_KEY}}).then(r=>r.json()).then((d:any)=>(d.models||[]).filter((m:any)=>(m.supportedGenerationMethods||[]).includes("generateContent")).map((m:any)=>m.name.replace(/^models\//,""))).catch(()=>[]);
- try{await askGemini([{type:"text",text:'Reply with JSON only: {"events":[]}'}]);return `ok (${GEMINI_MODEL}) | models: ${models.join(", ")}`}catch(e:any){return `${GEMINI_MODEL}: ${String(e?.message||e).slice(0,200)} | models: ${models.join(", ")}`}
+ try{await askGemini([{type:"text",text:'Reply with JSON only: {"events":[]}'}]);return `ok (chain: ${GEMINI_CHAIN.join(" → ")}, used up: ${[...geminiSpent.keys()].join(", ")||"none"}) | models: ${models.join(", ")}`}catch(e:any){return `${GEMINI_MODEL}: ${String(e?.message||e).slice(0,200)} | models: ${models.join(", ")}`}
 }
