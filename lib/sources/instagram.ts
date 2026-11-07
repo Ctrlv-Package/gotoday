@@ -142,12 +142,12 @@ const GEMINI_MODEL=process.env.GEMINI_MODEL&&!/gemini-2\./.test(process.env.GEMI
 // Free-tier limits are per model (about 500 readings a day each): when one model's daily limit is used up, the next
 // one reads — still free. Image-capable flash models, best first.
 const GEMINI_CHAIN=[...new Set([GEMINI_MODEL,...(process.env.GEMINI_FALLBACKS||"gemini-3.1-flash-lite,gemini-3.5-flash,gemini-3-flash-preview,gemini-3.6-flash").split(",").map(x=>x.trim()).filter(Boolean)])];
-const geminiSpent=new Map<string,number>();   // model -> when its daily limit was hit (this server instance)
+const geminiSpent=new Map<string,number>();   // model -> until when to skip it (this server instance)
 async function askGemini(content:any[]):Promise<Extracted[]>{
  const parts=content.map((c:any)=>c.type==="image"?{inline_data:{mime_type:c.source.media_type,data:c.source.data}}:{text:c.text});
  let last="";
  for(const model of GEMINI_CHAIN){
-  if(Date.now()-(geminiSpent.get(model)||0)<3600e3)continue;
+  if(Date.now()<(geminiSpent.get(model)||0))continue;
   const r=await fetchRetry(`https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent`,{method:"POST",
    headers:{"content-type":"application/json","x-goog-api-key":process.env.GEMINI_API_KEY!},
    body:JSON.stringify({contents:[{role:"user",parts}],generationConfig:{responseMimeType:"application/json",maxOutputTokens:4096,temperature:0}})},2);
@@ -155,7 +155,9 @@ async function askGemini(content:any[]):Promise<Extracted[]>{
   if(r.ok)return parseEvents((d.candidates?.[0]?.content?.parts||[]).map((x:any)=>x.text||"").join(""),`Gemini API (${model})`);
   last=`Gemini API (${model}): ${d?.error?.message||`HTTP ${r.status}`}`;
   // Daily limit used up (or this model isn't offered on the key): try the next model. Anything else is a real error.
-  if(r.status===429&&/per ?day|daily|PerDay/i.test(JSON.stringify(d))||r.status===404||/not found|not supported/i.test(d?.error?.message||"")){geminiSpent.set(model,Date.now());continue}
+  // Daily limit used up or model not offered: skip it for an hour. Per-minute limit (busy run): skip it for a minute.
+  if(r.status===429&&/per ?day|daily|PerDay/i.test(JSON.stringify(d))||r.status===404||/not found|not supported/i.test(d?.error?.message||"")){geminiSpent.set(model,Date.now()+3600e3);continue}
+  if(r.status===429||r.status===503){geminiSpent.set(model,Date.now()+60e3);continue}
   throw new Error(last);
  }
  throw new Error(last||"Gemini API: every free model's daily limit is used up");
