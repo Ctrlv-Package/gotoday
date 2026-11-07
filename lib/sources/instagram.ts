@@ -155,6 +155,7 @@ const GEMINI_MODEL=process.env.GEMINI_MODEL&&!/gemini-2\./.test(process.env.GEMI
 // Free-tier limits are per model (about 500 readings a day each): when one model's daily limit is used up, the next
 // one reads — still free. Image-capable flash models, best first.
 const GEMINI_CHAIN=[...new Set([GEMINI_MODEL,...(process.env.GEMINI_FALLBACKS||"gemini-3.1-flash-lite,gemini-3.5-flash,gemini-3-flash-preview,gemini-3.6-flash").split(",").map(x=>x.trim()).filter(Boolean)])];
+export let lastGemini:any=null;
 const geminiSpent=new Map<string,number>();   // model -> until when to skip it (this server instance)
 async function askGemini(content:any[]):Promise<Extracted[]>{
  const parts=content.map((c:any)=>c.type==="image"?{inline_data:{mime_type:c.source.media_type,data:c.source.data}}:{text:c.text});
@@ -165,7 +166,7 @@ async function askGemini(content:any[]):Promise<Extracted[]>{
    headers:{"content-type":"application/json","x-goog-api-key":process.env.GEMINI_API_KEY!},
    body:JSON.stringify({contents:[{role:"user",parts}],generationConfig:{responseMimeType:"application/json",maxOutputTokens:4096,temperature:0}})},2);
   const d:any=await r.json().catch(()=>({}));
-  if(r.ok)return parseEvents((d.candidates?.[0]?.content?.parts||[]).map((x:any)=>x.text||"").join(""),`Gemini API (${model})`);
+  if(r.ok){const txt=(d.candidates?.[0]?.content?.parts||[]).map((x:any)=>x.text||"").join("");lastGemini={model,text:txt.slice(0,800),finish:d.candidates?.[0]?.finishReason};return parseEvents(txt,`Gemini API (${model})`)}
   last=`Gemini API (${model}): ${d?.error?.message||`HTTP ${r.status}`}`;
   // Daily limit used up (or this model isn't offered on the key): try the next model. Anything else is a real error.
   // Daily limit used up or model not offered: skip it for an hour. Per-minute limit (busy run): skip it for a minute.
@@ -420,5 +421,5 @@ export async function geminiCheck():Promise<string>{
 /** Admin check: the free reader's raw answer (or error) for a page's text, with the real instructions. */
 export async function debugRead(text:string,url:string,venue:string,city:string):Promise<any>{
  const p:Post={id:"debug",caption:text,media_type:"TEXT",permalink:url,timestamp:new Date().toISOString()};
- try{return {events:await askGemini([{type:"text",text:PROMPT(p,venue,city)}])}}catch(e:any){return {error:String(e?.message||e).slice(0,600)}}
+ try{return {events:await askGemini([{type:"text",text:PROMPT(p,venue,city)}]),last:lastGemini}}catch(e:any){return {error:String(e?.message||e).slice(0,600)}}
 }
