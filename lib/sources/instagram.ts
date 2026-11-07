@@ -129,7 +129,16 @@ async function askClaude(content:any[]):Promise<Extracted[]>{
 function parseEvents(text:string,who:string):Extracted[]{
  const json=text.match(/\{[\s\S]*\}/)?.[0];
  if(!json)throw new Error(`${who}: reply had no JSON`);
- return(JSON.parse(json).events||[]).filter((e:any)=>/^\d{4}-\d{2}-\d{2}$/.test(e?.date)&&String(e?.title||"").trim());
+ // Some models add a second block or a note after the JSON: fall back to the first complete {...}.
+ let obj:any;
+ try{obj=JSON.parse(json)}catch(e){
+  let depth=0,inStr=false,esc=false,end=-1;const s0=text.indexOf("{");
+  for(let i=s0;i<text.length;i++){const c=text[i];
+   if(inStr){if(esc)esc=false;else if(c==="\\")esc=true;else if(c==='"')inStr=false;continue}
+   if(c==='"')inStr=true;else if(c==="{")depth++;else if(c==="}"&&--depth===0){end=i;break}}
+  if(end<0)throw e;obj=JSON.parse(text.slice(s0,end+1));
+ }
+ return(obj.events||[]).filter((e:any)=>/^\d{4}-\d{2}-\d{2}$/.test(e?.date)&&String(e?.title||"").trim());
 }
 
 /** Google Gemini's free tier (GEMINI_API_KEY from aistudio.google.com) reads flyers at no cost.
