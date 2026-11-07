@@ -1,0 +1,1 @@
+1 https://www.mygotoday.com/api/events?postalCode=33326&radius=10&range=2026-11-07&today=2026-11-06
