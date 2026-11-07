@@ -131,6 +131,9 @@ async function askClaude(content:any[]):Promise<Extracted[]>{
  return parseEvents((d.content||[]).map((c:any)=>c.text||"").join(""),"Claude API");
 }
 function parseEvents(text:string,who:string):Extracted[]{
+ // Some models answer with the bare list ([{…},{…}]) instead of {"events":[…]}.
+ const t0=text.trim().replace(/^```(json)?\s*|\s*```$/g,"");
+ if(t0.startsWith("[")){try{const a=JSON.parse(t0);if(Array.isArray(a))return a.filter((e:any)=>/^\d{4}-\d{2}-\d{2}$/.test(e?.date)&&String(e?.title||"").trim())}catch{}}
  const json=text.match(/\{[\s\S]*\}/)?.[0];
  if(!json)throw new Error(`${who}: reply had no JSON`);
  // Some models add a second block or a note after the JSON: fall back to the first complete {...}.
