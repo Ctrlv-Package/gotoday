@@ -79,11 +79,15 @@ async function loadPosts(username:string):Promise<{posts:Post[];website:string}>
 const slides=(p:Post)=>(p.children?.data||[]).filter(c=>c.media_type==="IMAGE"&&c.media_url).map(c=>c.media_url!);
 const imageOf=(p:Post)=>p.media_type==="VIDEO"?p.thumbnail_url:p.media_type==="CAROUSEL_ALBUM"?(p.children?.data.find(c=>c.media_type==="IMAGE")?.media_url||p.media_url):p.media_url;
 
-const PROMPT=(p:Post,venue:string,city:string)=>`This Instagram post is from ${venue} (${city}). It was posted on ${p.timestamp.slice(0,10)}.
+const PROMPT=(p:Post,venue:string,city:string)=>(p.media_type==="TEXT"?`This is the text of a web page from ${venue} (${city}): ${p.permalink}. Today is ${p.timestamp.slice(0,10)}.
+Page text:
+"""${(p.caption||"").slice(0,6000)}"""
+
+List the dated, public, in-person events this page announces in or near ${city} that happen today or later (the page may also hold menus, sponsors and other text — ignore those). Treat "post" and "caption" below as this page.`:`This Instagram post is from ${venue} (${city}). It was posted on ${p.timestamp.slice(0,10)}.
 Caption:
 """${(p.caption||"").slice(0,3000)}"""
 
-List the dated, public, in-person events this post announces in or near ${city}, using the caption AND the image (flyers often hold the date, time and place).
+List the dated, public, in-person events this post announces in or near ${city}, using the caption AND the image (flyers often hold the date, time and place).`)+`
 Rules:
 - Only events with a specific calendar date. Resolve weekday/month-only dates relative to the posting date (never earlier than it).
 - Recurring series: list each date it states, up to 8.
@@ -401,7 +405,7 @@ export async function fetchInstagram(cfg:InstagramConfig,startDate:string,endDat
  *  under the text's fingerprint, so the AI only runs again when the page changes. */
 export async function readPageText(text:string,url:string,venue:string,city:string):Promise<Extracted[]>{
  let h=2166136261;for(let i=0;i<text.length;i++)h=Math.imul(h^text.charCodeAt(i),16777619);
- const p:Post={id:`page2:${(h>>>0).toString(36)}:${text.length}`,caption:text,media_type:"TEXT",permalink:url,timestamp:new Date().toISOString()};
+ const p:Post={id:`page3:${(h>>>0).toString(36)}:${text.length}`,caption:text,media_type:"TEXT",permalink:url,timestamp:new Date().toISOString()};
  return cached(p,venue,city,true);
 }
 export type {Extracted};
