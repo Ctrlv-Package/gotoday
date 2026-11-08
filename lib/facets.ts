@@ -174,7 +174,14 @@ export function facetsFor(e:In):Facet[]{
  // Eating and drinking out (a brunch, a dinner, a sports bar, bottomless anything, "book your seating") isn't free just
  // because a feed says so: only when the listing itself says free.
  const dine=diningNotFree(e);
- if(!dine&&(!paid&&(e.isFree||tagHas(/^free$/i)||freeTitle||freeSaid||parkMovie)||!paid&&(gov&&!showLike&&e.source!=="Ticketmaster"&&!priced&&!tagHas(/^tickets$/i))))out.add("Free");
+ // A community festival out in public — a dog fest at a town center, a fall festival in a park, a street fair — is free
+ // to walk into unless something says otherwise: no price, no "$", no tickets/admission/registration fee, not from a
+ // ticketing site, not a gala or a ticketed show.
+ const publicFest=out.has("Kids")&&out.has("Family")&&!showLike&&!priced&&e.source!=="Ticketmaster"&&!/eventbrite|ticket|etix|universe|showclix/i.test(String(e.source||""))
+  &&has(/\b(festivals?|fests?|fair|parades?|carnivals?|celebrations?|block party|fun day|family day|trunk[- ]or[- ]treat|tree lighting|lights? up|egg hunt|day of the dead|d[ií]a de (los )?muertos|touch[- ]a[- ]truck|movie (night|in the park))\b/i,t)
+  &&!has(/\$\s?\d|\b(tickets?|admission|entry fee|cover charge|per person|wristbands?|pre-?sale|early bird|vip|gala|registration fee|\bfee\b)\b/i,`${t} ${d}`)
+  &&!tagHas(/^(tickets|paid)$/i);
+ if(!dine&&(!paid&&(e.isFree||tagHas(/^free$/i)||freeTitle||freeSaid||parkMovie||publicFest)||!paid&&(gov&&!showLike&&e.source!=="Ticketmaster"&&!priced&&!tagHas(/^tickets$/i))))out.add("Free");
  return[...out];
 }
 

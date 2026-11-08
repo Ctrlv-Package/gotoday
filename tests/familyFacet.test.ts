@@ -136,3 +136,10 @@ test("big family outings (festival, parade, holiday celebration) are Kids too; a
   assert.ok(!f("Wine & Food Festival","Tastings").includes("Kids"));
   assert.ok(!f("Health Fair","Free screenings").includes("Kids"));
 });
+test("a community festival in public with no price is Free; one with tickets, $ or wristbands isn't", () => {
+  const f=(title:string,desc:string,source="Weston Town Center · Instagram",tags:string[]=[])=>facetsFor({title,desc,tags,source} as any);
+  assert.ok(f("Weston Dog Fest","Dog show and adoption event featuring a costume contest, vendor market, face painting, crafts for kids, bounce house, and live music.").includes("Free"));
+  assert.ok(!f("Fall Festival","Rides wristbands $25, food and games for the whole family.").includes("Free"));
+  assert.ok(!f("Winter Wonderland Festival","Tickets on sale now! Snow slides and crafts for kids.").includes("Free"));
+  assert.ok(!f("Kids Festival","Face painting and games.","Eventbrite").includes("Free"));
+});
