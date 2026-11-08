@@ -126,7 +126,7 @@ export default async function EventPage({params}:{params:Promise<{id:string}>}){
      {paras.length>0&&<section className="about"><h2>{t("About this event")}</h2>{paras.map((p,i)=><p key={i}>{p}</p>)}</section>}
      {tags.length>0&&<div className="tagRow">{tags.map(x=><span key={x}>{t(x)}</span>)}</div>}
 
-     {map&&<section className="mapBox"><h2>{t("Location")}</h2><p className="muted">{where}</p><iframe title={`${t("Map")}: ${e.venue||e.city}`} src={map} loading="lazy" referrerPolicy="no-referrer-when-downgrade"/></section>}
+     {map&&<section className="mapBox"><h2>{t("Location")}</h2><p className="muted">{where}</p><iframe title={`${t("Map")}: ${venueName(e.venue,e.address)||e.city}`} src={map} loading="lazy" referrerPolicy="no-referrer-when-downgrade"/></section>}
 
      {otherDates.length>0&&<section className="related"><h2>{otherDates.some(o=>o.venue!==e.venue)?t("Other dates & locations"):t("Other dates")}</h2>
       <ul>{otherDates.map(o=><li key={o.id}><Link href={`/events/db-${o.id}`}><b>{fmtDate(o.start,{weekday:"short",month:"short",day:"numeric"},e.tz,loc)}</b><span>{isAllDay(o.start,e.tz)?t("All day"):fmtTime(o.start,e.tz,loc)}</span>{o.venue!==e.venue&&<span className="muted">{o.venue||o.city}</span>}</Link></li>)}</ul>
