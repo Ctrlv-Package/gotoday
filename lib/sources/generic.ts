@@ -55,7 +55,10 @@ export async function fetchIcal(cfg:GenericCfg,startDate:string,endDate:string):
   if(!s||s.date<startDate||s.date>endDate)continue;
   const title=clean(icsValue(props.SUMMARY.v));if(title.length<3)continue;
   const desc=richText(icsValue(props.DESCRIPTION?.v||"")).slice(0,3000);
-  const loc=clean(icsValue(props.LOCATION?.v||""));
+  let loc=clean(icsValue(props.LOCATION?.v||""));
+  // Finalsite writes "William Dandy Middle School (2400 NW 26th St, Fort Lauderdale, FL 33311, United States)": the
+  // name, then the address in brackets. Read it as "name, address".
+  {const m=loc.match(/^([^()]{3,}?)\s*\(([^()]*\d[^()]*)\)\s*$/);if(m)loc=`${m[1].trim()}, ${m[2].trim()}`;}
   // LOCATION is a place name ("Main Library, 100 Main St, …") or only a street address ("124 Sea Grove Main St, St.
   // Augustine Beach, FL, 32080, US"). A bare address isn't a venue name: use the room or the source's name, and take
   // the town from the address.
