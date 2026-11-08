@@ -29,7 +29,7 @@ export async function GET(req:NextRequest){
  await Promise.all(Array.from({length:10},async()=>{while(next<jobs.length){const j=jobs[next++];
   try{const r=await fetch(`${origin}/api/events?postalCode=${j.zip}&radius=25&range=${j.day}&today=${days[0]}`,{cache:"no-store"});const d:any=await r.json();results.push({area:j.area,day:j.day,events:d.events||[]})}catch{results.push({area:j.area,day:j.day,events:[]})}}}));
 
- const found:Record<string,Hit[]>={freeButPriced:[],duplicates:[],sharedPhoto:[],kidsTitleNotKids:[],kidsButGeneral:[],freeTitleNotFree:[],adultTitleFamily:[],outdoorTitleIndoor:[],captionTitle:[],venueIsAccount:[],noSetting:[],kidsNoAgesNarrowed:[]};
+ const found:Record<string,Hit[]>={freeButPriced:[],duplicates:[],duplicatesAcrossTowns:[],sharedPhoto:[],kidsTitleNotKids:[],kidsButGeneral:[],freeTitleNotFree:[],adultTitleFamily:[],outdoorTitleIndoor:[],captionTitle:[],venueIsAccount:[],noSetting:[],kidsNoAgesNarrowed:[]};
  const add=(k:string,h:Hit)=>{if(found[k].length<400)found[k].push(h)};
  let total=0;const seen=new Set<string>();
  for(const {area,day,events} of results){
@@ -38,7 +38,12 @@ export async function GET(req:NextRequest){
   for(let i=0;i<events.length;i++)for(let j=i+1;j<events.length;j++){
    const a=events[i],b=events[j];if(a.date!==b.date)continue;
    // Same town (or the very same spot); a festival in Plantation and one in Boynton Beach are different events.
-   const near=town(a.city)===town(b.city)||(a.venue&&a.venue===b.venue);if(!near)continue;
+   const near=town(a.city)===town(b.city)||(a.venue&&a.venue===b.venue);
+   // The same distinctive title on the same day in two nearby towns, from two different listers: usually one event whose
+   // place one copy got wrong (a theater company's post placed in its home town, the show in another).
+   if(!near){const x=a.title.toLowerCase().replace(/[^a-z0-9]+/g,""),y=b.title.toLowerCase().replace(/[^a-z0-9]+/g,"");
+    if(x===y&&x.length>=15&&a.source!==b.source&&(!a.time||!b.time||a.time===b.time))add("duplicatesAcrossTowns",{area,date:day,title:`${a.title}  (${a.city} ⟷ ${b.city})`,source:`${a.source} / ${b.source}`});
+    continue}
    // A part of an event listed on its own (its opening reception, a VIP preview) is its own listing, not a copy.
    const partOf=(t:string)=>/^(opening|closing) reception|^vip\b|\bpreview\b|after ?party|pre-?show|meet (and|&) greet|costume contest/i.test(t);
    if(partOf(a.title)!==partOf(b.title))continue;
@@ -81,7 +86,7 @@ export async function GET(req:NextRequest){
  }
  const summary=Object.fromEntries(Object.entries(found).map(([k,v])=>[k,v.length]));
  // Counted as problems; noSetting / kidsNoAgesNarrowed / venueIsAccount / kidsButGeneral (mostly library teen programs) are shown for information only.
- const problems=["freeButPriced","duplicates","sharedPhoto","kidsTitleNotKids","freeTitleNotFree","adultTitleFamily","outdoorTitleIndoor","captionTitle"].reduce((n,k)=>n+(summary[k]||0),0);
+ const problems=["freeButPriced","duplicates","duplicatesAcrossTowns","sharedPhoto","kidsTitleNotKids","freeTitleNotFree","adultTitleFamily","outdoorTitleIndoor","captionTitle"].reduce((n,k)=>n+(summary[k]||0),0);
  const out={ok:true,checkedAt:new Date().toISOString(),areas:AREAS.length,days:days.length,cards:total,problems,summary,examples:Object.fromEntries(Object.entries(found).map(([k,v])=>[k,v.slice(0,40)]))};
  if(req.nextUrl.searchParams.get("save")){
   await ensureSchema();
