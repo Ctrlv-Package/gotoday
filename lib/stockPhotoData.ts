@@ -65,7 +65,7 @@ export const TOPICS:Topic[]=[
  T("career",/\b(career|job fair|resume|interview|business|entrepreneur\w*|networking|small business|financial|money|tax\w*)\b/i,"business workshop"),
  T("language",/\b(english|esl|esol|spanish class|language|conversation club|citizenship)\b/i,"language class conversation"),
  T("sensory",/\b(sensory|autism|special needs|calm|quiet hour)\b/i,"children sensory play"),
- T("festival",/\b(festival|fest|fair|carnival|celebration|jubilee|fiesta)\b/i,"festival fairground crowd"),
+ T("festival",/\b(festival|fest|fair|carnival|celebration|jubilee|fiesta|fun ?day|family (fun|day|night)|funfest|fun fest)\b/i,"festival fairground crowd"),
  T("kids",/\b(kids?|children|family|families)\b/i,"kids playing park"),
  T("music",/\bmusic\b/i,"live music"),
  T("arts",/\barts?\b/i,"art class colorful"),

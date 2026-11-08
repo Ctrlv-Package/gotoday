@@ -67,6 +67,7 @@ export async function runSource(s:EventSource,getRaw:()=>Promise<EventRecord[]>)
   // Only a successful refresh may mark this source's older events as stale.
   if(accepted>0)await db.query("update events set status='stale',updated_at=now() where source_id=$1 and status='active' and last_verified_at < $2",[sourceId,runStarted]);
   await db.query("update ingestion_runs set finished_at=now(),status='success',records_found=$1,records_accepted=$2,records_rejected=$3 where id=$4",[found,accepted,rejected,runId]);
+  await applyCardFixes(sourceId).catch(()=>{});   // fixes set by hand (a card's real page, its registration) outlive every re-read
   await db.query("update sources set last_success_at=now(),last_error=null,updated_at=now() where id=$1",[sourceId]);
   const reasons=await db.query("select rejection_reason,count(*)::int as count,(array_agg(left(raw_title,90)))[1:4] as examples from rejected_events where ingestion_run_id=$1 group by rejection_reason order by count(*) desc",[runId]);
   return{source:s.name,found,accepted,quarantined,rejected,status:"success",rejectionReasons:reasons.rows};
@@ -89,4 +90,20 @@ export async function persistIngestion(startDate:string,endDate:string,only?:str
  const summary:SourceSummary[]=[];
  for(const s of list)summary.push(await runSource(s,()=>s.fetch(startDate,endDate)));
  return summary;
+}
+
+
+/** Fixes set by hand for things a source doesn't publish: the event's real page (an Eventbrite link a district calendar
+ *  never mentions) and its registration notice. Matched by source + title + date, so they survive every re-read. */
+export async function ensureCardFixes(){
+ await db.query(`create table if not exists card_fixes(source_id bigint not null,title text not null,local_date date not null,
+  official_url text,registration_url text,registration_text text,updated_at timestamptz default now(),primary key(source_id,title,local_date))`);
+}
+export async function applyCardFixes(sourceId?:number){
+ await ensureCardFixes();
+ return (await db.query(`update events e set official_url=coalesce(f.official_url,e.official_url),registration_url=coalesce(f.registration_url,e.registration_url),
+  registration_text=coalesce(f.registration_text,e.registration_text),updated_at=now()
+  from card_fixes f where f.source_id=e.source_id and f.title=e.title and f.local_date=e.local_date and ($1::bigint is null or e.source_id=$1)
+  and (e.official_url is distinct from coalesce(f.official_url,e.official_url) or e.registration_url is distinct from coalesce(f.registration_url,e.registration_url)
+   or e.registration_text is distinct from coalesce(f.registration_text,e.registration_text))`,[sourceId??null])).rowCount;
 }
