@@ -24,7 +24,13 @@ export async function fetchWebpage(cfg:WebpageConfig,startDate:string,endDate:st
  const html=await r.text();
  const text=pageText(html);
  if(text.length<80)throw new Error(`No readable text on ${new URL(cfg.url).host}`);
- const image=html.match(/<meta[^>]+property=["']og:image["'][^>]+content=["']([^"']+)/i)?.[1]||html.match(/<meta[^>]+content=["']([^"']+)["'][^>]+property=["']og:image["']/i)?.[1];
+const ogImage=(h:string)=>h.match(/<meta[^>]+property=["']og:image["'][^>]+content=["']([^"']+)/i)?.[1]||h.match(/<meta[^>]+content=["']([^"']+)["'][^>]+property=["']og:image["']/i)?.[1];
+ // The page's share picture is often the site-wide one (a parish or club logo on every page): use it only when it's not
+ // the home page's too, and never when it says logo/icon. Otherwise the card gets a fitting stock photo.
+ let image=ogImage(html);
+ if(image&&/logo|icon|favicon|avatar|seal|crest/i.test(image))image=undefined;
+ if(image){const home=new URL("/",cfg.url).toString();
+  if(home!==cfg.url){const hh=await fetchRetry(home,{headers:UA,cache:"no-store"},1,20000).then(r=>r.ok?r.text():"").catch(()=>"");if(hh&&ogImage(hh)===image)image=undefined}else image=undefined}
  const found=await readPageText(text,cfg.url,cfg.venue,cfg.city);
  const st=cfg.city.split(",")[1]?.trim()||"";
  const out:EventRecord[]=[],seen=new Set<string>();
