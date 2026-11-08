@@ -74,7 +74,10 @@ export async function fillFromCopies<T extends Fillable>(e:T):Promise<T>{
  const shared=urls.length?new Set((await db.query("select image_url from events where image_url=any($1) group by image_url having count(distinct lower(title))>=3",[urls]).catch(()=>({rows:[]}))).rows.map((r:any)=>r.image_url)):new Set();
  out.image=bestPicture(e.title,all.filter(p=>!shared.has(p.image)))||null;
  if(!out.image)out.image=(await familyPictures([{title:e.title,city:e.city}])).get(familyKey(e.title,e.city))||null;
- {const p=!out.image||/^https?:/.test(out.image)?await stockPicture({title:e.title,desc:e.description,category:e.category||undefined,tags:e.tags,ageMax:e.ageMax,source:e.source,venue:e.venue}):"";
+ // A stored picture (/img/…) that has since been cleaned out of storage is no picture.
+ if(out.image&&/^\/img\//.test(out.image)){const r:any=await db.query("select 1 from images where key=$1",[out.image.slice(5)]).catch(()=>null);if(r&&r.rowCount===0)out.image=null}
+ // Always keep a library photo ready as the backup, for any picture that fails to load in the browser.
+ {const p=true?await stockPicture({title:e.title,desc:e.description,category:e.category||undefined,tags:e.tags,ageMax:e.ageMax,source:e.source,venue:e.venue}):"";
   if(p&&!out.image){out.image=p;out.stockImage=true}else if(p)out.backupImage=p}
  // The place: the shared choice (lib/places) over this listing and all its copies.
  {const pl=choosePlace([{id:e.id,venue:e.venue,address:e.address,city:e.city,source:e.source,lat:e.lat,lng:e.lng},...copies.map((r:any)=>({id:r.id,venue:r.venue,address:r.address,city:r.city,source:r.source,lat:r.lat!=null?Number(r.lat):null,lng:r.lng!=null?Number(r.lng):null}))]);

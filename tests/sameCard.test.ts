@@ -76,3 +76,11 @@ test("one festival posted by two accounts and listed by the city (street vs park
   assert.equal(same(ev("Day of the Dead Crafts",{source:"Broward County Library",venue:"Main Library",city:"Fort Lauderdale, FL",time:"15:00:00"}),
     ev("Day of the Dead Crafts for Teens",{source:"Broward County Library",venue:"Main Library",city:"Fort Lauderdale, FL",time:"16:00:00"})),false);
 });
+
+test("a theater company's post with no place merges with the venue's listing of the same show that day", () => {
+  const a=ev("Last of the Red Hot Lovers",{source:"Curtain Call Playhouse · Instagram",venue:"Curtain Call Playhouse",city:"Davie, FL",time:""});
+  const b=ev("Last of the Red Hot Lovers",{source:"City of Boca Raton",venue:"Willow Theatre",city:"Boca Raton, FL",time:""});
+  assert.equal(same(a,b),true);
+  // A short common title in two towns stays two events.
+  assert.equal(same(ev("Bingo Night",{source:"VFW Post 1 · Instagram",venue:"VFW Post 1",city:"Davie, FL"}),ev("Bingo Night",{source:"City of Boca Raton",venue:"Library",city:"Boca Raton, FL"})),false);
+});

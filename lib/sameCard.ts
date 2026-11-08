@@ -73,6 +73,10 @@ export function sameEventCard(a:CardLike,b:CardLike,W:(e:CardLike)=>Set<string>=
  const miles=a.lat!=null&&a.lng!=null&&b.lat!=null&&b.lng!=null?Math.hypot((a.lat-b.lat)*69,(a.lng-b.lng)*69*Math.cos(a.lat*Math.PI/180)):null;
  const bothTowns=!!town(a.city)&&!!town(b.city);
  const near=sameTown||(miles!=null?miles<1.5:!bothTowns&&typeof a.distanceMiles==="number"&&typeof b.distanceMiles==="number"&&Math.abs(a.distanceMiles-b.distanceMiles)<1);
+ // (g) An organization's own post that names no place gets the account's home town (a theater company in Davie posting
+ // its run at Willow Theatre in Boca). The exact same distinctive title on the same day, within 40 miles, is that event.
+ {const noPlace=(x:CardLike)=>isIg(x)&&(!x.venue||place(x.venue)===place(organizer(x)));
+  if(!near&&fa===fb&&fa.length>=15&&(noPlace(a)!==noPlace(b))&&(miles==null||miles<40)&&timesOk)return true}
  if(!near||placesConflict(a,b,miles))return false;
  // (c2) One listing cut the title off ("The Carpenters Songbook - A Live Celebrati") — any two listers, same area.
  if(fa.length>=15&&fb.length>=15&&(fa.startsWith(fb)||fb.startsWith(fa)))return true;
