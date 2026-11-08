@@ -106,6 +106,12 @@ async function probe(c:Cand):Promise<Found[]>{
  if(!out.length){
   const evUrl=evPages(html)[0]||"";
   const evHtml=evUrl?(await get(evUrl)).text:"";const both=html+"\n"+evHtml;
+  // Finalsite (many school districts and private schools): a calendar element names its calendars (data-calendar-ids)
+  // and the site publishes them as iCal at /fs/calendar-manager/events.ics.
+  {const ids=both.match(/data-calendar-ids="([\d,]+)"/i)?.[1];
+   if(ids&&/finalsite/i.test(both)){const base=/data-calendar-ids/i.test(evHtml)&&evUrl?new URL(evUrl).origin:origin;
+    const u=`${base}/fs/calendar-manager/events.ics?${ids.split(",").map(i=>`calendar_ids[]=${i}`).join("&")}`,t=await get(u);const n=(String(t.text).match(/BEGIN:VEVENT/g)||[]).length;
+    if(n)out.push({input:arg,platform:"ical",confidence:"confirmed",note:`${n} events (Finalsite iCal)`,config:{name,platform:"ical",params:{url:u,city},source_type:"official-county",url:evUrl||origin}})}}
   // LibraryMarket "LibraryCalendar" (many public libraries: *.librarycalendar.com), which publishes an iCal feed.
   {const lc=/\.(librarycalendar|librarymarket)\.com$/.test(new URL(origin).hostname)?origin:both.match(/https?:\/\/[a-z0-9-]+\.(?:librarycalendar|librarymarket)\.com/i)?.[0];
    if(lc){const u=`${lc}/events/feed/ical`,t=await get(u);const n=(String(t.text).match(/BEGIN:VEVENT/g)||[]).length;
