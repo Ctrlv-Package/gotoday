@@ -8,7 +8,7 @@ import {fetchRetry} from "../http";
 import {stripHtml,richText} from "../ingestion/utils";
 import {zonedToUtc} from "../time";
 
-export type GenericCfg={url:string;source:string;idPrefix:string;city:string;venue:string;tz?:string};
+export type GenericCfg={url:string;source:string;idPrefix:string;city:string;venue:string;tz?:string;page?:string};
 const UA={"User-Agent":"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36"};
 const clean=(s:unknown)=>stripHtml(String(s??"")).replace(/\s+/g," ").trim();
 const words=(t:string)=>t.toLowerCase();
@@ -54,7 +54,9 @@ export async function fetchIcal(cfg:GenericCfg,startDate:string,endDate:string):
   const s=icsWhen(props.DTSTART.p,props.DTSTART.v,tz),e=props.DTEND?icsWhen(props.DTEND.p,props.DTEND.v,tz):null;
   if(!s||s.date<startDate||s.date>endDate)continue;
   const title=clean(icsValue(props.SUMMARY.v));if(title.length<3)continue;
-  const desc=richText(icsValue(props.DESCRIPTION?.v||"")).slice(0,3000);
+  // Calendar exports often wrap the text in a "Location:…_____" header and a "_____Contact: name, email" footer
+  // (Finalsite), with sentences run together ("provides.Our families"): keep the event's own words.
+  const desc=richText(icsValue(props.DESCRIPTION?.v||"").replace(/^\s*Location:[\s\S]*?_{5,}/i,"").replace(/_{5,}\s*(Contact|Questions|For more info)[\s\S]*$/i,"").replace(/_{5,}/g,"\n\n").replace(/([a-z\)])([.!?])([A-Z][a-z])/g,"$1$2 $3")).slice(0,3000);
   let loc=clean(icsValue(props.LOCATION?.v||""));
   // Finalsite writes "William Dandy Middle School (2400 NW 26th St, Fort Lauderdale, FL 33311, United States)": the
   // name, then the address in brackets. Read it as "name, address".
@@ -72,7 +74,8 @@ export async function fetchIcal(cfg:GenericCfg,startDate:string,endDate:string):
   const uid=(props.UID?.v||title).replace(/[^A-Za-z0-9]+/g,"").slice(-40);
   const geo=(props.GEO?.v||"").split(/[;,]/).map(Number),hasGeo=geo.length===2&&geo.every(n=>isFinite(n)&&n!==0);
   out.push({id:`${cfg.idPrefix}-${uid}-${s.date}`,title,city,venue,address,image,...(hasGeo?{latitude:geo[0],longitude:geo[1]}:{}),date:s.date,time:s.time,endTime:e&&e.date===s.date&&e.time>s.time?e.time:undefined,
-   url:/^https?:/i.test(link)?link:cfg.url,sourceUrl:cfg.url,category:kids?"Family":arts?"Arts & Theatre":"Local",genre:"Community Event",
+   // No link of its own: the source's calendar page, never the .ics feed (that downloads a file instead of opening a page).
+   url:/^https?:/i.test(link)?link:(cfg.page||cfg.url.replace(/\/(fs\/calendar-manager\/events\.ics|feed\/ical|events\.ics|calendar\.ics)[^]*$/i,"")||cfg.url),sourceUrl:cfg.url,category:kids?"Family":arts?"Arts & Theatre":"Local",genre:"Community Event",
    desc:desc||`${cfg.source} event.`,tags:[...tags,"Local"],emoji:kids?"🎉":arts?"🎨":"📍",source:cfg.source,eventType:"event"});
  }
  return out;

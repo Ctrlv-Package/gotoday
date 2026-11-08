@@ -24,7 +24,7 @@ import {fetchIcal,fetchTribe,fetchLocalist,fetchSquarespace} from "../sources/ge
 // a new row in source_configs, not new code.
 export type Fetcher=(startDate:string,endDate:string)=>Promise<EventRecord[]>;
 type Params=Record<string,any>;
-type Meta={name:string};
+type Meta={name:string;page?:string};   // page: the source's public calendar page (a card's link when a feed gives none)
 
 const CITY_MAPS:Record<string,(venue:string)=>string>={broward:browardBranchCity,"miami-dade":miamiDadeBranchCity};
 /** Branch -> city lookup from params: cityMap (built-in) or branchCities [[regex,city],...], else defaultCity. */
@@ -89,7 +89,7 @@ export const PLATFORMS:Record<string,{describe:string;params:string;build:(p:Par
  "broward-parks":{describe:"Broward County Parks event-calendar API",params:"(none)",build:()=>fetchBrowardParkEvents},
  riverwalk:{describe:"Riverwalk Fort Lauderdale calendar",params:"(none)",build:()=>fetchRiverwalkEvents},
  ical:{describe:"Any iCal (.ics) calendar feed (Trumba, Google Calendar, CMS exports)",params:"url, city, venue?, tz?",
-  build:(p,m)=>{need(p,"url","city");return(s,e)=>fetchIcal({url:p.url,source:m.name,idPrefix:p.idPrefix||m.name.toLowerCase().replace(/[^a-z]+/g,""),city:p.city,venue:p.venue||m.name,tz:p.tz},s,e)}},
+  build:(p,m)=>{need(p,"url","city");return(s,e)=>fetchIcal({url:p.url,source:m.name,idPrefix:p.idPrefix||m.name.toLowerCase().replace(/[^a-z]+/g,""),city:p.city,venue:p.venue||m.name,tz:p.tz,page:p.page||m.page},s,e)}},
  tribe:{describe:"WordPress 'The Events Calendar' (wp-json/tribe/events)",params:"url, city, venue?",
   build:(p,m)=>{need(p,"url","city");return(s,e)=>fetchTribe({url:p.url,source:m.name,idPrefix:p.idPrefix||m.name.toLowerCase().replace(/[^a-z]+/g,""),city:p.city,venue:p.venue||m.name},s,e)}},
  ovationtix:{describe:"AudienceView Professional / OvationTix theater box offices (ci.ovationtix.com/<clientId>)",params:"clientId, city, venue?",

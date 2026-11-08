@@ -285,7 +285,7 @@ export const SEED_SOURCES:SourceConfig[]=[
 
 function toSource(c:SourceConfig):EventSource{
  return{name:c.name,type:c.source_type||"official-city",url:c.url||"",priority:c.priority??90,enabled:c.enabled!==false,remote:!!c.remote,timezone:c.timezone||"America/New_York",region:c.region,platform:c.platform,
-  fetch:(s,e)=>buildFetcher(c.platform,c.params,{name:c.name})(s,e)};
+  fetch:(s,e)=>buildFetcher(c.platform,c.params,{name:c.name,page:c.url||undefined})(s,e)};
 }
 
 /** Load source configs from the database, seeding any code seeds it doesn't have yet. */
