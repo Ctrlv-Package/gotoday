@@ -341,6 +341,9 @@ export async function fetchInstagram(cfg:InstagramConfig,startDate:string,endDat
  // that borrow is exactly the "wrong picture on the card" failure, so it is marked here and the
  // quarantine gate holds it for review instead of publishing on the guess.
  const pictureFor=(e:any):{url?:string;borrowed:boolean}=>{
+  // A post announcing a cancellation or a change ("CANCELED this Sunday — see you Nov 8") shows that notice on its
+  // flyer: never the picture of the event it points to. The card gets its own photo instead.
+  if(/\b(cancel+ed|canceling|postponed|rain ?out|called off)\b/i.test(String(e.post.caption||""))&&!e.cancelled)return{url:undefined,borrowed:false};
   const many=(perPost.get(e.post.id)||0)>=3||ROUNDUPS.has(cfg.username)&&(perPost.get(e.post.id)||0)>=2;
   const own=e.slide&&e.post.media_type==="CAROUSEL_ALBUM"&&(perSlide.get(`${e.post.id}#${e.slide}`)||0)===1&&!(many&&e.slide===1)?slides(e.post)[e.slide-1]:undefined;
   if(own)return{url:own,borrowed:false};

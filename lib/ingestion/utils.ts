@@ -107,6 +107,8 @@ export function discoveryRejection(e:EventRecord):DiscoveryReason|null{
  // School-district calendar business: grading dates, discipline hearings, closures, board ceremonies, vendor sessions.
  if(/\b(interim reports?|report cards?|progress reports?( issued)?|expulsions?|early (release|dismissal)|teacher (planning|workday|duty)|no school|schools? closed|student holiday|(first|last) day of school|end of (the )?(quarter|grading period|semester)|grading period|swearing[- ]in( ceremony)?|access opportunities|supplier diversity|vendor (workshop|outreach)|procurement|bid opening)\b/i.test(title)
   &&!/\b(camps?|fundraiser|festival|fair|cook-?off|class|party|celebration)\b/i.test(title))return"service-or-support";
+ // Facility notices: "Reopening Notice – Veltri Tennis Center Update #3", "Pool Closure Notice", "Park Update".
+ if(/\b(reopening|re-opening|closure|closing|closed) notice\b|\bupdate #?\s?\d+\b|\b(facility|park|pool|center|centre|field|court|library|playground|building) (closure|closures|update|reopening|reopens|is closed|will be closed)\b|^\W*(notice|update|alert)\W*$/i.test(title)&&!/\b(celebration|party|ribbon|grand (re)?opening|open house|festival)\b/i.test(title))return"announcement";
  // Countdown and sign-up teasers, not events: "TOMORROW", "The Countdown", "Two Days to Go", "3 days until
  // registration opens", "Pre-registration opens Sunday". A countdown party (New Year's Eve) stays.
  {const t=title.trim(),N="(\\d+|one|two|three|four|five|six|seven|eight|nine|ten)";
