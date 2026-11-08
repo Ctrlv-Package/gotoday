@@ -22,7 +22,7 @@ export async function loadEvent(id:string):Promise<EventDetail|null>{
  const n=parseId(id);if(!n)return null;
  await ensureSchema();
  const {rows}=await db.query(`select e.id,e.title,e.description,e.start_at,e.end_at,e.city,e.image_url,e.official_url,e.price_text,e.is_free,e.category,e.tags,e.age_min,e.age_max,
-  e.registration_url,e.registration_text,e.recurrence,e.timezone,e.source_id,s.name as source,s.url as source_page,v.id as venue_id,v.name as venue,v.address,v.latitude,v.longitude
+  e.registration_url,e.registration_text,e.recurrence,e.timezone,e.source_id,s.name as source,(select c.url from source_configs c where c.name=s.name limit 1) as source_page,v.id as venue_id,v.name as venue,v.address,v.latitude,v.longitude
   from events e join sources s on s.id=e.source_id left join venues v on v.id=e.venue_id where e.id=$1 limit 1`,[n]);
  const r=rows[0];if(!r)return null;
  // Same rule as the cards: a photo shared by 3+ differently named events is a cover or placeholder, not this event's.
@@ -32,7 +32,7 @@ export async function loadEvent(id:string):Promise<EventDetail|null>{
   if(Number(sh.rows[0]?.n)>=3)r.image_url=null;
  }
  const ev:EventDetail={id:r.id,title:decodeHtml(r.title),description:decodeHtml(r.description||""),start:new Date(r.start_at),end:r.end_at?new Date(r.end_at):null,city:r.city||"",
-  image:r.image_url,officialUrl:/\.ics(\?|$)|calendar-manager\/events\.ics|\/feed\/ical/i.test(String(r.official_url||""))&&r.source_page?r.source_page:r.official_url,priceText:r.price_text?decodeHtml(r.price_text):null,isFree:!!r.is_free,category:r.category,tags:(()=>{const t:string[]=Array.isArray(r.tags)?r.tags.filter((x:string)=>x!=="Indoor"&&x!=="Outdoor"):[];const st=settingFor({title:r.title,venue:r.venue,source:r.source,desc:r.description});return st?[...t,st]:t})(),
+  image:r.image_url,officialUrl:/\.ics(\?|$)|calendar-manager\/events\.ics|\/feed\/ical/i.test(String(r.official_url||""))?(r.source_page||String(r.official_url).replace(/\/(fs\/calendar-manager\/events\.ics|feed\/ical|events\.ics|calendar\.ics)[^]*$/i,"")):r.official_url,priceText:r.price_text?decodeHtml(r.price_text):null,isFree:!!r.is_free,category:r.category,tags:(()=>{const t:string[]=Array.isArray(r.tags)?r.tags.filter((x:string)=>x!=="Indoor"&&x!=="Outdoor"):[];const st=settingFor({title:r.title,venue:r.venue,source:r.source,desc:r.description});return st?[...t,st]:t})(),
   ageMin:r.age_min,ageMax:r.age_max,registrationUrl:r.registration_url,registrationText:r.registration_text,recurrence:r.recurrence,source:/^Ticketmaster/.test(r.source)?"Ticketmaster":r.source,sourceId:r.source_id,tz:r.timezone||DEFAULT_TZ,
   venue:r.venue?decodeHtml(r.venue):null,venueId:r.venue_id,address:r.address,lat:r.latitude==null?null:Number(r.latitude),lng:r.longitude==null?null:Number(r.longitude)};
  // Fill what this listing lacks (photo, description, ages) from the other copies of the same event, like the cards do.
