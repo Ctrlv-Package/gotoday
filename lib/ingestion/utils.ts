@@ -91,7 +91,7 @@ export function discoveryRejection(e:EventRecord):DiscoveryReason|null{
   if(/^(pov\b|we(’|')?re\b|we are\b|snag\b|grab\b|shop\b|check out\b|stop by\b|swipe\b|tag a\b|meet our\b|congrat|happy \w+day\b|throwback|tbt\b)/i.test(t)||/\b(has|have) (led|been|seen|made)\b|\bjust \w+ (days?|weeks?) away\b|\b(days?|weeks?) away\b|\bcoming soon\b/i.test(t))return"announcement";}
  // Public-works notices aren't events: "SE 6th Terrace Bridge Replacement - Bridge Construction Begins", lane closures,
  // detours, water-main work, road resurfacing. A groundbreaking or ribbon cutting people attend stays.
- if(/\b(construction (begins|starts|update|notice|alert|schedule)|(bridge|road|street|roadway|sidewalk|culvert|seawall) (replacement|repairs?|closures?|reconstruction|improvements?|work)|lane closures?|road closures?|street closures?|detours?|traffic (impacts?|alerts?|advisory|shifts?)|utility (work|installation|relocation)|water main|drainage (project|improvements?)|(re)?paving|milling and resurfacing|resurfacing project|boil water|service interruption)\b/i.test(title)&&!/\b(groundbreaking|ribbon[- ]cutting|grand opening|open house|celebration|festival|run|walk|parade|tour)\b/i.test(title))return"announcement";
+ if(/\b(construction (begins|starts|update|notice|alert|schedule)|(bridge|road|street|roadway|sidewalk|culvert|seawall) (replacement|repairs?|closures?|reconstruction|improvements?|work)|lane closures?|road closures?|street closures?|detours?|traffic (impacts?|alerts?|advisory|shifts?)|utility (work|installation|relocation)|water main|drainage (project|improvements?)|(re)?paving|milling and resurfacing|resurfacing project|boil water|service interruption|roadside maintenance|road maintenance|rezoning|land use amendment)\b/i.test(title)&&!/\b(groundbreaking|ribbon[- ]cutting|grand opening|open house|celebration|festival|run|walk|parade|tour)\b/i.test(title))return"announcement";
  // Promo captions read as titles: "Start your Sunday in Downtown Hollywood" (go get brunch somewhere).
  if(/^(start|spend|end) your (day|morning|evening|night|weekend|(mon|tues|wednes|thurs|fri|satur|sun)day)\b/i.test(title.trim()))return"announcement";
  // Reminders: "Fall Back Lauderdale Lakes", "Don’t forget to set your clocks back one hour".
@@ -104,8 +104,6 @@ export function discoveryRejection(e:EventRecord):DiscoveryReason|null{
  {const t=title.trim(),M="(january|february|march|april|may|june|july|august|september|october|november|december|fall|autumn|winter|spring|summer|the weekend|weekend|the holidays|holiday season|(the )?new (month|year)|(this|next) month)";
   if(new RegExp(`^\\W*(hello|hi|welcome( to)?|goodbye|bye(,? bye)?|happy|cheers to|so long)\\W*${M}\\W*$`,"i").test(t)
    ||new RegExp(`^\\W*(${M}|monthly|this month'?s?|(what'?s|what is) (happening|going on|on) (in|this|for) ${M}|(this|next) month (at|in) [\\w .'’-]+)\\s*(events?|calendar|line-?up|happenings|round-?up|highlights|at a glance|schedule|programs?|programming|activities|newsletter|recap)?\\W*$`,"i").test(t))return"announcement";}
- // "PUBLIC NOTICE - Veterans Day Celebration…": a legal notice that officials may attend (a quorum notice), not the event.
- if(/^\W*public notice\b/i.test(title))return"announcement";
  // Countdown and sign-up teasers, not events: "TOMORROW", "The Countdown", "Two Days to Go", "3 days until
  // registration opens", "Pre-registration opens Sunday". A countdown party (New Year's Eve) stays.
  {const t=title.trim(),N="(\\d+|one|two|three|four|five|six|seven|eight|nine|ten)";
@@ -158,6 +156,8 @@ export function cleanTitle(t:string):string{
  const m=x.match(/^(.{6,}?)[.!|•·–—-]\s+((?:for\s+)?(?:kids?|children|ages?|all ages|families|family|adults?|teens?|tweens?|grades?|free|no cost|seniors?|toddlers?|babies|everyone|open to)\b.*|\d{1,2}\s*(?:&|and)\s*(?:under|up|older)\b.*|\d{1,2}\s*\+.*)$/i);
  if(m)x=m[1].trim();
  x=x.replace(/(\p{L}{2})-\s+(?=\p{Lu}\p{Ll})/gu,"$1 – ");
+ // "PUBLIC NOTICE - Veterans Day Celebration at Veterans Park" (a town's notice that officials may attend): the event's name.
+ x=x.replace(/^\W*public notice\s*[-–—:|]?\s*/i,"");
  // Room codes in front: "(SM) Rotary Club Pancake Breakfast", "(LG) …" (small / large room) — the same event.
  x=x.replace(/^\((?:[A-Z]{1,4}\d?|rm\.? ?\d+)\)\s+/i,"");
  // Ages in the name: "Scavenger Hunt, Ages 3-12 yo", "Lego Club (Ages 6–10)", "Storytime - Ages 0-5", "Art (Grades K-5)":
