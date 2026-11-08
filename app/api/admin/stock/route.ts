@@ -1,7 +1,6 @@
-import {NEVER} from "../../../../lib/stockPhotoData";
 import {NextRequest,NextResponse} from "next/server";
 import {db} from "../../../../lib/db";
-import {buildLibrary,libraryPlan,libraryPut,TOPICS} from "../../../../lib/stockPhotos";
+import {buildLibrary,libraryPlan,libraryPut,recheckLibrary,TOPICS} from "../../../../lib/stockPhotos";
 export const dynamic="force-dynamic";
 export const maxDuration=300;
 // GET: how many library photos each event type has. POST: fill the library from Pixabay (a batch of types per call).
@@ -44,26 +43,8 @@ export async function POST(req:NextRequest){
  if(p.get("where")){const {rows}=await db.query("select topic,photo_id,(select count(*) from stock_photos q where q.topic=s.topic and q.photo_id<=s.photo_id)::int as pos from stock_photos s where image=$1",[p.get("where")]);return NextResponse.json({ok:true,rows})}
  // ?recheck=1[&topic=kids]: look every library photo up on Pixabay again and drop the ones whose tags the current
  // filter (NEVER, the topic's MUST) now refuses — so a tightened filter also clears photos already in use.
- if(p.get("recheck")){
-  const key=process.env.PIXABAY_API_KEY;if(!key)return NextResponse.json({ok:false,error:"PIXABAY_API_KEY not set"});
-  await db.query("create table if not exists stock_rejected(photo_id bigint primary key)");
-  await db.query("create table if not exists stock_checked(photo_id bigint primary key,checked_at timestamptz default now())");
-  const rows=(await db.query(`select s.topic,s.photo_id from stock_photos s where ($1::text is null or s.topic=$1) and not exists(select 1 from stock_checked c where c.photo_id=s.photo_id and c.checked_at>now()-interval '1 day') order by s.topic,s.photo_id`,[p.get("topic")||null])).rows;
-  const t0=Date.now(),dropped:string[]=[];let checked=0;
-  for(const r of rows){
-   if(Date.now()-t0>240e3)break;
-   const d:any=await fetch(`https://pixabay.com/api/?key=${key}&id=${r.photo_id}`,{signal:AbortSignal.timeout(15000)}).then(x=>x.json()).catch(()=>null);
-   checked++;
-   const tags=String(d?.hits?.[0]?.tags||"");
-   const must=TOPICS.find(t=>t.key===r.topic)?.must;
-   if(tags&&(NEVER.test(tags)||(must&&!must.test(tags)))){
-    await db.query("insert into stock_rejected values($1) on conflict do nothing",[r.photo_id]);
-    await db.query("delete from stock_photos where topic=$1 and photo_id=$2",[r.topic,r.photo_id]);dropped.push(`${r.topic}:${r.photo_id} (${tags})`);
-   }else await db.query("insert into stock_checked values($1) on conflict(photo_id) do update set checked_at=now()",[r.photo_id]);
-   await new Promise(z=>setTimeout(z,650));   // Pixabay allows 100 requests a minute
-  }
-  return NextResponse.json({ok:true,checked,left:rows.length-checked,dropped});
- }
+ // The daily cleanup runs the same check in small batches; this endpoint does a bigger manual pass.
+ if(p.get("recheck"))return NextResponse.json(await recheckLibrary({limit:1000,maxMs:240e3,topic:p.get("topic")||undefined}));
  if(p.get("reset")){await db.query("delete from stock_photos");return NextResponse.json({ok:true,reset:true})}
  // ?put=<topic>&id=<pixabay id> with the image bytes as the body (sent by the GitHub job).
  if(p.get("put"))return NextResponse.json(await libraryPut(p.get("put")!,Number(p.get("id")),Buffer.from(await req.arrayBuffer())));

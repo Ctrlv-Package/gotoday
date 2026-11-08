@@ -1,7 +1,7 @@
 import {db} from "./db";
 import {storeImage} from "./images";
 import * as images from "./images";
-import {TOPICS, NEVER, type Topic} from "./stockPhotoData";
+import {TOPICS, NEVER, REJECTED_PHOTO_IDS, type Topic} from "./stockPhotoData";
 export {TOPICS};
 import {decidedTopics,titleKey} from "./photoTopic";
 
@@ -33,7 +33,7 @@ async function library(){
  if(cache&&Date.now()-cache.at<10*60e3)return cache.by;
  await schema();
  const by=new Map<string,string[]>();
- for(const r of (await db.query("select topic,image from stock_photos order by topic,photo_id").catch(()=>({rows:[]}))).rows){const l=by.get(r.topic)||[];l.push(r.image);by.set(r.topic,l)}
+ for(const r of (await db.query("select topic,photo_id,image from stock_photos order by topic,photo_id").catch(()=>({rows:[]}))).rows){if(REJECTED_PHOTO_IDS.has(Number(r.photo_id)))continue;const l=by.get(r.topic)||[];l.push(r.image);by.set(r.topic,l)}
  cache={at:Date.now(),by};return by;
 }
 const hash=(s:string)=>{let h=2166136261;for(const c of s.toLowerCase().replace(/[^a-z0-9]+/g,""))h=Math.imul(h^c.charCodeAt(0),16777619);return h>>>0};
@@ -88,7 +88,9 @@ export async function buildLibrary(max=20,per=6){
   for(const [k,v] of Object.entries({key,q:t.q,image_type:"photo",orientation:"horizontal",safesearch:"true",per_page:"60",min_width:"1000",order:"popular"}))u.searchParams.set(k,v);
   const d:any=await fetch(u.toString(),{signal:AbortSignal.timeout(20000)}).then(r=>r.json()).catch(()=>null);
   const have=new Set((by.get(t.key)||[]).length?(await db.query("select photo_id from stock_photos where topic=$1",[t.key])).rows.map((r:any)=>Number(r.photo_id)):[]);
-  const hits=(d?.hits||[]).filter((h:any)=>h.webformatURL&&h.imageWidth>=h.imageHeight*1.2&&t.must.test(String(h.tags||""))&&!NEVER.test(String(h.tags||""))&&!have.has(Number(h.id))).slice(0,per-have.size);
+  // Photos the recheck already dropped are never fetched again (the plan already skips them; this fill path didn't).
+  const rejected=new Set((await db.query("select photo_id from stock_rejected").catch(()=>({rows:[]}))).rows.map((r:any)=>Number(r.photo_id)));
+  const hits=(d?.hits||[]).filter((h:any)=>h.webformatURL&&h.imageWidth>=h.imageHeight*1.2&&t.must.test(String(h.tags||""))&&!NEVER.test(String(h.tags||""))&&!have.has(Number(h.id))&&!rejected.has(Number(h.id))).slice(0,per-have.size);
   for(const h of hits){
    // The 960px version (enough for cards and pages); the full-size link as a fallback.
    // Pixabay's image server allows a slow pace: one download every ~1.5 s, and a pause when it says "too many".
@@ -136,4 +138,42 @@ export async function libraryPut(topic:string,id:number,data:Buffer){
  await schema();
  await db.query("insert into stock_photos(topic,photo_id,image) values($1,$2,$3) on conflict do nothing",[topic,id,img]);
  cache=null;return{ok:true,image:img};
+}
+
+/** A photo's Pixabay tags fail the current filter when they carry a NEVER word, or don't name its topic's
+ *  subject. Empty tags pass: Pixabay sometimes returns none, and a missing record is not proof the photo is bad. */
+export function tagsViolate(tags:string,must?:RegExp){return !!tags&&(NEVER.test(tags)||!!(must&&!must.test(tags)))}
+
+/** Re-check library photos against Pixabay's current tags and drop the ones the filter now refuses — so a
+ *  tightened filter also clears photos already in use. Photos are checked stalest-first; each run covers
+ *  `limit` of them, so the daily cleanup converges over the whole library instead of doing it all at once
+ *  (Pixabay allows 100 lookups a minute). Dropped photos are recorded in stock_rejected so no fill path
+ *  fetches them again. Cards re-pick automatically: the photo is chosen from the library at read time. */
+export async function recheckLibrary(opts:{limit?:number;maxMs?:number;topic?:string}={}){
+ const key=process.env.PIXABAY_API_KEY;if(!key)return{ok:false,error:"PIXABAY_API_KEY not set"};
+ await db.query("create table if not exists stock_rejected(photo_id bigint primary key)");
+ await db.query("create table if not exists stock_checked(photo_id bigint primary key,checked_at timestamptz default now())");
+ const limit=opts.limit??60,maxMs=opts.maxMs??240e3;
+ const dropped:string[]=[];
+ // Photos removed by hand: drop them outright (no Pixabay lookup needed) and record the rejection.
+ for(const r of (await db.query(`select topic,photo_id from stock_photos where photo_id=any($1)`,[[...REJECTED_PHOTO_IDS]]).catch(()=>({rows:[]}))).rows){
+  await db.query("insert into stock_rejected values($1) on conflict do nothing",[r.photo_id]);
+  await db.query("delete from stock_photos where topic=$1 and photo_id=$2",[r.topic,r.photo_id]);dropped.push(`${r.topic}:${r.photo_id} (removed by hand)`);
+ }
+ const rows=(await db.query(`select s.topic,s.photo_id from stock_photos s left join stock_checked c on c.photo_id=s.photo_id where ($1::text is null or s.topic=$1) order by c.checked_at nulls first,c.checked_at limit $2`,[opts.topic||null,limit])).rows;
+ const t0=Date.now();let checked=0;
+ for(const r of rows){
+  if(Date.now()-t0>maxMs)break;
+  const d:any=await fetch(`https://pixabay.com/api/?key=${key}&id=${r.photo_id}`,{signal:AbortSignal.timeout(15000)}).then(x=>x.json()).catch(()=>null);
+  checked++;
+  const tags=String(d?.hits?.[0]?.tags||"");
+  const must=TOPICS.find(t=>t.key===r.topic)?.must;
+  if(tagsViolate(tags,must)){
+   await db.query("insert into stock_rejected values($1) on conflict do nothing",[r.photo_id]);
+   await db.query("delete from stock_photos where topic=$1 and photo_id=$2",[r.topic,r.photo_id]);dropped.push(`${r.topic}:${r.photo_id} (${tags})`);
+  }else await db.query("insert into stock_checked values($1) on conflict(photo_id) do update set checked_at=now()",[r.photo_id]);
+  await new Promise(z=>setTimeout(z,650));   // Pixabay allows 100 requests a minute
+ }
+ const left=Number((await db.query(`select count(*)::int as n from stock_photos s left join stock_checked c on c.photo_id=s.photo_id where c.checked_at is null or c.checked_at<now()-interval '1 day'`).catch(()=>({rows:[{n:0}]}))).rows[0]?.n||0);
+ return{ok:true,checked,left,dropped};
 }
