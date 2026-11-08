@@ -33,6 +33,10 @@ function placesConflict(a:CardLike,b:CardLike,miles?:number|null){
   if((oa.length>=6&&vb&&(vb.includes(oa)||oa.includes(vb)))||(ob.length>=6&&va&&(va.includes(ob)||ob.includes(va))))return false}
  const ga=isGenericVenue(a.venue,a.city,a.source),gb=isGenericVenue(b.venue,b.city,b.source);
  if(ga||gb)return false;
+ // A street ("SW 2nd St", "Riverwalk SW 2nd St", "100 SE 3rd Ave") names an area, not a venue: a festival along a street
+ // and the park on that street aren't two places.
+ const street=(v?:string)=>/\b(n|s|e|w|ne|nw|se|sw)?\.?\s*\d+(st|nd|rd|th)?\s+(st|street|ave|avenue|blvd|boulevard|rd|road|way|ter|terrace|dr|drive|ct|court|pl|place|ln|lane)\.?$/i.test(String(v||"").trim());
+ if(street(a.venue)||street(b.venue))return false;
  const pa=place(a.venue),pb=place(b.venue);
  if(pa===pb||pa.includes(pb)||pb.includes(pa))return false;
  const fa=pa.replace(/ /g,""),fb=pb.replace(/ /g,"");if(fa.includes(fb)||fb.includes(fa))return false;   // "deHoernle" / "de Hoernle"
@@ -56,6 +60,12 @@ export function sameEventCard(a:CardLike,b:CardLike,W:(e:CardLike)=>Set<string>=
   if(timesOk&&!!town(a.city)&&town(a.city)===town(b.city)&&(named(a,b)||named(b,a)))return true}
  // (c) One source, one time, one title cut off ("Halloween Spooktacular Yard Decorating Contest Aw…").
  if(a.source===b.source&&a.time===b.time&&!placesConflict(a,b)&&fa.length>=10&&fb.length>=10&&(fa.startsWith(fb)||fb.startsWith(fa)))return true;
+ // (f) A festival listed by the city at 4 PM and posted at 3 PM: one title contains the other, same town, starts within
+ // 90 minutes, two different listers (one a post or a listing without a real place).
+ {const mins=(t?:string)=>t?Number(t.slice(0,2))*60+Number(t.slice(3,5)):NaN,dt=Math.abs(mins(a.time)-mins(b.time));
+  const st=!!town(a.city)&&town(a.city)===town(b.city);
+  if(!timesOk&&dt<=90&&st&&contains&&Math.min(fa.length,fb.length)>=10&&(organizer(a)!==organizer(b)||isIg(a)!==isIg(b))
+   &&(isIg(a)||isIg(b)||isGenericVenue(a.venue,a.city,a.source)||isGenericVenue(b.venue,b.city,b.source))&&!placesConflict(a,b))return true}
  if(!timesOk)return false;
  const sameTown=!!town(a.city)&&town(a.city)===town(b.city);
  // Near: the same town, or (towns differ or unknown) within a mile and a half of each other on the map.

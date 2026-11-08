@@ -56,14 +56,18 @@ export async function seriesOf(eventId:number):Promise<number|null>{
 /** Follow makes sense for events that come around now and then (yearly festivals, seasonal events), not for a
  *  storytime that's on every week — those you just save. */
 // Events that come back every year: festivals, fairs, parades, holiday celebrations, "annual" anything, races.
-const ANNUAL=/\b(annual|\d+(st|nd|rd|th) (annual|year)|festival|fest\b|fair\b|parade|carnival|expo\b|jubilee|celebration|heritage|holiday|halloween|trunk[- ]or[- ]treat|haunted|harvest|pumpkin|thanksgiving|christmas|santa|tree lighting|menorah|hanukkah|kwanzaa|new year|easter|egg hunt|st\.? patrick|cinco de mayo|juneteenth|memorial day|july 4|fourth of july|independence day|labor day|veterans day|mlk|black history|pride|oktoberfest|diwali|lunar new year|5k|10k|half marathon|marathon|fun run|turkey trot|regatta|air show|fireworks|gala|homecoming|founders'? day|block party|art walk|food truck (fest|rally))\b/i;
+const ANNUAL=/\b(annual|\d+(st|nd|rd|th) (annual|year)|festival|fest\b|fair\b|parade|carnival|expo\b|jubilee|celebration|heritage|holiday|halloween|trunk[- ]or[- ]treat|haunted|harvest|pumpkin|thanksgiving|christmas|santa|tree lighting|menorah|hanukkah|kwanzaa|new year|easter|egg hunt|st\.? patrick|cinco de mayo|juneteenth|memorial day|july 4|fourth of july|independence day|labor day|veterans day|mlk|black history|pride|oktoberfest|diwali|lunar new year|5k|10k|half marathon|marathon|fun run|turkey trot|regatta|air show|fireworks|gala|homecoming|founders'? day|block party|art walk|food truck (fest|rally)|day of the dead|d[ií]a de (los )?muertos|hispanic heritage|latin(o|x)? heritage|mardi gras|carnaval|earth day|arbor day|valentine'?s?|mother'?s day|father'?s day|three kings|d[ií]a de (los )?reyes|posadas|rosh hashanah|purim|holi festival|eid\b|ramadan|lantern (festival|parade)|boo bash|spring fling|winter wonderland|lights? up|lighting ceremony|tet festival|sukkot|chanukah|ugly sweater|polar plunge|snow ?fest|luau|bunny|hispanic heritage|asian heritage|aapi heritage|women'?s history|pi day|national night out|touch[- ]a[- ]truck|founders|anniversary celebration)\b/i;
 // One-off productions and programs (a kids' studio's musical, a touring show, a class) don't come back as "the same" event.
 const ONE_OFF=/\b(musical|the musical|play\b|presents|tour\b|comedy|stand-?up|tribute|recital|workshop|class|club|storytime|story time|lecture|talk\b|book (club|talk)|meeting|webinar|screening)\b/i;
-export async function followable(seriesId:number,title=""){
+export async function followable(seriesId:number,title="",desc=""){
  const r=(await db.query(`select count(distinct local_date) filter (where local_date between current_date and current_date+60)::int as soon,
    bool_or(recurrence is not null and recurrence<>'') as recurring,
-   bool_or(local_date < current_date-300) as seen_last_year from events where series_id=$1`,[seriesId])).rows[0];
+   bool_or(local_date < current_date-300) as seen_last_year,
+   bool_or(description ~* '(\\m(annual|yearly)\\M|\\d+(st|nd|rd|th) (annual|year)|every year|each year|returns for)') as says_annual
+   from events where series_id=$1`,[seriesId])).rows[0];
  if(r?.recurring||(r?.soon??0)>3)return false;
  // Seen last year too = it really repeats yearly. Otherwise only when its name says it's a yearly kind of event.
- return !!r?.seen_last_year||(ANNUAL.test(title)&&!ONE_OFF.test(title.replace(ANNUAL,"")));
+ // The listing itself saying so ("Second annual downtown Day of the Dead", "returns every year") counts too.
+ const saysAnnual=!!r?.says_annual||/\b(annual|yearly)\b|\b\d+(st|nd|rd|th) (annual|year)\b|\b(every|each) year\b|\breturns for\b/i.test(desc);
+ return !!r?.seen_last_year||((ANNUAL.test(title)||saysAnnual)&&!ONE_OFF.test(title.replace(ANNUAL,"")));
 }

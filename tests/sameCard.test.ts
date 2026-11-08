@@ -66,3 +66,13 @@ test("a site listing and the same organizer's own Instagram post merge despite d
   assert.equal(same(ev("REDRUM: The Unauthorized Musical Parody of The Shining",{source:"Dr. Phillips Center for the Performing Arts · Instagram",venue:"Alexis & Jim Pugh Theater",city:"Orlando, FL",time:""}),
     ev("REDRUM",{source:"Lake Eola Park / Downtown Orlando",venue:"Dr. Phillips Center for the Performing Arts",city:"Orlando, FL",time:"14:30:00"})),true);
 });
+
+test("one festival posted by two accounts and listed by the city (street vs park, 3 PM vs 4 PM) is one card", () => {
+  const a=ev("Day of the Dead",{source:"Downtown Fort Lauderdale · Instagram",venue:"Esplanade Park",city:"Fort Lauderdale, FL",time:"15:00:00"});
+  const b=ev("Day of The Dead Festival",{source:"The Broward Scene · Instagram",venue:"SW 2nd St",city:"Fort Lauderdale, FL",time:"15:00:00"});
+  const c=ev("Day of the Dead Celebration",{source:"City of Fort Lauderdale",venue:"Fort Lauderdale",city:"Fort Lauderdale, FL",time:"16:00:00"});
+  assert.equal(same(a,b),true);assert.equal(same(a,c),true);
+  // Two different library programs an hour apart stay two.
+  assert.equal(same(ev("Day of the Dead Crafts",{source:"Broward County Library",venue:"Main Library",city:"Fort Lauderdale, FL",time:"15:00:00"}),
+    ev("Day of the Dead Crafts for Teens",{source:"Broward County Library",venue:"Main Library",city:"Fort Lauderdale, FL",time:"16:00:00"})),false);
+});
