@@ -67,7 +67,37 @@ export function calendarTimes(e:EventDetail){
  const end=e.end&&e.end>e.start?e.end:new Date(e.start.getTime()+3600e3);
  return{allDay:false,start:ics(e.start),end:ics(end)};
 }
-export function whereText(e:EventDetail){const a=e.address&&e.venue&&e.address.toLowerCase().includes(e.venue.toLowerCase())?e.address:null;return(a?[a,e.city]:[e.venue,e.address||e.city]).filter(Boolean).join(", ")}
+// An address typed in all caps ("COCONUT CREEK PKWY ...") reads as shouting: show it in title case.
+// Mixed-case text is left alone; known abbreviations (FL, NE, US) stay uppercase, and ordinals keep
+// their shape ("26th", not "26Th").
+const KEEP_UPPER=new Set(["FL","NE","NW","SE","SW","N","S","E","W","US","USA","PO","DC","II","III","IV"]);
+export function displayCase(s:string){
+ const letters=s.replace(/[^A-Za-z]/g,"");
+ if(!letters.length)return s;
+ const upper=[...letters].filter(c=>c>="A"&&c<="Z").length;
+ if(upper/letters.length<0.8)return s;
+ return s.replace(/(?<!\d)[A-Za-z]+(?:'[A-Za-z]+)?/g,w=>{
+  if(KEEP_UPPER.has(w.toUpperCase()))return w.toUpperCase();
+  return w.toLowerCase().replace(/(^|')([a-z])/g,(_,p,c)=>p+c.toUpperCase());
+ });
+}
+/** The Where line under the venue name: when the venue name IS the street address, the address only repeats
+ *  it — show the rest (town, state, ZIP) instead. An all-caps address is de-shouted. */
+export function addressLine(venue:string|null,address:string|null,city:string){
+ const a=(address||"").trim();
+ if(!a)return city;
+ const norm=(s:string)=>s.toLowerCase().replace(/[^a-z0-9]+/g," ").trim();
+ const v=norm(venue||"");
+ if(v){
+  const first=a.split(",")[0]||"";
+  if(norm(first)===v||norm(a).startsWith(v+" ")){
+   const rest=a.split(",").slice(1).join(",").trim();
+   return displayCase(rest||city);
+  }
+ }
+ return displayCase(a);
+}
+export function whereText(e:EventDetail){const a=e.address&&e.venue&&e.address.toLowerCase().includes(e.venue.toLowerCase())?e.address:null;return displayCase((a?[a,e.city]:[e.venue,e.address||e.city]).filter(Boolean).join(", "))}
 /** Calendar-ready shape of an event (see lib/calendar.ts for the Google/Outlook/Apple formats). */
 export function toCalEvent(e:EventDetail,pageUrl:string):CalEvent{
  return{uid:`gotoday-${e.id}`,title:e.title,description:e.description,location:whereText(e),start:e.start,end:e.end,allDay:isAllDay(e.start,e.tz),tz:e.tz,url:pageUrl};
