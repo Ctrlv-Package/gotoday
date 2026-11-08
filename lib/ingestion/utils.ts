@@ -105,7 +105,8 @@ export function discoveryRejection(e:EventRecord):DiscoveryReason|null{
   if(new RegExp(`^\\W*(hello|hi|welcome( to)?|goodbye|bye(,? bye)?|happy|cheers to|so long)\\W*${M}\\W*$`,"i").test(t)
    ||new RegExp(`^\\W*(${M}|monthly|this month'?s?|(what'?s|what is) (happening|going on|on) (in|this|for) ${M}|(this|next) month (at|in) [\\w .'’-]+)\\s*(events?|calendar|line-?up|happenings|round-?up|highlights|at a glance|schedule|programs?|programming|activities|newsletter|recap)?\\W*$`,"i").test(t))return"announcement";}
  // School-district calendar business: grading dates, discipline hearings, closures, board ceremonies, vendor sessions.
- if(/\b(interim reports?|report cards?|progress reports?( issued)?|expulsions?|early (release|dismissal)|teacher (planning|workday|duty)|no school|schools? closed|student holiday|(first|last) day of school|end of (the )?(quarter|grading period|semester)|grading period|swearing[- ]in( ceremony)?|access opportunities|supplier diversity|vendor (workshop|outreach|fair)|procurement|bid opening)\b/i.test(title))return"service-or-support";
+ if(/\b(interim reports?|report cards?|progress reports?( issued)?|expulsions?|early (release|dismissal)|teacher (planning|workday|duty)|no school|schools? closed|student holiday|(first|last) day of school|end of (the )?(quarter|grading period|semester)|grading period|swearing[- ]in( ceremony)?|access opportunities|supplier diversity|vendor (workshop|outreach)|procurement|bid opening)\b/i.test(title)
+  &&!/\b(camps?|fundraiser|festival|fair|cook-?off|class|party|celebration)\b/i.test(title))return"service-or-support";
  // Countdown and sign-up teasers, not events: "TOMORROW", "The Countdown", "Two Days to Go", "3 days until
  // registration opens", "Pre-registration opens Sunday". A countdown party (New Year's Eve) stays.
  {const t=title.trim(),N="(\\d+|one|two|three|four|five|six|seven|eight|nine|ten)";

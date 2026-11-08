@@ -34,5 +34,7 @@
   {"keep": false, "note": "Road maintenance notice.", "title": "PUBLIC NOTICE US HWY 17 92 W Roadside Maintenance", "tags": [], "desc": "Lane closures expected."},
   {"keep": false, "note": "School district business.", "title": "Interim Reports Issued", "tags": [], "desc": ""},
   {"keep": false, "note": "School board discipline hearing.", "title": "Expulsions", "tags": [], "desc": ""},
-  {"keep": true, "note": "A district family event.", "title": "Family Fun Day", "tags": [], "desc": "Annual districtwide celebration with performances, games and free meals."}
+  {"keep": true, "note": "A district family event.", "title": "Family Fun Day", "tags": [], "desc": "Annual districtwide celebration with performances, games and free meals."},
+  {"keep": true, "note": "A kids' camp on school days off.", "title": "Mini Camp (Teacher Planning Days)", "tags": ["Kids"], "desc": "Nature camp for ages 6-12."},
+  {"keep": true, "note": "A fundraiser with a craft/vendor fair.", "title": "FCS United Way Fundraiser - Chili Cook-off, Bake-off, and Craft/Vendor Fair", "tags": [], "desc": "Chili, baked goods and crafts."}
 ]
