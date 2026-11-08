@@ -145,7 +145,7 @@ export function facetsFor(e:In):Facet[]{
  // grown-up business fair (job, career, college, resource, health, housing, wedding, business, expo).
  if(out.has("Family")&&!out.has("Kids")&&!adultOnly&&!adultish&&!grownUp
   &&has(/\b(festivals?|fests?|fair|parades?|carnivals?|celebrations?|day of the dead|d[ií]a de (los )?muertos|trunk[- ]or[- ]treat|trick[- ]or[- ]treat|halloween|boo bash|egg hunt|tree lighting|lights? up|holiday (party|celebration|festival|parade|village)|winter wonderland|snow ?fest|block party|family (day|fun day|night)|fun day|luau|touch[- ]a[- ]truck|spring fling|fall fest|harvest|pumpkin|santa|christmas|hanukkah|menorah|kwanzaa|three kings|fourth of july|july 4|independence day|fireworks|movie (night|in the park))\b/i,t)
-  &&!has(/\b(job|career|college|university|resource|health|wellness|benefits|housing|vendor|wedding|bridal|real estate|business|employment|hiring|expo|trade|art fair|antiques?|car show|gun|cannabis|beer|wine|spirits|brew|cocktail|whiskey|tequila|oktoberfest)\b/i,t)
+  &&!has(/\b(job|career|college|university|resource|health|wellness|benefits|housing|vendor|wedding|bridal|real estate|business|employment|hiring|expo|trade|art fair|antiques?|car show|gun|cannabis|beer|wine|spirits|brew|cocktail|whiskey|tequila|oktoberfest|film|shorts|cinema|plants?|orchids?|bonsai|garden club|poetry|public notice)\b/i,t)
   &&!has(ADULT,d.slice(0,400)))out.add("Kids");
  // A stage production (a community theater's play at a city venue, "Presented by Curtain Call Playhouse") isn't a family
  // event because a city calendar lists it or tags it "Family/Kids": it has to say kids/family or be a kids' show itself.
