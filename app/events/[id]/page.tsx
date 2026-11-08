@@ -20,7 +20,7 @@ import {placeScore} from "../../../lib/places";
 import {getLang} from "../../../lib/lang-server";
 import {tFor,LOCALE} from "../../../lib/i18n";
 type T=(s:string,v?:Record<string,string|number>)=>string;
-import {loadEvent,loadRelated,fmtDate,fmtTime,timeRange,isAllDay,directionsUrl,mapEmbedUrl,whereText,displayCase,addressLine,type EventDetail} from "../../../lib/event-detail";
+import {loadEvent,loadRelated,fmtDate,fmtTime,timeRange,isAllDay,directionsUrl,mapEmbedUrl,whereText,displayCase,addressLine,venueName,type EventDetail} from "../../../lib/event-detail";
 
 export const dynamic="force-dynamic";
 
@@ -99,7 +99,7 @@ export default async function EventPage({params}:{params:Promise<{id:string}>}){
      <div className="facts">
       <div className="fact"><div className="k">{t("When")}</div><div className="v">{fmtDate(e.start,undefined,e.tz,loc)}</div><div className="s">{timeRange(e,loc,t("All day"))}{e.recurrence?` · ${t("Repeats")} ${t(e.recurrence.toLowerCase())}`:""}</div></div>
       <div className="fact"><div className="k">{t("Where")}</div>{exactPlace
-       ?<><div className="v">{e.venueId&&e.venue?<Link href={`/venues/${e.venueId}`}>{displayCase(e.venue)}</Link>:displayCase(e.venue||e.city)}</div><div className="s">{addressLine(e.venue,e.address,e.city)}</div><a className="inline" href={directionsUrl(e)} target="_blank" rel="noreferrer">{t("Get directions")} ↗</a></>
+       ?<><div className="v">{e.venueId&&e.venue?<Link href={`/venues/${e.venueId}`}>{displayCase(venueName(e.venue,e.address))}</Link>:displayCase(venueName(e.venue,e.address)||e.city)}</div><div className="s">{addressLine(e.venue,e.address,e.city)}</div><a className="inline" href={directionsUrl(e)} target="_blank" rel="noreferrer">{t("Get directions")} ↗</a></>
        :<><div className="v">{e.city.replace(/,\s*[A-Z]{2}$/,"")||e.venue}</div><div className="s">{t("Exact location not listed. Check the official event page.")}</div></>}</div>
       {(cost||ages)&&<div className="fact"><div className="k">{ages?t("Cost & ages"):t("Cost")}</div><div className="v">{cost||t("See event page")}</div>{ages&&<div className="s">{ages}</div>}</div>}
      </div>

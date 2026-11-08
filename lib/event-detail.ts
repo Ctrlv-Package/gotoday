@@ -68,25 +68,50 @@ export function calendarTimes(e:EventDetail){
  return{allDay:false,start:ics(e.start),end:ics(end)};
 }
 // An address typed in all caps ("COCONUT CREEK PKWY ...") reads as shouting: show it in title case.
-// Mixed-case text is left alone; known abbreviations (FL, NE, US) stay uppercase, and ordinals keep
-// their shape ("26th", not "26Th").
-const KEEP_UPPER=new Set(["FL","NE","NW","SE","SW","N","S","E","W","US","USA","PO","DC","II","III","IV"]);
+// Mixed-case text is left alone; known abbreviations (FL, NE, US, every state code) stay uppercase, and
+// ordinals keep their shape ("26th", not "26Th").
+const KEEP_UPPER=new Set(["FL","NE","NW","SE","SW","N","S","E","W","US","USA","PO","DC","II","III","IV","AL","AK","AZ","AR","CA","CO","CT","DE","GA","HI","ID","IL","IN","IA","KS","KY","LA","ME","MD","MA","MI","MN","MS","MO","MT","NV","NH","NJ","NM","NY","NC","ND","OH","OK","OR","PA","RI","SC","SD","TN","TX","UT","VT","VA","WA","WV","WI","WY"]);
 export function displayCase(s:string){
  const letters=s.replace(/[^A-Za-z]/g,"");
  if(!letters.length)return s;
  const upper=[...letters].filter(c=>c>="A"&&c<="Z").length;
- if(upper/letters.length<0.8)return s;
- return s.replace(/(?<!\d)[A-Za-z]+(?:'[A-Za-z]+)?/g,w=>{
-  if(KEEP_UPPER.has(w.toUpperCase()))return w.toUpperCase();
-  return w.toLowerCase().replace(/(^|')([a-z])/g,(_,p,c)=>p+c.toUpperCase());
- });
+ if(upper/letters.length>=0.8){
+  return s.replace(/(?<!\d)[A-Za-z]+(?:'[A-Za-z]+)?/g,w=>{
+   if(KEEP_UPPER.has(w.toUpperCase()))return w.toUpperCase();
+   return w.toLowerCase().replace(/(^|')([a-z])/g,(_,p,c)=>p+c.toUpperCase());
+  });
+ }
+ // Mixed case: only fix the pieces that are clearly shouting — a digit-led ordinal ("136TH" → "136th")
+ // or an all-caps street suffix ("ST" → "St"). Real names, acronyms and state codes are left alone.
+ return s.replace(/\b(\d+)([A-Z]{1,2})\b/g,(_,d,l)=>d+l.toLowerCase())
+        .replace(/\b(AVE|ST|PKWY|BLVD|RD|DR|LN|HWY)\b/g,w=>w[0]+w.slice(1).toLowerCase());
+}
+// Some venues were saved as "Name, Street address" — the address then shows up twice, once inside the
+// venue name and once on the line below. Show just the place name; the address line carries the address.
+const STREET_SUFFIX:{[k:string]:string}={avenue:"ave",ave:"ave",street:"st",st:"st",boulevard:"blvd",blvd:"blvd",road:"rd",rd:"rd",drive:"dr",dr:"dr",court:"ct",ct:"ct",lane:"ln",ln:"ln",parkway:"pkwy",pkwy:"pkwy",highway:"hwy",hwy:"hwy"};
+export function venueName(venue:string|null|undefined,address:string|null|undefined){
+ if(!venue)return "";
+ if(!address)return venue;
+ const seg=(address.split(",")[0]||"").trim();
+ if(!seg)return venue;
+ // The address segment with each street-suffix word in all its forms ("Ave" and "Avenue", "St" and
+ // "Street"), so "1301 SW 136th Avenue" matches an address that says "1301 SW 136TH Ave".
+ const variants=[seg];
+ const m=seg.match(/\b(avenue|ave|street|st|boulevard|blvd|road|rd|drive|dr|court|ct|lane|ln|parkway|pkwy|highway|hwy)\b/i);
+ if(m){const group=Object.keys(STREET_SUFFIX).filter(k=>STREET_SUFFIX[k]===STREET_SUFFIX[m[1].toLowerCase()]);for(const g of group){if(g.toLowerCase()!==m[1].toLowerCase())variants.push(seg.replace(m[1],g));}}
+ const low=venue.toLowerCase();
+ for(const v of variants){
+  const i=low.indexOf(v.toLowerCase());
+  if(i>0){const name=venue.slice(0,i).replace(/[,\s]+$/,"");if(name)return name;}
+ }
+ return venue;
 }
 /** The Where line under the venue name: when the venue name IS the street address, the address only repeats
  *  it — show the rest (town, state, ZIP) instead. An all-caps address is de-shouted. */
 export function addressLine(venue:string|null,address:string|null,city:string){
  const a=(address||"").trim();
  if(!a)return city;
- const norm=(s:string)=>s.toLowerCase().replace(/[^a-z0-9]+/g," ").trim();
+ const norm=(s:string)=>s.toLowerCase().replace(/[^a-z0-9]+/g," ").trim().split(" ").map(w=>STREET_SUFFIX[w]||w).join(" ");
  const v=norm(venue||"");
  if(v){
   const first=a.split(",")[0]||"";
@@ -97,7 +122,7 @@ export function addressLine(venue:string|null,address:string|null,city:string){
  }
  return displayCase(a);
 }
-export function whereText(e:EventDetail){const a=e.address&&e.venue&&e.address.toLowerCase().includes(e.venue.toLowerCase())?e.address:null;return (a?[a,e.city]:[e.venue,e.address||e.city]).filter((p):p is string=>!!p).map(p=>displayCase(p)).join(", ")}
+export function whereText(e:EventDetail){const v=venueName(e.venue,e.address);const a=e.address&&v&&e.address.toLowerCase().includes(v.toLowerCase())?e.address:null;return (a?[a,e.city]:[v,e.address||e.city]).filter((p):p is string=>!!p).map(p=>displayCase(p)).join(", ")}
 /** Calendar-ready shape of an event (see lib/calendar.ts for the Google/Outlook/Apple formats). */
 export function toCalEvent(e:EventDetail,pageUrl:string):CalEvent{
  return{uid:`gotoday-${e.id}`,title:e.title,description:e.description,location:whereText(e),start:e.start,end:e.end,allDay:isAllDay(e.start,e.tz),tz:e.tz,url:pageUrl};
