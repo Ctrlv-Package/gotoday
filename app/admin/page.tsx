@@ -10,6 +10,14 @@ export default function Admin(){
  const [held,setHeld]=useState<Q[]|null>(null),[flagged,setFlagged]=useState<Q[]>([]),[heldErr,setHeldErr]=useState("");
  const [reports,setReports]=useState<R[]|null>(null),[reportsErr,setReportsErr]=useState("");
  const [showFlagged,setShowFlagged]=useState(false);
+ // Fix a card: its real event page and registration note, when the source doesn't publish them (kept across re-reads).
+ const [fix,setFix]=useState({event:"",url:"",reg:"",all:false}),[fixMsg,setFixMsg]=useState("");
+ async function saveFix(){setFixMsg("Saving…");
+  const id=(fix.event.match(/(?:db-)?(\d{3,})\s*$/)||fix.event.match(/events\/(?:db-)?(\d+)/))?.[1];
+  if(!id){setFixMsg("Paste the GoToday event link (…/events/db-123…).");return}
+  const r=await fetch("/api/admin/cardfix",{method:"POST",headers:{authorization:`Bearer ${secret}`,"content-type":"application/json"},
+   body:JSON.stringify({id,url:fix.url.trim()||undefined,registrationText:fix.reg.trim()||undefined,registrationUrl:/register|reserve|ticket|signup|eventbrite/i.test(fix.url)?fix.url.trim():undefined,all:fix.all})});
+  const d=await r.json().catch(()=>({}));setFixMsg(d.ok?`Saved for "${d.event}" (${d.dates} date${d.dates===1?"":"s"}). It stays after every update.`:`Couldn't save: ${d.error||r.status}`)}
  useEffect(()=>{try{const s=sessionStorage.getItem("gotoday:admin");if(s){setSecret(s);load(s)}}catch{}},[]);
  async function load(s=secret){setErr("");const r=await fetch("/api/admin/community",{headers:{authorization:`Bearer ${s}`},cache:"no-store"});const d=await r.json().catch(()=>({}));
   if(!d.ok){setErr(d.error||"Couldn't load");setList(null);return}try{sessionStorage.setItem("gotoday:admin",s)}catch{}setList(d.pending);
@@ -44,6 +52,15 @@ export default function Admin(){
     :<ul className="review">{reports.map(r=><li key={r.id}><b>{r.title}</b><span>{r.reason} · {String(r.createdAt||"").slice(0,10)}{r.kind==="community"?" · community event":""}</span>
      {r.note&&<p>{r.note}</p>}
      <div className="ctaRow"><button className="btn ghost" onClick={()=>dismissReport(r.id)}>Dismiss</button>{r.link&&<a className="btn ghost" href={r.link} target="_blank" rel="noreferrer">Open event</a>}</div></li>)}</ul>}
+    <h2 style={{marginTop:28}}>Fix a card</h2>
+    <p className="muted">For what a source doesn't publish — the real event page (an Eventbrite link a calendar never mentions) and a registration note. Kept after every update.</p>
+    <div className="ef">
+     <label className="efField">GoToday event link<input value={fix.event} onChange={e=>setFix({...fix,event:e.target.value})} placeholder="https://www.mygotoday.com/events/db-3384566"/></label>
+     <label className="efField">Real event page (optional)<input value={fix.url} onChange={e=>setFix({...fix,url:e.target.value})} placeholder="https://www.eventbrite.com/e/…"/></label>
+     <label className="efField">Registration note (optional)<input value={fix.reg} onChange={e=>setFix({...fix,reg:e.target.value})} placeholder="Registration required · Free – reserve a spot"/></label>
+     <label><input type="checkbox" checked={fix.all} onChange={e=>setFix({...fix,all:e.target.checked})}/> Every date of this event</label>
+     <div className="ctaRow"><button className="btn primary" onClick={saveFix}>Save fix</button></div>{fixMsg&&<p className="muted">{fixMsg}</p>}
+    </div>
     {held!==null&&<><h2 style={{marginTop:28}}>Live, but flagged ({flagged.length})</h2>
     <p className="muted">Already published listings carrying a flag (a flag never pulls a live listing; clearing it just drops the note). Hidden by default — these are notes, not work.</p>
     <div className="ctaRow"><button className="btn ghost" onClick={()=>setShowFlagged(!showFlagged)}>{showFlagged?"Hide":"Show"}</button>{flagged.length>0&&<button className="btn ghost" onClick={clearAllFlags}>Clear all flags</button>}</div>
