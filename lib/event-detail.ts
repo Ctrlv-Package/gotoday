@@ -97,7 +97,7 @@ export function addressLine(venue:string|null,address:string|null,city:string){
  }
  return displayCase(a);
 }
-export function whereText(e:EventDetail){const a=e.address&&e.venue&&e.address.toLowerCase().includes(e.venue.toLowerCase())?e.address:null;return displayCase((a?[a,e.city]:[e.venue,e.address||e.city]).filter(Boolean).join(", "))}
+export function whereText(e:EventDetail){const a=e.address&&e.venue&&e.address.toLowerCase().includes(e.venue.toLowerCase())?e.address:null;return (a?[a,e.city]:[e.venue,e.address||e.city]).filter((p):p is string=>!!p).map(p=>displayCase(p)).join(", ")}
 /** Calendar-ready shape of an event (see lib/calendar.ts for the Google/Outlook/Apple formats). */
 export function toCalEvent(e:EventDetail,pageUrl:string):CalEvent{
  return{uid:`gotoday-${e.id}`,title:e.title,description:e.description,location:whereText(e),start:e.start,end:e.end,allDay:isAllDay(e.start,e.tz),tz:e.tz,url:pageUrl};
