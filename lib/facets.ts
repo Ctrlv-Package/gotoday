@@ -140,6 +140,13 @@ export function facetsFor(e:In):Facet[]{
  // unless they say otherwise; libraries and Ticketmaster have to say so.
  const adultish=has(ADULT,t);
  if(!adultOnly&&!adultish&&(kids||has(FAMILY,t.replace(/\b(all ages|everyone)\b/gi," "))||(has(/\b(all ages|everyone)\b/i,t)&&(kidEvent||has(FAMILY_OUTING,t)))||tagHas(FAMILY_TAGS)&&!tagHas(ADULT_TAGS)||(tagHas(/^everyone$|^all ages$/i)&&(kidEvent||has(FAMILY_OUTING,t)))||has(/\b(famil(y|ies)|kids|children)\b/i,d)||(has(/\ball ages\b/i,d)&&has(FAMILY_OUTING,t))||((CITY_SOURCE(e.source)||FAMILY_SOURCE(e.source))&&!has(ADULT,d)&&!out.has("Music")&&!/\b(theat(er|re)|playhouse|stage|cabaret)\b/i.test(String((e as any).venue||""))&&!/\b(meeting|commission|board|council|workshop|seminar|class)\b/i.test(t))))out.add("Family");
+ // A big free-for-all family outing — a festival, fair, parade, carnival, holiday celebration, Trunk or Treat, tree
+ // lighting — is great for kids too, so it's Kids as well, unless it's for adults (wine/beer, 21+, "adults") or a
+ // grown-up business fair (job, career, college, resource, health, housing, wedding, business, expo).
+ if(out.has("Family")&&!out.has("Kids")&&!adultOnly&&!adultish&&!grownUp
+  &&has(/\b(festivals?|fests?|fair|parades?|carnivals?|celebrations?|day of the dead|d[ií]a de (los )?muertos|trunk[- ]or[- ]treat|trick[- ]or[- ]treat|halloween|boo bash|egg hunt|tree lighting|lights? up|holiday (party|celebration|festival|parade|village)|winter wonderland|snow ?fest|block party|family (day|fun day|night)|fun day|luau|touch[- ]a[- ]truck|spring fling|fall fest|harvest|pumpkin|santa|christmas|hanukkah|menorah|kwanzaa|three kings|fourth of july|july 4|independence day|fireworks|movie (night|in the park))\b/i,t)
+  &&!has(/\b(job|career|college|university|resource|health|wellness|benefits|housing|vendor|wedding|bridal|real estate|business|employment|hiring|expo|trade|art fair|antiques?|car show|gun|cannabis|beer|wine|spirits|brew|cocktail|whiskey|tequila|oktoberfest)\b/i,t)
+  &&!has(ADULT,d.slice(0,400)))out.add("Kids");
  // A stage production (a community theater's play at a city venue, "Presented by Curtain Call Playhouse") isn't a family
  // event because a city calendar lists it or tags it "Family/Kids": it has to say kids/family or be a kids' show itself.
  {const where=`${String((e as any).venue||"")} ${e.source||""}`;

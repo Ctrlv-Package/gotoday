@@ -126,3 +126,13 @@ test("an all-ages program starting at age 5 stays Kids even with an Adults tag; 
   assert.ok(facetsFor({title:"Chess Club",source:"Broward County Library",desc:"The entire family is invited.",tags:["Tweens","Teens","New Adults","Families","Adults","Games"],ageMin:5,ageMax:99} as any).includes("Kids"));
   assert.ok(facetsFor({title:"Compost & Movie Night",source:"City of Deerfield Beach · Instagram",desc:"Catch a movie under the stars featuring The Wild Robot (PG)!",tags:["Outdoor"]} as any).includes("Kids"));
 });
+test("big family outings (festival, parade, holiday celebration) are Kids too; adult or business fairs aren't", () => {
+  const f=(title:string,desc="",source="City of Fort Lauderdale")=>facetsFor({title,desc,tags:[],source} as any);
+  assert.ok(f("Day of the Dead Celebration","Second annual downtown celebration").includes("Kids"));
+  assert.ok(f("Plantation Fall Festival","Rides and food").includes("Kids"));
+  assert.ok(f("Holiday Parade","Floats and bands").includes("Kids"));
+  assert.ok(!f("Job Fair","Meet employers").includes("Kids"));
+  assert.ok(!f("Craft Beer Festival","Tastings from 30 breweries. 21+").includes("Kids"));
+  assert.ok(!f("Wine & Food Festival","Tastings").includes("Kids"));
+  assert.ok(!f("Health Fair","Free screenings").includes("Kids"));
+});
