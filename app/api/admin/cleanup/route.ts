@@ -11,6 +11,9 @@ export async function POST(req:NextRequest){
  const before=await size(),out:any={before};
  out.rejected=(await db.query("delete from rejected_events where ingestion_run_id in (select id from ingestion_runs where started_at<now()-interval '2 days')")).rowCount;
  out.rejectedSlim=(await db.query("update rejected_events set raw_data=jsonb_build_object('date',raw_data->>'date','url',raw_data->>'url') where raw_data ? 'desc'").catch((e:any)=>({rowCount:String(e?.message||e)}))).rowCount;
+ // A card never links to a calendar file (.ics feed): point it at the source's calendar page instead.
+ out.feedLinks=(await db.query(`update events e set official_url=s.url from sources s where s.id=e.source_id and coalesce(s.url,'')<>''
+  and s.url !~* '(\\.ics(\\?|$)|calendar-manager/events\\.ics|/feed/ical)' and e.official_url ~* '(\\.ics(\\?|$)|calendar-manager/events\\.ics|/feed/ical)'`)).rowCount;
  out.oldEvents=(await db.query("delete from events e where e.local_date<current_date-30 and e.series_id is null and not exists (select 1 from saved_events x where x.event_id=e.id)")).rowCount;
  // Plain VACUUM daily (no table lock, space reused); ?full=1 gives the space back to Neon (locks the tables briefly).
  const full=req.nextUrl.searchParams.get("full")==="1";
