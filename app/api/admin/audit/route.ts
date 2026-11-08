@@ -42,7 +42,8 @@ export async function GET(req:NextRequest){
    // The same distinctive title on the same day in two nearby towns, from two different listers: usually one event whose
    // place one copy got wrong (a theater company's post placed in its home town, the show in another).
    if(!near){const x=a.title.toLowerCase().replace(/[^a-z0-9]+/g,""),y=b.title.toLowerCase().replace(/[^a-z0-9]+/g,"");
-    if(x===y&&x.length>=15&&a.source!==b.source&&(!a.time||!b.time||a.time===b.time))add("duplicatesAcrossTowns",{area,date:day,title:`${a.title}  (${a.city} ⟷ ${b.city})`,source:`${a.source} / ${b.source}`});
+    const acct=(e:any)=>/ · Instagram$/.test(e.source||"")&&String(e.venue||"").toLowerCase()===String(e.source).replace(/ · Instagram$/,"").toLowerCase();
+    if(x===y&&x.length>=15&&a.source!==b.source&&acct(a)!==acct(b)&&(!a.time||!b.time||a.time===b.time))add("duplicatesAcrossTowns",{area,date:day,title:`${a.title}  (${a.city} ⟷ ${b.city})`,source:`${a.source} / ${b.source}`});
     continue}
    // A part of an event listed on its own (its opening reception, a VIP preview) is its own listing, not a copy.
    const partOf=(t:string)=>/^(opening|closing) reception|^vip\b|\bpreview\b|after ?party|pre-?show|meet (and|&) greet|costume contest/i.test(t);
