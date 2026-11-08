@@ -9,7 +9,7 @@ import FollowButton from "../../components/FollowButton";
 import {currentUser} from "../../../lib/auth";
 import {db} from "../../../lib/db";
 import {seriesOf,followable} from "../../../lib/series";
-import {cleanAges} from "../../../lib/facets";
+import {cleanAges,facetsFor} from "../../../lib/facets";
 import {localParts} from "../../../lib/time";
 import type {Metadata} from "next";
 import {headers} from "next/headers";
@@ -65,6 +65,9 @@ export default async function EventPage({params}:{params:Promise<{id:string}>}){
  const directReg=!!e.registrationUrl&&e.registrationUrl!==e.officialUrl;
  const regWhere=/library/i.test(e.source)?"library":/parks/i.test(e.source)?"parks":"event";
  const paras=e.description.split(/\n+/).map(x=>x.trim()).filter(Boolean);
+ // The same labels the list and its filters use (Kids for a festival with face painting and a bounce house, Free from
+ // the text), not only the source's own tags.
+ const fx:string[]=(()=>{try{return facetsFor({title:e.title,desc:e.description,tags:e.tags,source:e.source,venue:e.venue||"",ageMin:e.ageMin??undefined,ageMax:e.ageMax??undefined,isFree:e.isFree,priceText:e.priceText||undefined,category:e.category||undefined} as any)}catch{return []}})();
  const tags=e.tags.filter(t=>!junkTag(t)&&!["Local","Library","Parks","Free","Tickets","Kids","Family"].includes(t)&&!/\(\d/.test(t)).slice(0,5);
 
  // Event details in Google's format (schema.org Event): lets the listing show in Google's event results.
@@ -83,10 +86,12 @@ export default async function EventPage({params}:{params:Promise<{id:string}>}){
     {e.image?<HeroImage src={e.image} backup={e.backupImage} stock={!!e.stockImage} note={t("Illustrative photo")}/>:null}
     <div className="detailBody">
      <div className="badges">
-      {e.isFree&&<span className="b free">{t("Free")}</span>}
+      {(e.isFree||fx.includes("Free"))&&<span className="b free">{t("Free")}</span>}
       {ages&&<span className="b age">{ages}</span>}
-      {e.tags.includes("Kids")&&!ages&&<span className="b age">{t("Kids")}</span>}
-      {e.category&&e.category!=="Local"&&<span className="b">{t(e.category)}</span>}
+      {fx.includes("Kids")&&!ages&&<span className="b age">{t("Kids")}</span>}
+      {fx.includes("Family")&&<span className="b">{t("Family")}</span>}
+      {fx.includes("Adults")&&<span className="b">{t("Adults")}</span>}
+      {e.category&&!["Local","Family"].includes(e.category)&&<span className="b">{t(e.category)}</span>}
       {ended&&<span className="b past">{dayPassed?t("This date has passed"):t("Ended earlier today")}</span>}
      </div>
      <h1>{e.title}</h1>
