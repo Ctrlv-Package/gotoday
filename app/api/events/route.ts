@@ -177,10 +177,13 @@ export async function GET(request:NextRequest){
  const wc=new Map<any,Set<string>>(),W=(e:any)=>{let w=wc.get(e);if(!w){w=words(e.title);wc.set(e,w)}return w};
  const same=(a:any,b:any)=>sameEventCard(a,b,W);
  const better=(a:any,b:any)=>rank(a)!==rank(b)?rank(a)<rank(b):(!!a.image!==!!b.image?!!a.image:(a.desc||"").length>=(b.desc||"").length);
- const kept:any[]=[],byDay=new Map<string,number[]>();
+ // A listing joins a card when it matches ANY copy already on it (the city's "Day of the Dead Celebration" and a post's
+ // "Day of The Dead Festival" each match the post "Day of the Dead", not each other).
+ const kept:any[]=[],members:any[][]=[],byDay=new Map<string,number[]>();
  for(const e of [...events].sort((a:any,b:any)=>rank(a)-rank(b))){
-  const idx=byDay.get(e.date)||[];const i=idx.find(k=>same(kept[k],e));
-  if(i===undefined){idx.push(kept.length);byDay.set(e.date,idx);kept.push(e);continue}
+  const idx=byDay.get(e.date)||[];const i=idx.find(k=>same(kept[k],e)||members[k].some(x=>same(x,e)));
+  if(i===undefined){idx.push(kept.length);byDay.set(e.date,idx);kept.push(e);members.push([e]);continue}
+  members[i].push(e);
   const c=kept[i],m=better(c,e)?mergeCopy(c,e):mergeCopy(e,c);   // the leading copy takes the other's photo/details if it lacks them
   wc.set(m,words(m.title));kept[i]=m;
  }
