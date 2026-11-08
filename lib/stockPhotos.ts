@@ -1,7 +1,7 @@
 import {db} from "./db";
 import {storeImage} from "./images";
 import * as images from "./images";
-import {TOPICS, NEVER, type Topic} from "./stockPhotoData";
+import {TOPICS, NEVER, REJECTED_PHOTO_IDS, type Topic} from "./stockPhotoData";
 export {TOPICS};
 import {decidedTopics,titleKey} from "./photoTopic";
 
@@ -33,7 +33,7 @@ async function library(){
  if(cache&&Date.now()-cache.at<10*60e3)return cache.by;
  await schema();
  const by=new Map<string,string[]>();
- for(const r of (await db.query("select topic,image from stock_photos order by topic,photo_id").catch(()=>({rows:[]}))).rows){const l=by.get(r.topic)||[];l.push(r.image);by.set(r.topic,l)}
+ for(const r of (await db.query("select topic,photo_id,image from stock_photos order by topic,photo_id").catch(()=>({rows:[]}))).rows){if(REJECTED_PHOTO_IDS.has(Number(r.photo_id)))continue;const l=by.get(r.topic)||[];l.push(r.image);by.set(r.topic,l)}
  cache={at:Date.now(),by};return by;
 }
 const hash=(s:string)=>{let h=2166136261;for(const c of s.toLowerCase().replace(/[^a-z0-9]+/g,""))h=Math.imul(h^c.charCodeAt(0),16777619);return h>>>0};
@@ -154,8 +154,14 @@ export async function recheckLibrary(opts:{limit?:number;maxMs?:number;topic?:st
  await db.query("create table if not exists stock_rejected(photo_id bigint primary key)");
  await db.query("create table if not exists stock_checked(photo_id bigint primary key,checked_at timestamptz default now())");
  const limit=opts.limit??60,maxMs=opts.maxMs??240e3;
+ const dropped:string[]=[];
+ // Photos removed by hand: drop them outright (no Pixabay lookup needed) and record the rejection.
+ for(const r of (await db.query(`select topic,photo_id from stock_photos where photo_id=any($1)`,[[...REJECTED_PHOTO_IDS]]).catch(()=>({rows:[]}))).rows){
+  await db.query("insert into stock_rejected values($1) on conflict do nothing",[r.photo_id]);
+  await db.query("delete from stock_photos where topic=$1 and photo_id=$2",[r.topic,r.photo_id]);dropped.push(`${r.topic}:${r.photo_id} (removed by hand)`);
+ }
  const rows=(await db.query(`select s.topic,s.photo_id from stock_photos s left join stock_checked c on c.photo_id=s.photo_id where ($1::text is null or s.topic=$1) order by c.checked_at nulls first,c.checked_at limit $2`,[opts.topic||null,limit])).rows;
- const t0=Date.now(),dropped:string[]=[];let checked=0;
+ const t0=Date.now();let checked=0;
  for(const r of rows){
   if(Date.now()-t0>maxMs)break;
   const d:any=await fetch(`https://pixabay.com/api/?key=${key}&id=${r.photo_id}`,{signal:AbortSignal.timeout(15000)}).then(x=>x.json()).catch(()=>null);
