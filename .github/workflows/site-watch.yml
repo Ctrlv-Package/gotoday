@@ -41,6 +41,11 @@ jobs:
             err=$(echo "$ev" | python3 -c "import sys,json;print(json.load(sys.stdin).get('error') or '')" 2>/dev/null)
             if [ -n "$err" ] || [ "${n:-0}" = 0 ]; then down="Events are not showing (${err:-0 events for Weston this week})"; fi
           fi
+          # An event's own page must open too (a broken event page doesn't show on the home page).
+          if [ -z "$down" ]; then
+            id=$(echo "$ev" | python3 -c "import sys,json;d=json.load(sys.stdin);print((d.get('events') or [{}])[0].get('id',''))" 2>/dev/null)
+            if [ -n "$id" ]; then page=$(try "$BASE/events/$id") || down="Event pages don't open ($BASE/events/$id): $(echo "$page" | tail -n1)"; fi
+          fi
           size=$(curl -sS -m 60 -H "Authorization: Bearer $INGESTION_SECRET" "$BASE/api/admin/images" | python3 -c "import sys,json;print(int(json.load(sys.stdin).get('db_bytes') or 0))" 2>/dev/null || echo 0)
           big=""; if [ "${size:-0}" -ge "$DB_WARN_BYTES" ]; then big="The database is $(python3 -c "print(round($size/1e9,2))") GB, close to the 5 GB budget."; fi
           echo "down: ${down:-no}"; echo "db bytes: $size"; echo "big: ${big:-no}"
