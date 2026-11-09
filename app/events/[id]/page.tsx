@@ -128,12 +128,12 @@ export default async function EventPage({params}:{params:Promise<{id:string}>}){
       <SaveButton item={{id:`db-${e.id}`,title:e.title,date:new Intl.DateTimeFormat("en-CA",{timeZone:e.tz}).format(e.start),venue:e.venue||e.city}}/>
       {!ended&&<CalendarChoice base={`/events/${encodeURIComponent(id)}`} id={`db-${e.id}`} connected={calConnected}/>}
       <ShareButton title={e.title} text={`${e.title} — ${fmtDate(e.start,undefined,e.tz,loc)}${isAllDay(e.start,e.tz)?"":`, ${fmtTime(e.start,e.tz,loc)}`} · ${e.venue||e.city}`}/>
-      {ended&&<LoveButton id={`db-${e.id}`} signedIn={!!user} initial={userLoved}/>}
      </div>
-     {canFollow&&<div className="ctaFollow">
- {canFollow&&<FollowButton id={`db-${e.id}`} signedIn={!!user} initial={following}/>}
-     </div>}
-     <p className="ctaHelp">♡ <b>{t("Save")}</b> {calConnected?t("keeps it in My GoToday and adds it to your GoToday calendar (Google Calendar can take up to a day to show new events)"):t("keeps it in My GoToday")}{!ended&&!calConnected?<> · 📅 <b>{t("Calendar")}</b> {t("adds this date to your calendar")}</>:null}{canFollow?<> · 🔔 <b>{t("Remind me next year")}</b> {t("gets you next year's date as soon as it's announced")}</>:null}</p>
+     <div className="ctaFollow">
+      {canFollow&&<FollowButton id={`db-${e.id}`} signedIn={!!user} initial={following}/>}
+      <LoveButton id={`db-${e.id}`} signedIn={!!user} initial={userLoved}/>
+     </div>
+     <p className="ctaHelp">♡ <b>{t("Save")}</b> {calConnected?t("keeps it in My GoToday and adds it to your GoToday calendar (Google Calendar can take up to a day to show new events)"):t("keeps it in My GoToday")}{!ended&&!calConnected?<> · 📅 <b>{t("Calendar")}</b> {t("adds this date to your calendar")}</>:null}{canFollow?<> · 🔔 <b>{t("Remind me next year")}</b> {t("gets you next year's date as soon as it's announced")}</>:null}{<> · ♥ <b>{t("Loved it")}</b> {t("says you've been and it was great — it counts toward the event's \"Worth going\" tag")}</>}</p>
 
      {paras.length>0&&<section className="about"><h2>{t("About this event")}</h2>{paras.map((p,i)=><p key={i}>{p}</p>)}</section>}
      {tags.length>0&&<div className="tagRow">{tags.map(x=><span key={x}>{t(x)}</span>)}</div>}
