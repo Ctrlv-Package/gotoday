@@ -38,5 +38,7 @@
   {"keep": true, "note": "A kids' camp on school days off.", "title": "Mini Camp (Teacher Planning Days)", "tags": ["Kids"], "desc": "Nature camp for ages 6-12."},
   {"keep": true, "note": "A fundraiser with a craft/vendor fair.", "title": "FCS United Way Fundraiser - Chili Cook-off, Bake-off, and Craft/Vendor Fair", "tags": [], "desc": "Chili, baked goods and crafts."},
   {"keep": false, "note": "Facility notice.", "title": "Reopening Notice Veltri Tennis Center UPDATE #3", "tags": ["Free"], "desc": "Courts reopen after resurfacing."},
-  {"keep": true, "note": "A grand reopening people attend.", "title": "Veltri Tennis Center Grand Reopening Celebration", "tags": ["Free"], "desc": "Ribbon cutting and free clinics."}
+  {"keep": true, "note": "A grand reopening people attend.", "title": "Veltri Tennis Center Grand Reopening Celebration", "tags": ["Free"], "desc": "Ribbon cutting and free clinics."},
+  {"keep": false, "note": "Shuttle service, not an event.", "title": "Circuit Park & Ride", "tags": ["Free"], "desc": "Free on-demand Circuit rides from designated parking lots to the Fisher Family Pier."},
+  {"keep": true, "note": "A trolley tour is an event.", "title": "Holiday Lights Trolley Tour", "tags": [], "desc": "See the lights."}
 ]

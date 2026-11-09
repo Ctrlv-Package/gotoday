@@ -109,6 +109,9 @@ export function discoveryRejection(e:EventRecord):DiscoveryReason|null{
   &&!/\b(camps?|fundraiser|festival|fair|cook-?off|class|party|celebration)\b/i.test(title))return"service-or-support";
  // Facility notices: "Reopening Notice – Veltri Tennis Center Update #3", "Pool Closure Notice", "Park Update".
  if(/\b(reopening|re-opening|closure|closing|closed) notice\b|\bupdate #?\s?\d+\b|\b(facility|park|pool|center|centre|field|court|library|playground|building) (closure|closures|update|reopening|reopens|is closed|will be closed)\b|^\W*(notice|update|alert)\W*$/i.test(title)&&!/\b(celebration|party|ribbon|grand (re)?opening|open house|festival)\b/i.test(title))return"announcement";
+ // Getting there, not an event: "Circuit Park & Ride", shuttle service, parking info, free rides to the pier. A trolley
+ // tour, a hayride or rides with Santa stay.
+ if(/\b(park (and|&) ride|shuttle( service| bus| schedule)?|parking (info|information|lots?|map|garage|update)|free (on-demand )?rides? (to|from)|on-demand rides?|circuit( rides?)?$|transportation (info|options|service)|road closures? (and|&) parking)\b/i.test(title)&&!/\b(tour|santa|holiday lights|hayride|festival|parade|trolley tour|party)\b/i.test(title))return"service-or-support";
  // Countdown and sign-up teasers, not events: "TOMORROW", "The Countdown", "Two Days to Go", "3 days until
  // registration opens", "Pre-registration opens Sunday". A countdown party (New Year's Eve) stays.
  {const t=title.trim(),N="(\\d+|one|two|three|four|five|six|seven|eight|nine|ten)";
