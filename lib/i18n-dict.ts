@@ -389,9 +389,10 @@ export const ES:Record<string,string>={
 "loved last year": "les encantó el año pasado",
 "Loved it": "Me encantó",
 "Loved": "Me encantó",
-"I went, it was great": "Fui, ¡me encantó!",
+"I've been, it's great": "Ya fui, ¡me encanta!",
 "You loved this event — tap to take it back": "Te encantó este evento — toca para quitarlo",
 "Sign in to say you loved it": "Inicia sesión para decir que te encantó",
+"says you've been and it was great — it counts toward the event's \"Worth going\" tag": "dice que ya fuiste y te encantó: cuenta para la etiqueta \"Vale la pena\" del evento",
 "Sign in to say you loved it — it counts toward the event's \"Worth going\" tag.": "Inicia sesión para decir que te encantó: cuenta para la etiqueta \"Vale la pena\" del evento."
 };
 export const RU:Record<string,string>={
@@ -783,8 +784,9 @@ export const RU:Record<string,string>={
 "loved last year": "понравилось в прошлом году",
 "Loved it": "Мне понравилось",
 "Loved": "Понравилось",
-"I went, it was great": "Я был там, было здорово",
+"I've been, it's great": "Я уже был там, было здорово",
 "You loved this event — tap to take it back": "Вам понравилось это событие — нажмите, чтобы отменить",
 "Sign in to say you loved it": "Войдите, чтобы отметить, что вам понравилось",
+"says you've been and it was great — it counts toward the event's \"Worth going\" tag": "значит, что вы уже были там и вам понравилось: это засчитывается для отметки «Стоит посетить»",
 "Sign in to say you loved it — it counts toward the event's \"Worth going\" tag.": "Войдите, чтобы отметить, что вам понравилось: это засчитывается для отметки события «Стоит посетить»."
 };

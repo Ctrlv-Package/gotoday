@@ -470,8 +470,8 @@ a.linkBtn{text-decoration:none}
 .ctaGrid{display:flex;gap:8px;margin-top:8px}
 .ctaGrid>*{flex:1 1 0;min-width:0}
 .ctaGrid .saveBtn,.ctaGrid .cal,.ctaGrid .calBtn,.ctaGrid .shareDetail{width:100%;justify-content:center;white-space:nowrap}
-.ctaFollow{margin-top:8px;display:flex;flex-direction:column}
-.ctaFollow .followBtn{width:100%}
+.ctaFollow{margin-top:8px;display:flex;flex-direction:column;gap:8px}
+.ctaFollow .followBtn,.ctaFollow .loveBtn{width:100%}
 @media(max-width:540px){.wideOnly{display:none}.ctaGrid .saveBtn,.ctaGrid .calBtn,.ctaGrid .shareDetail{padding:12px 8px!important;font-size:14px!important}}
 .ctaGrid>.cal,.ctaGrid>a,.ctaGrid>button{flex:1 1 0!important;min-width:0}
 .ctaGrid svg{flex:none}
