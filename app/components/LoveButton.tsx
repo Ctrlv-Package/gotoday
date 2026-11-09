@@ -3,8 +3,9 @@ import {useEffect,useState} from "react";
 import {useRouter} from "next/navigation";
 import {useT} from "./Lang";
 
-/** "I went, it was great": one tap per signed-in person, after the event is over.
- *  No save needed — saving adds the event to your calendar, and plenty of people don't want that.
+/** "I've been, it's great": one tap per signed-in person, whenever the event is listed —
+ *  before it, while it's on, or after it's over. No save needed — saving adds the event to
+ *  your calendar, and plenty of people don't want that.
  *  Guests are sent to sign in first and the tap happens when they come back. */
 export default function LoveButton({id,signedIn,initial}:{id:string;signedIn:boolean;initial:boolean}){
  const {t}=useT();const router=useRouter();
@@ -27,7 +28,7 @@ export default function LoveButton({id,signedIn,initial}:{id:string;signedIn:boo
  if(!signedIn)return <a className="btn ghost loveBtn" href={`/signin?next=${encodeURIComponent(`/events/${id}?love=1`)}&why=love`}>
   ♥ {t("Loved it")}</a>;
  return <>
-  <button type="button" className={`btn ghost loveBtn${on?" on":""}`} aria-pressed={on} disabled={busy} onClick={()=>act(!on)} title={on?t("You loved this event — tap to take it back"):t("I went, it was great")}>
+  <button type="button" className={`btn ghost loveBtn${on?" on":""}`} aria-pressed={on} disabled={busy} onClick={()=>act(!on)} title={on?t("You loved this event — tap to take it back"):t("I've been, it's great")}>
    ♥ {on?t("Loved"):t("Loved it")}
   </button>
   {note&&<p className="followNote" role="status">{note}</p>}
