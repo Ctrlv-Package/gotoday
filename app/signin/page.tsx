@@ -13,6 +13,7 @@ export default async function SignIn({searchParams}:{searchParams:Promise<Record
  const p=await searchParams,next=safeNext(p.next),t=tFor(await getLang());
  if(await currentUser().catch(()=>null))redirect(next);
  const why=t(p.why==="follow"?"Sign in so we can remind you when this event is back next year. We'll add next year's date to My GoToday and your GoToday calendar as soon as it's announced."
+  :p.why==="love"?"Sign in to say you loved it — it counts toward the event's \"Worth going\" tag."
   :"Keep your saved events on all your devices, get reminded when your favorite events come back next year, and get a personal calendar that fills itself.");
  const mode=p.mode==="signup"?"signup":p.mode==="forgot"?"forgot":"signin";
  const withNext=(q:string)=>`${q}${q.includes("?")?"&":"?"}next=${encodeURIComponent(next)}`;
