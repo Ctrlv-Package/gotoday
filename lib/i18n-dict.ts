@@ -381,7 +381,18 @@ export const ES:Record<string,string>={
 "Thanks — we'll take a look.": "Gracias, lo revisaremos.",
 "Couldn't send the report. Please try again.": "No pudimos enviar el reporte. Inténtalo de nuevo.",
 "Events at {name}": "Eventos en {name}",
-"No upcoming events listed here right now.": "No hay próximos eventos aquí por ahora."
+"No upcoming events listed here right now.": "No hay próximos eventos aquí por ahora.",
+"Worth going": "Vale la pena",
+"{n} loved it": "A {n} les encantó",
+"{n} saved this": "{n} lo guardaron",
+"{n} reminding next year": "{n} con recordatorio para el próximo año",
+"loved last year": "les encantó el año pasado",
+"Loved it": "Me encantó",
+"Loved": "Me encantó",
+"I went, it was great": "Fui, ¡me encantó!",
+"You loved this event — tap to take it back": "Te encantó este evento — toca para quitarlo",
+"Sign in to say you loved it": "Inicia sesión para decir que te encantó",
+"Sign in to say you loved it — it counts toward the event's \"Worth going\" tag.": "Inicia sesión para decir que te encantó: cuenta para la etiqueta \"Vale la pena\" del evento."
 };
 export const RU:Record<string,string>={
 "Waiting for {app}'s next check": "Ждём следующей проверки: {app}",
@@ -764,5 +775,16 @@ export const RU:Record<string,string>={
 "Thanks — we'll take a look.": "Спасибо, мы посмотрим.",
 "Couldn't send the report. Please try again.": "Не удалось отправить жалобу. Попробуйте снова.",
 "Events at {name}": "События в {name}",
-"No upcoming events listed here right now.": "Предстоящих событий здесь сейчас нет."
+"No upcoming events listed here right now.": "Предстоящих событий здесь сейчас нет.",
+"Worth going": "Стоит посетить",
+"{n} loved it": "{n} понравилось",
+"{n} saved this": "{n} сохранили",
+"{n} reminding next year": "{n} ждут напоминания на следующий год",
+"loved last year": "понравилось в прошлом году",
+"Loved it": "Мне понравилось",
+"Loved": "Понравилось",
+"I went, it was great": "Я был там, было здорово",
+"You loved this event — tap to take it back": "Вам понравилось это событие — нажмите, чтобы отменить",
+"Sign in to say you loved it": "Войдите, чтобы отметить, что вам понравилось",
+"Sign in to say you loved it — it counts toward the event's \"Worth going\" tag.": "Войдите, чтобы отметить, что вам понравилось: это засчитывается для отметки события «Стоит посетить»."
 };

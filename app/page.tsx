@@ -2,6 +2,8 @@
 import {kidAgeRange} from "../lib/facets";
 import {useEffect,useMemo,useRef,useState} from "react";
 import SaveButton from "./components/SaveButton";
+import TrustRow from "./components/TrustRow";
+import {hasWorthGoing} from "../lib/love";
 import NavMe from "./components/NavMe";
 import ReplyBanner from "./components/ReplyBanner";
 import Dropdown from "./components/Dropdown";
@@ -11,7 +13,7 @@ import {type T, type EventItem, AGE_BANDS, CHIPS, SETTINGS, AREAS, RANGES, TIMES
 export default function Home(){
  const {t,locale}=useT();
  const[zipErr,setZipErr]=useState(""),lastGood=useRef(""),[zip,setZip]=useState(""),[searchedZip,setSearchedZip]=useState(""),[coords,setCoords]=useState<{lat:number;lng:number}|null>(null);
- const[radius,setRadius]=useState("25"),[range,setRange]=useState("today"),[selected,setSelected]=useState<string[]>([]),[ageBands,setAgeBands]=useState<string[]>([]),[moreOpen,setMoreOpen]=useState(false),[setting,setSetting]=useState("Any"),[dropIn,setDropIn]=useState(false),[spanish,setSpanish]=useState(false),[seniors,setSeniors]=useState(false);
+ const[radius,setRadius]=useState("25"),[range,setRange]=useState("today"),[selected,setSelected]=useState<string[]>([]),[ageBands,setAgeBands]=useState<string[]>([]),[moreOpen,setMoreOpen]=useState(false),[setting,setSetting]=useState("Any"),[dropIn,setDropIn]=useState(false),[spanish,setSpanish]=useState(false),[seniors,setSeniors]=useState(false),[worthOnly,setWorthOnly]=useState(false);
  const[timeFilter,setTimeFilter]=useState("Any time"),[view,setView]=useState<"all"|"big"|"fav">("all"),[bigRange,setBigRange]=useState("today"),[bigRadius,setBigRadius]=useState("25"),[sort,setSort]=useState("Nearest"),[query,setQuery]=useState("");
  const[soon,setSoon]=useState<{place:string|null}|null>(null),[events,setEvents]=useState<EventItem[]>([]),[loading,setLoading]=useState(false),[message,setMessage]=useState(""),[toast,setToast]=useState("");
 
@@ -61,7 +63,7 @@ export default function Home(){
   if(freshParam)history.replaceState(null,"",location.pathname+(fromUrl?`?zip=${fromUrl}`:""));
   // Coming back restores what you were looking at even if the address still has an older ?zip= (you then used your location).
   if(v&&v.day===today&&Date.now()-v.savedAt<45*60e3&&(returning||!fromUrl||fromUrl===v.searchedZip)){
-   setZip(v.zip);setSearchedZip(v.searchedZip);setCoords(v.coords);setRadius(v.radius);setRange(v.range);setSelected(v.selected);setAgeBands(v.ageBands);
+   setZip(v.zip);setSearchedZip(v.searchedZip);setCoords(v.coords);setRadius(v.radius);setRange(v.range);setSelected(v.selected);setAgeBands(v.ageBands);setWorthOnly(!!v.worthOnly);
    setMoreOpen(v.moreOpen);setSetting(v.setting);setDropIn(v.dropIn);setSpanish(v.spanish);setSeniors(v.seniors);setTimeFilter(v.timeFilter);setView(v.view==="big"||v.view==="fav"?v.view:"all");if(v.bigRange)setBigRange(v.bigRange==="today"||v.bigRange==="thisweekend"||v.view!=="big"?v.bigRange:"today");if(v.bigRadius)setBigRadius(v.bigRadius);setSort(v.sort);setQuery(v.query);
    setEvents(v.events||[]);setMessage(v.message||"");setSoon(v.soon||null);setRestored(true);
    try{history.scrollRestoration="manual"}catch{}
@@ -81,7 +83,7 @@ export default function Home(){
  // Keep the saved view current (filters, results and scroll position) so "Back" lands where you were.
  useEffect(()=>{
   if(!restored)return;
-  const save=()=>{try{sessionStorage.setItem(VIEW,JSON.stringify({view,bigRange,bigRadius,zip,searchedZip,coords,radius,range,selected,ageBands,moreOpen,setting,dropIn,spanish,seniors,timeFilter,sort,query,
+  const save=()=>{try{sessionStorage.setItem(VIEW,JSON.stringify({view,bigRange,bigRadius,zip,searchedZip,coords,radius,range,selected,ageBands,moreOpen,setting,dropIn,spanish,seniors,worthOnly,timeFilter,sort,query,
    events,message,soon,scrollY:window.scrollY,savedAt:Date.now(),loadedAt:loadedAt.current,day:new Date().toDateString()}))}catch{}};
   save();
   let t:any=null;const onScroll=()=>{clearTimeout(t);t=setTimeout(save,150)};
@@ -91,7 +93,7 @@ export default function Home(){
    save()};
   window.addEventListener("scroll",onScroll,{passive:true});window.addEventListener("pagehide",save);document.addEventListener("click",onClick,true);
   return()=>{clearTimeout(t);window.removeEventListener("scroll",onScroll);window.removeEventListener("pagehide",save);document.removeEventListener("click",onClick,true)};
- },[restored,view,bigRange,bigRadius,zip,searchedZip,coords,radius,range,selected,ageBands,moreOpen,setting,dropIn,spanish,seniors,timeFilter,sort,query,events,message,soon]);
+ },[restored,view,bigRange,bigRadius,zip,searchedZip,coords,radius,range,selected,ageBands,moreOpen,setting,dropIn,spanish,seniors,worthOnly,timeFilter,sort,query,events,message,soon]);
 
  function searchZip(z:string){setZipErr("");if(!/^\d{5}$/.test(z)){setZipErr(z?t("A ZIP code has 5 digits, like 33326."):t("Enter a ZIP code to search."));return}store.set("gotoday:zip",z);setCoords(null);setSearchedZip(z);try{history.replaceState(null,"",`${location.pathname}?zip=${z}`)}catch{}load(z,range,null,radius).then(ok=>{if(ok!==false)document.getElementById("results")?.scrollIntoView({behavior:"smooth"})})}
  function submitZip(){searchZip(zip.trim())}
@@ -114,7 +116,7 @@ export default function Home(){
  function chooseBigRadius(rad:string){setBigRadius(rad);big.current={...big.current,radius:rad};load(searchedZip,range,coords,radius)}
  function chooseRange(r:string){setRange(r);load(searchedZip,r,coords,radius)}
  function chooseRadius(rad:string){setRadius(rad);store.set("gotoday:radius",rad);load(searchedZip,range,coords,rad)}
- function toggleChip(c:string){if(c==="All"){setSelected([]);setAgeBands([]);setSetting("Any");setDropIn(false);setSpanish(false);setSeniors(false);return}setSelected(s=>s.includes(c)?s.filter(x=>x!==c):[...s,c])}
+ function toggleChip(c:string){if(c==="All"){setSelected([]);setAgeBands([]);setSetting("Any");setDropIn(false);setSpanish(false);setSeniors(false);setWorthOnly(false);return}setSelected(s=>s.includes(c)?s.filter(x=>x!==c):[...s,c])}
 
  async function share(e:EventItem){
   if(e.id?.startsWith("db-"))fetch("/api/track",{method:"POST",headers:{"content-type":"application/json"},body:JSON.stringify({id:e.id,action:"share"}),keepalive:true}).catch(()=>{});
@@ -138,7 +140,7 @@ export default function Home(){
    const am=!selected.includes("Kids")||ageBands.length===0||!facets.has("Kids")||kr==null||AGE_BANDS.some(([l,lo,hi])=>ageBands.includes(l)&&(l==="All ages"?kr[0]<=2&&kr[1]>=17:kr[0]<=hi&&kr[1]>=lo));
    const h=e.time?Number(e.time.slice(0,2)):-1;
    const tm=timeFilter==="Any time"||h<0||(timeFilter==="Morning"&&h<12)||(timeFilter==="Afternoon"&&h>=12&&h<17)||(timeFilter==="Evening"&&h>=17);
-   return cm&&am&&more&&tm&&(!qWords.length||(t=>qWords.every(w=>t.includes(w)))(norm([e.title,e.city,e.venue,e.desc,e.category,e.genre,...(e.labels||[])].filter(Boolean).join(" "))));
+   return cm&&am&&more&&tm&&(!worthOnly||!!(e as any).worthGoing)&&(!qWords.length||(t=>qWords.every(w=>t.includes(w)))(norm([e.title,e.city,e.venue,e.desc,e.category,e.genre,...(e.labels||[])].filter(Boolean).join(" "))));
   }).sort((a,b)=>{
    // Nearest (default): day by day, closest first within each day. Soonest: by start time.
    const when=((a.date||"")+(a.time||"")).localeCompare((b.date||"")+(b.time||""));
@@ -147,13 +149,15 @@ export default function Home(){
    if(sort!=="Nearest")return when;
    return (a.date||"").localeCompare(b.date||"")||(a.distanceMiles??999)-(b.distanceMiles??999)||when;
   });
- },[events,view,selected,timeFilter,sort,query,ageBands,setting,dropIn,spanish,seniors]);
+ },[events,view,selected,timeFilter,sort,query,ageBands,setting,dropIn,spanish,seniors,worthOnly]);
 
  // Big events: a festival on several days is one card ("+2 more days"), soonest date first.
  const shown=useMemo<EventItem[]>(()=>{if(!bigOnly)return filtered;const m=new Map<string,EventItem&{moreDates:string[]}>();
   for(const e of filtered){const k=`${norm(e.title)}|${norm(e.venue||e.city||"")}`,x=m.get(k);if(!x)m.set(k,{...e,moreDates:[] as string[]});else if(e.date&&x.date!==e.date&&!x.moreDates.includes(e.date))x.moreDates.push(e.date)}
   return[...m.values()]},[filtered,bigOnly]);
  const moreCount=(setting!=="Any"?1:0)+(dropIn?1:0)+(spanish?1:0)+(seniors?1:0);
+ // The "Worth going" filter chip appears only when at least one result earned the tag.
+ const hasWorth=hasWorthGoing(events as any);
  const where=coords?t("your location"):searchedZip||t("your area"),hasPlace=!!(coords||searchedZip);
  // First-timers see proof before they search: three sample cards showing the kind of events
  // the site lists. They are illustrations, not listings — no real venue, no date — and every
@@ -252,7 +256,7 @@ export default function Home(){
     </div>
     <div className="fcSection">
      <div className="label">{t("What are you into?")}</div>
-     <div className="chips wrap even4">{CHIPS.map(c=><button key={c} className={((c==="All"?selected.length===0&&moreCount===0:selected.includes(c))?"active":"")+(t(c==="Arts & Theatre"?"Arts":c).length>=8?" long":"")} onClick={()=>toggleChip(c)}>{c==="Arts & Theatre"?<><span className="lg">{t("Arts & Theatre")}</span><span className="sm">{t("Arts")}</span></>:t(c)}</button>)}</div>
+     <div className="chips wrap even4">{CHIPS.map(c=><button key={c} className={((c==="All"?selected.length===0&&moreCount===0:selected.includes(c))?"active":"")+(t(c==="Arts & Theatre"?"Arts":c).length>=8?" long":"")} onClick={()=>toggleChip(c)}>{c==="Arts & Theatre"?<><span className="lg">{t("Arts & Theatre")}</span><span className="sm">{t("Arts")}</span></>:t(c)}</button>)}{hasWorth&&<button key="worth" className={worthOnly?"active":""} onClick={()=>setWorthOnly(w=>!w)}>★ {t("Worth going")}</button>}</div>
     </div>
     {selected.includes("Kids")&&<div className="fcSection">
      <div className="label">{t("Kids' ages")}</div>
@@ -288,6 +292,8 @@ export default function Home(){
      <h3><a href={detailHref(e)}>{e.title}</a></h3>
      <div className="meta">🗓 {fmt(e.date,e.time,t,locale)}{e.live&&<b className="liveNow"> · {t("Happening now")}</b>}{view==="fav"&&(e as any).saves>0&&<span className="moreDates"> · ❤️ {(e as any).saves===1?t("1 save"):t("{n} saves",{n:String((e as any).saves)})}</span>}{(e as any).moreDates?.length>0&&<span className="moreDates"> · {(e as any).moreDates.length===1?t("+1 more day"):t("+{n} more days",{n:String((e as any).moreDates.length)})}</span>}</div>
      <div className="meta locLine"><span className="locV" title={e.venue||e.city}>📍 {e.venue||e.city}</span><span className="locD">{typeof e.distanceMiles==="number"?`\u00a0· ${e.distanceMiles.toFixed(1)} mi`:""}{e.moreLocations?<b title={(e.otherVenues||[]).join(", ")}>{`\u00a0· `+t("+{n} more",{n:e.moreLocations})}</b>:null}</span></div>
+     {/* Favorites already shows the save count in the line above; the trust row skips it there. */}
+     <TrustRow worthGoing={!!(e as any).worthGoing} loves={(e as any).loves||0} lovedBefore={(e as any).lovedBefore||0} saves={view==="fav"?0:(e as any).saves||0} follows={(e as any).follows||0}/>
      {e.desc&&<p className="desc">{e.desc}</p>}
      {(e.tags||[]).includes("Drop-in")?<div className="hint ok">✓ {t("Drop-in, no registration")}</div>:e.registration&&e.source!=="Ticketmaster"?<div className="hint">{e.registration.split(" · ").map(x=>t(x)).join(" · ")}</div>:null}
      <div className="tags">{ageLabel(e,t)&&<span className="age">{ageLabel(e,t)}</span>}{(e.labels||(e.tags||[]).filter(t=>!["Local","Library","Free","Parks","Tickets","Drop-in"].includes(t)&&!/\(/.test(t))).slice(0,3).map(x=><span key={x}>{t(x)}</span>)}</div>

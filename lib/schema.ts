@@ -112,6 +112,13 @@ const STATEMENTS=[
  `create table if not exists event_reports(id serial primary key,kind text not null,event_id int not null,
    reason text not null,note text, status text not null default 'open',created_at timestamptz default now())`,
  `create index if not exists event_reports_open_idx on event_reports(created_at desc) where status='open'`,
+ // "Loved it" taps: one row per user per event family. No foreign key on event_id on purpose:
+ // retention cleanup deletes old listings, but their loves still count toward the family
+ // (like event_reports). series_id null = a one-off with no family. loved_year is the year of
+ // the occurrence as listed when tapped, so a new occurrence can say it was "loved last year".
+ `create table if not exists event_love(user_id int not null references users(id) on delete cascade,event_id int not null,
+   series_id int,loved_year int not null,created_at timestamptz default now(),primary key(user_id,event_id))`,
+ `create unique index if not exists event_love_user_series_idx on event_love(user_id,series_id) where series_id is not null`,
 ];
 export function ensureSchema(){
  if(!ready)ready=(async()=>{for(const s of STATEMENTS)await db.query(s)})().catch(e=>{ready=null;throw e});
