@@ -40,5 +40,7 @@
   {"keep": false, "note": "Facility notice.", "title": "Reopening Notice Veltri Tennis Center UPDATE #3", "tags": ["Free"], "desc": "Courts reopen after resurfacing."},
   {"keep": true, "note": "A grand reopening people attend.", "title": "Veltri Tennis Center Grand Reopening Celebration", "tags": ["Free"], "desc": "Ribbon cutting and free clinics."},
   {"keep": false, "note": "Shuttle service, not an event.", "title": "Circuit Park & Ride", "tags": ["Free"], "desc": "Free on-demand Circuit rides from designated parking lots to the Fisher Family Pier."},
-  {"keep": true, "note": "A trolley tour is an event.", "title": "Holiday Lights Trolley Tour", "tags": [], "desc": "See the lights."}
+  {"keep": true, "note": "A trolley tour is an event.", "title": "Holiday Lights Trolley Tour", "tags": [], "desc": "See the lights."},
+  {"keep": true, "note": "Fitness class named circuit.", "title": "SilverSneakers Circuit", "tags": [], "desc": "Low-impact class."},
+  {"keep": true, "note": "An event in a parking lot.", "title": "OneBlood Drive - Parking Lot", "tags": [], "desc": "Donate blood."}
 ]
