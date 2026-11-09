@@ -6,6 +6,9 @@ import {calendarConnected} from "../../../lib/me";
 import SaveButton from "../../components/SaveButton";
 import CalendarChoice from "../../components/CalendarChoice";
 import FollowButton from "../../components/FollowButton";
+import LoveButton from "../../components/LoveButton";
+import TrustRow from "../../components/TrustRow";
+import {loveStatsFor} from "../../../lib/love";
 import {currentUser} from "../../../lib/auth";
 import {db} from "../../../lib/db";
 import {seriesOf,followable} from "../../../lib/series";
@@ -60,6 +63,13 @@ export default async function EventPage({params}:{params:Promise<{id:string}>}){
  // Their GoToday calendar is connected (a calendar app reads it, or they just added it): saved = already in their calendar.
  const calConnected=!!user&&await calendarConnected(user.id);
  const following=!!(user&&series&&(await db.query("select 1 from follows where user_id=$1 and series_id=$2",[user.id,series]).catch(()=>({rowCount:0}))).rowCount);
+ // Trust row: loves (this listing + its family), saves, follows — and whether you loved it.
+ // Saves count only this listing here; the card adds its copies' saves too.
+ const loveRows=(await db.query("select event_id,series_id,loved_year,count(*)::int as n from event_love where event_id=$1 or series_id=$2 group by event_id,series_id,loved_year",[e.id,series]).catch(()=>({rows:[]}))).rows;
+ const love=loveStatsFor(loveRows.map((r:any)=>({event_id:r.event_id==null?null:Number(r.event_id),series_id:r.series_id==null?null:Number(r.series_id),loved_year:Number(r.loved_year),n:Number(r.n)})),{ids:[e.id],seriesIds:series?[series]:[],year:Number(localParts(e.start,e.tz).date.slice(0,4))});
+ const saveCount=Number((await db.query("select count(*)::int as n from saved_events where event_id=$1",[e.id]).catch(()=>({rows:[{n:0}]}))).rows[0]?.n||0);
+ const followCount=series?Number((await db.query("select count(*)::int as n from follows where series_id=$1",[series]).catch(()=>({rows:[{n:0}]}))).rows[0]?.n||0):0;
+ const userLoved=!!(user&&(await db.query("select 1 from event_love where user_id=$1 and (event_id=$2 or series_id=$3)",[user.id,e.id,series]).catch(()=>({rowCount:0}))).rowCount);
  const regFull=/full/i.test(e.registrationText||"");
  // A separate sign-up link (Eventbrite etc.) gets its own button; otherwise registration happens on the event page itself.
  const directReg=!!e.registrationUrl&&e.registrationUrl!==e.officialUrl;
@@ -95,6 +105,7 @@ export default async function EventPage({params}:{params:Promise<{id:string}>}){
       {ended&&<span className="b past">{dayPassed?t("This date has passed"):t("Ended earlier today")}</span>}
      </div>
      <h1>{e.title}</h1>
+     <TrustRow worthGoing={love.worthGoing} loves={love.loves} lovedBefore={love.lovedBefore} saves={saveCount} follows={followCount}/>
 
      <div className="facts">
       <div className="fact"><div className="k">{t("When")}</div><div className="v">{fmtDate(e.start,undefined,e.tz,loc)}</div><div className="s">{timeRange(e,loc,t("All day"))}{e.recurrence?` · ${t("Repeats")} ${t(e.recurrence.toLowerCase())}`:""}</div></div>
@@ -117,6 +128,7 @@ export default async function EventPage({params}:{params:Promise<{id:string}>}){
       <SaveButton item={{id:`db-${e.id}`,title:e.title,date:new Intl.DateTimeFormat("en-CA",{timeZone:e.tz}).format(e.start),venue:e.venue||e.city}}/>
       {!ended&&<CalendarChoice base={`/events/${encodeURIComponent(id)}`} id={`db-${e.id}`} connected={calConnected}/>}
       <ShareButton title={e.title} text={`${e.title} — ${fmtDate(e.start,undefined,e.tz,loc)}${isAllDay(e.start,e.tz)?"":`, ${fmtTime(e.start,e.tz,loc)}`} · ${e.venue||e.city}`}/>
+      {ended&&<LoveButton id={`db-${e.id}`} signedIn={!!user} initial={userLoved}/>}
      </div>
      {canFollow&&<div className="ctaFollow">
  {canFollow&&<FollowButton id={`db-${e.id}`} signedIn={!!user} initial={following}/>}
