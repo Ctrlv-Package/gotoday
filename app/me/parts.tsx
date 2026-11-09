@@ -103,8 +103,8 @@ export function CalendarLinks({feed,initial}:{feed:string;initial:CalStatus}){
    <a className="btn ghost" href={google} target="_blank" rel="noreferrer" onClick={()=>clicked("Google Calendar")}>{isOn("Google Calendar")?"✓ ":""}{t("Add to Google Calendar")}</a>
    <a className="btn ghost" href={webcal} onClick={()=>clicked("Apple Calendar")}>{isOn("Apple Calendar")?"✓ ":""}{t("Add to Apple Calendar")}</a>
    <a className="btn ghost" href={outlook} target="_blank" rel="noreferrer" onClick={()=>clicked("Outlook")}>{isOn("Outlook")?"✓ ":""}{t("Add to Outlook")}</a>
+   <button type="button" className="btn ghost" onClick={copy}>{copied?t("Copied ✓"):t("Copy link")}</button>
   </div>
-  <div className="calSubLink"><code>{https}</code><button type="button" className="linkBtn" onClick={copy}>{copied?t("Copied ✓"):t("Copy link")}</button></div>
   <p className="authFine">{t("This link is private to you. Anyone with it can see the events you've saved, so don't post it publicly.")} <button type="button" className="linkBtn small" disabled={busy} onClick={reset}>{t("Make a new link")}</button></p>
  </div>;
 }

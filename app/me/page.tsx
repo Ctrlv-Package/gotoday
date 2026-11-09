@@ -8,6 +8,7 @@ import {fmtDate,fmtTime,isAllDay} from "../../lib/event-detail";
 import SaveButton from "../components/SaveButton";
 import {GuestSaved,GuestCreated,CalendarLinks,Unfollow,SignedInNote} from "./parts";
 import {eventsOfUser} from "../../lib/community";
+import {stockPicture} from "../../lib/stockPhotos";
 import {getLang} from "../../lib/lang-server";
 import {tFor,LOCALE} from "../../lib/i18n";
 import {LangSetting} from "../components/Lang";
@@ -51,6 +52,13 @@ export default async function Me({searchParams}:{searchParams?:Promise<{deleted?
  const cal=await calendarStatus(user.id).catch(()=>({clickedAt:null,clicked:null,apps:[]}));
  const today=new Intl.DateTimeFormat("en-CA",{timeZone:"America/New_York"}).format(new Date());
  const upcoming=saved.filter(r=>r.date>=today),past=saved.filter(r=>r.date<today).reverse();
+ // Pictures for saved rows, the same way the search cards pick them: the stored picture when it's
+ // one of ours, otherwise a matching library photo (an outside link is never shown raw here).
+ const savedPics=new Map<number,string>();
+ await Promise.all([...upcoming,...past].map(async r=>{
+  const p=r.image&&!/^https?:/.test(r.image)?r.image:await stockPicture({title:r.title,desc:r.description,source:r.source,venue:r.venue}).catch(()=>"");
+  if(p)savedPics.set(r.id,p);
+ }));
  // My events: upcoming (soonest first) on top; past ones fold away. A repeating event counts as upcoming.
  const isPast=(c:any)=>c.date<today&&!(c.repeat&&c.repeat.kind&&c.repeat.kind!=="none");
  const myUpcoming=created.filter(c=>!isPast(c)).sort((a,b)=>a.date.localeCompare(b.date)),myPast=created.filter(isPast);
@@ -65,20 +73,26 @@ export default async function Me({searchParams}:{searchParams?:Promise<{deleted?
     <p className="lead">{user.name?t("Hi {name}!",{name:user.name.split(" ")[0]}):t("Hi!")} {t("Here's what you've saved and your next-year reminders.")}</p>
 
     <section className="meSection">
-     <h2>{t("Your GoToday calendar")}</h2>
-     <p className="muted">{t("Subscribe once and every event you save shows up in your calendar by itself, including next year's dates for your reminders. Changes and cancellations update too. Note: Google Calendar only checks for new events every several hours (sometimes up to a day), so a new save can take a while to appear there; Apple Calendar checks more often. Need it on your calendar right now? Use the 📅 button on the event.")}</p>
-     <CalendarLinks feed={feed} initial={cal}/>
-    </section>
-
-    <section className="meSection">
      <h2>{t("Saved|list")} <span className="count">{upcoming.length}</span></h2>
      {upcoming.length===0?<p className="muted">{t("Nothing saved yet. Tap the ♡ on any event to save it here.")}</p>
      :<ul className="meList">{upcoming.map(r=><li key={r.id} className={r.cancelled?"cancelled":""}>
+       {savedPics.get(r.id)&&<img className="meThumb" src={savedPics.get(r.id)} alt=""/>}
        <Link href={`/events/db-${r.id}`}><b>{r.cancelled?t("Cancelled")+": ":""}{r.title}</b><span>{when(r,loc)} · {r.venue||r.city}</span></Link>
        <SaveButton compact item={{id:`db-${r.id}`,title:r.title,date:r.date}}/>
       </li>)}</ul>}
      {past.length>0&&<details className="mePast"><summary>{t("Recently passed")} ({past.length})</summary><ul className="meList">{past.map(r=><li key={r.id}>
+       {savedPics.get(r.id)&&<img className="meThumb" src={savedPics.get(r.id)} alt=""/>}
        <Link href={`/events/db-${r.id}`}><b>{r.title}</b><span>{when(r,loc)} · {r.venue||r.city}</span></Link></li>)}</ul></details>}
+    </section>
+
+    <section className="meSection">
+     <h2>{t("Remind me next year")} <span className="count">{following.length}</span></h2>
+     {following.length===0?<p className="muted">{t("On a festival, fair or other yearly event, tap 🔔 “Remind me next year” and we'll keep track of it for you, year after year.")}</p>
+     :<ul className="meList">{following.map(f=><li key={f.seriesId}>
+       {f.next?<Link href={`/events/db-${f.next.id}`}><b>{f.title}</b><span>{t("Next")}: {when(f.next,loc)} · {f.next.venue||f.next.city}</span></Link>
+        :<div className="meNo"><b>{f.title}</b><span>{t("Next date not announced yet")}{f.last?` · ${t("last time")} ${longDate(f.last.date,loc)}`:""}. {t("We'll add it as soon as it's listed.")}</span></div>}
+       <Unfollow series={f.seriesId}/>
+      </li>)}</ul>}
     </section>
 
     <section className="meSection">
@@ -97,13 +111,9 @@ export default async function Me({searchParams}:{searchParams?:Promise<{deleted?
     </section>
 
     <section className="meSection">
-     <h2>{t("Remind me next year")} <span className="count">{following.length}</span></h2>
-     {following.length===0?<p className="muted">{t("On a festival, fair or other yearly event, tap 🔔 “Remind me next year” and we'll keep track of it for you, year after year.")}</p>
-     :<ul className="meList">{following.map(f=><li key={f.seriesId}>
-       {f.next?<Link href={`/events/db-${f.next.id}`}><b>{f.title}</b><span>{t("Next")}: {when(f.next,loc)} · {f.next.venue||f.next.city}</span></Link>
-        :<div className="meNo"><b>{f.title}</b><span>{t("Next date not announced yet")}{f.last?` · ${t("last time")} ${longDate(f.last.date,loc)}`:""}. {t("We'll add it as soon as it's listed.")}</span></div>}
-       <Unfollow series={f.seriesId}/>
-      </li>)}</ul>}
+     <h2>{t("Your GoToday calendar")}</h2>
+     <p className="muted">{t("Subscribe once and every event you save shows up in your calendar by itself.")}</p>
+     <CalendarLinks feed={feed} initial={cal}/>
     </section>
 
     <section className="meSection">

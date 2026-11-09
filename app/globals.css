@@ -427,6 +427,7 @@ a.logo{text-decoration:none;color:inherit}
 .meList b{font-size:15px;color:var(--ink);overflow-wrap:anywhere}
 .meList span{font-size:13px;color:var(--muted)}
 .meList li.cancelled b{color:#b91c1c}
+.meThumb{width:64px;height:64px;flex:none;object-fit:cover;border-radius:10px}
 .mePast{margin-top:10px}.mePast summary{cursor:pointer;color:var(--muted);font-size:14px;font-weight:600;margin-bottom:8px}
 .calSub{display:flex;flex-direction:column;gap:10px}
 .calSubBtns{display:flex;gap:8px;flex-wrap:wrap}
