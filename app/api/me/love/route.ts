@@ -5,7 +5,7 @@ import {parseId} from "../../../../lib/event-detail";
 import {seriesOf} from "../../../../lib/series";
 import {loveStatsFor} from "../../../../lib/love";
 export const dynamic="force-dynamic";
-// POST {id:"db-123",on:true|false}: say you went and it was great (or take it back).
+// POST {id:"db-123",on:true|false}: say you've been and it was great (or take it back).
 // Sign-in only — no save needed. One row per user per event family: tapping a new occurrence
 // of a yearly event moves your love to it instead of stacking a second one.
 export async function POST(req:NextRequest){
