@@ -8,6 +8,7 @@ import { discoveryRejection } from "../../../lib/ingestion/utils";
 import { bestPicture } from "../../../lib/pictures";
 import { choosePlace } from "../../../lib/places";
 import { sameEvent, familyPictures, familyKey } from "../../../lib/copies";
+import { loveStatsFor } from "../../../lib/love";
 import { sameEventCard, words, town } from "../../../lib/sameCard";
 import { stockPicture } from "../../../lib/stockPhotos";
 import { localParts, todayIn, DEFAULT_TZ } from "../../../lib/time";
@@ -250,6 +251,27 @@ export async function GET(request:NextRequest){
    const saves=ids.reduce((a:number,id:number)=>a+(S.get(id)||0),0),acts=ids.reduce((a:number,id:number)=>a+(A.get(id)||0),0),follows=ser.reduce((a:number,id:number)=>a+(F.get(id)||0),0);
    e.popularity=Math.round(10*(3*((e.facets||[]).includes("Big events")?1:0)+2*Math.max(0,(e._sources||1)-1)+1.5*Math.log2(1+(e._likes||0))+4*saves+acts+3*follows+2*(ser.some((id:number)=>L.has(id))?1:0)))/10}
   events=events.filter((e:any)=>e.popularity>=3).sort((a:any,b:any)=>b.popularity-a.popularity).slice(0,60);
+ }
+ // Trust row (cards + detail): saves, follows and loves for every card, from the rows already
+ // stored. Love counts are grouped by (event, family, year) so one tap is never counted twice.
+ // Counts ride the route's 10-minute cache, like the rest of the listing data.
+ if(events.length){
+  const ids=[...new Set(events.flatMap((e:any)=>e._ids||[]))],series=[...new Set(events.flatMap((e:any)=>e._series||[]))];
+  const [sv,fo,lv]=await Promise.all([
+   db.query("select event_id,count(*)::int n from saved_events where event_id=any($1) group by event_id",[ids]).catch(()=>({rows:[]})),
+   db.query("select series_id,count(*)::int n from follows where series_id=any($1) group by series_id",[series]).catch(()=>({rows:[]})),
+   db.query("select event_id,series_id,loved_year,count(*)::int n from event_love where event_id=any($1) or series_id=any($2) group by event_id,series_id,loved_year",[ids,series]).catch(()=>({rows:[]})),
+  ]);
+  const sm=new Map(sv.rows.map((r:any)=>[Number(r.event_id),Number(r.n)]));
+  const fm=new Map(fo.rows.map((r:any)=>[Number(r.series_id),Number(r.n)]));
+  const lrows=lv.rows.map((r:any)=>({event_id:r.event_id==null?null:Number(r.event_id),series_id:r.series_id==null?null:Number(r.series_id),loved_year:Number(r.loved_year),n:Number(r.n)}));
+  for(const e of events as any[]){
+   const eids=e._ids||[],ser=e._series||[];
+   e.saves=eids.reduce((a:number,id:number)=>a+(sm.get(id)||0),0);
+   e.follows=ser.reduce((a:number,id:number)=>a+(fm.get(id)||0),0);
+   const s=loveStatsFor(lrows,{ids:eids,seriesIds:ser,year:Number(String(e.date||"").slice(0,4))||new Date().getFullYear()});
+   e.loves=s.loves;e.lovedBefore=s.lovedBefore;e.worthGoing=s.worthGoing;
+  }
  }
  for(const e of events as any[]){delete e._ids;delete e._sources;delete e._likes;delete e._series}
  return NextResponse.json({coverage,events:events.slice(0,2000).map((e:any)=>({...e,desc:e.desc.length>320?e.desc.slice(0,317)+"…":e.desc})),range,startDate:w.startDate,endDate:w.endDate,center:[lat,lng],radius,localCount,ticketmasterCount:events.length-localCount,total:events.length},{headers:{"cache-control":"public, s-maxage=600, stale-while-revalidate=1800"}});
