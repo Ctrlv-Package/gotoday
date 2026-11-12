@@ -35,6 +35,17 @@ export function summarizeReaderByDay(rows:{day?:unknown;reader?:unknown;n?:unkno
  return[...byDay.entries()].sort((a,b)=>a[0].localeCompare(b[0])).map(([day,c])=>({day,...c}));
 }
 
+/** The cap counts PAID reads only: Gemini reads are free, so only Claude reads spend the budget. */
+export function paidReadsToday(counts:ReaderCounts):number{
+ return counts.claude;
+}
+
+/** Whether a paid read is still allowed today: paid reads used vs the cap.
+ *  Re-reading a post split into pieces gets the small extra allowance (cap+15). */
+export function paidReadAllowed(paidToday:number,cap:number,isReread=false):boolean{
+ return paidToday<(isReread?cap+15:cap);
+}
+
 /** The daily cap on paid fallback reads, same value the reader uses (lib/sources/instagram.ts). */
 export function aiPostsCap():number{
  return Number(process.env.AI_POSTS_PER_DAY||120);
