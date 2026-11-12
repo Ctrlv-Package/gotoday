@@ -48,6 +48,9 @@ const STATEMENTS=[
    where name='Temple Terrace Parks & Rec · Instagram' and params->>'username'='templeterraceparks_recreation'`,
  // Instagram posts already read (and the events found in them), so each post is sent to the AI once.
  `create table if not exists social_posts(id text primary key,permalink text,posted_at timestamptz,extracted jsonb not null default '[]',created_at timestamptz default now())`,
+ // Which model read the post (gemini/claude), so the public health page can show today's split
+ // against the AI_POSTS_PER_DAY cap. NULL for posts read before this column existed.
+ `alter table social_posts add column if not exists reader text`,
  // Discovery once saved North Miami Beach's library over the city calendar (same name). The library now has
  // its own row, so point the city row back at the city's CivicPlus calendar.
  `update source_configs set platform='civicplus',params='{"site":"https://www.citynmb.com","city":"North Miami Beach, FL","idPrefix":"nmb"}'::jsonb,
