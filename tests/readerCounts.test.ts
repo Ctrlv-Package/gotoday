@@ -1,6 +1,6 @@
 import {test} from "node:test";
 import assert from "node:assert/strict";
-import {aiPostsCap,capReached,emptyReaderCounts,normalizeReader,summarizeReaderByDay,summarizeReaderRows} from "../lib/readerCounts";
+import {aiPostsCap,capReached,emptyReaderCounts,normalizeReader,paidReadAllowed,paidReadsToday,summarizeReaderByDay,summarizeReaderRows} from "../lib/readerCounts";
 
 // Per-model reading counts for the public health page: which model read each Instagram post.
 
@@ -34,6 +34,23 @@ test("by-day rows group per day, oldest first, with every model present even at 
  ]);
  assert.deepEqual(summarizeReaderByDay([{reader:"gemini",n:1}]),[]);
  assert.deepEqual(summarizeReaderByDay([]),[]);
+});
+
+test("the cap counts paid reads only: a thousand free Gemini reads must not close the fallback",()=>{
+ // The old code counted every read toward the cap, so the fallback was spent by mid-morning.
+ assert.equal(paidReadsToday({gemini:1000,claude:3,unknown:12}),3);
+ assert.equal(paidReadsToday({gemini:0,claude:0,unknown:1020}),0);
+ assert.equal(paidReadsToday({gemini:0,claude:120,unknown:0}),120);
+});
+
+test("a paid read is allowed until the cap, with the small extra allowance for re-reads",()=>{
+ assert.equal(paidReadAllowed(0,120),true);
+ assert.equal(paidReadAllowed(119,120),true);
+ assert.equal(paidReadAllowed(120,120),false);
+ assert.equal(paidReadAllowed(200,120),false);
+ assert.equal(paidReadAllowed(134,120,true),true);
+ assert.equal(paidReadAllowed(135,120,true),false);
+ assert.equal(paidReadAllowed(119,120,true),true);
 });
 
 test("the cap is reached exactly at the limit, and the env var moves it",()=>{
