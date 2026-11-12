@@ -205,25 +205,26 @@ export async function readFlyerImage(data:Buffer,mime:string,today:string){
 // their posts are re-read once with the newer reading (each event's own town).
 const KIDS_TITLE=/\b(kids?|children'?s?|child|toddlers?|preschool\w*|story ?time|tots?|teens?|tweens?|youth|trick[- ]or[- ]treat\w*|trunk[- ]or[- ]treat|egg hunt|kids'? camp|baby|babies|little ones|junior)\b/i;
 const ROUNDUPS=new Set(["miami_residents","weekendbroward","todowithkidsbroward","todowithkidsmiami","thebrowardscene"]);
-async function extractWithClaude(p:Post,venue:string,city:string,roundup=false,allowClaude=true):Promise<Extracted[]>{
+// Which model actually read the post, so the reading is recorded in social_posts.reader.
+async function extractWithClaude(p:Post,venue:string,city:string,roundup=false,allowClaude=true):Promise<{events:Extracted[];reader:"gemini"|"claude"}>{
  // Carousels: every slide is read (up to 6, or 4 for ordinary accounts) so each event can use its own slide as its picture.
  const urls=p.media_type==="CAROUSEL_ALBUM"?slides(p).slice(0,roundup?6:4):[imageOf(p)];
  const imgs=(await Promise.all(urls.map(u=>imageBlock(u)))).filter(Boolean);
  const img=imgs[0];
  const text={type:"text",text:PROMPT(p,venue,city)};
  if(process.env.GEMINI_API_KEY){
-  try{return await askGemini([...imgs,text])}
+  try{return{events:await askGemini([...imgs,text]),reader:"gemini"}}
   catch(e:any){console.log(`gemini: ${e?.message||e}`);
    // A free key is set, so a Gemini failure (quota, busy, bad key) must not silently bill Claude.
    // NoCredit leaves the post uncached: it is caption-read for now and retried on a later run.
    if(process.env.AI_PAID_FALLBACK!=="on")throw new NoCredit(`Gemini reading failed (${e?.message||e}); paid Claude fallback is off — set AI_PAID_FALLBACK=on in Vercel to allow it`)}
  }
  if(!process.env.ANTHROPIC_API_KEY||!allowClaude)throw new NoCredit("no paid reading available");
- try{return await askClaude([...imgs,text])}
+ try{return{events:await askClaude([...imgs,text]),reader:"claude"}}
  catch(e:any){
   // Out of API credit or over the spend limit: fall back to the free caption reading instead of failing.
   if(/credit|billing|balance|spend|limit|quota/i.test(e?.message||""))throw new NoCredit(e.message);
-  if(!img)throw e;return askClaude([text])}   // image rejected: read the caption alone
+  if(!img)throw e;return{events:await askClaude([text]),reader:"claude"}}   // image rejected: read the caption alone
 }
 
 /** Fallback without an AI key: a caption that names a month + day ("Sunday, Sept 27 · 4-8pm"). */
@@ -264,10 +265,11 @@ async function cached(p:Post,venue:string,city:string,roundup=false,allowNew=tru
  // Re-reading a post that was split into pieces gets a small extra allowance (about half a cent each, at most 15 a day).
  const allowance=prev?cap+15:cap;
  if(today>=allowance&&!process.env.GEMINI_API_KEY)return prev??captionOnly(p);
- let ev:Extracted[];
- try{ev=await extractWithClaude(p,venue,city,roundup,today<allowance)}
+ let read:{events:Extracted[];reader:"gemini"|"claude"};
+ try{read=await extractWithClaude(p,venue,city,roundup,today<allowance)}
  catch(e){if(e instanceof NoCredit)return prev??captionOnly(p);throw e}   // not cached: read properly once credit is back
- await db.query("insert into social_posts(id,permalink,posted_at,extracted) values($1,$2,$3,$4) on conflict(id) do update set extracted=excluded.extracted",[id,p.permalink,p.timestamp,JSON.stringify(ev.map((e:any)=>({...e,hookChecked:true})))]);   // read with the headline rule: not re-read again
+ const ev=read.events;
+ await db.query("insert into social_posts(id,permalink,posted_at,extracted,reader) values($1,$2,$3,$4,$5) on conflict(id) do update set extracted=excluded.extracted,reader=excluded.reader",[id,p.permalink,p.timestamp,JSON.stringify(ev.map((e:any)=>({...e,hookChecked:true}))),read.reader]);   // read with the headline rule: not re-read again
  return ev;
 }
 
