@@ -1,0 +1,11 @@
+HTTP/2 200 
+age: 0
+cache-control: no-store
+content-type: application/json
+date: Thu, 12 Nov 2026 06:43:43 GMT
+server: Vercel
+strict-transport-security: max-age=63072000
+x-matched-path: /api/geo
+x-vercel-cache: MISS
+x-vercel-id: sfo1::iad1::tzdbf-1794465823507-e598011c66a6
+
