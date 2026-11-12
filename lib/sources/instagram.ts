@@ -7,6 +7,7 @@ import {slug} from "../ingestion/utils";
 import {lookupDetails,thinSummary} from "./eventDetails";
 import {freeLookup,captionSites} from "./freeDetails";
 import {keepImages} from "../images";
+import {paidReadAllowed} from "../readerCounts";
 
 // Venue Instagram accounts (town centers, markets, breweries...) announce events that never reach a
 // city calendar. Read them through Instagram's official Business Discovery API:
@@ -240,6 +241,17 @@ export function captionOnly(p:Post):Extracted[]{
 }
 
 class NoCredit extends Error{}
+/** Paid (Claude) reads today, in New York time. Until the reader column exists (it lands with
+ *  the first schema run after it was added), fall back to counting every read today — the old,
+ *  stricter behaviour — so a missing column never opens unlimited paid reading. */
+async function paidToday():Promise<number>{
+ const dayStart="date_trunc('day',now() at time zone 'America/New_York') at time zone 'America/New_York'";
+ try{
+  return (await db.query(`select count(*)::int as n from social_posts where reader='claude' and created_at>=${dayStart}`)).rows[0]?.n||0;
+ }catch{
+  return (await db.query(`select count(*)::int as n from social_posts where created_at>=${dayStart}`)).rows[0]?.n||0;
+ }
+}
 async function cached(p:Post,venue:string,city:string,roundup=false,allowNew=true):Promise<Extracted[]>{
  if(!process.env.ANTHROPIC_API_KEY&&!process.env.GEMINI_API_KEY)return captionOnly(p);   // don't cache the weaker caption-only reading
  let prev:Extracted[]|null=null;   // an earlier reading, kept if a new one can't be done today
@@ -257,16 +269,17 @@ async function cached(p:Post,venue:string,city:string,roundup=false,allowNew=tru
   if(old){prev=old.extracted||[];const perDay=new Map<string,number>();for(const e of prev!)perDay.set(e.date,(perDay.get(e.date)||0)+1);
    if(![...perDay.values()].some(n=>n>=3))return prev!;}
  }
- // Budget: at most AI_POSTS_PER_DAY posts get read by the AI each day (default 120, roughly $0.50/day).
- // Past that, posts are read from the caption for free and get the full reading on a later day.
+ // Budget: at most AI_POSTS_PER_DAY PAID (Claude) reads a day (default 120, roughly $0.50/day).
+ // Gemini reads are free and don't count. Past the paid cap, posts are read from the caption for
+ // free and get the full reading on a later day.
  const cap=Number(process.env.AI_POSTS_PER_DAY||120);
- const today=(await db.query("select count(*)::int as n from social_posts where created_at>=date_trunc('day',now() at time zone 'America/New_York') at time zone 'America/New_York'")).rows[0]?.n||0;
- // Free Gemini reading isn't capped; only paid Claude reading is.
- // Re-reading a post that was split into pieces gets a small extra allowance (about half a cent each, at most 15 a day).
- const allowance=prev?cap+15:cap;
- if(today>=allowance&&!process.env.GEMINI_API_KEY)return prev??captionOnly(p);
+ // Used to count every read, Gemini included, so the cap was spent by mid-morning and the paid
+ // fallback never fired once Gemini's free limit was over. It now counts Claude reads only.
+ const paid=await paidToday();
+ const allowed=paidReadAllowed(paid,cap,!!prev);
+ if(!allowed&&!process.env.GEMINI_API_KEY)return prev??captionOnly(p);
  let read:{events:Extracted[];reader:"gemini"|"claude"};
- try{read=await extractWithClaude(p,venue,city,roundup,today<allowance)}
+ try{read=await extractWithClaude(p,venue,city,roundup,allowed)}
  catch(e){if(e instanceof NoCredit)return prev??captionOnly(p);throw e}   // not cached: read properly once credit is back
  const ev=read.events;
  await db.query("insert into social_posts(id,permalink,posted_at,extracted,reader) values($1,$2,$3,$4,$5) on conflict(id) do update set extracted=excluded.extracted,reader=excluded.reader",[id,p.permalink,p.timestamp,JSON.stringify(ev.map((e:any)=>({...e,hookChecked:true}))),read.reader]);   // read with the headline rule: not re-read again
