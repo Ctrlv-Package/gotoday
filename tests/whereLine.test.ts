@@ -12,6 +12,9 @@ test("mixed-case text is left alone, including ordinals",()=>{
  assert.equal(displayCase("500 NE 26th St., Wilton Manors, FL 33305"),"500 NE 26th St., Wilton Manors, FL 33305");
  assert.equal(displayCase("Fort Lauderdale, FL"),"Fort Lauderdale, FL");
  // A mostly-mixed address can still shout in one spot: "136TH" reads as shouting, "SW"/"FL" do not.
+ // Test the raw stored form (all caps), not the already-fixed one — the all-caps form is what the
+ // site actually receives.
+ assert.equal(displayCase("1301 SW 136TH AVE, DAVIE, FL, 33325"),"1301 SW 136th Ave, Davie, FL, 33325");
  assert.equal(displayCase("1301 SW 136TH Ave, Davie, FL, 33325"),"1301 SW 136th Ave, Davie, FL, 33325");
  // State codes stay uppercase outside Florida too.
  assert.equal(displayCase("123 MAIN ST, HARTFORD, CT, 06103"),"123 Main St, Hartford, CT, 06103");
