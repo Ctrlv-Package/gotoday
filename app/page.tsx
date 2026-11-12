@@ -99,17 +99,28 @@ export default function Home(){
  function submitZip(){searchZip(zip.trim())}
  // "Use my location": the button itself shows progress (finding you → loading events) and can't be pressed twice;
  // problems are explained right under it, where the person is looking.
- const[locating,setLocating]=useState(false),[locErr,setLocErr]=useState("");
+ const[locating,setLocating]=useState(false),[locErr,setLocErr]=useState(""),[locNote,setLocNote]=useState("");
  function useLocation(){
-  if(locating)return;setLocErr("");
+  if(locating)return;setLocErr("");setLocNote("");
   if(!navigator.geolocation)return setLocErr(t("Your browser can't share its location. Enter a ZIP code instead."));
   setLocating(true);
   // If the browser's permission prompt is ignored, don't spin forever.
   const guard=setTimeout(()=>{setLocating(false);setLocErr(t("Waiting for permission — tap Allow in your browser's location prompt, or enter a ZIP code."))},20000);
-  navigator.geolocation.getCurrentPosition(async p=>{clearTimeout(guard);setLocErr("");const c={lat:p.coords.latitude,lng:p.coords.longitude};setCoords(c);setSearchedZip("");setZip("");setLocating(false);
-    setTimeout(()=>document.getElementById("results")?.scrollIntoView({behavior:"smooth"}),50);try{history.replaceState(null,"",location.pathname)}catch{};await load("",range,c,radius)},
-   e=>{clearTimeout(guard);setLocating(false);setLocErr(t(e.code===1?"Location is turned off for this site. Allow it in your browser settings, or enter a ZIP code.":e.code===3?"Finding your location took too long. Try again, or enter a ZIP code.":"Couldn't find your location. Try again, or enter a ZIP code."))},
-   {timeout:15000,maximumAge:600000});
+  const use=async(c:{lat:number;lng:number},note=""):Promise<void>=>{clearTimeout(guard);setLocErr("");setLocNote(note);setCoords(c);setSearchedZip("");setZip("");setLocating(false);
+   setTimeout(()=>document.getElementById("results")?.scrollIntoView({behavior:"smooth"}),50);try{history.replaceState(null,"",location.pathname)}catch{};await load("",range,c,radius)};
+  // The phone couldn't say where it is in time (common indoors / on Wi-Fi): use where you were last time, else an
+  // approximate location from the connection, and say so — instead of only an error.
+  const fallback=async(code:number)=>{
+   let last:any=null;try{last=JSON.parse(localStorage.getItem("gt-last-loc")||"null")}catch{}
+   const g:any=await fetch("/api/geo",{cache:"no-store"}).then(r=>r.json()).catch(()=>null);
+   if(g?.ok&&g.country==="US")return use({lat:g.lat,lng:g.lng},t("Showing events near {city} (approximate). Tap Use my location again for your exact spot.").replace("{city}",g.city||g.region||"you"));
+   if(last&&Number.isFinite(last.lat))return use({lat:last.lat,lng:last.lng},t("Showing events near your last location. Tap Use my location again to update it."));
+   clearTimeout(guard);setLocating(false);
+   setLocErr(g?.ok&&g.country&&g.country!=="US"?t("You seem to be outside the US right now. Enter a ZIP code to see events there."):t(code===3?"Finding your location took too long. Try again, or enter a ZIP code.":"Couldn't find your location. Try again, or enter a ZIP code."));
+  };
+  navigator.geolocation.getCurrentPosition(async p=>{const c={lat:p.coords.latitude,lng:p.coords.longitude};try{localStorage.setItem("gt-last-loc",JSON.stringify(c))}catch{};await use(c)},
+   e=>{if(e.code===1){clearTimeout(guard);setLocating(false);setLocErr(t("Location is turned off for this site. Allow it in your browser settings, or enter a ZIP code."));return}fallback(e.code)},
+   {timeout:12000,maximumAge:1800000,enableHighAccuracy:false});
  }
  function switchMode(v:"all"|"big"|"fav"){if(v===view)return;const ok=v==="big"?["today","thisweekend"]:["next7","next30"];const br=v==="all"||ok.includes(big.current.range)?big.current.range:ok[v==="big"?0:1];if(br!==bigRange)setBigRange(br);big.current={...big.current,view:v,range:br};setView(v);setSort(v==="all"?"Nearest":v==="big"?"Popular":"Soonest");load(searchedZip,range,coords,radius)}
  function chooseBigRange(r:string){setBigRange(r);big.current={...big.current,range:r};load(searchedZip,range,coords,radius)}
@@ -183,6 +194,7 @@ export default function Home(){
      {locating?<><span className="spin" aria-hidden/>{t("Finding your location…")}</>:loading&&coords?<><span className="spin" aria-hidden/>{t("Finding events near you…")}</>:"📍 "+t("Use my location")}
     </button>
     {locErr&&<p className="locErr" role="alert">{locErr}</p>}
+    {locNote&&!locErr&&<p className="muted" style={{textAlign:"center",fontSize:14,margin:"8px 0 0"}}>{locNote}</p>}
    </div>
   </section>
 
