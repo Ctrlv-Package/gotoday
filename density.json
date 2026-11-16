@@ -1,0 +1,2522 @@
+{
+ "base": "https://www.mygotoday.com",
+ "today": "2026-11-16",
+ "days": 14,
+ "gate": {
+  "minLocal": 5,
+  "minDays": 10
+ },
+ "report": [
+  {
+   "area": "Sunrise, FL",
+   "zip": "33326",
+   "verdict": "READY",
+   "goodDays": 14,
+   "totalLocal": 954,
+   "days": [
+    {
+     "date": "2026-11-16",
+     "total": 77,
+     "local": 77,
+     "ticketmaster": 0
+    },
+    {
+     "date": "2026-11-17",
+     "total": 124,
+     "local": 120,
+     "ticketmaster": 4
+    },
+    {
+     "date": "2026-11-18",
+     "total": 132,
+     "local": 127,
+     "ticketmaster": 5
+    },
+    {
+     "date": "2026-11-19",
+     "total": 115,
+     "local": 110,
+     "ticketmaster": 5
+    },
+    {
+     "date": "2026-11-20",
+     "total": 94,
+     "local": 84,
+     "ticketmaster": 10
+    },
+    {
+     "date": "2026-11-21",
+     "total": 137,
+     "local": 121,
+     "ticketmaster": 16
+    },
+    {
+     "date": "2026-11-22",
+     "total": 41,
+     "local": 34,
+     "ticketmaster": 7
+    },
+    {
+     "date": "2026-11-23",
+     "total": 55,
+     "local": 54,
+     "ticketmaster": 1
+    },
+    {
+     "date": "2026-11-24",
+     "total": 74,
+     "local": 69,
+     "ticketmaster": 5
+    },
+    {
+     "date": "2026-11-25",
+     "total": 48,
+     "local": 44,
+     "ticketmaster": 4
+    },
+    {
+     "date": "2026-11-26",
+     "total": 25,
+     "local": 25,
+     "ticketmaster": 0
+    },
+    {
+     "date": "2026-11-27",
+     "total": 25,
+     "local": 20,
+     "ticketmaster": 5
+    },
+    {
+     "date": "2026-11-28",
+     "total": 52,
+     "local": 43,
+     "ticketmaster": 9
+    },
+    {
+     "date": "2026-11-29",
+     "total": 32,
+     "local": 26,
+     "ticketmaster": 6
+    }
+   ]
+  },
+  {
+   "area": "Fort Lauderdale, FL",
+   "zip": "33301",
+   "verdict": "READY",
+   "goodDays": 14,
+   "totalLocal": 1228,
+   "days": [
+    {
+     "date": "2026-11-16",
+     "total": 104,
+     "local": 102,
+     "ticketmaster": 2
+    },
+    {
+     "date": "2026-11-17",
+     "total": 159,
+     "local": 154,
+     "ticketmaster": 5
+    },
+    {
+     "date": "2026-11-18",
+     "total": 172,
+     "local": 165,
+     "ticketmaster": 7
+    },
+    {
+     "date": "2026-11-19",
+     "total": 158,
+     "local": 152,
+     "ticketmaster": 6
+    },
+    {
+     "date": "2026-11-20",
+     "total": 114,
+     "local": 103,
+     "ticketmaster": 11
+    },
+    {
+     "date": "2026-11-21",
+     "total": 179,
+     "local": 160,
+     "ticketmaster": 19
+    },
+    {
+     "date": "2026-11-22",
+     "total": 51,
+     "local": 41,
+     "ticketmaster": 10
+    },
+    {
+     "date": "2026-11-23",
+     "total": 70,
+     "local": 69,
+     "ticketmaster": 1
+    },
+    {
+     "date": "2026-11-24",
+     "total": 100,
+     "local": 95,
+     "ticketmaster": 5
+    },
+    {
+     "date": "2026-11-25",
+     "total": 64,
+     "local": 60,
+     "ticketmaster": 4
+    },
+    {
+     "date": "2026-11-26",
+     "total": 24,
+     "local": 24,
+     "ticketmaster": 0
+    },
+    {
+     "date": "2026-11-27",
+     "total": 28,
+     "local": 22,
+     "ticketmaster": 6
+    },
+    {
+     "date": "2026-11-28",
+     "total": 59,
+     "local": 49,
+     "ticketmaster": 10
+    },
+    {
+     "date": "2026-11-29",
+     "total": 39,
+     "local": 32,
+     "ticketmaster": 7
+    }
+   ]
+  },
+  {
+   "area": "Coral Springs, FL",
+   "zip": "33065",
+   "verdict": "READY",
+   "goodDays": 14,
+   "totalLocal": 881,
+   "days": [
+    {
+     "date": "2026-11-16",
+     "total": 71,
+     "local": 71,
+     "ticketmaster": 0
+    },
+    {
+     "date": "2026-11-17",
+     "total": 117,
+     "local": 113,
+     "ticketmaster": 4
+    },
+    {
+     "date": "2026-11-18",
+     "total": 121,
+     "local": 116,
+     "ticketmaster": 5
+    },
+    {
+     "date": "2026-11-19",
+     "total": 109,
+     "local": 105,
+     "ticketmaster": 4
+    },
+    {
+     "date": "2026-11-20",
+     "total": 79,
+     "local": 71,
+     "ticketmaster": 8
+    },
+    {
+     "date": "2026-11-21",
+     "total": 117,
+     "local": 103,
+     "ticketmaster": 14
+    },
+    {
+     "date": "2026-11-22",
+     "total": 38,
+     "local": 31,
+     "ticketmaster": 7
+    },
+    {
+     "date": "2026-11-23",
+     "total": 56,
+     "local": 55,
+     "ticketmaster": 1
+    },
+    {
+     "date": "2026-11-24",
+     "total": 78,
+     "local": 73,
+     "ticketmaster": 5
+    },
+    {
+     "date": "2026-11-25",
+     "total": 41,
+     "local": 37,
+     "ticketmaster": 4
+    },
+    {
+     "date": "2026-11-26",
+     "total": 19,
+     "local": 19,
+     "ticketmaster": 0
+    },
+    {
+     "date": "2026-11-27",
+     "total": 22,
+     "local": 18,
+     "ticketmaster": 4
+    },
+    {
+     "date": "2026-11-28",
+     "total": 50,
+     "local": 44,
+     "ticketmaster": 6
+    },
+    {
+     "date": "2026-11-29",
+     "total": 31,
+     "local": 25,
+     "ticketmaster": 6
+    }
+   ]
+  },
+  {
+   "area": "Hollywood, FL",
+   "zip": "33020",
+   "verdict": "READY",
+   "goodDays": 14,
+   "totalLocal": 1261,
+   "days": [
+    {
+     "date": "2026-11-16",
+     "total": 107,
+     "local": 103,
+     "ticketmaster": 4
+    },
+    {
+     "date": "2026-11-17",
+     "total": 166,
+     "local": 160,
+     "ticketmaster": 6
+    },
+    {
+     "date": "2026-11-18",
+     "total": 174,
+     "local": 168,
+     "ticketmaster": 6
+    },
+    {
+     "date": "2026-11-19",
+     "total": 157,
+     "local": 150,
+     "ticketmaster": 7
+    },
+    {
+     "date": "2026-11-20",
+     "total": 124,
+     "local": 111,
+     "ticketmaster": 13
+    },
+    {
+     "date": "2026-11-21",
+     "total": 190,
+     "local": 171,
+     "ticketmaster": 19
+    },
+    {
+     "date": "2026-11-22",
+     "total": 50,
+     "local": 42,
+     "ticketmaster": 8
+    },
+    {
+     "date": "2026-11-23",
+     "total": 69,
+     "local": 69,
+     "ticketmaster": 0
+    },
+    {
+     "date": "2026-11-24",
+     "total": 98,
+     "local": 93,
+     "ticketmaster": 5
+    },
+    {
+     "date": "2026-11-25",
+     "total": 68,
+     "local": 63,
+     "ticketmaster": 5
+    },
+    {
+     "date": "2026-11-26",
+     "total": 26,
+     "local": 26,
+     "ticketmaster": 0
+    },
+    {
+     "date": "2026-11-27",
+     "total": 32,
+     "local": 23,
+     "ticketmaster": 9
+    },
+    {
+     "date": "2026-11-28",
+     "total": 61,
+     "local": 49,
+     "ticketmaster": 12
+    },
+    {
+     "date": "2026-11-29",
+     "total": 41,
+     "local": 33,
+     "ticketmaster": 8
+    }
+   ]
+  },
+  {
+   "area": "Pembroke Pines, FL",
+   "zip": "33024",
+   "verdict": "READY",
+   "goodDays": 14,
+   "totalLocal": 1262,
+   "days": [
+    {
+     "date": "2026-11-16",
+     "total": 108,
+     "local": 104,
+     "ticketmaster": 4
+    },
+    {
+     "date": "2026-11-17",
+     "total": 167,
+     "local": 161,
+     "ticketmaster": 6
+    },
+    {
+     "date": "2026-11-18",
+     "total": 177,
+     "local": 170,
+     "ticketmaster": 7
+    },
+    {
+     "date": "2026-11-19",
+     "total": 158,
+     "local": 151,
+     "ticketmaster": 7
+    },
+    {
+     "date": "2026-11-20",
+     "total": 125,
+     "local": 111,
+     "ticketmaster": 14
+    },
+    {
+     "date": "2026-11-21",
+     "total": 189,
+     "local": 170,
+     "ticketmaster": 19
+    },
+    {
+     "date": "2026-11-22",
+     "total": 49,
+     "local": 40,
+     "ticketmaster": 9
+    },
+    {
+     "date": "2026-11-23",
+     "total": 71,
+     "local": 70,
+     "ticketmaster": 1
+    },
+    {
+     "date": "2026-11-24",
+     "total": 98,
+     "local": 93,
+     "ticketmaster": 5
+    },
+    {
+     "date": "2026-11-25",
+     "total": 70,
+     "local": 65,
+     "ticketmaster": 5
+    },
+    {
+     "date": "2026-11-26",
+     "total": 26,
+     "local": 26,
+     "ticketmaster": 0
+    },
+    {
+     "date": "2026-11-27",
+     "total": 32,
+     "local": 23,
+     "ticketmaster": 9
+    },
+    {
+     "date": "2026-11-28",
+     "total": 59,
+     "local": 47,
+     "ticketmaster": 12
+    },
+    {
+     "date": "2026-11-29",
+     "total": 39,
+     "local": 31,
+     "ticketmaster": 8
+    }
+   ]
+  },
+  {
+   "area": "Miramar, FL",
+   "zip": "33025",
+   "verdict": "READY",
+   "goodDays": 14,
+   "totalLocal": 1370,
+   "days": [
+    {
+     "date": "2026-11-16",
+     "total": 116,
+     "local": 112,
+     "ticketmaster": 4
+    },
+    {
+     "date": "2026-11-17",
+     "total": 181,
+     "local": 175,
+     "ticketmaster": 6
+    },
+    {
+     "date": "2026-11-18",
+     "total": 196,
+     "local": 191,
+     "ticketmaster": 5
+    },
+    {
+     "date": "2026-11-19",
+     "total": 175,
+     "local": 168,
+     "ticketmaster": 7
+    },
+    {
+     "date": "2026-11-20",
+     "total": 134,
+     "local": 122,
+     "ticketmaster": 12
+    },
+    {
+     "date": "2026-11-21",
+     "total": 195,
+     "local": 179,
+     "ticketmaster": 16
+    },
+    {
+     "date": "2026-11-22",
+     "total": 44,
+     "local": 36,
+     "ticketmaster": 8
+    },
+    {
+     "date": "2026-11-23",
+     "total": 78,
+     "local": 78,
+     "ticketmaster": 0
+    },
+    {
+     "date": "2026-11-24",
+     "total": 112,
+     "local": 108,
+     "ticketmaster": 4
+    },
+    {
+     "date": "2026-11-25",
+     "total": 83,
+     "local": 78,
+     "ticketmaster": 5
+    },
+    {
+     "date": "2026-11-26",
+     "total": 26,
+     "local": 26,
+     "ticketmaster": 0
+    },
+    {
+     "date": "2026-11-27",
+     "total": 31,
+     "local": 22,
+     "ticketmaster": 9
+    },
+    {
+     "date": "2026-11-28",
+     "total": 56,
+     "local": 44,
+     "ticketmaster": 12
+    },
+    {
+     "date": "2026-11-29",
+     "total": 38,
+     "local": 31,
+     "ticketmaster": 7
+    }
+   ]
+  },
+  {
+   "area": "Plantation, FL",
+   "zip": "33324",
+   "verdict": "READY",
+   "goodDays": 14,
+   "totalLocal": 1227,
+   "days": [
+    {
+     "date": "2026-11-16",
+     "total": 105,
+     "local": 103,
+     "ticketmaster": 2
+    },
+    {
+     "date": "2026-11-17",
+     "total": 160,
+     "local": 155,
+     "ticketmaster": 5
+    },
+    {
+     "date": "2026-11-18",
+     "total": 169,
+     "local": 162,
+     "ticketmaster": 7
+    },
+    {
+     "date": "2026-11-19",
+     "total": 156,
+     "local": 150,
+     "ticketmaster": 6
+    },
+    {
+     "date": "2026-11-20",
+     "total": 117,
+     "local": 106,
+     "ticketmaster": 11
+    },
+    {
+     "date": "2026-11-21",
+     "total": 177,
+     "local": 159,
+     "ticketmaster": 18
+    },
+    {
+     "date": "2026-11-22",
+     "total": 50,
+     "local": 41,
+     "ticketmaster": 9
+    },
+    {
+     "date": "2026-11-23",
+     "total": 71,
+     "local": 70,
+     "ticketmaster": 1
+    },
+    {
+     "date": "2026-11-24",
+     "total": 98,
+     "local": 93,
+     "ticketmaster": 5
+    },
+    {
+     "date": "2026-11-25",
+     "total": 64,
+     "local": 60,
+     "ticketmaster": 4
+    },
+    {
+     "date": "2026-11-26",
+     "total": 25,
+     "local": 25,
+     "ticketmaster": 0
+    },
+    {
+     "date": "2026-11-27",
+     "total": 28,
+     "local": 22,
+     "ticketmaster": 6
+    },
+    {
+     "date": "2026-11-28",
+     "total": 59,
+     "local": 49,
+     "ticketmaster": 10
+    },
+    {
+     "date": "2026-11-29",
+     "total": 39,
+     "local": 32,
+     "ticketmaster": 7
+    }
+   ]
+  },
+  {
+   "area": "Davie, FL",
+   "zip": "33314",
+   "verdict": "READY",
+   "goodDays": 14,
+   "totalLocal": 1277,
+   "days": [
+    {
+     "date": "2026-11-16",
+     "total": 111,
+     "local": 107,
+     "ticketmaster": 4
+    },
+    {
+     "date": "2026-11-17",
+     "total": 170,
+     "local": 164,
+     "ticketmaster": 6
+    },
+    {
+     "date": "2026-11-18",
+     "total": 176,
+     "local": 169,
+     "ticketmaster": 7
+    },
+    {
+     "date": "2026-11-19",
+     "total": 162,
+     "local": 155,
+     "ticketmaster": 7
+    },
+    {
+     "date": "2026-11-20",
+     "total": 123,
+     "local": 109,
+     "ticketmaster": 14
+    },
+    {
+     "date": "2026-11-21",
+     "total": 191,
+     "local": 172,
+     "ticketmaster": 19
+    },
+    {
+     "date": "2026-11-22",
+     "total": 51,
+     "local": 42,
+     "ticketmaster": 9
+    },
+    {
+     "date": "2026-11-23",
+     "total": 71,
+     "local": 70,
+     "ticketmaster": 1
+    },
+    {
+     "date": "2026-11-24",
+     "total": 100,
+     "local": 95,
+     "ticketmaster": 5
+    },
+    {
+     "date": "2026-11-25",
+     "total": 68,
+     "local": 63,
+     "ticketmaster": 5
+    },
+    {
+     "date": "2026-11-26",
+     "total": 26,
+     "local": 26,
+     "ticketmaster": 0
+    },
+    {
+     "date": "2026-11-27",
+     "total": 32,
+     "local": 23,
+     "ticketmaster": 9
+    },
+    {
+     "date": "2026-11-28",
+     "total": 61,
+     "local": 49,
+     "ticketmaster": 12
+    },
+    {
+     "date": "2026-11-29",
+     "total": 41,
+     "local": 33,
+     "ticketmaster": 8
+    }
+   ]
+  },
+  {
+   "area": "Weston, FL",
+   "zip": "33327",
+   "verdict": "READY",
+   "goodDays": 14,
+   "totalLocal": 865,
+   "days": [
+    {
+     "date": "2026-11-16",
+     "total": 69,
+     "local": 69,
+     "ticketmaster": 0
+    },
+    {
+     "date": "2026-11-17",
+     "total": 112,
+     "local": 108,
+     "ticketmaster": 4
+    },
+    {
+     "date": "2026-11-18",
+     "total": 128,
+     "local": 124,
+     "ticketmaster": 4
+    },
+    {
+     "date": "2026-11-19",
+     "total": 107,
+     "local": 102,
+     "ticketmaster": 5
+    },
+    {
+     "date": "2026-11-20",
+     "total": 88,
+     "local": 79,
+     "ticketmaster": 9
+    },
+    {
+     "date": "2026-11-21",
+     "total": 126,
+     "local": 113,
+     "ticketmaster": 13
+    },
+    {
+     "date": "2026-11-22",
+     "total": 32,
+     "local": 25,
+     "ticketmaster": 7
+    },
+    {
+     "date": "2026-11-23",
+     "total": 48,
+     "local": 47,
+     "ticketmaster": 1
+    },
+    {
+     "date": "2026-11-24",
+     "total": 65,
+     "local": 61,
+     "ticketmaster": 4
+    },
+    {
+     "date": "2026-11-25",
+     "total": 44,
+     "local": 40,
+     "ticketmaster": 4
+    },
+    {
+     "date": "2026-11-26",
+     "total": 24,
+     "local": 24,
+     "ticketmaster": 0
+    },
+    {
+     "date": "2026-11-27",
+     "total": 22,
+     "local": 17,
+     "ticketmaster": 5
+    },
+    {
+     "date": "2026-11-28",
+     "total": 46,
+     "local": 38,
+     "ticketmaster": 8
+    },
+    {
+     "date": "2026-11-29",
+     "total": 23,
+     "local": 18,
+     "ticketmaster": 5
+    }
+   ]
+  },
+  {
+   "area": "Pompano Beach, FL",
+   "zip": "33060",
+   "verdict": "READY",
+   "goodDays": 14,
+   "totalLocal": 908,
+   "days": [
+    {
+     "date": "2026-11-16",
+     "total": 73,
+     "local": 73,
+     "ticketmaster": 0
+    },
+    {
+     "date": "2026-11-17",
+     "total": 120,
+     "local": 116,
+     "ticketmaster": 4
+    },
+    {
+     "date": "2026-11-18",
+     "total": 125,
+     "local": 120,
+     "ticketmaster": 5
+    },
+    {
+     "date": "2026-11-19",
+     "total": 113,
+     "local": 109,
+     "ticketmaster": 4
+    },
+    {
+     "date": "2026-11-20",
+     "total": 81,
+     "local": 73,
+     "ticketmaster": 8
+    },
+    {
+     "date": "2026-11-21",
+     "total": 119,
+     "local": 105,
+     "ticketmaster": 14
+    },
+    {
+     "date": "2026-11-22",
+     "total": 38,
+     "local": 31,
+     "ticketmaster": 7
+    },
+    {
+     "date": "2026-11-23",
+     "total": 57,
+     "local": 56,
+     "ticketmaster": 1
+    },
+    {
+     "date": "2026-11-24",
+     "total": 79,
+     "local": 74,
+     "ticketmaster": 5
+    },
+    {
+     "date": "2026-11-25",
+     "total": 43,
+     "local": 39,
+     "ticketmaster": 4
+    },
+    {
+     "date": "2026-11-26",
+     "total": 23,
+     "local": 23,
+     "ticketmaster": 0
+    },
+    {
+     "date": "2026-11-27",
+     "total": 23,
+     "local": 19,
+     "ticketmaster": 4
+    },
+    {
+     "date": "2026-11-28",
+     "total": 51,
+     "local": 45,
+     "ticketmaster": 6
+    },
+    {
+     "date": "2026-11-29",
+     "total": 31,
+     "local": 25,
+     "ticketmaster": 6
+    }
+   ]
+  },
+  {
+   "area": "Deerfield Beach, FL",
+   "zip": "33441",
+   "verdict": "READY",
+   "goodDays": 14,
+   "totalLocal": 878,
+   "days": [
+    {
+     "date": "2026-11-16",
+     "total": 71,
+     "local": 71,
+     "ticketmaster": 0
+    },
+    {
+     "date": "2026-11-17",
+     "total": 117,
+     "local": 113,
+     "ticketmaster": 4
+    },
+    {
+     "date": "2026-11-18",
+     "total": 118,
+     "local": 113,
+     "ticketmaster": 5
+    },
+    {
+     "date": "2026-11-19",
+     "total": 105,
+     "local": 101,
+     "ticketmaster": 4
+    },
+    {
+     "date": "2026-11-20",
+     "total": 78,
+     "local": 70,
+     "ticketmaster": 8
+    },
+    {
+     "date": "2026-11-21",
+     "total": 119,
+     "local": 106,
+     "ticketmaster": 13
+    },
+    {
+     "date": "2026-11-22",
+     "total": 40,
+     "local": 33,
+     "ticketmaster": 7
+    },
+    {
+     "date": "2026-11-23",
+     "total": 54,
+     "local": 53,
+     "ticketmaster": 1
+    },
+    {
+     "date": "2026-11-24",
+     "total": 75,
+     "local": 70,
+     "ticketmaster": 5
+    },
+    {
+     "date": "2026-11-25",
+     "total": 38,
+     "local": 34,
+     "ticketmaster": 4
+    },
+    {
+     "date": "2026-11-26",
+     "total": 20,
+     "local": 20,
+     "ticketmaster": 0
+    },
+    {
+     "date": "2026-11-27",
+     "total": 23,
+     "local": 19,
+     "ticketmaster": 4
+    },
+    {
+     "date": "2026-11-28",
+     "total": 51,
+     "local": 46,
+     "ticketmaster": 5
+    },
+    {
+     "date": "2026-11-29",
+     "total": 34,
+     "local": 29,
+     "ticketmaster": 5
+    }
+   ]
+  },
+  {
+   "area": "Miami, FL",
+   "zip": "33101",
+   "verdict": "READY",
+   "goodDays": 14,
+   "totalLocal": 1148,
+   "days": [
+    {
+     "date": "2026-11-16",
+     "total": 98,
+     "local": 94,
+     "ticketmaster": 4
+    },
+    {
+     "date": "2026-11-17",
+     "total": 148,
+     "local": 143,
+     "ticketmaster": 5
+    },
+    {
+     "date": "2026-11-18",
+     "total": 159,
+     "local": 155,
+     "ticketmaster": 4
+    },
+    {
+     "date": "2026-11-19",
+     "total": 152,
+     "local": 146,
+     "ticketmaster": 6
+    },
+    {
+     "date": "2026-11-20",
+     "total": 114,
+     "local": 103,
+     "ticketmaster": 11
+    },
+    {
+     "date": "2026-11-21",
+     "total": 163,
+     "local": 149,
+     "ticketmaster": 14
+    },
+    {
+     "date": "2026-11-22",
+     "total": 45,
+     "local": 37,
+     "ticketmaster": 8
+    },
+    {
+     "date": "2026-11-23",
+     "total": 62,
+     "local": 62,
+     "ticketmaster": 0
+    },
+    {
+     "date": "2026-11-24",
+     "total": 94,
+     "local": 92,
+     "ticketmaster": 2
+    },
+    {
+     "date": "2026-11-25",
+     "total": 71,
+     "local": 67,
+     "ticketmaster": 4
+    },
+    {
+     "date": "2026-11-26",
+     "total": 23,
+     "local": 23,
+     "ticketmaster": 0
+    },
+    {
+     "date": "2026-11-27",
+     "total": 26,
+     "local": 17,
+     "ticketmaster": 9
+    },
+    {
+     "date": "2026-11-28",
+     "total": 42,
+     "local": 31,
+     "ticketmaster": 11
+    },
+    {
+     "date": "2026-11-29",
+     "total": 36,
+     "local": 29,
+     "ticketmaster": 7
+    }
+   ]
+  },
+  {
+   "area": "Miami Beach, FL",
+   "zip": "33139",
+   "verdict": "READY",
+   "goodDays": 14,
+   "totalLocal": 1148,
+   "days": [
+    {
+     "date": "2026-11-16",
+     "total": 98,
+     "local": 94,
+     "ticketmaster": 4
+    },
+    {
+     "date": "2026-11-17",
+     "total": 148,
+     "local": 143,
+     "ticketmaster": 5
+    },
+    {
+     "date": "2026-11-18",
+     "total": 159,
+     "local": 155,
+     "ticketmaster": 4
+    },
+    {
+     "date": "2026-11-19",
+     "total": 152,
+     "local": 146,
+     "ticketmaster": 6
+    },
+    {
+     "date": "2026-11-20",
+     "total": 114,
+     "local": 103,
+     "ticketmaster": 11
+    },
+    {
+     "date": "2026-11-21",
+     "total": 164,
+     "local": 150,
+     "ticketmaster": 14
+    },
+    {
+     "date": "2026-11-22",
+     "total": 45,
+     "local": 37,
+     "ticketmaster": 8
+    },
+    {
+     "date": "2026-11-23",
+     "total": 62,
+     "local": 62,
+     "ticketmaster": 0
+    },
+    {
+     "date": "2026-11-24",
+     "total": 94,
+     "local": 92,
+     "ticketmaster": 2
+    },
+    {
+     "date": "2026-11-25",
+     "total": 71,
+     "local": 67,
+     "ticketmaster": 4
+    },
+    {
+     "date": "2026-11-26",
+     "total": 23,
+     "local": 23,
+     "ticketmaster": 0
+    },
+    {
+     "date": "2026-11-27",
+     "total": 26,
+     "local": 17,
+     "ticketmaster": 9
+    },
+    {
+     "date": "2026-11-28",
+     "total": 42,
+     "local": 31,
+     "ticketmaster": 11
+    },
+    {
+     "date": "2026-11-29",
+     "total": 35,
+     "local": 28,
+     "ticketmaster": 7
+    }
+   ]
+  },
+  {
+   "area": "Coral Gables, FL",
+   "zip": "33134",
+   "verdict": "READY",
+   "goodDays": 14,
+   "totalLocal": 1078,
+   "days": [
+    {
+     "date": "2026-11-16",
+     "total": 91,
+     "local": 87,
+     "ticketmaster": 4
+    },
+    {
+     "date": "2026-11-17",
+     "total": 140,
+     "local": 138,
+     "ticketmaster": 2
+    },
+    {
+     "date": "2026-11-18",
+     "total": 152,
+     "local": 149,
+     "ticketmaster": 3
+    },
+    {
+     "date": "2026-11-19",
+     "total": 144,
+     "local": 140,
+     "ticketmaster": 4
+    },
+    {
+     "date": "2026-11-20",
+     "total": 103,
+     "local": 94,
+     "ticketmaster": 9
+    },
+    {
+     "date": "2026-11-21",
+     "total": 147,
+     "local": 137,
+     "ticketmaster": 10
+    },
+    {
+     "date": "2026-11-22",
+     "total": 35,
+     "local": 30,
+     "ticketmaster": 5
+    },
+    {
+     "date": "2026-11-23",
+     "total": 59,
+     "local": 59,
+     "ticketmaster": 0
+    },
+    {
+     "date": "2026-11-24",
+     "total": 90,
+     "local": 90,
+     "ticketmaster": 0
+    },
+    {
+     "date": "2026-11-25",
+     "total": 70,
+     "local": 67,
+     "ticketmaster": 3
+    },
+    {
+     "date": "2026-11-26",
+     "total": 22,
+     "local": 22,
+     "ticketmaster": 0
+    },
+    {
+     "date": "2026-11-27",
+     "total": 22,
+     "local": 16,
+     "ticketmaster": 6
+    },
+    {
+     "date": "2026-11-28",
+     "total": 35,
+     "local": 26,
+     "ticketmaster": 9
+    },
+    {
+     "date": "2026-11-29",
+     "total": 27,
+     "local": 23,
+     "ticketmaster": 4
+    }
+   ]
+  },
+  {
+   "area": "Hialeah, FL",
+   "zip": "33010",
+   "verdict": "READY",
+   "goodDays": 14,
+   "totalLocal": 1217,
+   "days": [
+    {
+     "date": "2026-11-16",
+     "total": 102,
+     "local": 98,
+     "ticketmaster": 4
+    },
+    {
+     "date": "2026-11-17",
+     "total": 156,
+     "local": 151,
+     "ticketmaster": 5
+    },
+    {
+     "date": "2026-11-18",
+     "total": 168,
+     "local": 164,
+     "ticketmaster": 4
+    },
+    {
+     "date": "2026-11-19",
+     "total": 161,
+     "local": 154,
+     "ticketmaster": 7
+    },
+    {
+     "date": "2026-11-20",
+     "total": 121,
+     "local": 109,
+     "ticketmaster": 12
+    },
+    {
+     "date": "2026-11-21",
+     "total": 172,
+     "local": 158,
+     "ticketmaster": 14
+    },
+    {
+     "date": "2026-11-22",
+     "total": 45,
+     "local": 37,
+     "ticketmaster": 8
+    },
+    {
+     "date": "2026-11-23",
+     "total": 67,
+     "local": 67,
+     "ticketmaster": 0
+    },
+    {
+     "date": "2026-11-24",
+     "total": 99,
+     "local": 97,
+     "ticketmaster": 2
+    },
+    {
+     "date": "2026-11-25",
+     "total": 77,
+     "local": 73,
+     "ticketmaster": 4
+    },
+    {
+     "date": "2026-11-26",
+     "total": 24,
+     "local": 24,
+     "ticketmaster": 0
+    },
+    {
+     "date": "2026-11-27",
+     "total": 29,
+     "local": 20,
+     "ticketmaster": 9
+    },
+    {
+     "date": "2026-11-28",
+     "total": 47,
+     "local": 36,
+     "ticketmaster": 11
+    },
+    {
+     "date": "2026-11-29",
+     "total": 36,
+     "local": 29,
+     "ticketmaster": 7
+    }
+   ]
+  },
+  {
+   "area": "Boca Raton, FL",
+   "zip": "33432",
+   "verdict": "READY",
+   "goodDays": 14,
+   "totalLocal": 771,
+   "days": [
+    {
+     "date": "2026-11-16",
+     "total": 59,
+     "local": 59,
+     "ticketmaster": 0
+    },
+    {
+     "date": "2026-11-17",
+     "total": 103,
+     "local": 99,
+     "ticketmaster": 4
+    },
+    {
+     "date": "2026-11-18",
+     "total": 104,
+     "local": 99,
+     "ticketmaster": 5
+    },
+    {
+     "date": "2026-11-19",
+     "total": 94,
+     "local": 90,
+     "ticketmaster": 4
+    },
+    {
+     "date": "2026-11-20",
+     "total": 73,
+     "local": 64,
+     "ticketmaster": 9
+    },
+    {
+     "date": "2026-11-21",
+     "total": 102,
+     "local": 89,
+     "ticketmaster": 13
+    },
+    {
+     "date": "2026-11-22",
+     "total": 36,
+     "local": 30,
+     "ticketmaster": 6
+    },
+    {
+     "date": "2026-11-23",
+     "total": 45,
+     "local": 44,
+     "ticketmaster": 1
+    },
+    {
+     "date": "2026-11-24",
+     "total": 68,
+     "local": 63,
+     "ticketmaster": 5
+    },
+    {
+     "date": "2026-11-25",
+     "total": 33,
+     "local": 29,
+     "ticketmaster": 4
+    },
+    {
+     "date": "2026-11-26",
+     "total": 17,
+     "local": 17,
+     "ticketmaster": 0
+    },
+    {
+     "date": "2026-11-27",
+     "total": 21,
+     "local": 17,
+     "ticketmaster": 4
+    },
+    {
+     "date": "2026-11-28",
+     "total": 46,
+     "local": 41,
+     "ticketmaster": 5
+    },
+    {
+     "date": "2026-11-29",
+     "total": 35,
+     "local": 30,
+     "ticketmaster": 5
+    }
+   ]
+  },
+  {
+   "area": "Delray Beach, FL",
+   "zip": "33444",
+   "verdict": "READY",
+   "goodDays": 14,
+   "totalLocal": 695,
+   "days": [
+    {
+     "date": "2026-11-16",
+     "total": 55,
+     "local": 54,
+     "ticketmaster": 1
+    },
+    {
+     "date": "2026-11-17",
+     "total": 92,
+     "local": 88,
+     "ticketmaster": 4
+    },
+    {
+     "date": "2026-11-18",
+     "total": 89,
+     "local": 84,
+     "ticketmaster": 5
+    },
+    {
+     "date": "2026-11-19",
+     "total": 85,
+     "local": 82,
+     "ticketmaster": 3
+    },
+    {
+     "date": "2026-11-20",
+     "total": 67,
+     "local": 59,
+     "ticketmaster": 8
+    },
+    {
+     "date": "2026-11-21",
+     "total": 90,
+     "local": 79,
+     "ticketmaster": 11
+    },
+    {
+     "date": "2026-11-22",
+     "total": 34,
+     "local": 29,
+     "ticketmaster": 5
+    },
+    {
+     "date": "2026-11-23",
+     "total": 43,
+     "local": 42,
+     "ticketmaster": 1
+    },
+    {
+     "date": "2026-11-24",
+     "total": 64,
+     "local": 59,
+     "ticketmaster": 5
+    },
+    {
+     "date": "2026-11-25",
+     "total": 30,
+     "local": 27,
+     "ticketmaster": 3
+    },
+    {
+     "date": "2026-11-26",
+     "total": 13,
+     "local": 13,
+     "ticketmaster": 0
+    },
+    {
+     "date": "2026-11-27",
+     "total": 21,
+     "local": 17,
+     "ticketmaster": 4
+    },
+    {
+     "date": "2026-11-28",
+     "total": 41,
+     "local": 37,
+     "ticketmaster": 4
+    },
+    {
+     "date": "2026-11-29",
+     "total": 30,
+     "local": 25,
+     "ticketmaster": 5
+    }
+   ]
+  },
+  {
+   "area": "West Palm Beach, FL",
+   "zip": "33401",
+   "verdict": "READY",
+   "goodDays": 14,
+   "totalLocal": 375,
+   "days": [
+    {
+     "date": "2026-11-16",
+     "total": 26,
+     "local": 24,
+     "ticketmaster": 2
+    },
+    {
+     "date": "2026-11-17",
+     "total": 49,
+     "local": 49,
+     "ticketmaster": 0
+    },
+    {
+     "date": "2026-11-18",
+     "total": 43,
+     "local": 40,
+     "ticketmaster": 3
+    },
+    {
+     "date": "2026-11-19",
+     "total": 52,
+     "local": 52,
+     "ticketmaster": 0
+    },
+    {
+     "date": "2026-11-20",
+     "total": 30,
+     "local": 26,
+     "ticketmaster": 4
+    },
+    {
+     "date": "2026-11-21",
+     "total": 35,
+     "local": 32,
+     "ticketmaster": 3
+    },
+    {
+     "date": "2026-11-22",
+     "total": 19,
+     "local": 17,
+     "ticketmaster": 2
+    },
+    {
+     "date": "2026-11-23",
+     "total": 29,
+     "local": 28,
+     "ticketmaster": 1
+    },
+    {
+     "date": "2026-11-24",
+     "total": 44,
+     "local": 42,
+     "ticketmaster": 2
+    },
+    {
+     "date": "2026-11-25",
+     "total": 16,
+     "local": 15,
+     "ticketmaster": 1
+    },
+    {
+     "date": "2026-11-26",
+     "total": 5,
+     "local": 5,
+     "ticketmaster": 0
+    },
+    {
+     "date": "2026-11-27",
+     "total": 12,
+     "local": 11,
+     "ticketmaster": 1
+    },
+    {
+     "date": "2026-11-28",
+     "total": 18,
+     "local": 17,
+     "ticketmaster": 1
+    },
+    {
+     "date": "2026-11-29",
+     "total": 21,
+     "local": 17,
+     "ticketmaster": 4
+    }
+   ]
+  },
+  {
+   "area": "Boynton Beach, FL",
+   "zip": "33435",
+   "verdict": "READY",
+   "goodDays": 13,
+   "totalLocal": 505,
+   "days": [
+    {
+     "date": "2026-11-16",
+     "total": 42,
+     "local": 40,
+     "ticketmaster": 2
+    },
+    {
+     "date": "2026-11-17",
+     "total": 69,
+     "local": 69,
+     "ticketmaster": 0
+    },
+    {
+     "date": "2026-11-18",
+     "total": 72,
+     "local": 68,
+     "ticketmaster": 4
+    },
+    {
+     "date": "2026-11-19",
+     "total": 61,
+     "local": 61,
+     "ticketmaster": 0
+    },
+    {
+     "date": "2026-11-20",
+     "total": 46,
+     "local": 41,
+     "ticketmaster": 5
+    },
+    {
+     "date": "2026-11-21",
+     "total": 59,
+     "local": 54,
+     "ticketmaster": 5
+    },
+    {
+     "date": "2026-11-22",
+     "total": 23,
+     "local": 21,
+     "ticketmaster": 2
+    },
+    {
+     "date": "2026-11-23",
+     "total": 33,
+     "local": 32,
+     "ticketmaster": 1
+    },
+    {
+     "date": "2026-11-24",
+     "total": 47,
+     "local": 44,
+     "ticketmaster": 3
+    },
+    {
+     "date": "2026-11-25",
+     "total": 20,
+     "local": 19,
+     "ticketmaster": 1
+    },
+    {
+     "date": "2026-11-26",
+     "total": 4,
+     "local": 4,
+     "ticketmaster": 0
+    },
+    {
+     "date": "2026-11-27",
+     "total": 12,
+     "local": 11,
+     "ticketmaster": 1
+    },
+    {
+     "date": "2026-11-28",
+     "total": 25,
+     "local": 24,
+     "ticketmaster": 1
+    },
+    {
+     "date": "2026-11-29",
+     "total": 21,
+     "local": 17,
+     "ticketmaster": 4
+    }
+   ]
+  },
+  {
+   "area": "Wellington, FL",
+   "zip": "33414",
+   "verdict": "READY",
+   "goodDays": 14,
+   "totalLocal": 436,
+   "days": [
+    {
+     "date": "2026-11-16",
+     "total": 31,
+     "local": 29,
+     "ticketmaster": 2
+    },
+    {
+     "date": "2026-11-17",
+     "total": 59,
+     "local": 59,
+     "ticketmaster": 0
+    },
+    {
+     "date": "2026-11-18",
+     "total": 50,
+     "local": 47,
+     "ticketmaster": 3
+    },
+    {
+     "date": "2026-11-19",
+     "total": 60,
+     "local": 60,
+     "ticketmaster": 0
+    },
+    {
+     "date": "2026-11-20",
+     "total": 38,
+     "local": 33,
+     "ticketmaster": 5
+    },
+    {
+     "date": "2026-11-21",
+     "total": 42,
+     "local": 37,
+     "ticketmaster": 5
+    },
+    {
+     "date": "2026-11-22",
+     "total": 23,
+     "local": 21,
+     "ticketmaster": 2
+    },
+    {
+     "date": "2026-11-23",
+     "total": 32,
+     "local": 31,
+     "ticketmaster": 1
+    },
+    {
+     "date": "2026-11-24",
+     "total": 47,
+     "local": 45,
+     "ticketmaster": 2
+    },
+    {
+     "date": "2026-11-25",
+     "total": 18,
+     "local": 17,
+     "ticketmaster": 1
+    },
+    {
+     "date": "2026-11-26",
+     "total": 6,
+     "local": 6,
+     "ticketmaster": 0
+    },
+    {
+     "date": "2026-11-27",
+     "total": 14,
+     "local": 13,
+     "ticketmaster": 1
+    },
+    {
+     "date": "2026-11-28",
+     "total": 22,
+     "local": 21,
+     "ticketmaster": 1
+    },
+    {
+     "date": "2026-11-29",
+     "total": 21,
+     "local": 17,
+     "ticketmaster": 4
+    }
+   ]
+  },
+  {
+   "area": "Jupiter, FL",
+   "zip": "33458",
+   "verdict": "READY",
+   "goodDays": 14,
+   "totalLocal": 269,
+   "days": [
+    {
+     "date": "2026-11-16",
+     "total": 19,
+     "local": 17,
+     "ticketmaster": 2
+    },
+    {
+     "date": "2026-11-17",
+     "total": 33,
+     "local": 33,
+     "ticketmaster": 0
+    },
+    {
+     "date": "2026-11-18",
+     "total": 28,
+     "local": 27,
+     "ticketmaster": 1
+    },
+    {
+     "date": "2026-11-19",
+     "total": 33,
+     "local": 33,
+     "ticketmaster": 0
+    },
+    {
+     "date": "2026-11-20",
+     "total": 27,
+     "local": 24,
+     "ticketmaster": 3
+    },
+    {
+     "date": "2026-11-21",
+     "total": 27,
+     "local": 26,
+     "ticketmaster": 1
+    },
+    {
+     "date": "2026-11-22",
+     "total": 12,
+     "local": 12,
+     "ticketmaster": 0
+    },
+    {
+     "date": "2026-11-23",
+     "total": 23,
+     "local": 23,
+     "ticketmaster": 0
+    },
+    {
+     "date": "2026-11-24",
+     "total": 30,
+     "local": 29,
+     "ticketmaster": 1
+    },
+    {
+     "date": "2026-11-25",
+     "total": 8,
+     "local": 7,
+     "ticketmaster": 1
+    },
+    {
+     "date": "2026-11-26",
+     "total": 6,
+     "local": 6,
+     "ticketmaster": 0
+    },
+    {
+     "date": "2026-11-27",
+     "total": 10,
+     "local": 9,
+     "ticketmaster": 1
+    },
+    {
+     "date": "2026-11-28",
+     "total": 13,
+     "local": 12,
+     "ticketmaster": 1
+    },
+    {
+     "date": "2026-11-29",
+     "total": 14,
+     "local": 11,
+     "ticketmaster": 3
+    }
+   ]
+  },
+  {
+   "area": "Orlando, FL",
+   "zip": "32801",
+   "verdict": "READY",
+   "goodDays": 14,
+   "totalLocal": 976,
+   "days": [
+    {
+     "date": "2026-11-16",
+     "total": 85,
+     "local": 81,
+     "ticketmaster": 4
+    },
+    {
+     "date": "2026-11-17",
+     "total": 108,
+     "local": 102,
+     "ticketmaster": 6
+    },
+    {
+     "date": "2026-11-18",
+     "total": 110,
+     "local": 103,
+     "ticketmaster": 7
+    },
+    {
+     "date": "2026-11-19",
+     "total": 114,
+     "local": 104,
+     "ticketmaster": 10
+    },
+    {
+     "date": "2026-11-20",
+     "total": 96,
+     "local": 82,
+     "ticketmaster": 14
+    },
+    {
+     "date": "2026-11-21",
+     "total": 109,
+     "local": 95,
+     "ticketmaster": 14
+    },
+    {
+     "date": "2026-11-22",
+     "total": 33,
+     "local": 25,
+     "ticketmaster": 8
+    },
+    {
+     "date": "2026-11-23",
+     "total": 93,
+     "local": 87,
+     "ticketmaster": 6
+    },
+    {
+     "date": "2026-11-24",
+     "total": 107,
+     "local": 97,
+     "ticketmaster": 10
+    },
+    {
+     "date": "2026-11-25",
+     "total": 82,
+     "local": 73,
+     "ticketmaster": 9
+    },
+    {
+     "date": "2026-11-26",
+     "total": 19,
+     "local": 14,
+     "ticketmaster": 5
+    },
+    {
+     "date": "2026-11-27",
+     "total": 35,
+     "local": 19,
+     "ticketmaster": 16
+    },
+    {
+     "date": "2026-11-28",
+     "total": 69,
+     "local": 58,
+     "ticketmaster": 11
+    },
+    {
+     "date": "2026-11-29",
+     "total": 43,
+     "local": 36,
+     "ticketmaster": 7
+    }
+   ]
+  },
+  {
+   "area": "Winter Park, FL",
+   "zip": "32789",
+   "verdict": "READY",
+   "goodDays": 14,
+   "totalLocal": 1007,
+   "days": [
+    {
+     "date": "2026-11-16",
+     "total": 88,
+     "local": 84,
+     "ticketmaster": 4
+    },
+    {
+     "date": "2026-11-17",
+     "total": 116,
+     "local": 110,
+     "ticketmaster": 6
+    },
+    {
+     "date": "2026-11-18",
+     "total": 117,
+     "local": 110,
+     "ticketmaster": 7
+    },
+    {
+     "date": "2026-11-19",
+     "total": 121,
+     "local": 111,
+     "ticketmaster": 10
+    },
+    {
+     "date": "2026-11-20",
+     "total": 100,
+     "local": 86,
+     "ticketmaster": 14
+    },
+    {
+     "date": "2026-11-21",
+     "total": 111,
+     "local": 97,
+     "ticketmaster": 14
+    },
+    {
+     "date": "2026-11-22",
+     "total": 33,
+     "local": 25,
+     "ticketmaster": 8
+    },
+    {
+     "date": "2026-11-23",
+     "total": 93,
+     "local": 87,
+     "ticketmaster": 6
+    },
+    {
+     "date": "2026-11-24",
+     "total": 107,
+     "local": 97,
+     "ticketmaster": 10
+    },
+    {
+     "date": "2026-11-25",
+     "total": 82,
+     "local": 73,
+     "ticketmaster": 9
+    },
+    {
+     "date": "2026-11-26",
+     "total": 19,
+     "local": 14,
+     "ticketmaster": 5
+    },
+    {
+     "date": "2026-11-27",
+     "total": 35,
+     "local": 19,
+     "ticketmaster": 16
+    },
+    {
+     "date": "2026-11-28",
+     "total": 69,
+     "local": 58,
+     "ticketmaster": 11
+    },
+    {
+     "date": "2026-11-29",
+     "total": 43,
+     "local": 36,
+     "ticketmaster": 7
+    }
+   ]
+  },
+  {
+   "area": "Tampa, FL",
+   "zip": "33602",
+   "verdict": "READY",
+   "goodDays": 13,
+   "totalLocal": 452,
+   "days": [
+    {
+     "date": "2026-11-16",
+     "total": 44,
+     "local": 42,
+     "ticketmaster": 2
+    },
+    {
+     "date": "2026-11-17",
+     "total": 70,
+     "local": 67,
+     "ticketmaster": 3
+    },
+    {
+     "date": "2026-11-18",
+     "total": 55,
+     "local": 53,
+     "ticketmaster": 2
+    },
+    {
+     "date": "2026-11-19",
+     "total": 65,
+     "local": 59,
+     "ticketmaster": 6
+    },
+    {
+     "date": "2026-11-20",
+     "total": 40,
+     "local": 31,
+     "ticketmaster": 9
+    },
+    {
+     "date": "2026-11-21",
+     "total": 55,
+     "local": 44,
+     "ticketmaster": 11
+    },
+    {
+     "date": "2026-11-22",
+     "total": 10,
+     "local": 4,
+     "ticketmaster": 6
+    },
+    {
+     "date": "2026-11-23",
+     "total": 37,
+     "local": 35,
+     "ticketmaster": 2
+    },
+    {
+     "date": "2026-11-24",
+     "total": 45,
+     "local": 38,
+     "ticketmaster": 7
+    },
+    {
+     "date": "2026-11-25",
+     "total": 32,
+     "local": 30,
+     "ticketmaster": 2
+    },
+    {
+     "date": "2026-11-26",
+     "total": 14,
+     "local": 12,
+     "ticketmaster": 2
+    },
+    {
+     "date": "2026-11-27",
+     "total": 15,
+     "local": 10,
+     "ticketmaster": 5
+    },
+    {
+     "date": "2026-11-28",
+     "total": 29,
+     "local": 21,
+     "ticketmaster": 8
+    },
+    {
+     "date": "2026-11-29",
+     "total": 10,
+     "local": 6,
+     "ticketmaster": 4
+    }
+   ]
+  },
+  {
+   "area": "St. Petersburg, FL",
+   "zip": "33701",
+   "verdict": "READY",
+   "goodDays": 13,
+   "totalLocal": 394,
+   "days": [
+    {
+     "date": "2026-11-16",
+     "total": 38,
+     "local": 36,
+     "ticketmaster": 2
+    },
+    {
+     "date": "2026-11-17",
+     "total": 61,
+     "local": 58,
+     "ticketmaster": 3
+    },
+    {
+     "date": "2026-11-18",
+     "total": 45,
+     "local": 43,
+     "ticketmaster": 2
+    },
+    {
+     "date": "2026-11-19",
+     "total": 54,
+     "local": 50,
+     "ticketmaster": 4
+    },
+    {
+     "date": "2026-11-20",
+     "total": 35,
+     "local": 27,
+     "ticketmaster": 8
+    },
+    {
+     "date": "2026-11-21",
+     "total": 50,
+     "local": 41,
+     "ticketmaster": 9
+    },
+    {
+     "date": "2026-11-22",
+     "total": 10,
+     "local": 4,
+     "ticketmaster": 6
+    },
+    {
+     "date": "2026-11-23",
+     "total": 32,
+     "local": 30,
+     "ticketmaster": 2
+    },
+    {
+     "date": "2026-11-24",
+     "total": 36,
+     "local": 30,
+     "ticketmaster": 6
+    },
+    {
+     "date": "2026-11-25",
+     "total": 29,
+     "local": 27,
+     "ticketmaster": 2
+    },
+    {
+     "date": "2026-11-26",
+     "total": 12,
+     "local": 11,
+     "ticketmaster": 1
+    },
+    {
+     "date": "2026-11-27",
+     "total": 14,
+     "local": 10,
+     "ticketmaster": 4
+    },
+    {
+     "date": "2026-11-28",
+     "total": 28,
+     "local": 21,
+     "ticketmaster": 7
+    },
+    {
+     "date": "2026-11-29",
+     "total": 9,
+     "local": 6,
+     "ticketmaster": 3
+    }
+   ]
+  },
+  {
+   "area": "Manhattan, NY",
+   "zip": "10001",
+   "verdict": "READY",
+   "goodDays": 14,
+   "totalLocal": 2596,
+   "days": [
+    {
+     "date": "2026-11-16",
+     "total": 402,
+     "local": 359,
+     "ticketmaster": 43
+    },
+    {
+     "date": "2026-11-17",
+     "total": 489,
+     "local": 408,
+     "ticketmaster": 81
+    },
+    {
+     "date": "2026-11-18",
+     "total": 528,
+     "local": 443,
+     "ticketmaster": 85
+    },
+    {
+     "date": "2026-11-19",
+     "total": 366,
+     "local": 254,
+     "ticketmaster": 112
+    },
+    {
+     "date": "2026-11-20",
+     "total": 280,
+     "local": 174,
+     "ticketmaster": 106
+    },
+    {
+     "date": "2026-11-21",
+     "total": 234,
+     "local": 221,
+     "ticketmaster": 13
+    },
+    {
+     "date": "2026-11-22",
+     "total": 89,
+     "local": 82,
+     "ticketmaster": 7
+    },
+    {
+     "date": "2026-11-23",
+     "total": 213,
+     "local": 166,
+     "ticketmaster": 47
+    },
+    {
+     "date": "2026-11-24",
+     "total": 260,
+     "local": 186,
+     "ticketmaster": 74
+    },
+    {
+     "date": "2026-11-25",
+     "total": 200,
+     "local": 123,
+     "ticketmaster": 77
+    },
+    {
+     "date": "2026-11-26",
+     "total": 38,
+     "local": 26,
+     "ticketmaster": 12
+    },
+    {
+     "date": "2026-11-27",
+     "total": 165,
+     "local": 56,
+     "ticketmaster": 109
+    },
+    {
+     "date": "2026-11-28",
+     "total": 136,
+     "local": 76,
+     "ticketmaster": 60
+    },
+    {
+     "date": "2026-11-29",
+     "total": 31,
+     "local": 22,
+     "ticketmaster": 9
+    }
+   ]
+  },
+  {
+   "area": "Brooklyn, NY",
+   "zip": "11201",
+   "verdict": "READY",
+   "goodDays": 14,
+   "totalLocal": 2382,
+   "days": [
+    {
+     "date": "2026-11-16",
+     "total": 382,
+     "local": 340,
+     "ticketmaster": 42
+    },
+    {
+     "date": "2026-11-17",
+     "total": 452,
+     "local": 369,
+     "ticketmaster": 83
+    },
+    {
+     "date": "2026-11-18",
+     "total": 485,
+     "local": 400,
+     "ticketmaster": 85
+    },
+    {
+     "date": "2026-11-19",
+     "total": 348,
+     "local": 236,
+     "ticketmaster": 112
+    },
+    {
+     "date": "2026-11-20",
+     "total": 261,
+     "local": 155,
+     "ticketmaster": 106
+    },
+    {
+     "date": "2026-11-21",
+     "total": 216,
+     "local": 205,
+     "ticketmaster": 11
+    },
+    {
+     "date": "2026-11-22",
+     "total": 81,
+     "local": 75,
+     "ticketmaster": 6
+    },
+    {
+     "date": "2026-11-23",
+     "total": 196,
+     "local": 149,
+     "ticketmaster": 47
+    },
+    {
+     "date": "2026-11-24",
+     "total": 239,
+     "local": 165,
+     "ticketmaster": 74
+    },
+    {
+     "date": "2026-11-25",
+     "total": 191,
+     "local": 116,
+     "ticketmaster": 75
+    },
+    {
+     "date": "2026-11-26",
+     "total": 38,
+     "local": 26,
+     "ticketmaster": 12
+    },
+    {
+     "date": "2026-11-27",
+     "total": 160,
+     "local": 53,
+     "ticketmaster": 107
+    },
+    {
+     "date": "2026-11-28",
+     "total": 130,
+     "local": 72,
+     "ticketmaster": 58
+    },
+    {
+     "date": "2026-11-29",
+     "total": 27,
+     "local": 21,
+     "ticketmaster": 6
+    }
+   ]
+  }
+ ]
+}

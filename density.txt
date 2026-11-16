@@ -1,0 +1,29 @@
+READY Sunrise, FL              zip 33326  local/day: 77, 120, 127, 110, 84, 121, 34, 54, 69, 44, 25, 20, 43, 26
+READY Fort Lauderdale, FL      zip 33301  local/day: 102, 154, 165, 152, 103, 160, 41, 69, 95, 60, 24, 22, 49, 32
+READY Coral Springs, FL        zip 33065  local/day: 71, 113, 116, 105, 71, 103, 31, 55, 73, 37, 19, 18, 44, 25
+READY Hollywood, FL            zip 33020  local/day: 103, 160, 168, 150, 111, 171, 42, 69, 93, 63, 26, 23, 49, 33
+READY Pembroke Pines, FL       zip 33024  local/day: 104, 161, 170, 151, 111, 170, 40, 70, 93, 65, 26, 23, 47, 31
+READY Miramar, FL              zip 33025  local/day: 112, 175, 191, 168, 122, 179, 36, 78, 108, 78, 26, 22, 44, 31
+READY Plantation, FL           zip 33324  local/day: 103, 155, 162, 150, 106, 159, 41, 70, 93, 60, 25, 22, 49, 32
+READY Davie, FL                zip 33314  local/day: 107, 164, 169, 155, 109, 172, 42, 70, 95, 63, 26, 23, 49, 33
+READY Weston, FL               zip 33327  local/day: 69, 108, 124, 102, 79, 113, 25, 47, 61, 40, 24, 17, 38, 18
+READY Pompano Beach, FL        zip 33060  local/day: 73, 116, 120, 109, 73, 105, 31, 56, 74, 39, 23, 19, 45, 25
+READY Deerfield Beach, FL      zip 33441  local/day: 71, 113, 113, 101, 70, 106, 33, 53, 70, 34, 20, 19, 46, 29
+READY Miami, FL                zip 33101  local/day: 94, 143, 155, 146, 103, 149, 37, 62, 92, 67, 23, 17, 31, 29
+READY Miami Beach, FL          zip 33139  local/day: 94, 143, 155, 146, 103, 150, 37, 62, 92, 67, 23, 17, 31, 28
+READY Coral Gables, FL         zip 33134  local/day: 87, 138, 149, 140, 94, 137, 30, 59, 90, 67, 22, 16, 26, 23
+READY Hialeah, FL              zip 33010  local/day: 98, 151, 164, 154, 109, 158, 37, 67, 97, 73, 24, 20, 36, 29
+READY Boca Raton, FL           zip 33432  local/day: 59, 99, 99, 90, 64, 89, 30, 44, 63, 29, 17, 17, 41, 30
+READY Delray Beach, FL         zip 33444  local/day: 54, 88, 84, 82, 59, 79, 29, 42, 59, 27, 13, 17, 37, 25
+READY West Palm Beach, FL      zip 33401  local/day: 24, 49, 40, 52, 26, 32, 17, 28, 42, 15, 5, 11, 17, 17
+READY Boynton Beach, FL        zip 33435  local/day: 40, 69, 68, 61, 41, 54, 21, 32, 44, 19, 4, 11, 24, 17
+READY Wellington, FL           zip 33414  local/day: 29, 59, 47, 60, 33, 37, 21, 31, 45, 17, 6, 13, 21, 17
+READY Jupiter, FL              zip 33458  local/day: 17, 33, 27, 33, 24, 26, 12, 23, 29, 7, 6, 9, 12, 11
+READY Orlando, FL              zip 32801  local/day: 81, 102, 103, 104, 82, 95, 25, 87, 97, 73, 14, 19, 58, 36
+READY Winter Park, FL          zip 32789  local/day: 84, 110, 110, 111, 86, 97, 25, 87, 97, 73, 14, 19, 58, 36
+READY Tampa, FL                zip 33602  local/day: 42, 67, 53, 59, 31, 44, 4, 35, 38, 30, 12, 10, 21, 6
+READY St. Petersburg, FL       zip 33701  local/day: 36, 58, 43, 50, 27, 41, 4, 30, 30, 27, 11, 10, 21, 6
+READY Manhattan, NY            zip 10001  local/day: 359, 408, 443, 254, 174, 221, 82, 166, 186, 123, 26, 56, 76, 22
+READY Brooklyn, NY             zip 11201  local/day: 340, 369, 400, 236, 155, 205, 75, 149, 165, 116, 26, 53, 72, 21
+
+Gate: >=5 local events on >=10 of 14 days. 27/27 areas READY.
