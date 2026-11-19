@@ -25,3 +25,8 @@ test("a family-no-signal share shift is flagged",()=>{
  const before=rep({"A":src(100)},100),after=rep({"A":src(100,{familyNoSignal:12})},100);
  assert.ok(driftAlerts(before,after).some(a=>/family-no-signal/.test(a)));
 });
+test("fewer stock photos or fewer unsupported family labels is an improvement, not an alert",()=>{
+ assert.ok(!driftAlerts(rep({"A":src(100,{stock:61})},100),rep({"A":src(100,{stock:31})},100)).some(a=>/stock-photo/.test(a)));
+ assert.ok(driftAlerts(rep({"A":src(100,{stock:31})},100),rep({"A":src(100,{stock:61})},100)).some(a=>/stock-photo/.test(a)));
+ assert.ok(!driftAlerts(rep({"A":src(100,{familyNoSignal:12})},100),rep({"A":src(100)},100)).some(a=>/family-no-signal/.test(a)));
+});

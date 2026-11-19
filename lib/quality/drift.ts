@@ -18,10 +18,12 @@ export function driftAlerts(before:AuditReport,after:AuditReport):string[]{
    if(ch<=-0.5)alerts.push(`source volume drop: ${name} ${b.events} → ${a.events} events (${Math.round(ch*100)}%)`);
   }
   const fns=share(a.familyNoSignal,a.events)-share(b.familyNoSignal,b.events);
-  if(Math.abs(fns)>=0.05&&Math.abs(a.familyNoSignal-b.familyNoSignal)>=5)
+  // Only a rise is a problem (labels going wrong); a drop means the labels got better.
+  if(fns>=0.05&&a.familyNoSignal-b.familyNoSignal>=5)
    alerts.push(`family-no-signal share shift: ${name} ${Math.round(share(b.familyNoSignal,b.events)*100)}% → ${Math.round(share(a.familyNoSignal,a.events)*100)}%`);
   const sts=share(a.stock,a.events)-share(b.stock,b.events);
-  if(Math.abs(sts)>=0.1&&Math.abs(a.stock-b.stock)>=10)
+  // Only a rise is a problem (real pictures going missing); a drop means more cards have their own picture.
+  if(sts>=0.1&&a.stock-b.stock>=10)
    alerts.push(`stock-photo share shift: ${name} ${Math.round(share(b.stock,b.events)*100)}% → ${Math.round(share(a.stock,a.events)*100)}%`);
  }
  for(const [name,b] of Object.entries(before.perSource))
