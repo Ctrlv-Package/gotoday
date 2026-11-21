@@ -2,6 +2,7 @@
 import {useEffect,useState} from "react";
 import {useRouter} from "next/navigation";
 import {useT} from "./Lang";
+import {trackEvent} from "../../lib/analytics";
 
 /** "I've been, it's great": one tap per signed-in person, whenever the event is listed —
  *  before it, while it's on, or after it's over. No save needed — saving adds the event to
@@ -16,6 +17,7 @@ export default function LoveButton({id,signedIn,initial}:{id:string;signedIn:boo
    const r=await fetch("/api/me/love",{method:"POST",headers:{"content-type":"application/json"},body:JSON.stringify({id,on:next})});
    const d=await r.json().catch(()=>({}));
    if(!r.ok)throw new Error(d.error||"love failed");
+   if(next)trackEvent("love_event");
    router.refresh();
   }catch{setOn(wasOn);setNote(t("Couldn't update. Please try again."))}finally{setBusy(false)}
  };
