@@ -2,6 +2,7 @@
 import {useEffect,useState} from "react";
 import {useT} from "./Lang";
 import {setFollowing} from "./saved";
+import {trackEvent} from "../../lib/analytics";
 
 /** "Remind me next year" (following the event's family): be told when this event comes around again (next year's date, whenever it's announced).
  *  Needs an account, so guests are sent to sign in first and the follow happens when they come back. */
@@ -10,7 +11,7 @@ export default function FollowButton({id,signedIn,initial,back}:{id:string;signe
  const [on,setOn]=useState(initial),[busy,setBusy]=useState(false),[note,setNote]=useState("");
  const act=async(next:boolean)=>{
   setBusy(true);setOn(next);setNote("");
-  try{await setFollowing(id,next);if(next)setNote(t("Done! When next year's date is announced, it'll show up in My GoToday and your GoToday calendar."))}
+  try{await setFollowing(id,next);if(next){trackEvent("remind_me");setNote(t("Done! When next year's date is announced, it'll show up in My GoToday and your GoToday calendar."))}}
   catch{setOn(!next);setNote(t("Couldn't update. Please try again."))}finally{setBusy(false)}
  };
  // Came back from signing in after tapping Follow: finish the follow.
