@@ -2,12 +2,31 @@ import test from "node:test";
 import assert from "node:assert/strict";
 import {toFlyerDraft,applyFlyerDraft} from "../lib/flyerDraft";
 
-const base={title:"",date:"",startTime:"",endTime:"",venue:"",city:"",description:"",isFree:true,visibility:"public" as const};
+const base={title:"",date:"",startTime:"",endTime:"",venue:"",address:"",city:"",description:"",isFree:true,visibility:"public" as const};
 
 test("toFlyerDraft maps every stated field",()=>{
  const d=toFlyerDraft({title:"Matteo's 6th Birthday",date:"2026-10-30",start:"18:00",place:"Flying Squirrel at Weston",town:"Weston",summary:"Minions party.",free:false},"2026-10-26");
  assert.equal(d.title,"Matteo's 6th Birthday");assert.equal(d.date,"2026-10-30");assert.equal(d.start,"18:00");
  assert.equal(d.place,"Flying Squirrel at Weston");assert.equal(d.town,"Weston");assert.equal(d.summary,"Minions party.");assert.equal(d.free,false);
+});
+
+test("toFlyerDraft splits a street address out of the place name",()=>{
+ const d=toFlyerDraft({title:"Krishan's 8th Birthday",date:"2026-12-19",start:"11:00",end:"13:00",place:"Off The Wall, 9130 W State Rd 84",town:"Davie"},"2026-11-21");
+ assert.equal(d.place,"Off The Wall");assert.equal(d.address,"9130 W State Rd 84");assert.equal(d.town,"Davie");
+});
+
+test("toFlyerDraft keeps a place whole when there is no address in it",()=>{
+ const plain=toFlyerDraft({title:"Party",date:"2026-10-30",place:"Flying Squirrel at Weston"},"2026-10-26");
+ assert.equal(plain.place,"Flying Squirrel at Weston");assert.equal(plain.address,undefined);
+ const commaNoNumber=toFlyerDraft({title:"Party",date:"2026-10-30",place:"Studio 54, New York"},"2026-10-26");
+ assert.equal(commaNoNumber.place,"Studio 54, New York");assert.equal(commaNoNumber.address,undefined);
+});
+
+test("applyFlyerDraft fills the street address only when empty",()=>{
+ const v=applyFlyerDraft({...base},{title:"X",place:"Off The Wall",address:"9130 W State Rd 84"});
+ assert.equal(v.venue,"Off The Wall");assert.equal(v.address,"9130 W State Rd 84");
+ const kept=applyFlyerDraft({...base,address:"1 Main St"},{title:"X",place:"Off The Wall",address:"9130 W State Rd 84"});
+ assert.equal(kept.address,"1 Main St");
 });
 
 test("toFlyerDraft drops past dates and malformed times",()=>{
