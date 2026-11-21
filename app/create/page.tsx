@@ -5,6 +5,7 @@ import SiteHeader from "../components/SiteHeader";
 import EventForm,{EMPTY,type FormValues} from "../components/EventForm";
 import CopyLink from "../components/CopyLink";
 import {myEvents,rememberEvent,type MyEvent} from "../components/myEvents";
+import {trackEvent} from "../../lib/analytics";
 
 type Done={status:string;visibility:string;shareUrl:string;manageUrl:string;title:string;reviewReason:string|null};
 
@@ -22,6 +23,7 @@ export default function CreatePage(){
   setBusy(true);
   try{const r=await fetch("/api/community",{method:"POST",headers:{"content-type":"application/json"},body:JSON.stringify(v)});const d=await r.json().catch(()=>({}));
    if(!d.ok)return d.errors||["Something went wrong. Please try again."];
+   trackEvent("create_event");
    rememberEvent({title:d.title,date:d.date,shareUrl:d.shareUrl,manageUrl:d.manageUrl,visibility:d.visibility});setDone(d);window.scrollTo({top:0});return null;
   }catch{return["Couldn't reach GoToday. Check your connection and try again."]}finally{setBusy(false)}
  }
