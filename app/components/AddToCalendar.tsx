@@ -1,6 +1,7 @@
 "use client";
 import {useT} from "./Lang";
 import {useEffect,useRef,useState} from "react";
+import {trackEvent} from "../../lib/analytics";
 
 // One "Add to calendar" button for every phone and computer. `base` is the event's page path
 // (/events/db-123 or /e/<link>); calendar files and links hang off it.
@@ -29,7 +30,7 @@ export default function AddToCalendar({base,compact=false}:{base:string;compact?
   {open&&<div className="calBackdrop" onClick={()=>setOpen(false)} aria-hidden/>}
   {open&&<div className="calMenu" role="menu">
    <div className="calHead"><b>{t("Add to calendar")}</b><button type="button" onClick={()=>setOpen(false)}>{t("Cancel")}</button></div>
-   {sorted.map(o=><a key={o.key} role="menuitem" href={o.href} target={o.newTab?"_blank":undefined} rel="noreferrer" onClick={()=>setOpen(false)}>
+   {sorted.map(o=><a key={o.key} role="menuitem" href={o.href} target={o.newTab?"_blank":undefined} rel="noreferrer" onClick={()=>{trackEvent("add_to_calendar");setOpen(false)}}>
     <b>{o.label}{o.key===best&&<em>{t("This device")}</em>}</b><span>{o.sub}</span>
    </a>)}
   </div>}
