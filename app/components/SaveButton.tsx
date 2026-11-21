@@ -2,6 +2,7 @@
 import {useEffect,useState} from "react";
 import {useT} from "./Lang";
 import {isSaved,setSaved,onSavedChange,loadMe,type SavedItem} from "./saved";
+import {trackEvent} from "../../lib/analytics";
 
 /** Heart button: save an event (in this browser for guests, to the account when signed in). */
 export default function SaveButton({item,compact=false}:{item:SavedItem;compact?:boolean}){
@@ -10,7 +11,7 @@ export default function SaveButton({item,compact=false}:{item:SavedItem;compact?
  useEffect(()=>{let live=true;const check=()=>Promise.all([isSaved(item.id),loadMe()]).then(([v,m])=>{if(live){const own=!!m.mine?.includes(item.id);setMine(own);setOn(v||own)}});check();const off=onSavedChange(check);return()=>{live=false;off()}},[item.id]);
  const toggle=async()=>{
   if(busy)return;setBusy(true);const next=!on;setOn(next);
-  try{await setSaved(item,next)}catch{setOn(!next)}finally{setBusy(false)}
+  try{await setSaved(item,next);if(next)trackEvent("save_event")}catch{setOn(!next)}finally{setBusy(false)}
  };
  const label=on?t("Saved"):t("Save");
  // An event you created is already yours (in My GoToday and your calendar): the heart shows it, and leads to My events.
