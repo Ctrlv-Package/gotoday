@@ -1,14 +1,15 @@
 "use client";
 import {useT} from "../../components/Lang";
 import {useState} from "react";
+import {trackEvent} from "../../../lib/analytics";
 export default function ShareButton({title,text}:{title:string;text:string}){
  const [msg,setMsg]=useState("");
  const {t}=useT();
  async function share(){
   const url=location.href;
   {const m=location.pathname.match(/\/events\/(db-\d+)/);if(m)fetch("/api/track",{method:"POST",headers:{"content-type":"application/json"},body:JSON.stringify({id:m[1],action:"share"}),keepalive:true}).catch(()=>{})}
-  try{if(navigator.share){await navigator.share({title,text,url});return}}catch(e:any){if(e?.name==="AbortError")return}
-  try{await navigator.clipboard.writeText(`${text}\n${url}`);setMsg(t("Link copied"))}catch{setMsg(t("Couldn't copy link"))}
+  try{if(navigator.share){await navigator.share({title,text,url});trackEvent("share_event");return}}catch(e:any){if(e?.name==="AbortError")return}
+  try{await navigator.clipboard.writeText(`${text}\n${url}`);trackEvent("share_event");setMsg(t("Link copied"))}catch{setMsg(t("Couldn't copy link"))}
   setTimeout(()=>setMsg(""),2000);
  }
  return <button type="button" className="shareDetail" onClick={share} style={{display:"inline-flex",alignItems:"center",gap:8,border:"1px solid #e4e4e7",background:"#fff",padding:"13px 18px",borderRadius:12,fontWeight:700,fontSize:15,cursor:"pointer"}}>
