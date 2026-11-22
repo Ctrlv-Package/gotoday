@@ -96,9 +96,22 @@ export async function uploadsToday(uploader:string){
  *  events are kept as long as the event exists (past events keep their picture for "Create again"). */
 export async function purgeImages(){
  await schema();
+ // Keep the copies any listing can still show: a recurring event borrows its picture from the
+ // same event on another date (familyPictures reaches 90 days back), so a copy is only dead
+ // once no event in that whole window points at it. (The old 3-day window deleted bytes a
+ // borrowed picture still served, and the card fell back to the emoji tile.)
  const r=await db.query(`delete from images i where created_at<now()-interval '2 days' and not exists
-  (select 1 from events e where e.image_url='/img/'||i.key and e.local_date>=current_date-3)
+  (select 1 from events e where e.image_url='/img/'||i.key and e.local_date>=current_date-90)
   and not exists (select 1 from stock_photos p where p.image='/img/'||i.key)
   and not exists (select 1 from community_events c where c.image='/img/'||i.key and c.status<>'deleted')`).catch(()=>({rowCount:0}));
  return r.rowCount||0;
+}
+
+/** Which of these /img/ keys still have their bytes stored. A purge can delete a copy a
+ *  borrowed picture still points at, so the listing route checks the keys it is about to
+ *  serve and swaps any missing one for a library photo instead of a 404. */
+export async function existingImageKeys(keys:string[]):Promise<Set<string>>{
+ if(!keys.length)return new Set();
+ const rows=(await db.query("select key from images where key=any($1)",[keys]).catch(()=>({rows:[]}))).rows;
+ return new Set(rows.map((r:any)=>String(r.key)));
 }

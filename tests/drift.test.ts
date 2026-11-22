@@ -30,3 +30,14 @@ test("fewer stock photos or fewer unsupported family labels is an improvement, n
  assert.ok(driftAlerts(rep({"A":src(100,{stock:31})},100),rep({"A":src(100,{stock:61})},100)).some(a=>/stock-photo/.test(a)));
  assert.ok(!driftAlerts(rep({"A":src(100,{familyNoSignal:12})},100),rep({"A":src(100)},100)).some(a=>/family-no-signal/.test(a)));
 });
+test("any broken picture or duplicate photo fails the run, even one",()=>{
+ const before=rep({"A":src(100)},100);
+ assert.ok(driftAlerts(before,rep({"A":src(100,{brokenImage:1})},100)).some(a=>/broken image/.test(a)));
+ assert.ok(driftAlerts(before,rep({"A":src(100,{duplicateImage:2})},100)).some(a=>/duplicate image/.test(a)));
+ assert.ok(!driftAlerts(before,rep({"A":src(100)},100)).some(a=>/broken image|duplicate image/.test(a)));
+});
+test("a rising share of listings with no photo at all is flagged; a drop is not",()=>{
+ const before=rep({"A":src(100,{missingImage:2})},100),after=rep({"A":src(100,{missingImage:12})},100);
+ assert.ok(driftAlerts(before,after).some(a=>/missing-image/.test(a)));
+ assert.ok(!driftAlerts(after,before).some(a=>/missing-image/.test(a)));
+});

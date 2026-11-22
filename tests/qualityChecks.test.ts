@@ -1,6 +1,6 @@
 import {test} from "node:test";
 import assert from "node:assert/strict";
-import {auditFindings} from "../lib/quality/checks";
+import {auditFindings,duplicateImageFindings,brokenImageFindings} from "../lib/quality/checks";
 
 const ev=(o:any={})=>({id:"db-1",title:"Test Event",desc:"",tags:[],facets:[],image:"/img/abc",venue:"Central Park",address:"",time:"18:00",url:"https://example.com/event",date:"2026-10-24",source:"City of Plantation",...o});
 const types=(o:any)=>auditFindings(ev(o)).map(f=>f.type);
@@ -36,4 +36,46 @@ test("city theater shows aren't guessed free", async ()=>{
 });
 test("a kid word only in the venue clears the family-no-signal flag",()=>{
  assert.ok(!types({title:"Plant Sale",facets:["Kids"],source:"To Do with Kids Broward · Instagram",venue:"Children's Garden"}).includes("family-no-signal"));
+});
+
+// The two photo classes from Sun Nov 22, 2026: the same stored photo on two different events
+// in one day's list, and a stored picture whose bytes are gone (404).
+test("two different events sharing one stored photo in a day's list is flagged once, on the second",()=>{
+ const list=[
+  ev({id:"db-1",title:"The MKT",image:"/img/3361a3ab2d66a2ef151d3528",venue:"CityPlace Doral"}),
+  ev({id:"db-2",title:"Sunny Side Up Market",image:"/img/3361a3ab2d66a2ef151d3528",venue:"Huizenga Park"}),
+  ev({id:"db-3",title:"Brunch at Earls",image:"/img/5f2ed154dc9fdd7ba8617eb3",venue:"Earls Kitchen + Bar"}),
+  ev({id:"db-4",title:"Feed the City Experience",image:"/img/5f2ed154dc9fdd7ba8617eb3",venue:"301 E Broward Blvd"}),
+ ];
+ const found=duplicateImageFindings(list);
+ assert.equal(found.length,2);
+ assert.deepEqual(found.map(f=>f.eventId),["db-2","db-4"]);
+ assert.ok(found[0].detail!.includes("The MKT"));
+ assert.ok(found[1].detail!.includes("Brunch at Earls"));
+});
+test("the same photo on the same listing twice, or an external image, is not a duplicate",()=>{
+ assert.deepEqual(duplicateImageFindings([
+  ev({id:"db-1",title:"Sunday Market",image:"/img/aaa",venue:"CityPlace Doral"}),
+  ev({id:"db-2",title:"Sunday Market",image:"/img/aaa",venue:"CityPlace Doral"}),
+ ]),[]);
+ assert.deepEqual(duplicateImageFindings([
+  ev({id:"db-1",title:"Concert A",image:"https://cdn.example.com/a.jpg",venue:"Park"}),
+  ev({id:"db-2",title:"Concert B",image:"https://cdn.example.com/a.jpg",venue:"Hall"}),
+ ]),[]);
+ assert.deepEqual(duplicateImageFindings([ev({id:"db-1",title:"Solo",image:"/img/aaa"})]),[]);
+});
+test("a stored picture that 404s is flagged with its URL; a live one is clean",()=>{
+ const list=[
+  ev({id:"db-1",title:"Sunday Market",image:"/img/695e7ce231bdef5ff3bcc3b9"}),
+  ev({id:"db-2",title:"Symphony in Lights",image:"/img/c2a665fa7957db850196c48f"}),
+  ev({id:"db-3",title:"Beach & Groove",image:"/img/c9b6f4d33b086fcc3729f0e6"}),
+  ev({id:"db-4",title:"Last of the Red Hot Lovers",image:"/img/c17dd1af60fbc359f2b7f9cf"}),
+  ev({id:"db-5",title:"Winterfest",image:"/img/ok123"}),
+ ];
+ const broken=new Set(["/img/695e7ce231bdef5ff3bcc3b9","/img/c2a665fa7957db850196c48f","/img/c9b6f4d33b086fcc3729f0e6","/img/c17dd1af60fbc359f2b7f9cf"]);
+ const found=brokenImageFindings(list,broken);
+ assert.equal(found.length,4);
+ assert.deepEqual(found.map(f=>f.eventId),["db-1","db-2","db-3","db-4"]);
+ assert.equal(found[0].detail,"/img/695e7ce231bdef5ff3bcc3b9");
+ assert.deepEqual(brokenImageFindings(list,new Set()),[]);
 });
