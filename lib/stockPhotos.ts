@@ -43,7 +43,8 @@ const NEXT:Record<string,string>={kidshalloween:"halloween",halloweenparty:"hall
  pets:"animals",animals:"nature",cars:"festival",history:"culture",culture:"festival",health:"community",seniors:"community",teens:"community",career:"community",
  language:"reading",sensory:"baby",festival:"blockparty",kids:"baby",music:"concert",arts:"painting",community:"festival",blockparty:"concert",concert:"festival",
  dance:"theater",theater:"concert",movie:"theater",yoga:"fitness",artfair:"painting",market:"farmersmarket",food:"market",boat:"beach",beach:"nature",nature:"garden",
- crafts:"painting",painting:"crafts",tech:"stem",reading:"storytime",games:"kidsgames",cardgames:"games",videogames:"games",photography:"arts"};
+ crafts:"painting",painting:"crafts",tech:"stem",reading:"storytime",games:"kidsgames",cardgames:"games",videogames:"games",photography:"arts",
+ storytime:"kids",baby:"kids"};
 
 // Seniors programs (55+, chair exercise) get seniors photos rather than a dance troupe or a gym.
 const SENIOR_SWAP=new Set(["dance","fitness","yoga","sports","concert","music","community"]);
@@ -56,8 +57,11 @@ const SPECIFIC=new Set(["chess","cardgames","lego","videogames","knitting","trai
 export const forKids=(e:{title?:string;desc?:string;tags?:string[];ageMax?:number|null})=>
  (e.ageMax!=null&&e.ageMax<=12)||/\b(toddlers?|preschool\w*|pre-?k|kids?|children'?s?|child|bab(y|ies)|infants?|story ?time|tots|little ones|tweens?|kinder\w*|ages? [0-9])\b/i.test(`${e.title||""} ${String(e.desc||"").slice(0,300)} ${(e.tags||[]).join(" ")}`);
 
-/** The library photo for an event with no picture ("" if the library isn't built yet). */
-export async function stockPicture(e:{title:string;desc?:string;category?:string;tags?:string[];ageMax?:number|null;source?:string;venue?:string|null}):Promise<string>{
+/** The library photo for an event with no picture ("" if the library isn't built yet).
+ *  `avoid`: photos already used on this page — the pick skips them, so one day's list never
+ *  shows the same library photo on two different events. When the whole type is used up it
+ *  borrows from the closest related type; a repeated photo still beats the emoji tile. */
+export async function stockPicture(e:{title:string;desc?:string;category?:string;tags?:string[];ageMax?:number|null;source?:string;venue?:string|null},avoid?:Set<string>):Promise<string>{
  const by=await library();
  // The AI reader's choice for this title (lib/photoTopic) wins; keyword rules are the fallback until it's read.
  const ai=(await decidedTopics().catch(()=>new Map<string,string>())).get(titleKey(e.title));
@@ -71,11 +75,19 @@ export async function stockPicture(e:{title:string;desc?:string;category?:string
  else if(forKids(e)&&KID_VERSION[topic])topic=KID_VERSION[topic];
  for(let i=0;i<6&&!by.get(topic)?.length&&NEXT[topic];i++)topic=NEXT[topic];
  const l=by.get(topic)||[];
- return l.length?l[hash(e.title)%l.length]:"";
+ const seed=hash(e.title);
+ const pickFrom=(list:string[])=>{for(let k=0;k<list.length;k++){const c=list[(seed+k)%list.length];if(!avoid?.has(c))return c}return ""};
+ const first=pickFrom(l);
+ if(first)return first;
+ let t2=topic;
+ for(let i=0;i<6;i++){const nt=NEXT[t2];if(!nt)break;t2=nt;const p=pickFrom(by.get(t2)||[]);if(p)return p}
+ return l.length?l[seed%l.length]:"";
 }
 
 // Busy event types (many storytimes on one day) get more photos so neighboring cards don't repeat.
-const BIG=new Set(["storytime","baby","library","kids","workshop","crafts","kidsart","discussion","reading","tech","stem","games","seniors","language","community"]);
+// Markets and food events are the same kind of busy: a weekly market and a brunch land on the same
+// Sunday list, so they get the doubled library too.
+const BIG=new Set(["storytime","baby","library","kids","workshop","crafts","kidsart","discussion","reading","tech","stem","games","seniors","language","community","food","farmersmarket","market"]);
 const want=(k:string,per:number)=>BIG.has(k)?per*2:per;
 /** Fill the library: up to `max` topics per call that have fewer than `per` photos. */
 export async function buildLibrary(max=20,per=6){
