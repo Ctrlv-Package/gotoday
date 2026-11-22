@@ -70,3 +70,19 @@ test("cached town-set rows expire after the TTL",async()=>{
   assert.equal(scans,2);
  }finally{(db as any).query=orig;(Date as any).now=realNow}
 });
+
+test("the town-set scan only lends pictures whose bytes are still stored",async()=>{
+ const orig=(db as any).query;
+ let scanSql="";
+ (db as any).query=async(sql:string)=>{
+  if(typeof sql==="string"&&sql.includes("current_date-90")){scanSql=sql;return{rows:rowsFor("Farmers Market","Coral Springs","/img/flyer")}}
+  return{rows:[]};
+ };
+ try{
+  const out=await familyPictures([{title:"Farmers Market",city:"Coral Springs, FL"}]);
+  assert.equal(out.get(familyKey("Farmers Market","Coral Springs, FL")),"/img/flyer");
+  // A copy the purge deleted must never be lent: the scan itself requires a row in images.
+  assert.ok(scanSql.includes("from images"),"scan must check the images table");
+  assert.ok(scanSql.includes("'/img/'||i.key=e.image_url"),"scan must match the stored key");
+ }finally{(db as any).query=orig}
+});
