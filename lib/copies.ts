@@ -93,7 +93,9 @@ export async function fillFromCopies<T extends Fillable>(e:T):Promise<T>{
 
 // Recurring events (a weekly block party, a monthly art walk) often have a flyer on one date and none on another. An event
 // with no picture of its own uses the picture of the same event on another date: same town, same title (by the same
-// matching as copies), the saved pictures only (they don't expire), within ±90 days. Cards and event pages both use this.
+// matching as copies), the saved pictures only (they don't expire), within ±90 days. Only pictures whose bytes are
+// still stored are lent: a copy the purge deleted is no picture, and the borrower falls through to a library photo
+// instead of serving a 404. Cards and event pages both use this.
 // The town-set scan below is the listing side's heaviest read: every listing request with picture-less cards used to
 // run it fresh (Neon showed it at 88k calls in 3 days, up to 8,000 rows a call). The rows for one set of towns barely
 // change between ingestion runs, so they are cached per town set, in the same module-level style as the day scan above.
@@ -117,6 +119,7 @@ export async function familyPictures(wanted:{title:string;city:string}[]):Promis
  if(hit&&Date.now()-hit.at<FAMILY_CACHE_TTL_MS){rows=hit.rows;shared=hit.shared}else{
   try{rows=(await db.query(`select e.id,e.title,e.city,e.image_url,s.name as source from events e join sources s on s.id=e.source_id
   where e.image_url like '/img/%' and e.local_date between current_date-90 and current_date+90
+   and exists (select 1 from images i where '/img/'||i.key=e.image_url)
    and btrim(lower(regexp_replace(split_part(coalesce(e.city,''),',',1),'^ft\\.?\\s','fort ','i'))) = any($1::text[]) limit 8000`,[towns])).rows}catch{return out}
   if(!rows.length){storeFamily(key,[],new Set());return out}
   const imgs=[...new Set(rows.map((r:any)=>r.image_url))];
