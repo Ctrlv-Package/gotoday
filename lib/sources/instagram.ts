@@ -205,7 +205,7 @@ export async function readFlyerImage(data:Buffer,mime:string,today:string){
 // Round-up accounts post one event per slide in carousels, so they get every slide read (up to 6), and
 // their posts are re-read once with the newer reading (each event's own town).
 const KIDS_TITLE=/\b(kids?|children'?s?|child|toddlers?|preschool\w*|story ?time|tots?|teens?|tweens?|youth|trick[- ]or[- ]treat\w*|trunk[- ]or[- ]treat|egg hunt|kids'? camp|baby|babies|little ones|junior)\b/i;
-const ROUNDUPS=new Set(["miami_residents","weekendbroward","todowithkidsbroward","todowithkidsmiami","thebrowardscene"]);
+export const ROUNDUP_USERNAMES=new Set(["miami_residents","weekendbroward","todowithkidsbroward","todowithkidsmiami","thebrowardscene","miamifunevents","thepalmbeachweekender","moms_of_myrtle","cville_kids","macaronikiderie","visitfayettevillenc"]);
 // Which model actually read the post, so the reading is recorded in social_posts.reader.
 async function extractWithClaude(p:Post,venue:string,city:string,roundup=false,allowClaude=true):Promise<{events:Extracted[];reader:"gemini"|"claude"}>{
  // Carousels: every slide is read (up to 6, or 4 for ordinary accounts) so each event can use its own slide as its picture.
@@ -313,7 +313,7 @@ export async function fetchInstagram(cfg:InstagramConfig,startDate:string,endDat
  let next=0;
  await Promise.all(Array.from({length:Math.min(3,recent.length)},async()=>{
   while(next<recent.length){const i=next++;const p=recent[i];
-   try{results[i]=await cached(p,cfg.venue,cfg.city,ROUNDUPS.has(cfg.username),spent()<150e3)}catch(e:any){results[i]=[];errors++;firstError||=String(e?.message||e);console.log(`instagram ${cfg.username} post ${p.id}: ${e?.message||e}`)}}
+   try{results[i]=await cached(p,cfg.venue,cfg.city,ROUNDUP_USERNAMES.has(cfg.username),spent()<150e3)}catch(e:any){results[i]=[];errors++;firstError||=String(e?.message||e);console.log(`instagram ${cfg.username} post ${p.id}: ${e?.message||e}`)}}
  }));
  recent.forEach((p,i)=>{for(const e of results[i]||[])found.push({...e,post:p})});
  const key=(e:Extracted)=>`${e.date}|${slug(e.title).split("-").filter(w=>w.length>2).slice(0,2).join("-")}`;
@@ -359,7 +359,7 @@ export async function fetchInstagram(cfg:InstagramConfig,startDate:string,endDat
   // A post announcing a cancellation or a change ("CANCELED this Sunday — see you Nov 8") shows that notice on its
   // flyer: never the picture of the event it points to. The card gets its own photo instead.
   if(/\b(cancel+ed|canceling|postponed|rain ?out|called off)\b/i.test(String(e.post.caption||""))&&!e.cancelled)return{url:undefined,borrowed:false};
-  const many=(perPost.get(e.post.id)||0)>=3||ROUNDUPS.has(cfg.username)&&(perPost.get(e.post.id)||0)>=2;
+  const many=(perPost.get(e.post.id)||0)>=3||ROUNDUP_USERNAMES.has(cfg.username)&&(perPost.get(e.post.id)||0)>=2;
   const own=e.slide&&e.post.media_type==="CAROUSEL_ALBUM"&&(perSlide.get(`${e.post.id}#${e.slide}`)||0)===1&&!(many&&e.slide===1)?slides(e.post)[e.slide-1]:undefined;
   if(own)return{url:own,borrowed:false};
   if(e.post.media_type==="VIDEO"){const url=flyerFor(e);return{url,borrowed:!!url}}
@@ -368,7 +368,7 @@ export async function fetchInstagram(cfg:InstagramConfig,startDate:string,endDat
  for(const e of found){
   const k=key(e);if(e.cancelled||cancelled.has(k)||partOfCancelled(e)||seen.has(k)||e.date<startDate||e.date>endDate)continue;seen.add(k);
   // Round-up accounts aren't a place: an event from them must name where it is, and the round-up itself isn't an event.
-  if(ROUNDUPS.has(cfg.username)&&(!(e.place||"").trim()||/^(fun plans|things to do|what to do|weekend (guide|plans|events)|(this|the) weekend|events? (this|for the) weekend|freebies|.*\bround-?up\b|.*\bguide\b)/i.test(e.title.trim())))continue;
+  if(ROUNDUP_USERNAMES.has(cfg.username)&&(!(e.place||"").trim()||/^(fun plans|things to do|what to do|weekend (guide|plans|events)|(this|the) weekend|events? (this|for the) weekend|freebies|.*\bround-?up\b|.*\bguide\b)/i.test(e.title.trim())))continue;
   const blob=`${e.title} ${e.summary||""}`.toLowerCase();
   // Kids = made for children (the Kids filter); Family = children welcome. "kids" from the reading means only
   // "welcome", and one post can list a kids' event next to a plant sale, so Kids needs forKids or a kids' title.
