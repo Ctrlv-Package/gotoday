@@ -11,6 +11,7 @@ import { sameEvent, familyPictures, familyKey } from "../../../lib/copies";
 import { loveStatsFor } from "../../../lib/love";
 import { sameEventCard, words, town } from "../../../lib/sameCard";
 import { stockPicture } from "../../../lib/stockPhotos";
+import { existingImageKeys } from "../../../lib/images";
 import { localParts, todayIn, DEFAULT_TZ } from "../../../lib/time";
 import { CITY_COORDS, milesBetween as miles } from "../../../lib/cities";
 
@@ -208,10 +209,28 @@ export async function GET(request:NextRequest){
  {const need=kept.filter((e:any)=>!e.image&&e.id?.startsWith("db-"));
   if(need.length){const fam=await familyPictures(need.map((e:any)=>({title:e.title,city:e.city})));for(const e of need)e.image=fam.get(familyKey(e.title,e.city))||""}}
  // Still nothing: a library photo of that kind of event (lib/stockPhotos), the same one its event page shows.
+ // One list never shows the same library photo twice: the pick skips photos already used on this page.
+ const usedStock=new Set<string>((kept as any[]).map((e:any)=>e.image).filter((u:string)=>typeof u==="string"&&u.startsWith("/img/")));
  for(const e of kept as any[]){
-  if(!e.image){const p=await stockPicture(e);if(p){e.image=p;e.stockImage=true}}
+  if(!e.image){const p=await stockPicture(e,usedStock);if(p){e.image=p;e.stockImage=true;usedStock.add(p)}}
   // A picture on someone else's site can be blocked or taken down; the card switches to the library photo then.
-  else if(/^https?:/.test(e.image)){const p=await stockPicture(e);if(p)e.backupImage=p}
+  else if(/^https?:/.test(e.image)){const p=await stockPicture(e,usedStock);if(p){e.backupImage=p;usedStock.add(p)}}
+ }
+ // A stored copy can be gone (a purge deleted bytes a borrowed picture still points at): the card
+ // would fall back to the emoji tile, so verify the copies this list uses and swap any missing
+ // one for a library photo before answering.
+ const ownKeys=[...new Set((kept as any[]).map((e:any)=>{const m=/^\/img\/([0-9a-f]{24})$/.exec(e.image||"");return m?m[1]:null}).filter(Boolean))] as string[];
+ if(ownKeys.length){
+  const have=await existingImageKeys(ownKeys);
+  for(const e of kept as any[]){
+   const m=/^\/img\/([0-9a-f]{24})$/.exec(e.image||"");
+   if(m&&!have.has(m[1])){const p=await stockPicture(e,usedStock);if(p){e.image=p;e.stockImage=true;usedStock.add(p)}else e.image="";}
+  }
+ }
+ // Any picture that fails to load in the browser falls back to the library photo, not the emoji
+ // tile — the same always-backup rule the event page already uses (lib/copies).
+ for(const e of kept as any[]){
+  if(e.image&&!e.backupImage){const p=await stockPicture(e,usedStock);if(p){e.backupImage=p;usedStock.add(p)}}
  }
  events=kept.sort((a:any,b:any)=>(a.date+(a.time||"")).localeCompare(b.date+(b.time||""))||((a.source==="Ticketmaster"?1:0)-(b.source==="Ticketmaster"?1:0)));
  // A listing marked cancelled ("CANCELLED: Downtown Hollywood ArtWalk") also hides other sources' copies of that event
