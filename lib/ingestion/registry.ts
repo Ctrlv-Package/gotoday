@@ -156,7 +156,13 @@ const INSTAGRAM_ACCOUNTS:SourceConfig[]=[
  {...ig("Weekend Broward","Fort Lauderdale, FL","weekendbroward","broward"),source_type:"roundup",priority:70},
  {...ig("The Broward Scene","Fort Lauderdale, FL","thebrowardscene","broward"),source_type:"roundup",priority:70},
  {...ig("To Do with Kids Broward","Fort Lauderdale, FL","todowithkidsbroward","broward"),source_type:"roundup",priority:70},
- {...ig("To Do with Kids Miami","Miami, FL","todowithkidsmiami","miami-dade"),source_type:"roundup",priority:70}
+ {...ig("To Do with Kids Miami","Miami, FL","todowithkidsmiami","miami-dade"),source_type:"roundup",priority:70},
+ {...ig("Miami Fun Events","Miami, FL","miamifunevents","miami-dade"),source_type:"roundup",priority:70},
+ {...ig("The Palm Beach Weekender","West Palm Beach, FL","thepalmbeachweekender","palm-beach"),source_type:"roundup",priority:70},
+ {...ig("Moms of Myrtle","Myrtle Beach, SC","moms_of_myrtle","myrtle"),source_type:"roundup",priority:70},
+ {...ig("Cville Kids","Charlottesville, VA","cville_kids","cville"),source_type:"roundup",priority:70},
+ {...ig("Macaroni KID Erie","Erie, PA","macaronikiderie","erie"),source_type:"roundup",priority:70},
+ {...ig("Visit Fayetteville NC","Fayetteville, NC","visitfayettevillenc","fayetteville"),source_type:"roundup",priority:70}
 ];
 export const SEED_SOURCES:SourceConfig[]=[
  // ---- Broward ----
