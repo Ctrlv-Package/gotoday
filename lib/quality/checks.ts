@@ -6,7 +6,7 @@ import {CITY_SOURCE,FAMILY_SOURCE} from "../facets";
 import {hasFamilySignal,looksLikeStreetAddress} from "./signals";
 
 export type ApiEvent={id?:string;title:string;desc?:string;tags?:string[];facets?:string[];image?:string;venue?:string;address?:string;time?:string;url?:string;date?:string;source?:string;stockImage?:boolean};
-export type FindingType="family-no-signal"|"venue-is-address"|"missing-time"|"missing-image"|"fails-validation";
+export type FindingType="family-no-signal"|"venue-is-address"|"missing-time"|"missing-image"|"fails-validation"|"broken-image"|"duplicate-image";
 export type AuditFinding={type:FindingType;eventId?:string;title:string;source?:string;detail?:string};
 
 /** Finding codes for one live listing ("" means clean). The family check mirrors the quarantine
@@ -29,4 +29,27 @@ export function auditFindings(e:ApiEvent):AuditFinding[]{
  if(!e.url||!/^https?:\/\//.test(e.url))bad.push("url");
  if(bad.length)out.push({type:"fails-validation",eventId:e.id,title:e.title,source:e.source,detail:bad.join(",")});
  return out;
+}
+
+/** Two different listings on one day's list sharing one stored picture: the second card shows a
+ *  photo that belongs to another event. (Library photos are shared on purpose across dates, but
+ *  never between two different events on the same list.) The same listing twice — same title and
+ *  venue — is not a duplicate. */
+export function duplicateImageFindings(events:ApiEvent[]):AuditFinding[]{
+ const seen=new Map<string,ApiEvent>(),out:AuditFinding[]=[];
+ for(const e of events){
+  if(!e.image||!/^\/img\//.test(e.image))continue;
+  const first=seen.get(e.image);
+  if(!first){seen.set(e.image,e);continue}
+  if(first.title.toLowerCase()===e.title.toLowerCase()&&(first.venue||"").toLowerCase()===(e.venue||"").toLowerCase())continue;
+  out.push({type:"duplicate-image",eventId:e.id,title:e.title,source:e.source,detail:`same photo as "${first.title}" (${first.id||"?"})`});
+ }
+ return out;
+}
+
+/** Listings whose stored picture is gone: the /img/ URL 404s, so the card falls back to the emoji
+ *  tile. `broken` is the set of image URLs the audit fetched and found missing. */
+export function brokenImageFindings(events:ApiEvent[],broken:Set<string>):AuditFinding[]{
+ return events.filter(e=>e.image&&broken.has(e.image))
+  .map(e=>({type:"broken-image",eventId:e.id,title:e.title,source:e.source,detail:e.image}));
 }
