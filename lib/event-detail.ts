@@ -72,19 +72,21 @@ export function calendarTimes(e:EventDetail){
 // ordinals keep their shape ("26th", not "26Th").
 const KEEP_UPPER=new Set(["FL","NE","NW","SE","SW","N","S","E","W","US","USA","PO","DC","II","III","IV","AL","AK","AZ","AR","CA","CO","CT","DE","GA","HI","ID","IL","IN","IA","KS","KY","LA","ME","MD","MA","MI","MN","MS","MO","MT","NV","NH","NJ","NM","NY","NC","ND","OH","OK","OR","PA","RI","SC","SD","TN","TX","UT","VT","VA","WA","WV","WI","WY"]);
 export function displayCase(s:string){
+ // A digit-led ordinal shouts whatever the case around it ("136TH" → "136th"); fix it first, so the
+ // word logic below never sees it — and never re-capitalises its tail ("136th" → "136tH").
+ s=s.replace(/\b(\d+)([A-Z]{1,2})\b/g,(_,d,l)=>d+l.toLowerCase());
  const letters=s.replace(/[^A-Za-z]/g,"");
  if(!letters.length)return s;
  const upper=[...letters].filter(c=>c>="A"&&c<="Z").length;
  if(upper/letters.length>=0.8){
-  return s.replace(/(?<!\d)[A-Za-z]+(?:'[A-Za-z]+)?/g,w=>{
+  return s.replace(/(?<![A-Za-z\d])[A-Za-z]+(?:'[A-Za-z]+)?/g,w=>{
    if(KEEP_UPPER.has(w.toUpperCase()))return w.toUpperCase();
    return w.toLowerCase().replace(/(^|')([a-z])/g,(_,p,c)=>p+c.toUpperCase());
   });
  }
- // Mixed case: only fix the pieces that are clearly shouting — a digit-led ordinal ("136TH" → "136th")
- // or an all-caps street suffix ("ST" → "St"). Real names, acronyms and state codes are left alone.
- return s.replace(/\b(\d+)([A-Z]{1,2})\b/g,(_,d,l)=>d+l.toLowerCase())
-        .replace(/\b(AVE|ST|PKWY|BLVD|RD|DR|LN|HWY)\b/g,w=>w[0]+w.slice(1).toLowerCase());
+ // Mixed case: only fix an all-caps street suffix ("ST" → "St"). Real names, acronyms and state codes
+ // are left alone.
+ return s.replace(/\b(AVE|ST|PKWY|BLVD|RD|DR|LN|HWY)\b/g,w=>w[0]+w.slice(1).toLowerCase());
 }
 // Some venues were saved as "Name, Street address" — the address then shows up twice, once inside the
 // venue name and once on the line below. Show just the place name; the address line carries the address.
