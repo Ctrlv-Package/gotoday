@@ -6,10 +6,11 @@
 // Reads GOTODAY_URL (default https://www.mygotoday.com). No secrets, no database access.
 // Photo checks (the classes that make cards look broken): every distinct /img/ URL the sample
 // returns is fetched — a 404 is a dead picture whose card falls back to the emoji tile — and
-// each day's list is checked for two different events sharing one stored photo. Both are
-// countable in the report (which events, which URLs), and the drift check fails the daily run
-// on NEW ones: each finding carries a stable identity (event IDs + image key) in
-// `photoFindings`, so a finding already in yesterday's report is standing, not drift.
+// each day's list is checked for two different events sharing one photo (a stored /img/ key
+// or an external URL). Both are countable in the report (which events, which URLs), and the
+// drift check fails the daily run on NEW ones: each finding carries a stable identity (the
+// sorted event IDs sharing the photo + the image itself) in `photoFindings`, so a finding
+// already in yesterday's report is standing, not drift.
 import {auditFindings,duplicateImageFindings,brokenImageFindings,type ApiEvent,type AuditFinding} from "../lib/quality/checks";
 import type {SourceStats} from "../lib/quality/drift";
 
@@ -33,11 +34,15 @@ async function main(){
  const record=(f:AuditFinding)=>{
   byType[f.type]=(byType[f.type]||0)+1;
   // Stable identity for the photo findings, so the drift check can tell a new one from a
-  // standing one: the pair of events sharing the photo (either order) plus the photo itself,
-  // or the event plus the dead photo. The examples above are capped at 3 per type per
-  // source; these sets are complete.
+  // standing one: for a shared photo, the sorted set of ALL events sharing it plus the
+  // photo itself — one identity per photo, whatever the list order (a pair is just a
+  // group of two); for a dead photo, the event plus the photo. The examples above are
+  // capped at 3 per type per source; these sets are complete.
   if(f.type==="broken-image"&&f.eventId&&f.image)photoBroken.add(`${f.eventId}|${f.image}`);
-  if(f.type==="duplicate-image"&&f.eventId&&f.image)photoDuplicate.add(`${[f.eventId,f.otherEventId||f.eventId].sort().join("|")}|${f.image}`);
+  if(f.type==="duplicate-image"&&f.image){
+   const ids=(f.eventIds&&f.eventIds.length?f.eventIds:[f.eventId,f.otherEventId].filter(Boolean)).sort();
+   if(ids.length)photoDuplicate.add(`${ids.join("|")}|${f.image}`);
+  }
   const agg=aggFor(f.source||"(unknown)");
   if(f.type==="family-no-signal")agg.stats.familyNoSignal++;
   if(f.type==="missing-image")agg.stats.missingImage++;
