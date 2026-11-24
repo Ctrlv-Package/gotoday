@@ -44,11 +44,11 @@ export function driftAlerts(before:AuditReport,after:AuditReport):string[]{
   const newBroken=afterPhoto.broken.filter(id=>!beforePhoto.broken.includes(id));
   const newDup=afterPhoto.duplicate.filter(id=>!beforePhoto.duplicate.includes(id));
   if(newBroken.length)alerts.push(`new broken image: ${newBroken.length} listing(s) whose picture 404s`);
-  if(newDup.length)alerts.push(`new duplicate image: ${newDup.length} listing(s) sharing a photo with another event`);
+  if(newDup.length)alerts.push(`new duplicate image: ${newDup.length} shared photo(s) across different events`);
  }else{
   for(const [name,a] of Object.entries(after.perSource)){
    if((a.brokenImage||0)>0)alerts.push(`broken image: ${name} has ${a.brokenImage} listing(s) whose picture 404s`);
-   if((a.duplicateImage||0)>0)alerts.push(`duplicate image: ${name} has ${a.duplicateImage} listing(s) sharing a photo with another event`);
+   if((a.duplicateImage||0)>0)alerts.push(`duplicate image: ${name} has ${a.duplicateImage} shared photo(s) across different events`);
   }
  }
  const totCh=before.totals.events>0?(after.totals.events-before.totals.events)/before.totals.events:0;
