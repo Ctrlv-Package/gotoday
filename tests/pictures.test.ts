@@ -57,9 +57,19 @@ test("sharedPhotoCards: same title at the same venue is one event, not a duplica
  assert.equal(sharedPhotoCards([card({}),card({venue:"Branch Library"})]).length,1);
 });
 
-test("sharedPhotoCards: three cards on one photo flag the second and third; external images ignored",()=>{
+test("sharedPhotoCards: three cards on one photo flag the second and third; external images count too",()=>{
  const card=(o:any)=>({image:"/img/abc123",title:"Story Time",venue:"Main Library",...o});
- const cards=[card({title:"A"}),card({title:"B"}),card({title:"C"}),{image:"https://x.com/a.jpg",title:"D",venue:"V"},{image:"",title:"E",venue:"V"}];
+ const cards=[card({title:"A"}),card({title:"B"}),card({title:"C"}),{image:"https://x.com/a.jpg",title:"D",venue:"V"},{image:"https://x.com/a.jpg",title:"F",venue:"W"},{image:"",title:"E",venue:"V"}];
  const flagged=sharedPhotoCards(cards as any);
- assert.deepEqual(flagged.map(c=>c.title),["B","C"]);
+ assert.deepEqual(flagged.map(c=>c.title),["B","C","F"]);
+});
+
+test("sharedPhotoCards: two different events sharing one external photo — the Acton case",()=>{
+ const cards=[
+  {image:"https://s3.amazonaws.com/ai-assets/actonmemoriallibrary/1_1180_lg.png",title:"Homeschool Hangouts for Kids",venue:"Meeting Room A"},
+  {image:"https://s3.amazonaws.com/ai-assets/actonmemoriallibrary/1_1180_lg.png",title:"Homeschool Hangouts for Teens",venue:"Young Adult"},
+ ];
+ const flagged=sharedPhotoCards(cards as any);
+ assert.equal(flagged.length,1);
+ assert.equal(flagged[0].title,"Homeschool Hangouts for Teens");
 });
