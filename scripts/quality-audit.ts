@@ -6,9 +6,11 @@
 // Reads GOTODAY_URL (default https://www.mygotoday.com). No secrets, no database access.
 // Photo checks (the classes that make cards look broken): every distinct /img/ URL the sample
 // returns is fetched — a 404 is a dead picture whose card falls back to the emoji tile — and
-// each day's list is checked for two different events sharing one stored photo. Both are
-// countable in the report (which events, which URLs), and the drift check fails the daily run
-// while any of them are present.
+// each day's list is checked for two different events sharing one photo (a stored /img/ key
+// or an external URL). Both are countable in the report (which events, which URLs), and the
+// drift check fails the daily run on NEW ones: each finding carries a stable identity (the
+// sorted event IDs sharing the photo + the image itself) in `photoFindings`, so a finding
+// already in yesterday's report is standing, not drift.
 import {auditFindings,duplicateImageFindings,brokenImageFindings,type ApiEvent,type AuditFinding} from "../lib/quality/checks";
 import type {SourceStats} from "../lib/quality/drift";
 
@@ -27,9 +29,20 @@ async function main(){
  const dates=Array.from({length:DAYS},(_,i)=>{const d=new Date(today+"T12:00:00Z");d.setUTCDate(d.getUTCDate()+i);return ymd(d)});
  const seen=new Set<string>(),perSource:Record<string,Agg>={},byType:Record<string,number>={};
  const allEvents:ApiEvent[]=[];
+ const photoBroken=new Set<string>(),photoDuplicate=new Set<string>();
  const aggFor=(src:string)=>perSource[src]||(perSource[src]={stats:{events:0,familyNoSignal:0,stock:0,missingImage:0,missingTime:0,failsValidation:0,brokenImage:0,duplicateImage:0},examples:{}});
  const record=(f:AuditFinding)=>{
   byType[f.type]=(byType[f.type]||0)+1;
+  // Stable identity for the photo findings, so the drift check can tell a new one from a
+  // standing one: for a shared photo, the sorted set of ALL events sharing it plus the
+  // photo itself — one identity per photo, whatever the list order (a pair is just a
+  // group of two); for a dead photo, the event plus the photo. The examples above are
+  // capped at 3 per type per source; these sets are complete.
+  if(f.type==="broken-image"&&f.eventId&&f.image)photoBroken.add(`${f.eventId}|${f.image}`);
+  if(f.type==="duplicate-image"&&f.image){
+   const ids=(f.eventIds&&f.eventIds.length?f.eventIds:[f.eventId,f.otherEventId].filter(Boolean)).sort();
+   if(ids.length)photoDuplicate.add(`${ids.join("|")}|${f.image}`);
+  }
   const agg=aggFor(f.source||"(unknown)");
   if(f.type==="family-no-signal")agg.stats.familyNoSignal++;
   if(f.type==="missing-image")agg.stats.missingImage++;
@@ -83,7 +96,7 @@ async function main(){
  for(const f of brokenImageFindings(allEvents,new Set(broken.keys())))record(f);
  const perSourceStats:Record<string,SourceStats>={};for(const [k,v] of Object.entries(perSource))perSourceStats[k]=v.stats;
  const examples:Record<string,Record<string,AuditFinding[]>>={};for(const [k,v] of Object.entries(perSource))examples[k]=v.examples;
- const report={generatedAt:new Date().toISOString(),totals:{events:total},perSource:perSourceStats,findingsByType:byType,examples};
+ const report={generatedAt:new Date().toISOString(),totals:{events:total},perSource:perSourceStats,findingsByType:byType,examples,photoFindings:{broken:[...photoBroken].sort(),duplicate:[...photoDuplicate].sort()}};
  console.log(`Quality audit: ${total} live listings, ${Object.keys(perSource).length} sources`);
  for(const [t,n] of Object.entries(byType).sort((a,b)=>b[1]-a[1]))console.log(`  ${t}: ${n}`);
  for(const [s,st] of Object.entries(perSourceStats).sort((a,b)=>b[1].events-a[1].events).slice(0,12))

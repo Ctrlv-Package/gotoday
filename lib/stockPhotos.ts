@@ -74,13 +74,33 @@ export async function stockPicture(e:{title:string;desc?:string;category?:string
  if(forSeniors(e)&&SENIOR_SWAP.has(topic)&&(!ai||ai==="none"))topic="seniors";
  else if(forKids(e)&&KID_VERSION[topic])topic=KID_VERSION[topic];
  for(let i=0;i<6&&!by.get(topic)?.length&&NEXT[topic];i++)topic=NEXT[topic];
- const l=by.get(topic)||[];
- const seed=hash(e.title);
+ return pickLibraryPhoto(topic,e.title,avoid,by);
+}
+
+/** The library photo for a title, from a loaded library (`by` maps topic → /img/ URLs).
+ *  Pure (no I/O) so the pick can be tested without a database. Deterministic for one title
+ *  and one page: the seed is the title, the walk is the topic's NEXT chain over distinct
+ *  topics (kids↔baby used to cycle and waste the walk), and a page never gets the same photo
+ *  twice while any photo in the library is still free — a different photo beats the same photo
+ *  twice, which the audit flags as a duplicate and which reads as one event twice. Only when
+ *  the whole library is already on the page does it repeat the title's own pick. */
+export function pickLibraryPhoto(topic:string,title:string,avoid:Set<string>|undefined,by:Map<string,string[]>):string{
+ const seed=hash(title);
  const pickFrom=(list:string[])=>{for(let k=0;k<list.length;k++){const c=list[(seed+k)%list.length];if(!avoid?.has(c))return c}return ""};
- const first=pickFrom(l);
- if(first)return first;
- let t2=topic;
- for(let i=0;i<6;i++){const nt=NEXT[t2];if(!nt)break;t2=nt;const p=pickFrom(by.get(t2)||[]);if(p)return p}
+ const seen=new Set<string>();let t=topic;
+ for(let i=0;i<12;i++){
+  if(seen.has(t))break;seen.add(t);
+  const p=pickFrom(by.get(t)||[]);if(p)return p;
+  const nt=NEXT[t];if(!nt)break;t=nt;
+ }
+ // Every related topic is used up on this page: borrow any photo the page isn't already
+ // showing. The topic order is seeded too, so the pick stays stable for one title.
+ const topics=[...by.keys()].sort();
+ for(let k=0;k<topics.length;k++){
+  const p=pickFrom(by.get(topics[(seed+k)%topics.length])||[]);
+  if(p)return p;
+ }
+ const l=by.get(topic)||[];
  return l.length?l[seed%l.length]:"";
 }
 

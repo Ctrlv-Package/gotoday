@@ -40,7 +40,7 @@ test("a kid word only in the venue clears the family-no-signal flag",()=>{
 
 // The two photo classes from Sun Nov 22, 2026: the same stored photo on two different events
 // in one day's list, and a stored picture whose bytes are gone (404).
-test("two different events sharing one stored photo in a day's list is flagged once, on the second",()=>{
+test("two different events sharing one stored photo in a day's list is one finding per photo",()=>{
  const list=[
   ev({id:"db-1",title:"The MKT",image:"/img/3361a3ab2d66a2ef151d3528",venue:"CityPlace Doral"}),
   ev({id:"db-2",title:"Sunny Side Up Market",image:"/img/3361a3ab2d66a2ef151d3528",venue:"Huizenga Park"}),
@@ -49,19 +49,22 @@ test("two different events sharing one stored photo in a day's list is flagged o
  ];
  const found=duplicateImageFindings(list);
  assert.equal(found.length,2);
- assert.deepEqual(found.map(f=>f.eventId),["db-2","db-4"]);
- assert.ok(found[0].detail!.includes("The MKT"));
- assert.ok(found[1].detail!.includes("Brunch at Earls"));
+ assert.deepEqual(found.map(f=>f.eventIds),[["db-1","db-2"],["db-3","db-4"]]);
+ assert.ok(found[0].detail!.includes("Sunny Side Up Market"));
+ assert.ok(found[1].detail!.includes("Feed the City Experience"));
 });
-test("the same photo on the same listing twice, or an external image, is not a duplicate",()=>{
+test("the same photo on the same listing twice is not a duplicate; a shared external photo is",()=>{
  assert.deepEqual(duplicateImageFindings([
   ev({id:"db-1",title:"Sunday Market",image:"/img/aaa",venue:"CityPlace Doral"}),
   ev({id:"db-2",title:"Sunday Market",image:"/img/aaa",venue:"CityPlace Doral"}),
  ]),[]);
- assert.deepEqual(duplicateImageFindings([
-  ev({id:"db-1",title:"Concert A",image:"https://cdn.example.com/a.jpg",venue:"Park"}),
-  ev({id:"db-2",title:"Concert B",image:"https://cdn.example.com/a.jpg",venue:"Hall"}),
- ]),[]);
+ // The Acton case: two different programs, one library graphic.
+ const shared=duplicateImageFindings([
+  ev({id:"db-634059",title:"Homeschool Hangouts for Kids",image:"https://s3.amazonaws.com/ai-assets/actonmemoriallibrary/1_1180_lg.png",venue:"Meeting Room A"}),
+  ev({id:"db-634057",title:"Homeschool Hangouts for Teens",image:"https://s3.amazonaws.com/ai-assets/actonmemoriallibrary/1_1180_lg.png",venue:"Young Adult"}),
+ ]);
+ assert.equal(shared.length,1);
+ assert.deepEqual(shared[0].eventIds,["db-634057","db-634059"]);
  assert.deepEqual(duplicateImageFindings([ev({id:"db-1",title:"Solo",image:"/img/aaa"})]),[]);
 });
 test("a stored picture that 404s is flagged with its URL; a live one is clean",()=>{
@@ -78,4 +81,41 @@ test("a stored picture that 404s is flagged with its URL; a live one is clean",(
  assert.deepEqual(found.map(f=>f.eventId),["db-1","db-2","db-3","db-4"]);
  assert.equal(found[0].detail,"/img/695e7ce231bdef5ff3bcc3b9");
  assert.deepEqual(brokenImageFindings(list,new Set()),[]);
+});
+
+// Photo findings carry a stable identity (the sorted event IDs sharing the photo + the
+// image) so the drift check can tell a new finding from a standing one: the duplicate
+// names every event sharing the photo, not just the one it was found next to.
+test("duplicate-image findings carry the shared image and the whole group; broken ones carry the URL",()=>{
+ const list=[
+  ev({id:"db-1",title:"Pajama Storytime",image:"/img/shared"}),
+  ev({id:"db-2",title:"All Ages Story Time",image:"/img/shared"}),
+ ];
+ const dup=duplicateImageFindings(list);
+ assert.equal(dup.length,1);
+ assert.equal(dup[0].eventId,"db-1");
+ assert.equal(dup[0].image,"/img/shared");
+ assert.equal(dup[0].otherEventId,"db-2");
+ assert.deepEqual(dup[0].eventIds,["db-1","db-2"]);
+ const broken=brokenImageFindings([ev({id:"db-1",image:"/img/gone"})],new Set(["/img/gone"]));
+ assert.equal(broken[0].image,"/img/gone");
+});
+
+// Run #31's shape: one photo shared by three events — "All Ages Story Time" lent its photo
+// to two other listings. One finding, and the same finding no matter the list order, so the
+// drift check never calls it new just because the order changed.
+test("three events on one photo are one finding whose group is the same in any list order",()=>{
+ const list=[
+  ev({id:"db-1307197",title:"All Ages Story Time",image:"/img/shared",venue:"Hingham Public Library"}),
+  ev({id:"db-3654701",title:"Pajama Storytime",image:"/img/shared",venue:"Hingham Public Library"}),
+  ev({id:"db-634348",title:"4th/5th Grade Book Club",image:"/img/shared",venue:"Medford Public Library"}),
+ ];
+ const one=duplicateImageFindings(list);
+ assert.equal(one.length,1);
+ assert.deepEqual(one[0].eventIds,["db-1307197","db-3654701","db-634348"]);
+ const shuffled=duplicateImageFindings([list[1],list[2],list[0]]);
+ assert.equal(shuffled.length,1);
+ assert.deepEqual(shuffled[0].eventIds,one[0].eventIds);
+ assert.equal(shuffled[0].eventId,one[0].eventId);
+ assert.equal(shuffled[0].detail,one[0].detail);
 });
