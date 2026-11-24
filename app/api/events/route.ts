@@ -232,9 +232,10 @@ export async function GET(request:NextRequest){
  for(const e of kept as any[]){
   if(e.image&&!e.backupImage){const p=await stockPicture(e,usedStock);if(p){e.backupImage=p;usedStock.add(p)}}
  }
- // One list never shows the same stored photo twice either: two different events sharing a
- // stored /img/ picture get the second card re-picked from the library (same rule as the
- // audit's duplicate check — same title at the same venue is one event, not a duplicate).
+ // One list never shows the same photo twice either: two different events sharing one
+ // picture — a stored /img/ key or an external URL — get the second card re-picked from
+ // the library (same rule as the audit's duplicate check — same title at the same venue
+ // is one event, not a duplicate).
  // A card keeps the shared photo only when the library has no free photo left at all.
  for(const e of sharedPhotoCards(kept as any[])){
   const p=await stockPicture(e,usedStock);
