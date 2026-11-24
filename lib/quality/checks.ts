@@ -7,7 +7,7 @@ import {hasFamilySignal,looksLikeStreetAddress} from "./signals";
 
 export type ApiEvent={id?:string;title:string;desc?:string;tags?:string[];facets?:string[];image?:string;venue?:string;address?:string;time?:string;url?:string;date?:string;source?:string;stockImage?:boolean};
 export type FindingType="family-no-signal"|"venue-is-address"|"missing-time"|"missing-image"|"fails-validation"|"broken-image"|"duplicate-image";
-export type AuditFinding={type:FindingType;eventId?:string;title:string;source?:string;detail?:string};
+export type AuditFinding={type:FindingType;eventId?:string;title:string;source?:string;detail?:string;image?:string;otherEventId?:string};
 
 /** Finding codes for one live listing ("" means clean). The family check mirrors the quarantine
  *  gate: city sources grant Family broadly, so only libraries, Ticketmaster and round-ups are
@@ -42,7 +42,7 @@ export function duplicateImageFindings(events:ApiEvent[]):AuditFinding[]{
   const first=seen.get(e.image);
   if(!first){seen.set(e.image,e);continue}
   if(first.title.toLowerCase()===e.title.toLowerCase()&&(first.venue||"").toLowerCase()===(e.venue||"").toLowerCase())continue;
-  out.push({type:"duplicate-image",eventId:e.id,title:e.title,source:e.source,detail:`same photo as "${first.title}" (${first.id||"?"})`});
+  out.push({type:"duplicate-image",eventId:e.id,title:e.title,source:e.source,detail:`same photo as "${first.title}" (${first.id||"?"})`,image:e.image,otherEventId:first.id});
  }
  return out;
 }
@@ -51,5 +51,5 @@ export function duplicateImageFindings(events:ApiEvent[]):AuditFinding[]{
  *  tile. `broken` is the set of image URLs the audit fetched and found missing. */
 export function brokenImageFindings(events:ApiEvent[],broken:Set<string>):AuditFinding[]{
  return events.filter(e=>e.image&&broken.has(e.image))
-  .map(e=>({type:"broken-image",eventId:e.id,title:e.title,source:e.source,detail:e.image}));
+  .map(e=>({type:"broken-image",eventId:e.id,title:e.title,source:e.source,detail:e.image,image:e.image}));
 }
