@@ -20,3 +20,19 @@ export function bestPicture(leadTitle:string,pics:Pic[]):string{
  ok.sort((a,b)=>sourceRank(a.source)-sourceRank(b.source)||titleRank(leadTitle,a.title)-titleRank(leadTitle,b.title)||a.id-b.id);
  return ok[0]?.image||"";
 }
+
+/** Cards on one list sharing one stored photo: the second card shows a photo that belongs to
+ *  another event (the audit's duplicate-image finding). Same title at the same venue is one
+ *  event, not a duplicate — the same rule the audit uses in lib/quality/checks. Returns the
+ *  cards that need a different photo, in list order. */
+export function sharedPhotoCards<T extends {image?:string;title:string;venue?:string}>(cards:T[]):T[]{
+ const seen=new Map<string,T>(),out:T[]=[];
+ for(const c of cards){
+  if(!c.image||!/^\/img\//.test(c.image))continue;
+  const first=seen.get(c.image);
+  if(!first){seen.set(c.image,c);continue}
+  if(first.title.toLowerCase()===c.title.toLowerCase()&&(first.venue||"").toLowerCase()===(c.venue||"").toLowerCase())continue;
+  out.push(c);
+ }
+ return out;
+}
