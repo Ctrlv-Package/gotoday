@@ -1,6 +1,6 @@
 import {test} from "node:test";
 import assert from "node:assert/strict";
-import {bestPicture,isGenericPicture} from "../lib/pictures";
+import {bestPicture,isGenericPicture,sharedPhotoCards} from "../lib/pictures";
 
 // One rule for which picture an event shows, used by the cards AND the event page.
 const pic=(o:any)=>({id:1,image:"/img/a",source:"City Calendar",title:"Boo Bash",...o} as any);
@@ -40,4 +40,26 @@ test("banners, logos and placeholders never count; a copy listed twice counts on
  assert.equal(bestPicture("Boo Bash",dupes),"/img/first");
  assert.equal(bestPicture("Boo Bash",[pic({image:"https://x.com/logo.png"})]),"");
  assert.equal(bestPicture("Boo Bash",[]),"");
+});
+
+test("sharedPhotoCards: the second card sharing a stored photo needs a re-pick",()=>{
+ const card=(o:any)=>({image:"/img/abc123",title:"Story Time",venue:"Main Library",...o});
+ const cards=[card({title:"Pajama Storytime"}),card({title:"All Ages Story Time"}),card({title:"Book Club",image:"/img/other"})];
+ const flagged=sharedPhotoCards(cards);
+ assert.equal(flagged.length,1);
+ assert.equal(flagged[0].title,"All Ages Story Time");
+});
+
+test("sharedPhotoCards: same title at the same venue is one event, not a duplicate",()=>{
+ const card=(o:any)=>({image:"/img/abc123",title:"Story Time",venue:"Main Library",...o});
+ assert.deepEqual(sharedPhotoCards([card({}),card({})]),[]);
+ // Same title at a different branch is a different card showing the same photo: flagged.
+ assert.equal(sharedPhotoCards([card({}),card({venue:"Branch Library"})]).length,1);
+});
+
+test("sharedPhotoCards: three cards on one photo flag the second and third; external images ignored",()=>{
+ const card=(o:any)=>({image:"/img/abc123",title:"Story Time",venue:"Main Library",...o});
+ const cards=[card({title:"A"}),card({title:"B"}),card({title:"C"}),{image:"https://x.com/a.jpg",title:"D",venue:"V"},{image:"",title:"E",venue:"V"}];
+ const flagged=sharedPhotoCards(cards as any);
+ assert.deepEqual(flagged.map(c=>c.title),["B","C"]);
 });
