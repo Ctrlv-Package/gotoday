@@ -58,6 +58,14 @@ test("a fixed pair replaced by a different new pair still fails",()=>{
  const after=withPhotos({"A":src(100,{duplicateImage:1})},100,{broken:[],duplicate:["db-3|db-4|/img/y"]});
  assert.ok(driftAlerts(before,after).some(a=>/new duplicate image/.test(a)));
 });
+test("a group of three sharing one photo is one standing identity; a fourth joining it is new",()=>{
+ const group="db-1307197|db-3654701|db-634348|/img/shared";
+ const before=withPhotos({"A":src(100,{duplicateImage:1})},100,{broken:[],duplicate:[group]});
+ const same=withPhotos({"A":src(100,{duplicateImage:1})},100,{broken:[],duplicate:[group]});
+ assert.deepEqual(driftAlerts(before,same),[]);
+ const grown=withPhotos({"A":src(100,{duplicateImage:1})},100,{broken:[],duplicate:["db-1307197|db-3654701|db-634348|db-999|/img/shared"]});
+ assert.ok(driftAlerts(before,grown).some(a=>/new duplicate image/.test(a)));
+});
 test("a standing broken image does not fail; a new one does",()=>{
  const before=withPhotos({"A":src(100,{brokenImage:1})},100,{broken:["db-1|/img/gone"],duplicate:[]});
  const same=withPhotos({"A":src(100,{brokenImage:1})},100,{broken:["db-1|/img/gone"],duplicate:[]});
