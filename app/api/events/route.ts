@@ -5,7 +5,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { ensureSchemaSoft } from "../../../lib/schema";
 import { cityCoords } from "../../../lib/ingestion/geocode";
 import { discoveryRejection } from "../../../lib/ingestion/utils";
-import { bestPicture } from "../../../lib/pictures";
+import { bestPicture, sharedPhotoCards } from "../../../lib/pictures";
 import { choosePlace } from "../../../lib/places";
 import { sameEvent, familyPictures, familyKey } from "../../../lib/copies";
 import { loveStatsFor } from "../../../lib/love";
@@ -231,6 +231,14 @@ export async function GET(request:NextRequest){
  // tile — the same always-backup rule the event page already uses (lib/copies).
  for(const e of kept as any[]){
   if(e.image&&!e.backupImage){const p=await stockPicture(e,usedStock);if(p){e.backupImage=p;usedStock.add(p)}}
+ }
+ // One list never shows the same stored photo twice either: two different events sharing a
+ // stored /img/ picture get the second card re-picked from the library (same rule as the
+ // audit's duplicate check — same title at the same venue is one event, not a duplicate).
+ // A card keeps the shared photo only when the library has no free photo left at all.
+ for(const e of sharedPhotoCards(kept as any[])){
+  const p=await stockPicture(e,usedStock);
+  if(p){e.image=p;e.stockImage=true;usedStock.add(p)}
  }
  events=kept.sort((a:any,b:any)=>(a.date+(a.time||"")).localeCompare(b.date+(b.time||""))||((a.source==="Ticketmaster"?1:0)-(b.source==="Ticketmaster"?1:0)));
  // A listing marked cancelled ("CANCELLED: Downtown Hollywood ArtWalk") also hides other sources' copies of that event
