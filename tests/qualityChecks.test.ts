@@ -79,3 +79,19 @@ test("a stored picture that 404s is flagged with its URL; a live one is clean",(
  assert.equal(found[0].detail,"/img/695e7ce231bdef5ff3bcc3b9");
  assert.deepEqual(brokenImageFindings(list,new Set()),[]);
 });
+
+// Photo findings carry a stable identity (event IDs + image key) so the drift check can tell
+// a new finding from a standing one: the duplicate names the event it shares the photo with.
+test("duplicate-image findings carry the shared image and the other event; broken ones carry the URL",()=>{
+ const list=[
+  ev({id:"db-1",title:"Pajama Storytime",image:"/img/shared"}),
+  ev({id:"db-2",title:"All Ages Story Time",image:"/img/shared"}),
+ ];
+ const dup=duplicateImageFindings(list);
+ assert.equal(dup.length,1);
+ assert.equal(dup[0].eventId,"db-2");
+ assert.equal(dup[0].image,"/img/shared");
+ assert.equal(dup[0].otherEventId,"db-1");
+ const broken=brokenImageFindings([ev({id:"db-1",image:"/img/gone"})],new Set(["/img/gone"]));
+ assert.equal(broken[0].image,"/img/gone");
+});
