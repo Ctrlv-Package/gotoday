@@ -56,7 +56,7 @@ const EVENT_TITLE=/\b(festival|fest|fair|concert|show|performance|celebration|ce
 // Post text or notices read as an event title ("Dear Neighbors", "We hope you will join us TOMORROW…",
 // "Maintenance Alert", "Shop Local. Play Along. Win!").
 const CAPTION=/^(dear |we hope|we('re| are) (so )?(excited|thrilled|happy)|join us (tomorrow|today|this)|don['’]?t (miss|forget)|did you know|have you (signed|registered|heard)|reminder|friendly reminder|save the date\b|thank you\b|thanks to|happy (birthday|anniversary|friday|monday|holidays?)\b|mark your calendars?|calling all\b|attention\b|just \d+ (more )?days?|only \d+ (more )?days?|\d+ days? (until|left)|maintenance alert|road (work|closure)|traffic (alert|advisory)|service alert|weather (alert|update)|why i love|meet (our|the) (new|team|staff)|now hiring|we'?re hiring|apply now|congratulations)|\b(shop local\. play along|survey|government week|proclamation)\b|!\s*$(?<=win!\s*)/i;
-const ANNOUNCEMENT=/^(labor day|patriot day|memorial day|veterans'? day|thanksgiving( day)?|christmas( day| eve)?|new year'?s( day| eve)?|independence day|martin luther king.*day|presidents'? day|juneteenth|columbus day|indigenous peoples'? day|good friday|election day|rosh hashanah|yom kippur)$|\b(closed|closure|office hours|registration (opens|closes|deadline)|deadline|applications? (due|open)|no school|early release|contest registration)\b/i;
+const ANNOUNCEMENT=/^(labor day|patriot day|memorial day|veterans'? day|thanksgiving( day| holiday)?|christmas( day| eve| holiday)?|new year'?s( day| eve)?|independence day|martin luther king.*day|presidents'? day|juneteenth|columbus day|indigenous peoples'? day|good friday|election day|rosh hashanah|yom kippur)$|\b(closed|closure|office hours|registration (opens|closes|deadline)|deadline|applications? (due|open)|no school|early release|contest registration)\b/i;
 // City calendars list their holidays as all-day markers ("Day After Thanksgiving", "Day Before
 // Thanksgiving") — no venue, no time, no description beyond "Official <city> event." They are
 // closure days, not events, and they recur every year (Weston's calendar already lists
@@ -73,11 +73,18 @@ const DAY_AROUND_HOLIDAY=/^day (after|before) (labor day|patriot day|memorial da
 // relocated to the Goethe-Institut) — so "closed for" is deliberately NOT in this list.
 const CLOSURE_NOTICE=/\b(closed all day|remains? closed|will be closed|are closed|'re closed|is closed|closed today|re-?opens? tomorrow|operate[sd]? on regular hours|open for limited hours|(is|will be|remains?) open on the day (after|before))\b/i;
 const REGISTRATION_CLOSED=/registrations?\s+(is|are|remains?|was|were)\s+closed/gi;
+// A description that is nothing but a closure notice ("Closed.") under a holiday title is a
+// closure day, not an event (Norwood Park Thanksgiving Holiday, Nov 27, 2026: the title is not
+// a bare "Day After" marker and "Closed." matches none of the closure phrases above). A real
+// happening never has a one-word "Closed." description, and the holiday in the title is what
+// makes it a closure day rather than a cancelled session.
+const HOLIDAY_TITLE=/\b(labor day|patriot day|memorial day|veterans'? day|thanksgiving|christmas|new year'?s|independence day|martin luther king.*day|presidents'? day|juneteenth|columbus day|indigenous peoples'? day|good friday|election day|rosh hashanah|yom kippur)\b/i;
+const BARE_CLOSED=/^\W*(closed|closed today|closed for (the )?(holiday|day)|closed (for|on) (thanksgiving|christmas|new year'?s|independence day|memorial day|labor day|juneteenth|veterans'? day|columbus day|martin luther king.*day|presidents'? day|good friday|election day)|we'?re closed|we are closed)\W*$/i;
 const MEETING=/\b(board|commission|committee|council|hearings?|advisory|code enforcement|magistrate|zoning|budget|bargaining|public meeting|town hall|pre-?bid|special meeting|workshop session|state of the (?:city|town|county|village|county)(?: address)?|chat with a planner|(?:girl|boy|cub) scout troop \d+|troop \d+|public (?:forums?|input|comment|information session|hearing)|charter (?:amendments?|review)|ballot (?:questions?|measures?|initiatives?)|referendum|bond (?:referendum|forum)|community input|listening session|visioning|master plan|comprehensive plan|redistricting|rate increase)\b/i;
 const PASSIVE=/\b(grab[- ](?:and|&|n)[- ]go|information table|take (?:it )?(?:and|&) make|take[- ]home craft|photo op|word search|display (?:case|table)|coloring station|self[- ]guided|seed library|month$)\b/i;
 // Tags that mark a real happening even when a Grab & Go / Class tag is also present.
 const STRONG_TAG=/\b(fair\/festival|performances|exhibit|speaker|author events|movie|story time)\b/i;
-const SERVICE=/\b(esl|english (?:cafe|café|conversation|class(?:es)?|lessons?|practice)|(?:beginners?|intermediate|advanced|spanish|french)\s+(?:english\s+)?caf[eé]|caf[eé]\s*[-–]?\s*(?:beginner|intermediate|advanced)|as a second language|conversation (?:group|club|practice)|citizenship|naturalization|vita\b|tax (?:help|assistance|prep)|ged\b|test prep|sat\/act|tutor(?:ing)?|homework help|reading practice|resume|job (?:prep|search|help|seekers?)|career (?:coach|help|counsel|assistance)|tech help|device help|mobile device|ask us anything|one[- ]on[- ]one|1 on 1|support (?:group|meeting)|nami\b|al-?anon|alcoholics|narcotics|grief|caregiver|blood pressure|health screening|medicare|legal (?:aid|help|clinic)|notary|passport|dmv\b|exemption|proctor|meeting room|study room|early voting|voting site|election site|polling|volunteer orientation|mentoring program|rentals?|reservations?|permits?|for non-?profit groups|primitive camping|shelter rental|bulky (?:item|waste|trash)|(?:garbage|trash|recycling|leaf|brush|yard waste|bulk) (?:pick-?ups?|collections?)|street sweeping|social work(?:er)? intern|open (?:office )?hours|book donations?|donations? (?:accepted|drop-?off))\b/i;
+const SERVICE=/\b(esl|english (?:cafe|café|conversation|class(?:es)?|lessons?|practice)|(?:beginners?|intermediate|advanced|spanish|french)\s+(?:english\s+)?caf[eé]|caf[eé]\s*[-–]?\s*(?:beginner|intermediate|advanced)|as a second language|conversation (?:group|club|practice)|citizenship|naturalization|vita\b|tax (?:help|assistance|prep)|ged\b|test prep|sat\/act|tutor(?:ing)?|homework help|reading practice|resume|job (?:prep|search|help|seekers?)|career (?:coach|help|counsel|assistance)|tech help|device help|mobile device|ask us anything|one[- ]on[- ]one|1 on 1|support (?:group|meeting)|nami\b|al-?anon|alcoholics|narcotics|grief|caregiver|blood pressure|health screening|medicare|legal (?:aid|help|clinic)|notary|passport|dmv\b|exemption|proctor|meeting room|study room|early voting|voting site|election site|polling|volunteer orientation|mentoring program|rentals?|reservations?|permits?|for non-?profit groups|primitive camping|shelter rental|bulky (?:item|waste|trash)|(?:garbage|trash|recycling|leaf|brush|yard waste|bulk) (?:pick-?ups?|collections?|(?:cart|bin)s? removals?)|street sweeping|social work(?:er)? intern|open (?:office )?hours|book donations?|donations? (?:accepted|drop-?off))\b/i;
 const FITNESS=/\b(zumba|yoga|tai chi|pilates|hiit|insanity|fitness|aerobics|cardio|chair exercise|strength (?:and|&) balance|strength training|boot ?camp|meditation|mindfulness|stretch(ing)?|ageless grace|pickleball lessons?)\b/i;
 // Skill-building courses (languages, computers, office software, finance, test prep) and
 // multi-session courses. One-off arts/crafts/kids classes are NOT rejected.
@@ -99,6 +106,7 @@ export function discoveryRejection(e:EventRecord):DiscoveryReason|null{
  // The closure signal lives in the description (see CLOSURE_NOTICE): the title alone says nothing.
  // "Registration is closed" is stripped first: it is about a full class, not a closed venue.
  if(CLOSURE_NOTICE.test(`${title} ${String(e.desc||"").slice(0,400)}`.replace(REGISTRATION_CLOSED,"")))return"announcement";
+ if(HOLIDAY_TITLE.test(title)&&BARE_CLOSED.test(String(e.desc||"").trim()))return"announcement";
  // A title that is only an audience word ("ALL AGES", "Everyone", "Kids") is a label, not an event.
  if(/^\W*(all ages|everyone|kids|children|adults|teens|families|family|free|seniors)\W*$/i.test(title.trim()))return"announcement";
  // Online-only programs aren't something to go to ("Online Event: Composting at Home 101", "Virtual: …", "Zoom …").
@@ -177,6 +185,30 @@ export function classifyEventType(e:EventRecord):EventRecord["eventType"]{
 }
 
 // ---------- Normalization ----------
+/** Descriptions copied verbatim from a source can carry a date range from another year:
+ *  "Friday, November 25, 2022 - Sunday, November 27, 2022 @ 11:00 am - 5:30 pm - Find a
+ *  fur-ever friend" on an event dated 2026-11-27 (Black Furrday, Nov 27, 2026). A date whose
+ *  year is not the event's year is stale copy, not information: strip the date (and its time
+ *  and trailing dash) and keep the rest. A date in the event's own year stays. A date range
+ *  in the same year on a different day is left alone — a description may legitimately mention
+ *  another day ("rescheduled from November 20"), so only the year is judged here. */
+const DATE_MONTH="(?:jan(?:uary)?|feb(?:ruary)?|mar(?:ch)?|apr(?:il)?|may|jun(?:e)?|jul(?:y)?|aug(?:ust)?|sep(?:t(?:ember)?)?|oct(?:ober)?|nov(?:ember)?|dec(?:ember)?)";
+const DATE_WEEKDAY="(?:mon|tues|wednes|thurs|fri|satur|sun)day";
+const STALE_DATE=new RegExp(
+ `(?:(?:${DATE_WEEKDAY}),?\\s+)?${DATE_MONTH}\\.?\\s+\\d{1,2}(?:st|nd|rd|th)?(?:\\s*(?:-|–|—|to)\\s*(?:(?:${DATE_WEEKDAY}),?\\s+)?(?:${DATE_MONTH}\\.?\\s+)?\\d{1,2}(?:st|nd|rd|th)?)?,?\\s*\\d{4}`+
+ `(?:\\s*@\\s*\\d{1,2}(?::\\d{2})?\\s*(?:a\\.?m\\.?|p\\.?m\\.?)?(?:\\s*(?:-|–|—|to)\\s*\\d{1,2}(?::\\d{2})?\\s*(?:a\\.?m\\.?|p\\.?m\\.?)?)?)?`+
+ `(?:\\s*[-–—:|]\\s*)?`+
+ `|\\b\\d{1,2}\\/\\d{1,2}\\/\\d{4}\\b|\\b\\d{4}-\\d{2}-\\d{2}\\b`,"gi");
+export function cleanStaleDates(desc:string,date:string):string{
+ const y=/^(\d{4})-/.exec(String(date||""))?.[1];if(!y)return desc;
+ const out=String(desc||"").replace(STALE_DATE,m=>{
+  const years=m.match(/\b\d{4}\b/g)||[];
+  return years.some(yy=>yy!==y)?"":m;
+ });
+ // Removing a leading date can leave its separator ("- Find a fur-ever friend") and double spaces.
+ return out.replace(/\s{2,}/g," ").replace(/^\s*[-–—:|]+\s*/,"").replace(/\s*[-–—:|]+\s*$/,"").trim();
+}
+
 /** A clean event name: no emoji, and no audience/price note tacked on after a period
  *  ("Halloween Storytime at City Hall. Kids 5 & under 🎃👻" → "Halloween Storytime at City Hall"). */
 export function cleanTitle(t:string):string{
@@ -215,6 +247,9 @@ export function normalize(e:EventRecord):EventRecord{
  if(e.venue)e={...e,venue:e.venue.replace(/^(?:begins|starts|starting|meet(?:s|ing)?|located|held|hosted|takes place|happening|join us)\s+(?:at|in|on)\s+/i,"").trim()||e.venue};
  // A description cut off mid-word by a source's length limit ("📅 Tuesday, Oc"): drop the unfinished last line.
  if(e.desc&&e.desc.length>=250){const ls=e.desc.split("\n");const last=ls[ls.length-1].trim();if(ls.length>1&&last.length<40&&!/[.!?)"”]$/.test(last))e={...e,desc:ls.slice(0,-1).join("\n").trim()}}
+ // A description copied verbatim from a source can carry another year's dates (Black Furrday's
+ // 2022 range on a 2026 event): strip them at ingestion, like the cards do at serve time.
+ if(e.desc&&e.date)e={...e,desc:cleanStaleDates(e.desc,e.date)};
  if(e.title){const c=cleanTitle(e.title);if(c!==e.title){const note=e.title.startsWith(c)?e.title.slice(c.length).replace(/^[\s.!|•·–—,:;(-]+/,"").replace(/[)\]]$/,"").trim():"";e={...e,title:c,desc:note&&!/^[\p{Extended_Pictographic}\s]*$/u.test(note)&&!textAgeRange(note)&&!(e.desc||"").includes(note)?`${note}${e.desc?"\n"+e.desc:""}`:e.desc}}}
  const paid=/\$\s*[1-9]/.test(e.priceText||"")||e.source==="Ticketmaster";
  const free=e.isFree===true||(!paid&&/\bfree\b/i.test([e.priceText,e.desc,...(e.tags||[])].filter(Boolean).join(" ")));

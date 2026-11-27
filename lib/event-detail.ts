@@ -7,7 +7,7 @@ import {DEFAULT_TZ} from "./time";
 import {googleCalendarLink,icsText,type CalEvent} from "./calendar";
 import {fillFromCopies} from "./copies";
 import {placeScore} from "./places";
-import {discoveryRejection} from "./ingestion/utils";
+import {discoveryRejection,cleanStaleDates} from "./ingestion/utils";
 import type {EventRecord} from "./ingestion/types";
 export const TZ=DEFAULT_TZ;
 export function decodeHtml(s:string){return decodeEntities(s)}
@@ -42,7 +42,11 @@ export async function loadEvent(id:string):Promise<EventDetail|null>{
   ageMin:r.age_min,ageMax:r.age_max,registrationUrl:r.registration_url,registrationText:r.registration_text,recurrence:r.recurrence,source:/^Ticketmaster/.test(r.source)?"Ticketmaster":r.source,sourceId:r.source_id,tz:r.timezone||DEFAULT_TZ,
   venue:r.venue?decodeHtml(r.venue):null,venueId:r.venue_id,address:r.address,lat:r.latitude==null?null:Number(r.latitude),lng:r.longitude==null?null:Number(r.longitude)};
  // Fill what this listing lacks (photo, description, ages) from the other copies of the same event, like the cards do.
- return fillFromCopies(ev).catch(()=>ev);
+ const filled=await fillFromCopies(ev).catch(()=>ev);
+ // A description copied verbatim from a source can carry another year's dates (Black Furrday's
+ // 2022 range on a 2026 event): strip them at serve time, like the cards do.
+ const day=new Intl.DateTimeFormat("en-CA",{timeZone:filled.tz,year:"numeric",month:"2-digit",day:"2-digit"}).format(filled.start);
+ return{...filled,description:cleanStaleDates(filled.description,day)};
 }
 
 export type Related={id:number;title:string;start:Date;venue:string|null;city:string};
