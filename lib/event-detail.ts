@@ -7,6 +7,8 @@ import {DEFAULT_TZ} from "./time";
 import {googleCalendarLink,icsText,type CalEvent} from "./calendar";
 import {fillFromCopies} from "./copies";
 import {placeScore} from "./places";
+import {discoveryRejection} from "./ingestion/utils";
+import type {EventRecord} from "./ingestion/types";
 export const TZ=DEFAULT_TZ;
 export function decodeHtml(s:string){return decodeEntities(s)}
 
@@ -25,6 +27,10 @@ export async function loadEvent(id:string):Promise<EventDetail|null>{
   e.registration_url,e.registration_text,e.recurrence,e.timezone,e.source_id,s.name as source,(select c.url from source_configs c where c.name=s.name limit 1) as source_page,v.id as venue_id,v.name as venue,v.address,v.latitude,v.longitude
   from events e join sources s on s.id=e.source_id left join venues v on v.id=e.venue_id where e.id=$1 limit 1`,[n]);
  const r=rows[0];if(!r)return null;
+ // Same discovery rule as the cards: a listing the filter rejects (a holiday closure marker, a
+ // hours notice) has no public page, even by direct link — the list route already skips it.
+ const asRecord:EventRecord={id:`db-${r.id}`,title:decodeHtml(r.title),city:r.city||"",venue:r.venue||"",date:"",time:"",url:r.official_url||"",category:r.category||"",genre:"",desc:decodeHtml(r.description||""),tags:Array.isArray(r.tags)?r.tags:[],emoji:"",source:r.source,isDiscoveryEligible:/^Ticketmaster/.test(r.source||"")?true:undefined};
+ if(discoveryRejection(asRecord))return null;
  // Same rule as the cards: a photo shared by 3+ differently named events is a cover or placeholder, not this event's.
  if(r.image_url&&/ticketm\.net\/dam\/c\//.test(r.image_url))r.image_url=null;
  if(r.image_url&&!/static\.libnet\.info|ticketm\.net/.test(r.image_url)){
