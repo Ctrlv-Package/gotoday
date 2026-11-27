@@ -1,5 +1,5 @@
 import {db} from "./db";
-import {bestPicture,isGenericPicture,isMapPicture,MAP_URL_PATTERN} from "./pictures";
+import {bestPicture,isGenericPicture} from "./pictures";
 import {stockPicture} from "./stockPhotos";
 import {choosePlace} from "./places";
 
@@ -74,9 +74,8 @@ export async function fillFromCopies<T extends Fillable>(e:T):Promise<T>{
  const shared=urls.length?new Set((await db.query("select image_url from events where image_url=any($1) group by image_url having count(distinct lower(title))>=3",[urls]).catch(()=>({rows:[]}))).rows.map((r:any)=>r.image_url)):new Set();
  out.image=bestPicture(e.title,all.filter(p=>!shared.has(p.image)))||null;
  if(!out.image)out.image=(await familyPictures([{title:e.title,city:e.city}])).get(familyKey(e.title,e.city))||null;
- // A stored picture (/img/…) that has since been cleaned out of storage is no picture; a
- // stored map is no picture either (a road-closure map saved as an event's photo).
- if(out.image&&/^\/img\//.test(out.image)){const r:any=await db.query("select source_url from images where key=$1",[out.image.slice(5)]).catch(()=>null);if(r&&(r.rowCount===0||isMapPicture(String(r.rows[0]?.source_url||""))))out.image=null}
+ // A stored picture (/img/…) that has since been cleaned out of storage is no picture.
+ if(out.image&&/^\/img\//.test(out.image)){const r:any=await db.query("select 1 from images where key=$1",[out.image.slice(5)]).catch(()=>null);if(r&&r.rowCount===0)out.image=null}
  // Always keep a library photo ready as the backup, for any picture that fails to load in the browser.
  {const p=true?await stockPicture({title:e.title,desc:e.description,category:e.category||undefined,tags:e.tags,ageMax:e.ageMax,source:e.source,venue:e.venue}):"";
   if(p&&!out.image){out.image=p;out.stockImage=true}else if(p)out.backupImage=p}
@@ -120,8 +119,8 @@ export async function familyPictures(wanted:{title:string;city:string}[]):Promis
  if(hit&&Date.now()-hit.at<FAMILY_CACHE_TTL_MS){rows=hit.rows;shared=hit.shared}else{
   try{rows=(await db.query(`select e.id,e.title,e.city,e.image_url,s.name as source from events e join sources s on s.id=e.source_id
   where e.image_url like '/img/%' and e.local_date between current_date-90 and current_date+90
-   and exists (select 1 from images i where '/img/'||i.key=e.image_url and (i.source_url is null or i.source_url !~* $2))
-   and btrim(lower(regexp_replace(split_part(coalesce(e.city,''),',',1),'^ft\\.?\\s','fort ','i'))) = any($1::text[]) limit 8000`,[towns,MAP_URL_PATTERN])).rows}catch{return out}
+   and exists (select 1 from images i where '/img/'||i.key=e.image_url)
+   and btrim(lower(regexp_replace(split_part(coalesce(e.city,''),',',1),'^ft\\.?\\s','fort ','i'))) = any($1::text[]) limit 8000`,[towns])).rows}catch{return out}
   if(!rows.length){storeFamily(key,[],new Set());return out}
   const imgs=[...new Set(rows.map((r:any)=>r.image_url))];
   // A picture several differently named events share is a cover, not this event's.
