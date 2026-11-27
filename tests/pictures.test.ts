@@ -1,6 +1,6 @@
 import {test} from "node:test";
 import assert from "node:assert/strict";
-import {bestPicture,isGenericPicture,sharedPhotoCards} from "../lib/pictures";
+import {bestPicture,isGenericPicture,isMapPicture,sharedPhotoCards} from "../lib/pictures";
 
 // One rule for which picture an event shows, used by the cards AND the event page.
 const pic=(o:any)=>({id:1,image:"/img/a",source:"City Calendar",title:"Boo Bash",...o} as any);
@@ -40,6 +40,20 @@ test("banners, logos and placeholders never count; a copy listed twice counts on
  assert.equal(bestPicture("Boo Bash",dupes),"/img/first");
  assert.equal(bestPicture("Boo Bash",[pic({image:"https://x.com/logo.png"})]),"");
  assert.equal(bestPicture("Boo Bash",[]),"");
+});
+
+test("maps and diagrams never count as an event photo (Friday Dining in the Street, Nov 27, 2026)",()=>{
+ assert.equal(isMapPicture("https://tile.openstreetmap.org/12/1234/5678.png"),true);
+ assert.equal(isMapPicture("https://maps.googleapis.com/maps/api/staticmap?center=Miami&size=600x400"),true);
+ assert.equal(isMapPicture("https://api.mapbox.com/styles/v1/mapbox/streets-v11/static/-80.1,26.1,12/600x400"),true);
+ assert.equal(isMapPicture("https://www.fortlauderdale.gov/files/assets/friday-dining-map.jpg"),true);
+ assert.equal(isMapPicture("https://x.com/road-closure-map.png"),true);
+ assert.equal(isMapPicture("https://x.com/maps/road-closed.png"),true);
+ assert.equal(isMapPicture("https://x.com/flyer.jpg"),false);
+ assert.equal(isMapPicture("https://x.com/maple-festival.jpg"),false);
+ assert.equal(isMapPicture("/img/abc123"),false);
+ assert.equal(isGenericPicture("https://www.fortlauderdale.gov/files/assets/friday-dining-map.jpg"),true);
+ assert.equal(bestPicture("Boo Bash",[pic({image:"https://www.fortlauderdale.gov/files/assets/friday-dining-map.jpg"}),pic({id:2,image:"/img/real"})]),"/img/real");
 });
 
 test("sharedPhotoCards: the second card sharing a stored photo needs a re-pick",()=>{

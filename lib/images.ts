@@ -1,5 +1,6 @@
 import {createHash} from "crypto";
 import {db} from "./db";
+import {MAP_URL_PATTERN} from "./pictures";
 
 // Instagram's picture links are signed and stop working after a few days, and each update only re-reads an
 // account's latest posts, so a flyer posted a while back would lose its picture before the event happens.
@@ -113,5 +114,15 @@ export async function purgeImages(){
 export async function existingImageKeys(keys:string[]):Promise<Set<string>>{
  if(!keys.length)return new Set();
  const rows=(await db.query("select key from images where key=any($1)",[keys]).catch(()=>({rows:[]}))).rows;
+ return new Set(rows.map((r:any)=>String(r.key)));
+}
+
+/** Which of these /img/ keys were stored from a map/diagram source (a road-closure map saved
+ *  as an event's picture, e.g. Friday Dining in the Street, Nov 27, 2026). The stored key
+ *  itself carries no signal — only its source URL does — so the listing route checks the keys
+ *  it is about to serve and swaps any map-sourced one for a library photo, like a missing copy. */
+export async function mapImageKeys(keys:string[]):Promise<Set<string>>{
+ if(!keys.length)return new Set();
+ const rows=(await db.query("select key from images where key=any($1) and source_url ~* $2",[keys,MAP_URL_PATTERN]).catch(()=>({rows:[]}))).rows;
  return new Set(rows.map((r:any)=>String(r.key)));
 }

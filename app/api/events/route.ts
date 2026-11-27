@@ -4,14 +4,14 @@ import { facetsFor, cleanAges, displayTags, settingFor, isPaid, BIG_SQL, diningN
 import { NextRequest, NextResponse } from "next/server";
 import { ensureSchemaSoft } from "../../../lib/schema";
 import { cityCoords } from "../../../lib/ingestion/geocode";
-import { discoveryRejection } from "../../../lib/ingestion/utils";
+import { discoveryRejection, cleanStaleDates } from "../../../lib/ingestion/utils";
 import { bestPicture, sharedPhotoCards } from "../../../lib/pictures";
 import { choosePlace } from "../../../lib/places";
 import { sameEvent, familyPictures, familyKey } from "../../../lib/copies";
 import { loveStatsFor } from "../../../lib/love";
 import { sameEventCard, words, town } from "../../../lib/sameCard";
 import { stockPicture } from "../../../lib/stockPhotos";
-import { existingImageKeys } from "../../../lib/images";
+import { existingImageKeys, mapImageKeys } from "../../../lib/images";
 import { localParts, todayIn, DEFAULT_TZ } from "../../../lib/time";
 import { CITY_COORDS, milesBetween as miles } from "../../../lib/cities";
 
@@ -218,13 +218,14 @@ export async function GET(request:NextRequest){
  }
  // A stored copy can be gone (a purge deleted bytes a borrowed picture still points at): the card
  // would fall back to the emoji tile, so verify the copies this list uses and swap any missing
- // one for a library photo before answering.
+ // one for a library photo before answering. A stored map is no picture either: a road-closure
+ // map saved as an event's photo (Friday Dining in the Street) is swapped the same way.
  const ownKeys=[...new Set((kept as any[]).map((e:any)=>{const m=/^\/img\/([0-9a-f]{24})$/.exec(e.image||"");return m?m[1]:null}).filter(Boolean))] as string[];
  if(ownKeys.length){
-  const have=await existingImageKeys(ownKeys);
+  const [have,mapKeys]=await Promise.all([existingImageKeys(ownKeys),mapImageKeys(ownKeys)]);
   for(const e of kept as any[]){
    const m=/^\/img\/([0-9a-f]{24})$/.exec(e.image||"");
-   if(m&&!have.has(m[1])){const p=await stockPicture(e,usedStock);if(p){e.image=p;e.stockImage=true;usedStock.add(p)}else e.image="";}
+   if(m&&(!have.has(m[1])||mapKeys.has(m[1]))){const p=await stockPicture(e,usedStock);if(p){e.image=p;e.stockImage=true;usedStock.add(p)}else e.image="";}
   }
  }
  // Any picture that fails to load in the browser falls back to the library photo, not the emoji
@@ -302,5 +303,5 @@ export async function GET(request:NextRequest){
   }
  }
  for(const e of events as any[]){delete e._ids;delete e._sources;delete e._likes;delete e._series}
- return NextResponse.json({coverage,events:events.slice(0,2000).map((e:any)=>({...e,desc:e.desc.length>320?e.desc.slice(0,317)+"…":e.desc})),range,startDate:w.startDate,endDate:w.endDate,center:[lat,lng],radius,localCount,ticketmasterCount:events.length-localCount,total:events.length},{headers:{"cache-control":"public, s-maxage=600, stale-while-revalidate=1800"}});
+ return NextResponse.json({coverage,events:events.slice(0,2000).map((e:any)=>{const d=cleanStaleDates(e.desc,e.date);return{...e,desc:d.length>320?d.slice(0,317)+"…":d}}),range,startDate:w.startDate,endDate:w.endDate,center:[lat,lng],radius,localCount,ticketmasterCount:events.length-localCount,total:events.length},{headers:{"cache-control":"public, s-maxage=600, stale-while-revalidate=1800"}});
 }

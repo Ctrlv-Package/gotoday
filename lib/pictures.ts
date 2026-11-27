@@ -9,7 +9,16 @@
 export type Pic={id:number;image:string;source:string;title:string};
 
 const ROUNDUP=/^(Miami Residents|Weekend Broward|The Broward Scene|To Do with Kids (Broward|Miami)) · Instagram$/;
-export const isGenericPicture=(u:string)=>/og[-_]?image|default|logo|favicon|placeholder|share[-_]?image|social[-_]?share|\bseal\b|\.svg(\?|$)/i.test(u);
+// A map or diagram is not an event photo: a road-closure map saved as an event's picture
+// (Friday Dining in the Street, Nov 27, 2026) reads as a map, not a night out. Map tile
+// services, static-map images and files named like a map never count as an event's picture.
+// The same pattern drives the stored-image check in lib/images (mapImageKeys), so one pattern
+// serves both: it is written to work as a JS regex and as a Postgres ~* pattern (no
+// non-capturing groups, no JS-only escapes).
+export const MAP_URL_PATTERN="openstreetmap|staticmap|maps\\.googleapis|googleapis\\.com/maps|maps\\.google\\.com|mapbox\\.com[^ ]*/static|virtualearth\\.net[^ ]*/map|bing\\.com/maps|hereapi\\.com[^ ]*map|tomtom\\.com[^ ]*map|[-_./]maps?[-_./]|[-_]map\\.(jpg|jpeg|png|webp|gif|svg)";
+const MAP_URL_RE=new RegExp(MAP_URL_PATTERN,"i");
+export const isMapPicture=(u:string)=>MAP_URL_RE.test(u||"");
+export const isGenericPicture=(u:string)=>/og[-_]?image|default|logo|favicon|placeholder|share[-_]?image|social[-_]?share|\bseal\b|\.svg(\?|$)/i.test(u)||isMapPicture(u);
 const sourceRank=(s:string)=>ROUNDUP.test(s)?3:/ · Instagram$/.test(s)?2:/^Ticketmaster/.test(s)?1:0;
 const flat=(t:string)=>String(t||"").toLowerCase().replace(/&/g,"and").replace(/[^a-z0-9]+/g,"");
 const titleRank=(lead:string,t:string)=>{const a=flat(lead),b=flat(t);return a===b?0:a&&b&&(a.includes(b)||b.includes(a))?1:2};
