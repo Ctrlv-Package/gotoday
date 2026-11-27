@@ -10,6 +10,9 @@ import type {EventRecord} from "./types";
 export const QUARANTINE_LABELS:Record<string,string>={
  "borrowed-image":"Picture borrowed from another post",
  "family-no-signal":"Family/Kids label with no family signal in the listing",
+ // Set by the announcement sweep (scripts/sweep-announcements.ts) for rows the discovery filter
+ // rejects now but that published before the rule existed: a closure/hours notice, not an event.
+ "announcement":"Announcement, not an event",
  // Retained only so rows held before the rule change still render: no new row gets this reason.
  "new-source":"First successful run of a new source",
 };

@@ -57,6 +57,22 @@ const EVENT_TITLE=/\b(festival|fest|fair|concert|show|performance|celebration|ce
 // "Maintenance Alert", "Shop Local. Play Along. Win!").
 const CAPTION=/^(dear |we hope|we('re| are) (so )?(excited|thrilled|happy)|join us (tomorrow|today|this)|don['’]?t (miss|forget)|did you know|have you (signed|registered|heard)|reminder|friendly reminder|save the date\b|thank you\b|thanks to|happy (birthday|anniversary|friday|monday|holidays?)\b|mark your calendars?|calling all\b|attention\b|just \d+ (more )?days?|only \d+ (more )?days?|\d+ days? (until|left)|maintenance alert|road (work|closure)|traffic (alert|advisory)|service alert|weather (alert|update)|why i love|meet (our|the) (new|team|staff)|now hiring|we'?re hiring|apply now|congratulations)|\b(shop local\. play along|survey|government week|proclamation)\b|!\s*$(?<=win!\s*)/i;
 const ANNOUNCEMENT=/^(labor day|patriot day|memorial day|veterans'? day|thanksgiving( day)?|christmas( day| eve)?|new year'?s( day| eve)?|independence day|martin luther king.*day|presidents'? day|juneteenth|columbus day|indigenous peoples'? day|good friday|election day|rosh hashanah|yom kippur)$|\b(closed|closure|office hours|registration (opens|closes|deadline)|deadline|applications? (due|open)|no school|early release|contest registration)\b/i;
+// City calendars list their holidays as all-day markers ("Day After Thanksgiving", "Day Before
+// Thanksgiving") — no venue, no time, no description beyond "Official <city> event." They are
+// closure days, not events, and they recur every year (Weston's calendar already lists
+// "Day After Thanksgiving" for Nov 26, 2027). The match is the BARE marker only: a real happening
+// the day after a holiday names itself ("Day After Thanksgiving 5K", "Black Friday Sale").
+const DAY_AROUND_HOLIDAY=/^day (after|before) (labor day|patriot day|memorial day|veterans'? day|thanksgiving( day)?|christmas( day| eve)?|new year'?s( day| eve)?|independence day|martin luther king.*day|presidents'? day|juneteenth|columbus day|indigenous peoples'? day|good friday|election day|rosh hashanah|yom kippur)\W*$/i;
+// Closure and hours notices carry the signal in the description, not the title ("Government Center
+// Closed All Day", "Facilities remain closed", "will operate on regular hours"). The signal can sit
+// past the first 200 characters (Stranahan House: "…will be closed November 26–27…" at ~215), so
+// this reads further than the election rule below. Notice language, not event language: a real
+// event's description mentions hours only in passing. Two traps, pinned by golden cases:
+// "Registration is closed" is about a full class, not a closed venue (Laser Engraving 101), and
+// a venue "closed for renovations" is not the event's venue when the event moved (a story time
+// relocated to the Goethe-Institut) — so "closed for" is deliberately NOT in this list.
+const CLOSURE_NOTICE=/\b(closed all day|remains? closed|will be closed|are closed|'re closed|is closed|closed today|re-?opens? tomorrow|operate[sd]? on regular hours|open for limited hours|(is|will be|remains?) open on the day (after|before))\b/i;
+const REGISTRATION_CLOSED=/registrations?\s+(is|are|remains?|was|were)\s+closed/gi;
 const MEETING=/\b(board|commission|committee|council|hearings?|advisory|code enforcement|magistrate|zoning|budget|bargaining|public meeting|town hall|pre-?bid|special meeting|workshop session|state of the (?:city|town|county|village|county)(?: address)?|chat with a planner|(?:girl|boy|cub) scout troop \d+|troop \d+|public (?:forums?|input|comment|information session|hearing)|charter (?:amendments?|review)|ballot (?:questions?|measures?|initiatives?)|referendum|bond (?:referendum|forum)|community input|listening session|visioning|master plan|comprehensive plan|redistricting|rate increase)\b/i;
 const PASSIVE=/\b(grab[- ](?:and|&|n)[- ]go|information table|take (?:it )?(?:and|&) make|take[- ]home craft|photo op|word search|display (?:case|table)|coloring station|self[- ]guided|seed library|month$)\b/i;
 // Tags that mark a real happening even when a Grab & Go / Class tag is also present.
@@ -79,6 +95,10 @@ export function discoveryRejection(e:EventRecord):DiscoveryReason|null{
  // A title that is only a status message (the organizer renamed a full program "Event Full. No longer accepting…").
  if(/^\W*(event (is )?full|(this )?(event|program|class) is full|no longer accepting|registration (is )?(closed|full)|sold out|waitlist (only|full)|full\b)\W*([.!]|$|no longer|\s*-)/i.test(title.trim()))return"announcement";
  if(ANNOUNCEMENT.test(title.trim())||CAPTION.test(title.trim()))return"announcement";
+ if(DAY_AROUND_HOLIDAY.test(title.trim()))return"announcement";
+ // The closure signal lives in the description (see CLOSURE_NOTICE): the title alone says nothing.
+ // "Registration is closed" is stripped first: it is about a full class, not a closed venue.
+ if(CLOSURE_NOTICE.test(`${title} ${String(e.desc||"").slice(0,400)}`.replace(REGISTRATION_CLOSED,"")))return"announcement";
  // A title that is only an audience word ("ALL AGES", "Everyone", "Kids") is a label, not an event.
  if(/^\W*(all ages|everyone|kids|children|adults|teens|families|family|free|seniors)\W*$/i.test(title.trim()))return"announcement";
  // Online-only programs aren't something to go to ("Online Event: Composting at Home 101", "Virtual: …", "Zoom …").
