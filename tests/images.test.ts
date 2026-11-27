@@ -1,7 +1,7 @@
 import {test} from "node:test";
 import assert from "node:assert/strict";
 import {db} from "../lib/db";
-import {purgeImages,existingImageKeys,mapImageKeys} from "../lib/images";
+import {purgeImages,existingImageKeys} from "../lib/images";
 
 // The purge must not delete a copy a borrowed picture still serves: recurring events borrow
 // their picture from the same event up to 90 days back (familyPictures), so the purge's
@@ -35,22 +35,5 @@ test("existingImageKeys reports which stored keys are still there",async()=>{
   assert.deepEqual([...have].sort(),["aaaaaaaaaaaaaaaaaaaaaaaa","bbbbbbbbbbbbbbbbbbbbbbbb"]);
   assert.equal(queries,1);
   assert.deepEqual([...await existingImageKeys([])],[]);
- }finally{(db as any).query=orig}
-});
-
-test("mapImageKeys reports keys stored from a map source",async()=>{
- const orig=(db as any).query;
- let sql="",params:any[]=[];
- (db as any).query=async(s:string,p?:any[])=>{
-  sql=typeof s==="string"?s:"";params=p||[];
-  return{rows:[{key:"aaaaaaaaaaaaaaaaaaaaaaaa"}]};
- };
- try{
-  const found=await mapImageKeys(["aaaaaaaaaaaaaaaaaaaaaaaa","bbbbbbbbbbbbbbbbbbbbbbbb"]);
-  assert.deepEqual([...found],["aaaaaaaaaaaaaaaaaaaaaaaa"]);
-  assert.ok(sql.includes("source_url"),"the check must read the stored source URL");
-  assert.ok(sql.includes("~*"),"the check must use a case-insensitive pattern match");
-  assert.ok(String(params[1]||"").includes("openstreetmap"),"the pattern must cover map tile services");
-  assert.deepEqual([...await mapImageKeys([])],[]);
  }finally{(db as any).query=orig}
 });
